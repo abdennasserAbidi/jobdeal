@@ -1,0 +1,311 @@
+{
+  "studyfields": [
+    {
+      "libelly": "Computer Science and Software Engineering"
+    },
+
+    {
+      "libelly": "Electrical Engineering"
+    },
+    {
+      "libelly": "Mechanical Engineering"
+    },
+    {
+      "libelly": "Civil Engineering"
+    },
+    {
+      
+      "libelly": "Industrial Engineering"
+    },
+    {
+      
+      "libelly": "Telecommunications Engineering"
+    },
+    {
+      
+      "libelly": "Chemical Engineering"
+    },
+    {
+      
+      "libelly": "Agricultural Engineering"
+    },
+    {
+      
+      "libelly": "Mechatronics Engineering"
+    },
+    {
+      
+      "libelly": "Energy and Renewable Energy Engineering"
+    },
+    {
+      
+      "libelly": "Medicine"
+    },
+    {
+      
+      "libelly": "Pharmacy"
+    },
+    {
+      
+      "libelly": "Dentistry"
+    },
+    {
+      
+      "libelly": "Nursing and Midwifery"
+    },
+    {
+      
+      "libelly": "Public Health"
+    },
+    {
+      
+      "libelly": "Medical Laboratory Sciences"
+    },
+    {
+      
+      "libelly": "Biotechnology"
+    },
+    {
+      
+      "libelly": "Physiotherapy and Rehabilitation"
+    },
+    {
+      
+      "libelly": "Nutrition and Dietetics"
+    },
+    {
+      
+      "libelly": "Optometry"
+    },
+    {
+      
+      "libelly": "Business Administration"
+    },
+    {
+      "libelly": "Economics"
+    },
+    {
+      
+      "libelly": "Accounting"
+    },
+    {
+      
+      "libelly": "Finance"
+    },
+    {
+      
+      "libelly": "Marketing"
+    },
+    {
+      
+      "libelly": "Human Resources Management"
+    },
+    {
+      
+      "libelly": "Entrepreneurship"
+    },
+    {
+      
+      "libelly": "Supply Chain and Logistics"
+    },
+    {
+      
+      "libelly": "Management Information Systems"
+    },
+    {
+      
+      "libelly": "International Business"
+    },
+    {
+      
+      "libelly": "Physics"
+    },
+    {
+      
+      "libelly": "Chemistry"
+    },
+    {
+      
+      "libelly": "Biology"
+    },
+    {
+      
+      "libelly": "Environmental Science"
+    },
+    {
+      
+      "libelly": "Geology"
+    },
+    {
+      
+      "libelly": "Oceanography and Marine Science"
+    },
+    {
+      
+      "libelly": "Ecology and Conservation Biology"
+    },
+    {
+      
+      "libelly": "Agricultural Science"
+    },
+    {
+      
+      "libelly": "Forestry and Natural Resources"
+    },
+    {
+      
+      "libelly": "Water Resources Management"
+    },
+    {
+      
+      "libelly": "Sociology"
+    },
+    {
+      
+      "libelly": "Psychology"
+    },
+    {
+      
+      "libelly": "Philosophy"
+    },
+    {
+      
+      "libelly": "Political Science"
+    },
+    {
+      
+      "libelly": "Anthropology"
+    },
+    {
+      
+      "libelly": "History"
+    },
+    {
+      
+      "libelly": "Geography"
+    },
+    {
+      
+      "libelly": "International Relations"
+    },
+    {
+      
+      "libelly": "Social Work"
+    },
+    {
+      
+      "libelly": "Cultural Studies"
+    },
+    {
+      
+      "libelly": "Fine Arts"
+    },
+    {
+      "libelly": "Graphic Design"
+    },
+    {
+      "libelly": "Film and Media Studies"
+    },
+    {
+      "libelly": "Performing Arts (Theater, Dance)"
+    },
+    {
+      "libelly": "Journalism"
+    },
+    {
+      "libelly": "Public Relations"
+    },
+    {
+      "libelly": "Photography"
+    },
+    {
+      "libelly": "Music"
+    },
+    {
+      "libelly": "Interior Design"
+    },
+    {
+      "libelly": "Fashion Design"
+    },
+    {
+      "libelly": "Law"
+    },
+    {
+      "libelly": "International Law"
+    },
+    {
+      "libelly": "Business and Commercial Law"
+    },
+    {
+      "libelly": "Public Law"
+    },
+    {
+      "libelly": "Human Rights Law"
+    },
+    {
+      "libelly": "Environmental Law"
+    },
+    {
+      "libelly": "Criminology and Criminal Justice"
+    },
+    {
+      "libelly": "Administrative Law"
+    },
+    {
+      "libelly": "Civil Law"
+    },
+    {
+      "libelly": "Labor Law"
+    },
+    { "libelly": "Primary Education" },
+    { "libelly": "Secondary Education" },
+    { "libelly": "Educational Psychology" },
+    { "libelly": "Special Education" },
+    { "libelly": "Educational Administration" },
+    { "libelly": "Curriculum and Instruction" },
+    { "libelly": "Teaching English as a Foreign Language (TEFL)" },
+    { "libelly": "Physical Education" },
+    { "libelly": "Early Childhood Education" },
+    { "libelly": "Educational Technology" },
+    { "libelly": "Information Technology (IT)" },
+    { "libelly": "Cybersecurity" },
+    { "libelly": "Data Science and Artificial Intelligence" },
+    { "libelly": "Multimedia and Animation" },
+    { "libelly": "Web Development" },
+    { "libelly": "Game Development" },
+    { "libelly": "Software Development" },
+    { "libelly": "Network Engineering" },
+    { "libelly": "Cloud Computing" },
+    { "libelly": "Digital Marketing" },
+    { "libelly": "Tourism Management" },
+    { "libelly": "Hospitality Management" },
+    { "libelly": "Event Management" },
+    { "libelly": "Travel and Leisure Management" },
+    { "libelly": "Culinary Arts" },
+    { "libelly": "Hotel Management" },
+    { "libelly": "Eco-tourism and Sustainable Tourism" },
+    { "libelly": "Resort and Spa Management" },
+    { "libelly": "Guiding and Heritage Management" },
+    { "libelly": "Food and Beverage Management" },
+    { "libelly": "Agricultural Business Management" },
+    { "libelly": "Plant Science and Horticulture" },
+    { "libelly": "Animal Science" },
+    { "libelly": "Soil Science" },
+    { "libelly": "Agricultural Economics" },
+    { "libelly": "Food Science and Technology" },
+    { "libelly": "Fisheries and Aquaculture" },
+    { "libelly": "Irrigation and Water Management" },
+    { "libelly": "Agronomy" },
+    { "libelly": "Agroecology" },
+    { "libelly": "Pure Mathematics" },
+    { "libelly": "Applied Mathematics" },
+    { "libelly": "Statistics" },
+    { "libelly": "Actuarial Science" },
+    { "libelly": "Mathematics Education" },
+    { "libelly": "Operations Research" },
+    { "libelly": "Financial Mathematics" },
+    { "libelly": "Mathematical Modeling" },
+    { "libelly": "Biostatistics" },
+    { "libelly": "Data Analytics" }
+  ]
+}

@@ -1,0 +1,163 @@
+<resources>
+    <string name="app_name" translatable="false">Jobdealer</string>
+    <string name="web_client_id">591487668503-v640lm0980suq35baa1onfv51sukg2kr.apps.googleusercontent.com</string>
+    <string name="onboarding_title_one">Connect with professionals worldwide anytime, anywhere</string>
+    <string name="onboarding_title_two">Break free from the job search loop</string>
+    <string name="onboarding_title_three">Get discovered by industry professionals</string>
+    <string name="start_app">Get started</string>
+    <string name="create_account_text">Create a Jobdealer Account</string>
+    <string name="welcome">Welcome!</string>
+    <string name="sub_title_welcome">Login to your existing account</string>
+    <string name="error_email">Invalid email</string>
+    <string name="error_password">Must contain uppercase and number</string>
+    <string name="password_text">Password</string>
+    <string name="confirm_password_text">Confirm password</string>
+    <string name="forgot_password_text">Forgot password?</string>
+    <string name="login_text">Login</string>
+    <string name="logout_text">Log out</string>
+    <string name="or_text">Or Login with</string>
+    <string name="google_signin_text">Sign In with Google</string>
+    <string name="sign_up_hint">Don\'t have an account yet?</string>
+    <string name="sign_up_text">Sign Up</string>
+    <string name="location_add_text">Add your location</string>
+
+    <string name="summary_title_text">Personal Summary</string>
+    <string name="summary_desc_text">Add a personal summary to your profile as a way to introduce who you are</string>
+    <string name="summary_add_text">Add summary</string>
+
+    <string name="education_add_text">Add education</string>
+    <string name="education_title_text">Education</string>
+    <string name="education_desc_text">Tell employers about your education</string>
+
+    <string name="licence_add_text">Add licence</string>
+    <string name="licence_title_text">Licences</string>
+    <string name="licence_desc_text">Showcase your licences, certificates, memberships and accreditations</string>
+
+    <string name="language_add_text">Add language</string>
+    <string name="language_title_text">Languages</string>
+    <string name="language_desc_text">Add languages to appeal to more companies and employers</string>
+
+    <string name="skills_add_text">Add skills</string>
+    <string name="skills_title_text">Skills</string>
+    <string name="skills_desc_text">Let employers know how valuable you can be to them</string>
+
+    <string name="resume_add_text">Upload resume</string>
+    <string name="resume_title_text">Resume</string>
+    <string name="resume_desc_text">Upload a resume for easy applying and access no matter where you are</string>
+
+    <string name="career_add_text">Add career</string>
+    <string name="career_title_text">Career history</string>
+    <string name="career_desc_text">Highlight your experience to employers</string>
+
+
+    <!--Tablayout-->
+    <string name="tab1">Personal Summary</string>
+    <string name="tab2">Career history</string>
+    <string name="tab3">Education</string>
+    <string name="tab4">Licence</string>
+    <string name="tab5">Skills</string>
+    <string name="tab6">Language</string>
+    <string name="tab7">Resume</string>
+    <string name="tab8">Next role</string>
+
+    <!--Bottom bar-->
+    <string name="item1">Home</string>
+    <string name="item2">Notifications</string>
+    <string name="item3">favorites</string>
+    <string name="item4">Setting</string>
+
+    <string name="about_role_text">About your next role</string>
+    <string name="availability_text">Availability</string>
+    <string name="work_type_text">Preferred work types</string>
+    <string name="location_role_text">Preferred locations</string>
+    <string name="salary_role_text">Salary expectation</string>
+    <string name="interest_role_text">Classification of interest</string>
+    <string name="right_role_text">Right to work</string>
+
+    <string name="response_role_text">Now</string>
+    <string name="not_specified_text">Not specified</string>
+
+    <string name="loading_text">Loading</string>
+    <string name="personal_info_text">Personal info</string>
+    <string name="generic_info_text">Generic info</string>
+    <string name="view_detail_text">view details</string>
+
+    <!--education form-->
+    <string name="education_text">Educations</string>
+    <string name="add_education_text">Add Education</string>
+    <string name="save_text">Save</string>
+    <string name="degree_text">Degree</string>
+    <string name="Grade_text">Grade</string>
+    <string name="School_text">School</string>
+    <string name="activity_text">Activity sector</string>
+    <string name="start_date_text">Start date</string>
+    <string name="end_date_text">End date</string>
+    <string name="study_still_text">I\'m still studying</string>
+
+    <!--personal form-->
+    <string name="full_name_text">Full name</string>
+    <string name="error_full_name_text">Invalid full name</string>
+    <string name="address_text">Address</string>
+    <string name="error_address_text">Invalid Adresse</string>
+    <string name="birth_text">Birth date</string>
+    <string name="situation_text">Situation</string>
+    <string name="married_text">Married</string>
+    <string name="single_text">Single</string>
+    <string name="engaged_text">Engaged</string>
+    <string name="sexe_text">Sex</string>
+    <string name="male_text">Male</string>
+    <string name="female_text">Female</string>
+    <string name="salary_range_text">Salary Range:</string>
+
+    <string name="disponibility_text">Availability</string>
+    <string name="disponibility1_text">Now</string>
+    <string name="disponibility2_text">Less than 3 months</string>
+    <string name="disponibility3_text">In 3 months</string>
+    <string name="disponibility4_text">More than 3 months</string>
+
+    <string name="skipp_text">Skipp</string>
+    <string name="next_text">Next</string>
+
+    <!--career form-->
+    <string name="experience_text">Experience</string>
+    <string name="add_experience_text">Add Experience</string>
+    <string name="location_text">Location</string>
+    <string name="company_name_text">Company name</string>
+    <string name="employment_type_text">Employment type</string>
+    <string name="salary_text">Salary</string>
+    <string name="work_still_text">I\'m still in this role</string>
+
+    <string name="companies_text">Companies</string>
+    <string name="choose_companies_text">Company</string>
+    <string name="choose_candidate_text">Candidate</string>
+    <string name="choose_type_warning">Must choose user type</string>
+    <string name="first_name_error">Invalid First name</string>
+    <string name="last_name_error">Invalid First name</string>
+    <string name="company_name_error">Invalid Company name</string>
+    <string name="confirm_password_error">Is not the same password</string>
+    <string name="first_name_text">First name</string>
+    <string name="last_name_text">Last name</string>
+
+    <string name="have_account_text">Already have an account?</string>
+    <string name="log_in_text">Log in</string>
+    <string name="create_new_account_text">Create new account</string>
+
+    <string name="strRetry" translatable="false">Retry</string>
+    <string name="strFetchingDataFromServer" translatable="false">Fetching data from server</string>
+    <string name="strOriginalLanguage" translatable="false">Original Language</string>
+
+    <string name="choose_language_text">Choose language</string>
+    <string name="language_text">language</string>
+    <string name="change_language_text">Change</string>
+
+    <string name="profile_candidate_type_text">Candidate Profile</string>
+
+    <string name="my_resume_text">My Resume</string>
+    <string name="upload_resume_text">Upload &amp; view your resumes</string>
+
+    <string name="required_field_text">is a required field</string>
+
+    <string name="share_text">Share</string>
+    <string name="exported_text">Exported</string>
+
+</resources>

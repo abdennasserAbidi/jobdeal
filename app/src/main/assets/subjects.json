@@ -1,0 +1,707 @@
+{
+  "subject": [
+    {
+      "type": "head",
+      "libelly": "Technology & IT"
+    },
+
+    {
+      "type": "child",
+      "libelly": "Software Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "Frontend Developer"
+    },
+    {
+      "type": "child",
+      "libelly": "Backend Developer"
+    },
+    {
+      "type": "child",
+      "libelly": "Full Stack Developer"
+    },
+    {
+      "type": "child",
+      "libelly": "Data Scientist"
+    },
+    {
+      "type": "child",
+      "libelly": "DevOps Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "Mobile App Developer (iOS, Android)"
+    },
+    {
+      "type": "child",
+      "libelly": "Systems Administrator"
+    },
+    {
+      "type": "child",
+      "libelly": "Database Administrator"
+    },
+    {
+      "type": "child",
+      "libelly": "Network Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "IT Support Specialist"
+    },
+    {
+      "type": "child",
+      "libelly": "Security Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "Cloud Architect"
+    },
+    {
+      "type": "child",
+      "libelly": "Product Manager (Tech)"
+    },
+    {
+      "type": "child",
+      "libelly": "QA Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "AI/ML Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "UX/UI Designer"
+    },
+    {
+      "type": "child",
+      "libelly": "Blockchain Developer"
+    },
+    {
+      "type": "child",
+      "libelly": "Cybersecurity Analyst"
+    },
+    {
+      "type": "child",
+      "libelly": "Security Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "Security Engineer"
+    }
+
+
+
+
+
+  ,
+    {
+      "type": "head",
+      "libelly": "Marketing & Sales"
+    },
+    {
+      "type": "child",
+      "libelly": "Digital Marketing Specialist"
+    },
+    {
+      "type": "child",
+      "libelly": "Social Media Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Marketing Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "SEO Specialist"
+    },
+    {
+      "type": "child",
+      "libelly": "Content Strategist"
+    },
+    {
+      "type": "child",
+      "libelly": "Brand Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Copywriter"
+    },
+    {
+      "type": "child",
+      "libelly": "Growth Hacker"
+    },
+    {
+      "type": "child",
+      "libelly": "Account Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Sales Executive"
+    },
+    {
+      "type": "child",
+      "libelly": "Business Development Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Sales Operations Specialist"
+    },
+    {
+      "type": "child",
+      "libelly": "Customer Success Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Lead Generation Specialist"
+    },
+    {
+      "type": "child",
+      "libelly": "Public Relations Specialist"
+    },
+
+
+
+
+    {
+      "type": "head",
+      "libelly": "Legal"
+    },
+    {
+      "type": "child",
+      "libelly": "Lawyer / Attorney"
+    },
+    {
+      "type": "child",
+      "libelly": "Paralegal"
+    },
+    {
+      "type": "child",
+      "libelly": "Legal Counsel"
+    },
+    {
+      "type": "child",
+      "libelly": "Corporate Counsel"
+    },
+    {
+      "type": "child",
+      "libelly": "Contract Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Legal Assistant"
+    },
+
+
+
+
+
+    {
+      "type": "head",
+      "libelly": "Human Resources (HR) & Recruitment"
+    },
+    {
+      "type": "child",
+      "libelly": "HR Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Talent Acquisition Specialist"
+    },
+    {
+      "type": "child",
+      "libelly": "Recruitment Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "HR Business Partner"
+    },
+    {
+      "type": "child",
+      "libelly": "Learning and Development Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Compensation and Benefits Analyst"
+    },
+    {
+      "type": "child",
+      "libelly": "Employee Relations Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "People Operations Specialist"
+    },
+
+
+
+
+
+    {
+      "type": "head",
+      "libelly": "Customer Service"
+    },
+    {
+      "type": "child",
+      "libelly": "Customer Service Representative"
+    },
+    {
+      "type": "child",
+      "libelly": "Call Center Agent"
+    },
+    {
+      "type": "child",
+      "libelly": "Technical Support Specialist"
+    },
+    {
+      "type": "child",
+      "libelly": "Customer Experience Specialist"
+    },
+    {
+      "type": "child",
+      "libelly": "Help Desk Analyst"
+    },
+    {
+      "type": "child",
+      "libelly": "Client Service Manager"
+    },
+
+
+
+
+
+    {
+      "type": "head",
+      "libelly": "Data & Analytics"
+    },
+    {
+      "type": "child",
+      "libelly": "Data Analyst"
+    },
+    {
+      "type": "child",
+      "libelly": "Data Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "Business Intelligence Analyst"
+    },
+    {
+      "type": "child",
+      "libelly": "Data Scientist"
+    },
+    {
+      "type": "child",
+      "libelly": "Statistician"
+    },
+    {
+      "type": "child",
+      "libelly": "Machine Learning Engineer"
+    },
+
+
+
+
+
+    {
+      "type": "head",
+      "libelly": "Operations & Logistics"
+    },
+    {
+      "type": "child",
+      "libelly": "Supply Chain Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Operations Analyst"
+    },
+    {
+      "type": "child",
+      "libelly": "Logistics Coordinator"
+    },
+    {
+      "type": "child",
+      "libelly": "Inventory Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Warehouse Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Fleet Manager"
+    },
+
+
+
+
+
+    {
+      "type": "head",
+      "libelly": "Real Estate"
+    },
+    {
+      "type": "child",
+      "libelly": "Real Estate Agent"
+    },
+    {
+      "type": "child",
+      "libelly": "Property Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Leasing Consultant"
+    },
+    {
+      "type": "child",
+      "libelly": "Real Estate Broker"
+    },
+    {
+      "type": "child",
+      "libelly": "Real Estate Developer"
+    },
+    {
+      "type": "child",
+      "libelly": "Appraiser"
+    },
+
+
+
+
+
+    {
+      "type": "head",
+      "libelly": "Education"
+    },
+    {
+      "type": "child",
+      "libelly": "Teacher"
+    },
+    {
+      "type": "child",
+      "libelly": "Instructional Designer"
+    },
+    {
+      "type": "child",
+      "libelly": "Curriculum Developer"
+    },
+    {
+      "type": "child",
+      "libelly": "Academic Advisor"
+    },
+    {
+      "type": "child",
+      "libelly": "College Professor"
+    },
+    {
+      "type": "child",
+      "libelly": "Principal"
+    },
+    {
+      "type": "child",
+      "libelly": "Tutor"
+    },
+    {
+      "type": "child",
+      "libelly": "Education Consultant"
+    },
+
+
+
+
+
+    {
+      "type": "head",
+      "libelly": "Creative & Design"
+    },
+    {
+      "type": "child",
+      "libelly": "Graphic Designer"
+    },
+    {
+      "type": "child",
+      "libelly": "Art Director"
+    },
+    {
+      "type": "child",
+      "libelly": "Video Editor"
+    },
+    {
+      "type": "child",
+      "libelly": "Creative Director"
+    },
+    {
+      "type": "child",
+      "libelly": "Photographer"
+    },
+    {
+      "type": "child",
+      "libelly": "Illustrator"
+    },
+    {
+      "type": "child",
+      "libelly": "Motion Graphics Designer"
+    },
+    {
+      "type": "child",
+      "libelly": "3D Artist"
+    },
+    {
+      "type": "child",
+      "libelly": "Animator"
+    },
+
+
+
+
+
+    {
+      "type": "head",
+      "libelly": "Engineering (Non-IT)"
+    },
+    {
+      "type": "child",
+      "libelly": "Mechanical Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "Electrical Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "Civil Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "Structural Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "Aerospace Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "Chemical Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "Industrial Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "Environmental Engineer"
+    },
+    {
+      "type": "child",
+      "libelly": "Robotics Engineer"
+    },
+
+
+
+
+
+    {
+      "type": "head",
+      "libelly": "Healthcare"
+    },
+    {
+      "type": "child",
+      "libelly": "Registered Nurse (RN)"
+    },
+    {
+      "type": "child",
+      "libelly": "Medical Doctor (MD)"
+    },
+    {
+      "type": "child",
+      "libelly": "Surgeon"
+    },
+    {
+      "type": "child",
+      "libelly": "Physician Assistant"
+    },
+    {
+      "type": "child",
+      "libelly": "Physical Therapist"
+    },
+    {
+      "type": "child",
+      "libelly": "Occupational Therapist"
+    },
+    {
+      "type": "child",
+      "libelly": "Clinical Research Coordinator"
+    },
+    {
+      "type": "child",
+      "libelly": "Pharmacist"
+    },
+    {
+      "type": "child",
+      "libelly": "Healthcare Administrator"
+    },
+    {
+      "type": "child",
+      "libelly": "Lab Technician"
+    },
+    {
+      "type": "child",
+      "libelly": "Radiologist"
+    },
+
+
+
+
+
+    {
+      "type": "head",
+      "libelly": "Media & Communications"
+    },
+    {
+      "type": "child",
+      "libelly": "Journalist"
+    },
+    {
+      "type": "child",
+      "libelly": "News Anchor"
+    },
+    {
+      "type": "child",
+      "libelly": "Copywriter"
+    },
+    {
+      "type": "child",
+      "libelly": "Editor"
+    },
+    {
+      "type": "child",
+      "libelly": "Content Writer"
+    },
+    {
+      "type": "child",
+      "libelly": "Public Relations Specialist"
+    },
+    {
+      "type": "child",
+      "libelly": "Communications Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Broadcast Producer"
+    },
+
+
+
+
+
+    {
+      "type": "head",
+      "libelly": "Finance & Accounting"
+    },
+    {
+      "type": "child",
+      "libelly": "Financial Analyst"
+    },
+    {
+      "type": "child",
+      "libelly": "Accountant"
+    },
+    {
+      "type": "child",
+      "libelly": "Controller"
+    },
+    {
+      "type": "child",
+      "libelly": "Finance Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Budget Analyst"
+    },
+    {
+      "type": "child",
+      "libelly": "Content Writer"
+    },
+    {
+      "type": "child",
+      "libelly": "Auditor"
+    },
+    {
+      "type": "child",
+      "libelly": "Tax Consultant"
+    },
+    {
+      "type": "child",
+      "libelly": "Investment Analyst"
+    },
+    {
+      "type": "child",
+      "libelly": "CFO (Chief Financial Officer)"
+    },
+    {
+      "type": "child",
+      "libelly": "Actuary"
+    },
+    {
+      "type": "child",
+      "libelly": "Credit Analyst"
+    },
+
+
+
+
+
+    {
+      "type": "head",
+      "libelly": "Management & Leadership"
+    },
+    {
+      "type": "child",
+      "libelly": "CEO (Chief Executive Officer)"
+    },
+    {
+      "type": "child",
+      "libelly": "COO (Chief Operating Officer)"
+    },
+    {
+      "type": "child",
+      "libelly": "CTO (Chief Technology Officer)"
+    },
+    {
+      "type": "child",
+      "libelly": "CMO (Chief Marketing Officer)"
+    },
+    {
+      "type": "child",
+      "libelly": "General Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Operations Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Program Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Project Manager"
+    },
+    {
+      "type": "child",
+      "libelly": "Strategy Consultant"
+    },
+    {
+      "type": "child",
+      "libelly": "Director of Operations"
+    },
+    {
+      "type": "child",
+      "libelly": "VP of Sales"
+    },
+    {
+      "type": "child",
+      "libelly": "VP of Engineering"
+    }
+  ]
+}

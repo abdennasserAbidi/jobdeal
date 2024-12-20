@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="web_client_id">591487668503-v640lm0980suq35baa1onfv51sukg2kr.apps.googleusercontent.com</string>
+    <string name="onboarding_title_one">Connectez-vous avec des professionnels du monde entier à tout moment et en tout lieu</string>
+    <string name="onboarding_title_two">Sortez du cycle de la recherche d emploi</string>
+    <string name="onboarding_title_three">Faites-vous découvrir par les professionnels du secteur</string>
+    <string name="start_app">Commencer</string>
+    <string name="create_account_text">Créer compte a Jobdealer</string>
+    <string name="welcome">Bienvenue!</string>
+    <string name="sub_title_welcome">Connectez-vous à votre compte existant</string>
+    <string name="error_email">Email est invalid</string>
+    <string name="password_text">Mot de passe</string>
+    <string name="confirm_password_text">Confirmer mot de passe</string>
+    <string name="error_password">Doit contenir des majuscules et des chiffres</string>
+    <string name="forgot_password_text">Mot de passe oublié?</string>
+    <string name="login_text">Se connecter</string>
+    <string name="logout_text">Se déconnecter</string>
+    <string name="or_text">Ou Se connecter avec</string>
+    <string name="google_signin_text">Connectez-vous avec Google</string>
+    <string name="sign_up_hint">Vous n\'avez pas encore de compte ?</string>
+    <string name="sign_up_text">S\'inscrire</string>
+    <string name="location_add_text">Ajoutez votre localisation</string>
+
+    <string name="education_add_text">Ajoutez vos études</string>
+    <string name="education_title_text">Éducation</string>
+    <string name="education_desc_text">Parlez de votre formation aux employeurs</string>
+
+    <string name="licence_add_text">Ajoutez licence</string>
+    <string name="licence_title_text">Licences</string>
+    <string name="licence_desc_text">Présentez vos licences, certificats, adhésions et accréditations</string>
+
+    <string name="language_add_text">Add langues</string>
+    <string name="language_title_text">Langues</string>
+    <string name="language_desc_text">Ajoutez des langues pour attirer davantage d entreprises et d employeurs</string>
+
+    <string name="skills_add_text">Ajoutez compétences</string>
+    <string name="skills_title_text">Compétences</string>
+    <string name="skills_desc_text">Faites savoir aux employeurs à quel point vous pouvez leur être précieux</string>
+
+    <string name="resume_add_text">Télécharger le CV</string>
+    <string name="resume_title_text">CV</string>
+    <string name="resume_desc_text">Téléchargez un CV pour postuler facilement et y accéder où que vous soyez</string>
+
+    <string name="about_role_text">À propos de votre prochain rôle</string>
+    <string name="availability_text">Disponibilité</string>
+    <string name="work_type_text">Types de travail préférés</string>
+    <string name="location_role_text">Emplacements privilégiés</string>
+    <string name="salary_role_text">Attentes salariales</string>
+    <string name="interest_role_text">Classification des intérêts</string>
+    <string name="right_role_text">Droit au travail</string>
+
+    <string name="career_add_text">Ajouter une carrière</string>
+    <string name="career_title_text">Parcours professionnel</string>
+    <string name="career_desc_text">Mettez en valeur votre expérience auprès des employeurs</string>
+
+    <string name="summary_title_text">Résumé personnel</string>
+    <string name="summary_desc_text">Ajoutez un résumé personnel à votre profil pour présenter qui vous êtes</string>
+    <string name="summary_add_text">Ajoutez résumé</string>
+
+    <string name="response_role_text">Maintenant</string>
+    <string name="not_specified_text">Non spécifié</string>
+
+    <!--Bottom bar-->
+    <string name="item1">Acceuil</string>
+    <string name="item2">Notifications</string>
+    <string name="item3">favoris</string>
+    <string name="item4">Paramètre</string>
+
+    <!--Tablayout-->
+    <string name="tab1">Résumé personnel</string>
+    <string name="tab2">Parcours professionnel</string>
+    <string name="tab3">Éducation</string>
+    <string name="tab4">Licence</string>
+    <string name="tab5">Compétences</string>
+    <string name="tab6">Langue</string>
+    <string name="tab7">CV</string>
+    <string name="tab8">Prochain rôle</string>
+
+    <string name="loading_text">Chargement</string>
+    <string name="personal_info_text">Info personnelle</string>
+    <string name="generic_info_text">Info géneral</string>
+    <string name="view_detail_text">Afficher les détails</string>
+
+    <!--education form-->
+    <string name="education_text">Formations</string>
+    <string name="add_education_text">Ajouter Formations</string>
+    <string name="save_text">Sauvegarder</string>
+    <string name="degree_text">Diplôme</string>
+    <string name="Grade_text">Grade</string>
+    <string name="School_text">École</string>
+    <string name="activity_text">Secteur d\'activité</string>
+    <string name="start_date_text">Date de début</string>
+    <string name="end_date_text">Date de fin</string>
+    <string name="study_still_text">En train d\'étudier</string>
+
+    <!--personal form-->
+    <string name="full_name_text">Nom et prénom</string>
+    <string name="error_full_name_text">Nom complet invalide</string>
+    <string name="address_text">Adresse</string>
+    <string name="error_address_text">Adresse invalide</string>
+    <string name="birth_text">Date de naissance</string>
+    <string name="situation_text">Situation</string>
+    <string name="married_text">Marrié</string>
+    <string name="single_text">Célibataire</string>
+    <string name="engaged_text">Engagé</string>
+    <string name="sexe_text">Sexe</string>
+    <string name="male_text">Homme</string>
+    <string name="female_text">Femme</string>
+    <string name="disponibility_text">Disponibilité</string>
+    <string name="disponibility1_text">Maintenant</string>
+    <string name="disponibility2_text">Avant 3 mois</string>
+    <string name="disponibility3_text">Dans 3 mois</string>
+    <string name="disponibility4_text">Après 3 mois</string>
+    <string name="skipp_text">Skipp</string>
+    <string name="next_text">Suivant</string>
+    <string name="salary_range_text">Marge salariale:</string>
+
+
+    <!--career form-->
+    <string name="experience_text">Experience</string>
+    <string name="add_experience_text">Ajouter Experience</string>
+    <string name="location_text">Emplacement</string>
+    <string name="company_name_text">Nom de l\'entreprise</string>
+    <string name="employment_type_text">Type d\'emploi</string>
+    <string name="salary_text">Salaire</string>
+    <string name="work_still_text">Je suis toujours dans ce rôle</string>
+    <string name="companies_text">Entreprises</string>
+
+    <string name="choose_type_warning">Faut choisir type d\'utilisateur</string>
+
+    <string name="choose_companies_text">Entreprise</string>
+    <string name="choose_candidate_text">Candidat</string>
+
+    <string name="first_name_error">Prénom est invalid</string>
+    <string name="last_name_error">Nom est invalid</string>
+    <string name="company_name_error">Nom de l\'entreprise est invalid</string>
+    <string name="confirm_password_error">Ce n\'est pas le même mot de passe</string>
+    <string name="first_name_text">Prénom</string>
+    <string name="last_name_text">Nom</string>
+
+    <string name="have_account_text">Vous avez déjà un compte ?</string>
+    <string name="log_in_text">Se connecter</string>
+    <string name="create_new_account_text">Créer un nouveau compte</string>
+
+    <string name="choose_language_text">Choisir langue</string>
+    <string name="language_text">langue</string>
+    <string name="change_language_text">Changer</string>
+
+    <string name="profile_candidate_type_text">Profil Candidat</string>
+
+    <string name="my_resume_text">Mon CV</string>
+    <string name="upload_resume_text">Télécharger &amp; voir ton CV</string>
+
+    <string name="required_field_text">ce champ est obligatoire</string>
+
+    <string name="share_text">Partager</string>
+    <string name="exported_text">Exporter</string>
+
+
+</resources>

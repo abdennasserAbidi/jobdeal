@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">192.168.139.209</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.112.209</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.204.209</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.1.10</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.1.15</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.1.4</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.1.8</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.1.7</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.1.14</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.1.58</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">10.255.255.205</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.84.209</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.1.48</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.48.209</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.1.12</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.1.27</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.170.209</domain> <!-- Your server IP -->
+    </domain-config>
+</network-security-config>
