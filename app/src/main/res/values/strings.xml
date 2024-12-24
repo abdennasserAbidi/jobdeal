@@ -126,7 +126,14 @@
     <string name="add_experience_text">Add Experience</string>
     <string name="location_text">Location</string>
     <string name="company_name_text">Company name</string>
+
     <string name="employment_type_text">Employment type</string>
+    <string name="type1_text">Contract</string>
+    <string name="type2_text">Freelance</string>
+    <string name="contract_type_text">Contract type</string>
+
+
+
     <string name="salary_text">Salary</string>
     <string name="work_still_text">I\'m still in this role</string>
 

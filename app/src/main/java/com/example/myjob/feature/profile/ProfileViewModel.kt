@@ -459,6 +459,7 @@ class ProfileViewModel @Inject constructor(
     var locationExp = MutableStateFlow("")
     var companyExp = MutableStateFlow("")
     var typeEmploymentExp = MutableStateFlow("")
+    var typeContractExp = MutableStateFlow("")
     var birthDate = MutableStateFlow("")
     var endDate = MutableStateFlow("")
     var salary = MutableStateFlow(0)
@@ -497,6 +498,7 @@ class ProfileViewModel @Inject constructor(
             locationExp.update { place ?: "" }
             companyExp.update { companyName ?: "" }
             typeEmploymentExp.update { type ?: "" }
+            typeContractExp.update { typeContract ?: "" }
             birthDate.update { dateStart ?: "" }
             endDate.update { dateEnd ?: "" }
         }
@@ -517,6 +519,10 @@ class ProfileViewModel @Inject constructor(
 
     fun changeTypeEmpExp(item: String) {
         typeEmploymentExp.update { item }
+    }
+
+    fun changeTypeContractExp(item: String) {
+        typeContractExp.update { item }
     }
 
     fun changeEndDateExp(item: String) {

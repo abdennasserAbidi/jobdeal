@@ -63,7 +63,7 @@ import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.feature.navigation.Screen
-
+import com.example.myjob.feature.signup.CustomDropdownMenu
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -80,6 +80,7 @@ fun CareerFormScreen(
     val locationExp by profileViewModel.locationExp.collectAsState()
     val companyExp by profileViewModel.companyExp.collectAsState()
     val typeEmploymentExp by profileViewModel.typeEmploymentExp.collectAsState()
+    val typeContractExp by profileViewModel.typeContractExp.collectAsState()
     val titleExp by profileViewModel.titleExp.collectAsState()
     val birthDate by profileViewModel.birthDate.collectAsState()
     val endDate by profileViewModel.endDate.collectAsState()
@@ -98,8 +99,6 @@ fun CareerFormScreen(
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
-        Log.i("uniqueid", "login: $lifecycleEvent")
-
         if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
             profileViewModel.mapperExperience(exp)
         }
@@ -488,109 +487,134 @@ fun CareerFormScreen(
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
                     )
 
-                    //type
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 30.dp)
-                    ) {
+                    //type d'emploi
+                    Text(
+                        text = "${stringResource(id = R.string.employment_type_text)}: ",
+                        modifier = Modifier.padding(start = 20.dp, top = 20.dp),
+                        style = TextStyle(
+                            color = colorResource(id = R.color.whatsapp),
+                            fontFamily = FontFamily.Default,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
 
-                        if (typeEmploymentExp.isNotEmpty()) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(start = 20.dp)
-                                    .clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null
-                                    ) {
-                                        isTypeEmploymentVisible = true
-                                    }
-                            ) {
-                                Text(
-                                    text = "${stringResource(id = R.string.employment_type_text)}: ",
-                                    style = TextStyle(
-                                        color = colorResource(id = R.color.whatsapp),
-                                        fontFamily = FontFamily.Default,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
+                    val list = listOf(
+                        stringResource(R.string.type1_text),
+                        stringResource(R.string.type2_text)
+                    )
+                    CustomDropdownMenu(
+                        list = list,
+                        defaultSelected = typeEmploymentExp,
+                        color = colorResource(id = R.color.whatsapp),
+                        withIcon = false,
+                        onSelected = {
+                            profileViewModel.changeTypeEmpExp(list[it])
+                        },
+                        modifier = Modifier.padding(top = 10.dp, start = 20.dp)
+                    )
+
+
+                    if (typeEmploymentExp == list[0]) {
+                        //type
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 30.dp)
+                        ) {
+
+                            if (typeContractExp.isNotEmpty()) {
+                                Column(
+                                    modifier = Modifier
+                                        .padding(start = 20.dp)
+                                        .clickable(
+                                            interactionSource = interactionSource,
+                                            indication = null
+                                        ) {
+                                            isTypeEmploymentVisible = true
+                                        }
+                                ) {
+                                    Text(
+                                        text = "${stringResource(id = R.string.contract_type_text)}: ",
+                                        style = TextStyle(
+                                            color = colorResource(id = R.color.whatsapp),
+                                            fontFamily = FontFamily.Default,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     )
-                                )
 
-                                Row(
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(end = 20.dp),
+                                        verticalAlignment = Alignment.Bottom
+                                    ) {
+
+                                        Text(
+                                            text = typeContractExp,
+                                            modifier = Modifier
+                                                .padding(top = 10.dp, bottom = 5.dp)
+                                                .weight(0.9f),
+                                            color = Color.Black
+                                        )
+
+                                        Icon(
+                                            modifier = Modifier
+                                                .weight(0.1f)
+                                                .size(24.dp),
+                                            imageVector = Icons.Filled.ArrowDropDown,
+                                            tint = Color.Black,
+                                            contentDescription = ""
+                                        )
+
+                                    }
+                                }
+                            } else {
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(end = 20.dp),
-                                    verticalAlignment = Alignment.Bottom
+                                        .padding(start = 20.dp)
+                                        .clickable(
+                                            interactionSource = interactionSource,
+                                            indication = null
+                                        ) {
+                                            isTypeEmploymentVisible = true
+                                        }
                                 ) {
-
                                     Text(
-                                        text = typeEmploymentExp,
-                                        modifier = Modifier
-                                            .padding(top = 10.dp, bottom = 5.dp)
-                                            .weight(0.9f),
-                                        color = Color.Black
+                                        text = "${stringResource(id = R.string.contract_type_text)}: ",
+                                        modifier = Modifier.align(Alignment.CenterStart),
+                                        style = TextStyle(
+                                            color = colorResource(id = R.color.whatsapp),
+                                            fontFamily = FontFamily.Default,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     )
 
                                     Icon(
                                         modifier = Modifier
-                                            .weight(0.1f)
-                                            .size(24.dp),
+                                            .align(Alignment.BottomEnd)
+                                            .padding(end = 20.dp),
                                         imageVector = Icons.Filled.ArrowDropDown,
                                         tint = Color.Black,
                                         contentDescription = ""
                                     )
-
                                 }
                             }
-                        } else {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 20.dp)
-                                    .clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null
-                                    ) {
-                                        isTypeEmploymentVisible = true
-                                    }
-                            ) {
-                                Text(
-                                    text = "${stringResource(id = R.string.employment_type_text)}: ",
-                                    modifier = Modifier.align(Alignment.CenterStart),
-                                    style = TextStyle(
-                                        color = colorResource(id = R.color.whatsapp),
-                                        fontFamily = FontFamily.Default,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
-
-                                Icon(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .padding(end = 20.dp),
-                                    imageVector = Icons.Filled.ArrowDropDown,
-                                    tint = Color.Black,
-                                    contentDescription = ""
-                                )
-                            }
                         }
-                    }
 
-                    HorizontalDivider(
-                        thickness = 1.dp,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
-                    )
+                        HorizontalDivider(
+                            thickness = 1.dp,
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+                        )
+                    }
 
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 20.dp, top = 30.dp)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                            }
                     ) {
                         Text(
                             text = "${stringResource(id = R.string.salary_text)}: ",
@@ -920,7 +944,7 @@ fun CareerFormScreen(
                                         indication = null
                                     ) {
                                         isTypeEmploymentVisible = false
-                                        profileViewModel.changeTypeEmpExp(item.type)
+                                        profileViewModel.changeTypeContractExp(item.type)
                                     }
                                     .fillMaxWidth(0.9f)
                                     .padding(top = 20.dp, start = 20.dp),

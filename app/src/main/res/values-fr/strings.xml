@@ -123,7 +123,12 @@
     <string name="add_experience_text">Ajouter Experience</string>
     <string name="location_text">Emplacement</string>
     <string name="company_name_text">Nom de l\'entreprise</string>
+
     <string name="employment_type_text">Type d\'emploi</string>
+    <string name="type1_text">Contrat</string>
+    <string name="type2_text">Freelance</string>
+    <string name="contract_type_text">Type du contrat</string>
+
     <string name="salary_text">Salaire</string>
     <string name="work_still_text">Je suis toujours dans ce rôle</string>
     <string name="companies_text">Entreprises</string>

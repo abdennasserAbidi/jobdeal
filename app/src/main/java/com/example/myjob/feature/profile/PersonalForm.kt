@@ -390,8 +390,6 @@ fun PersonalForm(
                     .fillMaxWidth()
                     .padding(top = 10.dp)
             ) {
-
-                Log.i("ssdvsbfsbrs", "PersonalForm: $user")
                 val title = user.preferredActivitySector ?: ""
 
                 if (title.isNotEmpty()) {

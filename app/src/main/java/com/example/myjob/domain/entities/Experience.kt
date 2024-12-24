@@ -10,6 +10,7 @@ data class Experience(
     val dateEnd: String? = "",
     val place: String? = "",
     val type: String? = "",
+    val typeContract: String? = "",
     val salary: Int? = 1000,
     var idUser: Int? = 0
 ) {
@@ -23,6 +24,7 @@ data class Experience(
         val dateStartValid = dateStart != null && dateStart != "Choose Date"
         val dateEndValid = dateEnd != null && dateEnd != "Choose Date"
         val typeValid = !type.isNullOrEmpty()
+        val typeContractValid = !typeContract.isNullOrEmpty()
         val salaryValid = salary != null && salary != 1000
 
 
@@ -56,7 +58,8 @@ data class Experience(
         if (dateEndValid) mapUser[listTag[3]] = dateEnd ?: ""
         if (countryValid) mapUser[listTag[4]] = place ?: ""
         if (typeValid) mapUser[listTag[5]] = type ?: ""
-        if (salaryValid) mapUser[listTag[6]] = "${salary ?: 1000}"
+        if (typeContractValid) mapUser[listTag[6]] = typeContract ?: ""
+        if (salaryValid) mapUser[listTag[7]] = "${salary ?: 1000}"
 
         return mapUser
     }
