@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -48,10 +49,11 @@ fun CustomDialog(
     val icon = if (isSuccess) Icons.Default.Check else Icons.Default.Info
     val interactionSource = remember { MutableInteractionSource() }
 
-    Dialog(properties = DialogProperties(
+    Dialog(
+        properties = DialogProperties(
         dismissOnClickOutside = true,
         dismissOnBackPress = false,
-    ), onDismissRequest = {
+        ), onDismissRequest = {
         setShowDialog(false)
     }) {
         Surface(

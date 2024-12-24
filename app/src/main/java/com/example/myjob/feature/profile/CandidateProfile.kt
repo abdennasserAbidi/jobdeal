@@ -6,13 +6,10 @@ import android.graphics.Paint
 import android.graphics.pdf.PdfDocument
 import android.os.Build
 import android.os.Environment
+import android.util.Log
 import android.view.View
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -62,11 +59,9 @@ import androidx.navigation.NavController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
-import com.example.myjob.common.GenericSearch
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
-import com.example.myjob.domain.entities.Subject
 import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.navigation.Screen
 import kotlinx.coroutines.CoroutineScope
@@ -80,7 +75,6 @@ import java.io.FileOutputStream
 @Composable
 fun CandidateProfile(
     navController: NavController,
-    allSubjects: MutableList<Subject>,
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val expanded = remember { mutableStateListOf(true, false, false) }
@@ -88,9 +82,6 @@ fun CandidateProfile(
 
     val interactionSource = remember { MutableInteractionSource() }
     val user by profileViewModel.user.collectAsState()
-
-    val isSearch by profileViewModel.isSearch.collectAsState()
-    val isDateShowed by profileViewModel.isDateShowed.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -162,7 +153,7 @@ fun CandidateProfile(
                 PersonalCard(
                     profileViewModel,
                     updateUser = {
-                        GlobalEntries.user = it
+                        //GlobalEntries.user = it
                         navController.navigate(Screen.PersonalFormScreen.route)
                     })
             }
@@ -355,44 +346,6 @@ fun CandidateProfile(
                 }
             }
         }
-
-        DateContainer(
-            isDateShowed = isDateShowed,
-            changeDate = {
-                profileViewModel.changeBirthDate(it)
-            }, onDismiss = {
-                //isDateShowed = false
-                profileViewModel.changeVisibilityDate(false)
-            })
-
-        AnimatedVisibility(
-            visible = isSearch,
-            enter = slideInVertically(
-                initialOffsetY = { it }, // Slide from below the screen
-                animationSpec = tween(durationMillis = 600) // Set animation duration
-            ),
-            exit = slideOutVertically(
-                targetOffsetY = { it }, // Slide out upwards
-                animationSpec = tween(durationMillis = 600) // Set animation duration
-            )
-        ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                val names = allSubjects.map {
-                    it.libelly
-                }
-                GenericSearch(
-                    mListOfJobs = names,
-                    onDismissRequest = {
-                        profileViewModel.changeVisibilitySearch(false)
-                    },
-                    onSelectedBank = { item, index ->
-                        profileViewModel.changeVisibilitySearch(false)
-                        profileViewModel.changeTitleGeneric(item)
-                    },
-                    title = stringResource(id = R.string.activity_text)
-                )
-            }
-        }
     }
 
 
@@ -433,7 +386,6 @@ fun createPdf(lang: String, user: User): File {
 
     return file
 }
-
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -490,7 +442,7 @@ fun PersonalCard(
             )
         }
 
-        showUser.mapValues {
+        profileViewModel.getMapUser().mapValues {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

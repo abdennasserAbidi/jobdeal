@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.DEFAULT_DEGREE
 import com.example.myjob.domain.entities.DEFAULT_ROLE
 import com.example.myjob.domain.entities.DEFAULT_TYPE
@@ -44,6 +45,7 @@ class ProfileViewModel @Inject constructor(
 
     var switchValue = MutableStateFlow(true)
     var isSearch = MutableStateFlow(false)
+    var isCountryShowed = MutableStateFlow(false)
     var isDateShowed = MutableStateFlow(false)
 
     fun isFromLogin(fromLogin: Boolean) {
@@ -52,6 +54,12 @@ class ProfileViewModel @Inject constructor(
 
     fun changeVisibilitySearch(search: Boolean) {
         isSearch.update {
+            search
+        }
+    }
+
+    fun changeVisibilityCountry(search: Boolean) {
+        isCountryShowed.update {
             search
         }
     }
@@ -247,13 +255,19 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun getMapUser(): Map<String, String> {
+        return GlobalEntries.user.showUser(lang)
+    }
+
     val showUser = MutableStateFlow(mapOf<String, String>())
 
     private fun getUser(lang: String, id: Int) {
+
         viewModelScope.launch {
             getUserUseCase.execute(id).collect {
                 it.data?.let { u ->
                     user.update { u }
+                    GlobalEntries.user = u
                     sharedPreference.putString("username", u.fullName ?: "")
                     showUser.update {
                         u.showUser(lang)

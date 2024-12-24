@@ -90,6 +90,7 @@
     <string name="Grade_text">Grade</string>
     <string name="School_text">École</string>
     <string name="activity_text">Secteur d\'activité</string>
+    <string name="country_text">Pays</string>
     <string name="start_date_text">Date de début</string>
     <string name="end_date_text">Date de fin</string>
     <string name="study_still_text">En train d\'étudier</string>
@@ -115,7 +116,7 @@
     <string name="skipp_text">Skipp</string>
     <string name="next_text">Suivant</string>
     <string name="salary_range_text">Marge salariale:</string>
-
+    <string name="phone_text">Téléphone</string>
 
     <!--career form-->
     <string name="experience_text">Experience</string>

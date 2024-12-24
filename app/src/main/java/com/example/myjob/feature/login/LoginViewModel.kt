@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.DialogState
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.usecase.LoginUseCase
@@ -166,13 +167,15 @@ class LoginViewModel @Inject constructor(
             stateToken.update { ResourceState.LOADING }
             isProgressing.update { true }
             loginUseCase.execute(user).collect { res ->
+
                 stateToken.update { res.status }
                 isProgressing.update { false }
                 if (res.status == ResourceState.SUCCESS) {
                     sharedPreferences.putString("token", res.data?.token ?: "")
                     sharedPreferences.putString("role", res.data?.user?.role ?: "")
                     sharedPreferences.putInt("idUser", res.data?.user?.id ?: 0)
-
+                    sharedPreferences.putString("username", res.data?.user?.fullName ?: "")
+                    GlobalEntries.user = res.data?.user ?: User()
                     token.update { sharedPreferences.getString("token", "") ?: "" }
 
                     tokenNotEmpty.update { token.value.isNotEmpty() }

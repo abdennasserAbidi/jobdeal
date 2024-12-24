@@ -64,10 +64,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.NavController
 import com.example.myjob.R
-import com.example.myjob.common.CircularProgressBar
 import com.example.myjob.common.CustomDialog
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -123,6 +125,7 @@ fun SignUpScreen(
 
     var error by remember { mutableStateOf("") }
 
+    Log.i("saveUserRes", "SignUpScreen: ${saveUserRes.token}")
     LaunchedEffect(saveUserRes.token?.isNotEmpty()) {
         isProgressing = false
         if (saveUserRes.token?.isNotEmpty() == true) navController.navigate(Screen.HomeScreen.route)
@@ -624,8 +627,11 @@ fun SignUpScreen(
                                 if (!confirmPasswordVerified) activatedCheckPassword = true
 
                                 if (selectedIndex != -1 && checkAll && emailValidator && passwordValidator && confirmValidator) {
-                                    isProgressing = true
-                                    viewModel.saveUser(user)
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        isProgressing = true
+                                        delay(1000L)
+                                        viewModel.saveUser(user)
+                                    }
                                 }
                             }
                             .background(
@@ -679,20 +685,22 @@ fun SignUpScreen(
 
                     Card(
                         modifier = Modifier
-                            .size(200.dp)
+                            .size(150.dp)
                             .background(shape = RoundedCornerShape(30.dp), color = Color.White),
                         elevation = 15.dp,
                         shape = RoundedCornerShape(30.dp)
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(200.dp)
+                                .size(150.dp)
                                 .padding(16.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(70.dp),
-                                color = Blue,
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .padding(20.dp),
+                                color = colorResource(id = R.color.whatsapp),
                                 strokeWidth = 8.dp,
                                 trackColor = Color.LightGray,
                                 strokeCap = StrokeCap.Round

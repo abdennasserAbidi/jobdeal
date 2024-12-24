@@ -70,6 +70,9 @@ import com.example.myjob.common.CustomDialog
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.signup.AddPassword
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -398,8 +401,11 @@ fun LoginScreen(
                                 if (!emailVerified || !passwordVerified) activatedCheck = true
 
                                 if (s && p) {
-                                    isProgressing = true
-                                    viewModel.login(user)
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        isProgressing = true
+                                        delay(1000L)
+                                        viewModel.login(user)
+                                    }
                                 }
 
                             }
@@ -533,20 +539,22 @@ fun LoginScreen(
 
                 Card(
                     modifier = Modifier
-                        .size(200.dp)
+                        .size(150.dp)
                         .background(shape = RoundedCornerShape(30.dp), color = Color.White),
                     elevation = 15.dp,
                     shape = RoundedCornerShape(30.dp)
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(200.dp)
+                            .size(150.dp)
                             .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(70.dp),
-                            color = Color.Blue,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .padding(20.dp),
+                            color = colorResource(id = R.color.whatsapp),
                             strokeWidth = 8.dp,
                             trackColor = Color.LightGray,
                             strokeCap = StrokeCap.Round

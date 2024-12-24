@@ -9,6 +9,7 @@ data class User(
     var companyName: String? = "",
     var phone: String? = "",
     var country: String? = "",
+    var newCountry: String? = "",
     var role: String? = "Choose type of user",
     var email: String? = "abidi.baha@gmail.com",
     var fullName: String? = "$firstName $lastName",
@@ -103,6 +104,7 @@ data class User(
 
         val nameValid = fullName?.isNotEmpty() == true
         val addressValid = !address.isNullOrEmpty()
+        val newCountryValid = !newCountry.isNullOrEmpty()
         val phoneValid = !phone.isNullOrEmpty()
         val countryValid = !country.isNullOrEmpty()
         val companyNameValid = !companyName.isNullOrEmpty()
@@ -160,6 +162,7 @@ data class User(
         if (preferredActivitySectorValid) mapUser[listTag[10]] = preferredActivitySector ?: ""
         if (phoneValid) mapUser[listTag[11]] = phone ?: ""
         if (countryValid) mapUser[listTag[12]] = country ?: ""
+        if (newCountryValid) mapUser[listTag[13]] = newCountry ?: ""
 
         return mapUser
     }

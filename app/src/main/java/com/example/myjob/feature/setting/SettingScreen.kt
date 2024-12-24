@@ -1,6 +1,9 @@
 package com.example.myjob.feature.setting
 
+import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
@@ -48,6 +52,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -55,6 +60,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.base.LanguageHelper
+import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.getFileNameFromUri
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.feature.navigation.Screen
 
@@ -69,11 +76,13 @@ fun SettingScreen(
     val language by settingViewModel.language.collectAsState()
     val username by settingViewModel.username.collectAsState()
     val userFullName by settingViewModel.userFullName.collectAsState()
+    //val userFullName = GlobalEntries.user.fullName ?: ""
 
     val interactionSource = remember { MutableInteractionSource() }
 
     var lc by remember { mutableStateOf(if (language == "English") "en" else "fr") }
 
+    var isUploaded by remember { mutableStateOf(false) }
     var expend by remember { mutableStateOf(false) }
 
     val lifecycleEvent = rememberLifecycleEvent()
@@ -150,9 +159,10 @@ fun SettingScreen(
                         interactionSource = interactionSource,
                         indication = null
                     ) {
-                      navController.popBackStack()
+                        navController.popBackStack()
                     },
-                contentDescription = "")
+                contentDescription = ""
+            )
 
             Text(
                 text = "Edit profile",
@@ -177,71 +187,125 @@ fun SettingScreen(
             )
         }
 
+        var selectedPdfUri by remember { mutableStateOf<Uri?>(null) }
+        var pdfName by remember { mutableStateOf<String?>(null) }
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(150.dp)
-                .padding(top = 20.dp)
-                .padding(horizontal = 10.dp),
-            elevation = 5.dp
-        ) {
+        // Launcher for opening a file picker
+        val pdfPickerLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument(),
+            onResult = { uri ->
+                // Handle the selected PDF URI
+                selectedPdfUri = uri
+                pdfName = uri?.let { context.getFileNameFromUri(it) } // Get file name
+            }
+        )
+
+        if (selectedPdfUri != null) {
             Box(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp)
+                    .padding(top = 20.dp)
+                    .padding(horizontal = 10.dp)
+                    .border(
+                        1.dp,
+                        shape = RoundedCornerShape(3.dp),
+                        color = colorResource(id = R.color.whatsapp)
+                    )
+                    .background(Color.Transparent),
+                contentAlignment = Alignment.Center
             ) {
 
-                Image(
-                    painter = painterResource(id = R.drawable.cvtable),
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    contentDescription = ""
-                )
+                Column {
+                    Icon(
+                        painter = painterResource(id = R.drawable.pdf),
+                        tint = Color.Red,
+                        modifier = Modifier.size(30.dp),
+                        contentDescription = ""
+                    )
+                    Text(
+                        text = pdfName ?: "",
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 5.dp)
+                    )
+                }
 
+            }
+
+        } else {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp)
+                    .padding(top = 20.dp)
+                    .padding(horizontal = 10.dp)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
+                        isUploaded = true
+                        pdfPickerLauncher.launch(arrayOf("application/pdf"))
+                    },
+                elevation = 5.dp
+            ) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color.White,       // Start color
-                                    Color.White,      // Keep the first half white
-                                    Color.White.copy(alpha = 0.8f),     // Keep the first half white
-                                    Color.Transparent // End transparent
-                                ),
-                                startX = 0f,         // Start at the left
-                                endX = 1000f         // End at the right (adjust as needed)
-                            )
-                        )
+                    modifier = Modifier.fillMaxSize()
                 ) {
 
-                    Column(
+                    Image(
+                        painter = painterResource(id = R.drawable.cvtable),
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        contentDescription = ""
+                    )
+
+                    Box(
                         modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .padding(start = 20.dp)
+                            .fillMaxSize()
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(
+                                        Color.White,       // Start color
+                                        Color.White,      // Keep the first half white
+                                        Color.White.copy(alpha = 0.8f),     // Keep the first half white
+                                        Color.Transparent // End transparent
+                                    ),
+                                    startX = 0f,         // Start at the left
+                                    endX = 1000f         // End at the right (adjust as needed)
+                                )
+                            )
                     ) {
 
-                        Text(
-                            text = stringResource(id = R.string.my_resume_text),
-                            color = colorResource(id = R.color.whatsapp),
-                            modifier = Modifier.padding(top = 10.dp),
-                            style = TextStyle(
-                                fontSize = 16.sp,
-                                fontFamily = FontFamily(
-                                    Font(
-                                        R.font.rubikbold,
-                                        weight = FontWeight.Bold
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .padding(start = 20.dp)
+                        ) {
+
+                            Text(
+                                text = stringResource(id = R.string.my_resume_text),
+                                color = colorResource(id = R.color.whatsapp),
+                                modifier = Modifier.padding(top = 10.dp),
+                                style = TextStyle(
+                                    fontSize = 16.sp,
+                                    fontFamily = FontFamily(
+                                        Font(
+                                            R.font.rubikbold,
+                                            weight = FontWeight.Bold
+                                        )
                                     )
                                 )
                             )
-                        )
 
-                        Text(
-                            text = stringResource(id = R.string.upload_resume_text),
-                            color = Color.Gray,
-                            modifier = Modifier.padding(top = 10.dp)
-                        )
+                            Text(
+                                text = stringResource(id = R.string.upload_resume_text),
+                                color = Color.Gray,
+                                modifier = Modifier.padding(top = 10.dp)
+                            )
+                        }
+
                     }
-
                 }
             }
         }
@@ -283,7 +347,10 @@ fun SettingScreen(
                     .fillMaxWidth()
                     .padding(vertical = 15.dp, horizontal = 10.dp)
             ) {
-                Text(text = "Valider votre profile", modifier = Modifier.align(Alignment.CenterStart))
+                Text(
+                    text = "Valider votre profile",
+                    modifier = Modifier.align(Alignment.CenterStart)
+                )
                 Icon(
                     imageVector = Icons.Default.ArrowForwardIos,
                     modifier = Modifier

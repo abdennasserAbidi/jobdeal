@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import com.example.myjob.domain.entities.HOME_ENTITY
+import com.example.myjob.domain.entities.HomeEntity
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.home.GetAllUserUseCase
 import com.example.myjob.local.database.SharedPreference
@@ -24,6 +26,7 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     val users = MutableStateFlow<List<User>>(emptyList())
+    val listHomeEntity = MutableStateFlow(HOME_ENTITY)
 
     var currentProfile by mutableStateOf(User())
 

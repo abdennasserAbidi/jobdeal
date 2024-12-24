@@ -25,7 +25,7 @@ class SettingViewModel @Inject constructor(
         val fullName = sharedPreferences.getString("username", "") ?: ""
         userFullName.update { fullName }
         if (fullName.isNotEmpty()) {
-            val s = fullName.split(" ")
+            val s = fullName.trimStart().split(" ")
             val name = "${s[0][0].uppercaseChar()}${s[1][0].uppercaseChar()}"
             username.update { name }
         }

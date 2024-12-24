@@ -5,6 +5,7 @@ import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myjob.base.reources.ResourceState
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.usecase.SaveUserUseCase
@@ -172,7 +173,13 @@ class SignUpViewModel @Inject constructor(
         viewModelScope.launch {
             saveUserUseCase.execute(user).collect { res ->
                 if (res.status == ResourceState.SUCCESS) {
+                    Log.i("saveUserRes", "saveUser: ${res.data?.user}")
                     sharedPreferences.putString("token", res.data?.token ?: "")
+                    sharedPreferences.putString("role", res.data?.user?.role ?: "")
+                    sharedPreferences.putInt("idUser", res.data?.user?.id ?: 0)
+                    sharedPreferences.putString("username", res.data?.user?.fullName ?: "")
+
+                    GlobalEntries.user = res.data?.user ?: User()
                     token.update { sharedPreferences.getString("token", "") ?: "" }
 
                     saveUserRes.update { res.data ?: LoginResponse() }

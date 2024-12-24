@@ -90,6 +90,7 @@
     <string name="Grade_text">Grade</string>
     <string name="School_text">School</string>
     <string name="activity_text">Activity sector</string>
+    <string name="country_text">Country</string>
     <string name="start_date_text">Start date</string>
     <string name="end_date_text">End date</string>
     <string name="study_still_text">I\'m still studying</string>
@@ -114,6 +115,8 @@
     <string name="disponibility2_text">Less than 3 months</string>
     <string name="disponibility3_text">In 3 months</string>
     <string name="disponibility4_text">More than 3 months</string>
+
+    <string name="phone_text">Phone</string>
 
     <string name="skipp_text">Skipp</string>
     <string name="next_text">Next</string>

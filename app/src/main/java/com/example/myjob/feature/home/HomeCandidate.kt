@@ -1,6 +1,7 @@
 package com.example.myjob.feature.home
 
 import android.util.Log
+import android.view.View
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -24,6 +25,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -36,7 +39,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -60,6 +65,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myjob.R
+import com.example.myjob.domain.entities.HOME_ENTITY
+import com.example.myjob.domain.entities.HomeEntity
 import com.example.myjob.feature.favorites.Button3D
 import com.example.myjob.feature.favorites.DuolingoButtonStyle
 import com.example.myjob.feature.favorites.New3D
@@ -70,11 +77,11 @@ fun HomeCandidate(navController: NavController, homeViewModel: HomeViewModel = h
 
     val interactionSource = remember { MutableInteractionSource() }
 
-    //HomeCandidatePreview(navController, interactionSource, homeViewModel)
+    HomeCandidatePreview(navController, interactionSource, homeViewModel)
 
-    HomeCandidate2 {
+    /*HomeCandidate2 {
         navController.navigate(Screen.FavoritesScreen.route)
-    }
+    }*/
     //HomeCandidate1()
 }
 
@@ -84,6 +91,7 @@ fun HomeCandidatePreview(
     interactionSource: MutableInteractionSource,
     homeViewModel: HomeViewModel
 ) {
+    val listHomeEntity by homeViewModel.listHomeEntity.collectAsState()
     Scaffold(
         topBar = {
             Card(
@@ -122,353 +130,83 @@ fun HomeCandidatePreview(
             }
         }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(it)
-                .verticalScroll(rememberScrollState())
-        ) {
-            //My invitation contract
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 10.dp),
-                elevation = 5.dp
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
 
-                    Image(
-                        painter = painterResource(id = R.drawable.cvtable),
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                        contentDescription = ""
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color.White,       // Start color
-                                        Color.White,      // Keep the first half white
-                                        Color.White.copy(alpha = 0.8f),     // Keep the first half white
-                                        Color.Transparent // End transparent
-                                    ),
-                                    startX = 0f,         // Start at the left
-                                    endX = 1000f         // End at the right (adjust as needed)
-                                )
-                            )
-                    ) {
-
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .padding(start = 20.dp)
-                        ) {
-
-                            Text(
-                                text = stringResource(id = R.string.my_resume_text),
-                                color = colorResource(id = R.color.whatsapp),
-                                modifier = Modifier.padding(top = 10.dp),
-                                style = TextStyle(
-                                    fontSize = 16.sp,
-                                    fontFamily = FontFamily(
-                                        Font(
-                                            R.font.rubikbold,
-                                            weight = FontWeight.Bold
-                                        )
-                                    )
-                                )
-                            )
-
-                            Text(
-                                text = stringResource(id = R.string.upload_resume_text),
-                                color = Color.Gray,
-                                modifier = Modifier.padding(top = 10.dp)
-                            )
-                        }
-
-                    }
+        LazyColumn(modifier = Modifier
+            .fillMaxSize()
+            .padding(it)) {
+            itemsIndexed(
+                items = listHomeEntity,
+                key = { i, _ ->
+                    View.generateViewId()
                 }
-            }
+            ) { index, item ->
 
-            //My invitation freelance
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 10.dp),
-                elevation = 5.dp
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize()
+                //My invitation contract
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .padding(top = 10.dp)
+                        .padding(horizontal = 10.dp),
+                    elevation = 5.dp
                 ) {
-
-                    Image(
-                        painter = painterResource(id = R.drawable.cvtable),
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                        contentDescription = ""
-                    )
-
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color.White,       // Start color
-                                        Color.White,      // Keep the first half white
-                                        Color.White.copy(alpha = 0.8f),     // Keep the first half white
-                                        Color.Transparent // End transparent
-                                    ),
-                                    startX = 0f,         // Start at the left
-                                    endX = 1000f         // End at the right (adjust as needed)
-                                )
-                            )
+                        modifier = Modifier.fillMaxSize()
                     ) {
 
-                        Column(
+                        Image(
+                            painter = painterResource(id = item.img),
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                            contentDescription = ""
+                        )
+
+                        Box(
                             modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .padding(start = 20.dp)
+                                .fillMaxSize()
+                                .background(
+                                    Brush.horizontalGradient(
+                                        colors = listOf(
+                                            Color.White,       // Start color
+                                            Color.White,      // Keep the first half white
+                                            Color.White.copy(alpha = 0.8f),     // Keep the first half white
+                                            Color.Transparent // End transparent
+                                        ),
+                                        startX = 0f,         // Start at the left
+                                        endX = 1000f         // End at the right (adjust as needed)
+                                    )
+                                )
                         ) {
 
-                            Text(
-                                text = stringResource(id = R.string.my_resume_text),
-                                color = colorResource(id = R.color.whatsapp),
-                                modifier = Modifier.padding(top = 10.dp),
-                                style = TextStyle(
-                                    fontSize = 16.sp,
-                                    fontFamily = FontFamily(
-                                        Font(
-                                            R.font.rubikbold,
-                                            weight = FontWeight.Bold
+                            Column(
+                                modifier = Modifier
+                                    .align(Alignment.CenterStart)
+                                    .padding(start = 20.dp)
+                            ) {
+
+                                Text(
+                                    text = item.title,
+                                    color = colorResource(id = R.color.whatsapp),
+                                    modifier = Modifier.padding(top = 10.dp),
+                                    style = TextStyle(
+                                        fontSize = 16.sp,
+                                        fontFamily = FontFamily(
+                                            Font(
+                                                R.font.rubikbold,
+                                                weight = FontWeight.Bold
+                                            )
                                         )
                                     )
                                 )
-                            )
 
-                            Text(
-                                text = stringResource(id = R.string.upload_resume_text),
-                                color = Color.Gray,
-                                modifier = Modifier.padding(top = 10.dp)
-                            )
+                                Text(
+                                    text = item.subTitle,
+                                    color = Color.Gray,
+                                    modifier = Modifier.padding(top = 10.dp)
+                                )
+                            }
+
                         }
-
-                    }
-                }
-            }
-
-            //Formations
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 10.dp),
-                elevation = 5.dp
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-
-                    Image(
-                        painter = painterResource(id = R.drawable.cvtable),
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                        contentDescription = ""
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color.White,       // Start color
-                                        Color.White,      // Keep the first half white
-                                        Color.White.copy(alpha = 0.8f),     // Keep the first half white
-                                        Color.Transparent // End transparent
-                                    ),
-                                    startX = 0f,         // Start at the left
-                                    endX = 1000f         // End at the right (adjust as needed)
-                                )
-                            )
-                    ) {
-
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .padding(start = 20.dp)
-                        ) {
-
-                            Text(
-                                text = stringResource(id = R.string.my_resume_text),
-                                color = colorResource(id = R.color.whatsapp),
-                                modifier = Modifier.padding(top = 10.dp),
-                                style = TextStyle(
-                                    fontSize = 16.sp,
-                                    fontFamily = FontFamily(
-                                        Font(
-                                            R.font.rubikbold,
-                                            weight = FontWeight.Bold
-                                        )
-                                    )
-                                )
-                            )
-
-                            Text(
-                                text = stringResource(id = R.string.upload_resume_text),
-                                color = Color.Gray,
-                                modifier = Modifier.padding(top = 10.dp)
-                            )
-                        }
-
-                    }
-                }
-            }
-
-            //Event
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 10.dp),
-                elevation = 5.dp
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-
-                    Image(
-                        painter = painterResource(id = R.drawable.cvtable),
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                        contentDescription = ""
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color.White,       // Start color
-                                        Color.White,      // Keep the first half white
-                                        Color.White.copy(alpha = 0.8f),     // Keep the first half white
-                                        Color.Transparent // End transparent
-                                    ),
-                                    startX = 0f,         // Start at the left
-                                    endX = 1000f         // End at the right (adjust as needed)
-                                )
-                            )
-                    ) {
-
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .padding(start = 20.dp)
-                        ) {
-
-                            Text(
-                                text = stringResource(id = R.string.my_resume_text),
-                                color = colorResource(id = R.color.whatsapp),
-                                modifier = Modifier.padding(top = 10.dp),
-                                style = TextStyle(
-                                    fontSize = 16.sp,
-                                    fontFamily = FontFamily(
-                                        Font(
-                                            R.font.rubikbold,
-                                            weight = FontWeight.Bold
-                                        )
-                                    )
-                                )
-                            )
-
-                            Text(
-                                text = stringResource(id = R.string.upload_resume_text),
-                                color = Color.Gray,
-                                modifier = Modifier.padding(top = 10.dp)
-                            )
-                        }
-
-                    }
-                }
-            }
-
-            //internship
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 10.dp),
-                elevation = 5.dp
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-
-                    Image(
-                        painter = painterResource(id = R.drawable.cvtable),
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                        contentDescription = ""
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color.White,       // Start color
-                                        Color.White,      // Keep the first half white
-                                        Color.White.copy(alpha = 0.8f),     // Keep the first half white
-                                        Color.Transparent // End transparent
-                                    ),
-                                    startX = 0f,         // Start at the left
-                                    endX = 1000f         // End at the right (adjust as needed)
-                                )
-                            )
-                    ) {
-
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .padding(start = 20.dp)
-                        ) {
-
-                            Text(
-                                text = stringResource(id = R.string.my_resume_text),
-                                color = colorResource(id = R.color.whatsapp),
-                                modifier = Modifier.padding(top = 10.dp),
-                                style = TextStyle(
-                                    fontSize = 16.sp,
-                                    fontFamily = FontFamily(
-                                        Font(
-                                            R.font.rubikbold,
-                                            weight = FontWeight.Bold
-                                        )
-                                    )
-                                )
-                            )
-
-                            Text(
-                                text = stringResource(id = R.string.upload_resume_text),
-                                color = Color.Gray,
-                                modifier = Modifier.padding(top = 10.dp)
-                            )
-                        }
-
                     }
                 }
             }

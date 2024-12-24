@@ -16,12 +16,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -32,7 +30,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,8 +37,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -51,16 +46,18 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.example.myjob.base.MyApp
-import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.FileReader
 import com.example.myjob.common.GlobalEntries.langState
 import com.example.myjob.common.VoiceToTextParser
+import com.example.myjob.common.default
 import com.example.myjob.common.loadJSONFromAsset
-import com.example.myjob.common.rememberLifecycleEvent
+import com.example.myjob.common.phonekit.toCountryList
 import com.example.myjob.domain.entities.AllCities
 import com.example.myjob.domain.entities.AllCompanies
 import com.example.myjob.domain.entities.AllFields
 import com.example.myjob.domain.entities.AllSchools
-import com.example.myjob.domain.entities.School
+import com.example.myjob.domain.entities.CountryPickerViewState
+import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.feature.favorites.CandidateFavorites
 import com.example.myjob.feature.favorites.CompanyFavorites
@@ -79,11 +76,9 @@ import com.example.myjob.feature.profile.CompanyProfile
 import com.example.myjob.feature.profile.EducationForm
 import com.example.myjob.feature.profile.PersonalForm
 import com.example.myjob.feature.profile.ProfileScreen
-import com.example.myjob.feature.profile.ProfileViewModel
 import com.example.myjob.feature.setting.SettingScreen
 import com.example.myjob.feature.signup.SignUpScreen
 import com.example.myjob.feature.splash.SplashScreen
-import com.example.myjob.feature.validatecompany.gallery.GalleryScreen
 import com.example.myjob.local.database.SharedPreference
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
@@ -93,6 +88,8 @@ import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -142,7 +139,8 @@ class MainActivity : ComponentActivity() {
     private fun generateStudyFieldList() {
         CoroutineScope(Dispatchers.Default).launch {
             langState.collect {
-                val nameJson = if (it == "English" || it == "Anglais") "studyfield.json" else "studyfieldfr.json"
+                val nameJson =
+                    if (it == "English" || it == "Anglais") "studyfield.json" else "studyfieldfr.json"
 
                 try {
 
@@ -206,11 +204,29 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private val supervisorJob = SupervisorJob()
+    private val scope = CoroutineScope(supervisorJob + Dispatchers.Main)
+    private val viewState: MutableStateFlow<CountryPickerViewState> = MutableStateFlow(
+        CountryPickerViewState(emptyList())
+    )
+    private var listCountry = emptyList<NewCountry>()
+
+    private fun fetchData() = scope.launch {
+        val countries = default {
+            FileReader.readAssetFile(this@MainActivity, "countries.json").toCountryList()
+        }
+        listCountry = countries
+        viewState.value = CountryPickerViewState(countries)
+    }
+
+
     @OptIn(ExperimentalPermissionsApi::class)
     @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        fetchData()
 
         allSubjects = (applicationContext as MyApp).allSubjectList
         //listCountries = (applicationContext as MyApp).listNameCountries
@@ -275,9 +291,14 @@ class MainActivity : ComponentActivity() {
 
 
             Scaffold(bottomBar = {
-                if (isVisibleNav) TabView(tabBarItems, defaultIndex = selectedTabIndex, changeIndex = {
-                    selectedTabIndex =  it
-                },navController = navController)
+                if (isVisibleNav) TabView(
+                    tabBarItems,
+                    defaultIndex = selectedTabIndex,
+                    changeIndex = {
+                        selectedTabIndex = it
+                    },
+                    navController = navController
+                )
             }) { padding ->
                 Log.i("", "onCreate: $padding")
 
@@ -333,7 +354,7 @@ class MainActivity : ComponentActivity() {
                         route = Screen.ForgotPasswordScreen.route,
                         deepLinks = listOf(
                             navDeepLink {
-                                uriPattern = "http://192.168.170.209/{token}"
+                                uriPattern = "http://192.168.68.209/{token}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),
@@ -371,12 +392,14 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = false
                         //ProfileScreen(navController)
                         if (role == "Company" || role == "Entreprise") CompanyProfile(navController)
-                        else CandidateProfile(navController, allSubjects)
+                        else CandidateProfile(navController)
                     }
 
                     composable(route = Screen.FavoritesScreen.route) {
                         isVisibleNav = true
-                        if (role == "Company" || role == "Entreprise") CompanyFavorites(navController)
+                        if (role == "Company" || role == "Entreprise") CompanyFavorites(
+                            navController
+                        )
                         else CandidateFavorites(navController)
                     }
 
@@ -420,7 +443,11 @@ class MainActivity : ComponentActivity() {
 
                     composable(route = Screen.PersonalFormScreen.route) {
                         isVisibleNav = false
-                        PersonalForm(navController = navController)
+                        PersonalForm(
+                            navController = navController,
+                            list = listCountry,
+                            allSubjects = allSubjects
+                        )
                     }
 
                     composable(route = Screen.EducationScreen.route) {
@@ -450,9 +477,11 @@ class MainActivity : ComponentActivity() {
 // This is a wrapper view that allows us to easily and cleanly
 // reuse this component in any future project
 @Composable
-fun TabView(tabBarItems: List<TabBarItem>, defaultIndex: Int = 0,
-            changeIndex: (index: Int) -> Unit,
-            navController: NavController) {
+fun TabView(
+    tabBarItems: List<TabBarItem>, defaultIndex: Int = 0,
+    changeIndex: (index: Int) -> Unit,
+    navController: NavController
+) {
     //var selectedTabIndex by rememberSaveable { mutableStateOf(defaultIndex) }
 
     NavigationBar {
