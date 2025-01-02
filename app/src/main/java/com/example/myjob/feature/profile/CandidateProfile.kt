@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -28,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -40,7 +42,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -60,6 +64,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.pdf.PdfViewer
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
@@ -70,7 +75,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
+import java.io.InputStream
 
+@OptIn(ExperimentalFoundationApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CandidateProfile(
@@ -82,6 +89,8 @@ fun CandidateProfile(
 
     val interactionSource = remember { MutableInteractionSource() }
     val user by profileViewModel.user.collectAsState()
+
+    var showPdf by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -232,14 +241,6 @@ fun CandidateProfile(
             ) {
                 CareerFilterCard(
                     profileViewModel,
-                    expanded[2],
-                    enableNextCard[2],
-                    expandDetail = {
-                        expanded[2] = true
-                    },
-                    skipp = {
-                        expanded[2] = false
-                    },
                     next = { withDetail ->
                         val destination = if (withDetail) Screen.CareerScreen.route
                         else {
@@ -251,6 +252,10 @@ fun CandidateProfile(
                         navController.navigate(destination)
                     })
             }
+
+            val context = LocalContext.current
+
+            val langState by profileViewModel.langState.collectAsState()
 
             Row(
                 modifier = Modifier
@@ -265,7 +270,7 @@ fun CandidateProfile(
                             interactionSource = interactionSource,
                             indication = null
                         ) {
-
+                            showPdf = true
                         }
                         .background(
                             color = colorResource(id = R.color.whatsapp),
@@ -295,18 +300,6 @@ fun CandidateProfile(
                     )
                 }
 
-                val context = LocalContext.current
-
-                val langState by profileViewModel.langState.collectAsState()
-                val file = createPdf(langState, user)
-                val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
-
-                val intent = Intent(Intent.ACTION_SEND).apply {
-                    type = "application/pdf"
-                    putExtra(Intent.EXTRA_STREAM, uri)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-
                 Row(
                     modifier = Modifier
                         .wrapContentSize()
@@ -315,6 +308,14 @@ fun CandidateProfile(
                             interactionSource = interactionSource,
                             indication = null
                         ) {
+                            val file = createPdf(langState, user)
+                            val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+                            val intent = Intent(Intent.ACTION_SEND).apply {
+                                type = "application/pdf"
+                                putExtra(Intent.EXTRA_STREAM, uri)
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+
                             context.startActivity(Intent.createChooser(intent, "Share PDF"))
                         }
                         .background(
@@ -343,6 +344,51 @@ fun CandidateProfile(
                             fontWeight = FontWeight.Bold
                         )
                     )
+                }
+            }
+        }
+
+
+        if (showPdf) {
+            val langState by profileViewModel.langState.collectAsState()
+            val file = createPdf(langState, user)
+
+            var isLoading by remember { mutableStateOf(false) }
+            var currentLoadingPage by remember { mutableStateOf<Int?>(null) }
+            var pageCount by remember { mutableStateOf<Int?>(null) }
+
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                PdfViewer(
+                    modifier = Modifier.fillMaxSize(),
+                    pdfResId = file,
+                    loadingListener = { loading, currentPage, maxPage ->
+                        isLoading = loading
+                        if (currentPage != null) currentLoadingPage = currentPage
+                        if (maxPage != null) pageCount = maxPage
+                    }
+                )
+                if (isLoading) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        LinearProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 30.dp),
+                            progress = if (currentLoadingPage == null || pageCount == null) 0f
+                            else currentLoadingPage!!.toFloat() / pageCount!!.toFloat()
+                        )
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.End)
+                                .padding(top = 5.dp)
+                                .padding(horizontal = 30.dp),
+                            text = "${currentLoadingPage ?: "-"} pages loaded/${pageCount ?: "-"} total pages"
+                        )
+                    }
                 }
             }
         }
@@ -571,10 +617,6 @@ fun EducationCard(
 @Composable
 fun CareerFilterCard(
     profileViewModel: ProfileViewModel,
-    isExpanded: Boolean,
-    enableCard: Boolean,
-    expandDetail: () -> Unit,
-    skipp: () -> Unit,
     next: (withDetail: Boolean) -> Unit
 ) {
 
@@ -586,7 +628,6 @@ fun CareerFilterCard(
     profileViewModel.getAllExperience(user.id ?: 0)
     val interactionSource = remember { MutableInteractionSource() }
 
-    val color = if (enableCard) Color.White else Color.LightGray
     Row(
         modifier = Modifier
             .fillMaxWidth()

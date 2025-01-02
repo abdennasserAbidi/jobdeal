@@ -169,7 +169,6 @@ fun CareerFormScreen(
                                 interactionSource = interactionSource,
                                 indication = null
                             ) {
-                                Log.i("hahijarrebtrah", "3: $id")
                                 val experienceToAdd = Experience(
                                     id = id,
                                     title = titleExp,
@@ -178,7 +177,8 @@ fun CareerFormScreen(
                                     dateEnd = endDate,
                                     place = locationExp,
                                     salary = defaultSalary,
-                                    type = typeEmploymentExp
+                                    type = typeEmploymentExp,
+                                    typeContract = typeContractExp
                                 )
 
                                 profileViewModel.saveExperience(experienceToAdd)

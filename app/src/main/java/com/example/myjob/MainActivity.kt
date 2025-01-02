@@ -354,7 +354,7 @@ class MainActivity : ComponentActivity() {
                         route = Screen.ForgotPasswordScreen.route,
                         deepLinks = listOf(
                             navDeepLink {
-                                uriPattern = "http://192.168.68.209/{token}"
+                                uriPattern = "http://192.168.1.13/{token}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),

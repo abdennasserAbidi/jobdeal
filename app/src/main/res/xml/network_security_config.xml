@@ -19,5 +19,6 @@
         <domain includeSubdomains="true">192.168.1.27</domain> <!-- Your server IP -->
         <domain includeSubdomains="true">192.168.170.209</domain> <!-- Your server IP -->
         <domain includeSubdomains="true">192.168.68.209</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.1.13</domain> <!-- Your server IP -->
     </domain-config>
 </network-security-config>
