@@ -55,6 +55,15 @@ interface ApiService {
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
     ): GenericResponse<Experience>
+    @GET("auth/getAllExp")
+    suspend fun getAllExp(
+        @Query("id") id: Int
+    ): List<Experience>
+
+    @GET("auth/getAllEduc")
+    suspend fun getAllEduc(
+        @Query("id") id: Int
+    ): List<Educations>
 
     @POST("auth/addEducation")
     suspend fun saveEducation(@Body educations: Educations): UserResponse

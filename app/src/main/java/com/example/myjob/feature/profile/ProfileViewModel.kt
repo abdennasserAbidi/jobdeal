@@ -1,5 +1,6 @@
 package com.example.myjob.feature.profile
 
+import android.graphics.pdf.PdfDocument
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,6 +20,8 @@ import com.example.myjob.domain.usecase.RemoveExperienceUseCase
 import com.example.myjob.domain.usecase.SaveEducationUseCase
 import com.example.myjob.domain.usecase.SaveExperienceUseCase
 import com.example.myjob.domain.usecase.SavePersonalUseCase
+import com.example.myjob.domain.usecase.home.GetAllEducUseCase
+import com.example.myjob.domain.usecase.home.GetAllExpUseCase
 import com.example.myjob.local.database.SharedPreference
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,6 +38,8 @@ class ProfileViewModel @Inject constructor(
     private val sharedPreference: SharedPreference,
     private val saveExperienceUseCase: SaveExperienceUseCase,
     private val getAllExperienceUseCase: GetAllExperienceUseCase,
+    private val getAllExpUseCase: GetAllExpUseCase,
+    private val getAllEducUseCase: GetAllEducUseCase,
     private val saveEducationUseCase: SaveEducationUseCase,
     private val getAllEducationUseCase: GetAllEducationUseCase,
     private val savePersonalUseCase: SavePersonalUseCase,
@@ -42,6 +47,26 @@ class ProfileViewModel @Inject constructor(
     private val removeExperienceUseCase: RemoveExperienceUseCase,
     private val removeEducationUseCase: RemoveEducationUseCase
 ) : ViewModel() {
+
+    ///////////////////////////////////////////////////////////////////////////
+    // PDF
+    ///////////////////////////////////////////////////////////////////////////
+
+    val pageIndex = MutableStateFlow(1)
+
+    fun changeIndex() {
+        Log.i("pageIndex", "before: ${pageIndex.value}")
+        pageIndex.update {
+            it + 1
+        }
+        Log.i("pageIndex", "after: ${pageIndex.value}")
+    }
+
+    fun createPage(pdfDocument: PdfDocument, pageIndex: Int): PdfDocument.Page {
+        val pageInfo = PdfDocument.PageInfo.Builder(300, 600, pageIndex).create()
+        return pdfDocument.startPage(pageInfo)
+    }
+
 
     var switchValue = MutableStateFlow(true)
     var isSearch = MutableStateFlow(false)
@@ -286,6 +311,7 @@ class ProfileViewModel @Inject constructor(
     val degreeList = MutableStateFlow(DEFAULT_DEGREE)
 
     val educations = MutableStateFlow<List<Educations>>(emptyList())
+    val allEduc = MutableStateFlow<List<Educations>>(emptyList())
 
     private val _education: MutableStateFlow<PagingData<Educations>> =
         MutableStateFlow(value = PagingData.empty())
@@ -380,6 +406,17 @@ class ProfileViewModel @Inject constructor(
         description.update { item.description ?: "" }
     }
 
+    fun getAllEduc(idUser: Int) {
+        viewModelScope.launch {
+            getAllEducUseCase.execute(idUser)
+                .collectLatest { res ->
+                    allEduc.update {
+                        res.data ?: emptyList()
+                    }
+                }
+        }
+    }
+
     fun getAllEducations(idUser: Int) {
         viewModelScope.launch {
             getAllEducationUseCase.execute(idUser).collectLatest { res ->
@@ -439,6 +476,7 @@ class ProfileViewModel @Inject constructor(
         MutableStateFlow(value = PagingData.empty())
     val experience: MutableStateFlow<PagingData<Experience>> get() = _experience
 
+    val allExp: MutableStateFlow<List<Experience>> = MutableStateFlow(emptyList())
     val exp: MutableStateFlow<List<Experience>> = MutableStateFlow(emptyList())
     val exp1: MutableStateFlow<Experience> = MutableStateFlow(Experience())
 
@@ -460,6 +498,8 @@ class ProfileViewModel @Inject constructor(
     var companyExp = MutableStateFlow("")
     var typeEmploymentExp = MutableStateFlow("")
     var typeContractExp = MutableStateFlow("")
+    var freelanceFeeType = MutableStateFlow("Hourly")
+    var hourlyRateExp = MutableStateFlow(10)
     var birthDate = MutableStateFlow("")
     var endDate = MutableStateFlow("")
     var salary = MutableStateFlow(0)
@@ -497,8 +537,12 @@ class ProfileViewModel @Inject constructor(
             titleExp.update { title ?: "" }
             locationExp.update { place ?: "" }
             companyExp.update { companyName ?: "" }
-            typeEmploymentExp.update { type ?: "" }
+
+            val typeLang = if (lang == "French") "Contrat" else "Contract"
+            typeEmploymentExp.update { if (type.isNullOrEmpty()) typeLang else type }
+            freelanceFeeType.update { freelanceFee ?: "Hourly" }
             typeContractExp.update { typeContract ?: "" }
+            hourlyRateExp.update { hourlyRate ?: 10 }
             birthDate.update { dateStart ?: "" }
             endDate.update { dateEnd ?: "" }
         }
@@ -521,6 +565,14 @@ class ProfileViewModel @Inject constructor(
         typeEmploymentExp.update { item }
     }
 
+    fun changeHourlyRateExp(item: Int) {
+        hourlyRateExp.update { item }
+    }
+
+    fun changeFeeType(item: String) {
+        freelanceFeeType.update { item }
+    }
+
     fun changeTypeContractExp(item: String) {
         typeContractExp.update { item }
     }
@@ -537,10 +589,14 @@ class ProfileViewModel @Inject constructor(
         titleExp.update { item.title ?: "" }
         locationExp.update { item.place ?: "" }
         companyExp.update { item.companyName ?: "" }
-        typeEmploymentExp.update { item.type ?: "" }
+        val typeLang = if (lang == "French") "Contrat" else "Contract"
+        typeEmploymentExp.update { if (item.type.isNullOrEmpty()) typeLang else item.type }
+        typeContractExp.update { item.typeContract ?: "" }
+        freelanceFeeType.update { item.freelanceFee ?: "Hourly" }
         birthDate.update { item.dateStart ?: "" }
         endDate.update { item.dateEnd ?: "" }
         salary.update { item.salary ?: 0 }
+        hourlyRateExp.update { item.hourlyRate ?: 10 }
 
         exp1.update {
             val e = Experience(
@@ -551,6 +607,8 @@ class ProfileViewModel @Inject constructor(
                 dateStart = item.dateStart ?: "",
                 dateEnd = item.dateEnd ?: "",
                 type = item.type ?: "",
+                typeContract = item.typeContract ?: "",
+                freelanceFee = item.freelanceFee ?: "",
                 salary = item.salary ?: 0,
                 idUser = user.value.id ?: 0,
             )
@@ -561,17 +619,29 @@ class ProfileViewModel @Inject constructor(
 
     }
 
+    fun getAllExp(idUser: Int) {
+        viewModelScope.launch {
+            getAllExpUseCase.execute(idUser)
+                .collectLatest { res ->
+                    allExp.update {
+                        res.data ?: emptyList()
+                    }
+                }
+        }
+    }
     fun getAllExperience(idUser: Int) {
         viewModelScope.launch {
             getAllExperienceUseCase.execute(idUser)
                 .collectLatest { res ->
                     val json = sharedPreference.getString("jsonExperience", "")
-                    val objectList = Gson().fromJson(json, Array<Experience>::class.java).asList()
+                    if (!json.isNullOrEmpty()) {
+                        val objectList = Gson().fromJson(json, Array<Experience>::class.java).asList()
+                        exp.update {
+                            objectList
+                        }
+                    }
                     _experience.update {
                         res.data ?: PagingData.empty()
-                    }
-                    exp.update {
-                        objectList
                     }
 
                 }

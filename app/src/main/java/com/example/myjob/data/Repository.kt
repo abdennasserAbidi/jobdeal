@@ -28,6 +28,8 @@ interface Repository {
     suspend fun saveEducation(educations: Educations): Flow<Resource<UserResponse>>
     suspend fun getAllEducations(id: Int): Flow<Resource<PagingData<Educations>>>
 
+    suspend fun getAllExp(id: Int): Flow<Resource<List<Experience>>>
+    suspend fun getAllEduc(id: Int): Flow<Resource<List<Educations>>>
     suspend fun getAllUser(): Flow<Resource<PagingData<User>>>
 
     suspend fun savePersonalInfo(user: User): Flow<Resource<UserResponse>>

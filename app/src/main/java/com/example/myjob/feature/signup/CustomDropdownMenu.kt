@@ -147,7 +147,7 @@ fun CustomDropdownMenu(
                         )
                     }
                 } else {
-                    val defaultText = defaultSelected.ifEmpty { stringResource(R.string.disponibility1_text) }
+                    val defaultText = defaultSelected.ifEmpty { list[0] }
                     Text(
                         text = defaultText,
                         color = Color.Black,

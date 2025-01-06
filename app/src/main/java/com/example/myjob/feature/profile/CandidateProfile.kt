@@ -1,7 +1,6 @@
 package com.example.myjob.feature.profile
 
 import android.content.Intent
-import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.pdf.PdfDocument
 import android.os.Build
@@ -72,10 +71,10 @@ import com.example.myjob.feature.navigation.Screen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
 
 @OptIn(ExperimentalFoundationApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -89,8 +88,15 @@ fun CandidateProfile(
 
     val interactionSource = remember { MutableInteractionSource() }
     val user by profileViewModel.user.collectAsState()
+    //val pageIndex by profileViewModel.pageIndex.collectAsState()
 
     var showPdf by remember { mutableStateOf(false) }
+
+    val allExp by profileViewModel.allExp.collectAsState()
+    profileViewModel.getAllExp(user.id ?: 0)
+
+    val allEduc by profileViewModel.allEduc.collectAsState()
+    profileViewModel.getAllEduc(user.id ?: 0)
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -308,8 +314,18 @@ fun CandidateProfile(
                             interactionSource = interactionSource,
                             indication = null
                         ) {
-                            val file = createPdf(langState, user)
-                            val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+                            val file = createPdf(
+                                profileViewModel,
+                                allExp,
+                                allEduc,
+                                langState,
+                                user
+                            )
+                            val uri = FileProvider.getUriForFile(
+                                context,
+                                "${context.packageName}.provider",
+                                file
+                            )
                             val intent = Intent(Intent.ACTION_SEND).apply {
                                 type = "application/pdf"
                                 putExtra(Intent.EXTRA_STREAM, uri)
@@ -351,12 +367,94 @@ fun CandidateProfile(
 
         if (showPdf) {
             val langState by profileViewModel.langState.collectAsState()
-            val file = createPdf(langState, user)
+
+            /*var selectedFile by remember { mutableStateOf<File?>(null) }
+            var i = 1
+            val pdfDocument = PdfDocument()
+            val file = File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                "form_data.pdf"
+            )
+            CoroutineScope(Dispatchers.Main).launch {
+                profileViewModel.pageIndex.collect { ind ->
+                    Log.i("feagrsbhteht", "end: $ind")
+                    i = ind
+                    val page = profileViewModel.createPage(pdfDocument, i)
+                    val canvas = page.canvas
+
+                    val paint = Paint()
+                    paint.textSize = 12f
+
+                    val paintTitle = Paint()
+                    paintTitle.textSize = 14f
+                    paintTitle.isFakeBoldText = true
+
+                    var startY = 25f
+                    val lineHeight = 20f // Space between lines
+
+                    user.showUser(langState).mapValues {
+                        canvas.drawText("${it.key} :  ", 10f, startY, paintTitle)
+                        canvas.drawText(it.value, 200f, startY, paint)
+                        startY += lineHeight // Move to the next line
+                    }
+
+                    if (i == 3) {
+                        pdfDocument.finishPage(page)
+                        pdfDocument.pages.size
+
+                        pdfDocument.writeTo(FileOutputStream(file))
+                        pdfDocument.close()
+
+                        selectedFile = file
+                    } else {
+                        pdfDocument.finishPage(page)
+                        profileViewModel.changeIndex()
+                    }
+                }
+            }*/
+
+            val file = createPdf(profileViewModel, allExp, allEduc, langState, user)
 
             var isLoading by remember { mutableStateOf(false) }
             var currentLoadingPage by remember { mutableStateOf<Int?>(null) }
             var pageCount by remember { mutableStateOf<Int?>(null) }
 
+            /*selectedFile?.let {
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    PdfViewer(
+                        modifier = Modifier.fillMaxSize(),
+                        pdfResId = it,
+                        loadingListener = { loading, currentPage, maxPage ->
+                            isLoading = loading
+                            if (currentPage != null) currentLoadingPage = currentPage
+                            if (maxPage != null) pageCount = maxPage
+                        }
+                    )
+                    if (isLoading) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            LinearProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 30.dp),
+                                progress = if (currentLoadingPage == null || pageCount == null) 0f
+                                else currentLoadingPage!!.toFloat() / pageCount!!.toFloat()
+                            )
+                            Text(
+                                modifier = Modifier
+                                    .align(Alignment.End)
+                                    .padding(top = 5.dp)
+                                    .padding(horizontal = 30.dp),
+                                text = "${currentLoadingPage ?: "-"} pages loaded/${pageCount ?: "-"} total pages"
+                            )
+                        }
+                    }
+                }
+            }*/
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -391,19 +489,22 @@ fun CandidateProfile(
                     }
                 }
             }
+
         }
     }
 
 
 }
 
+fun createPdf(profileViewModel: ProfileViewModel, allExp: List<Experience>, allEduc: List<Educations>, lang: String, user: User): File {
 
-fun createPdf(lang: String, user: User): File {
     val pdfDocument = PdfDocument()
-    val pageInfo = PdfDocument.PageInfo.Builder(300, 600, 1).create()
-    val page = pdfDocument.startPage(pageInfo)
+    val page = profileViewModel.createPage(pdfDocument, 0)
+    val canvas = page.canvas
 
-    val canvas: Canvas = page.canvas
+/*    val pageInfo = PdfDocument.PageInfo.Builder(300, 600, 1).create()
+    val page = pdfDocument.startPage(pageInfo)
+    val canvas = page.canvas*/
 
     val paint = Paint()
     paint.textSize = 12f
@@ -412,21 +513,77 @@ fun createPdf(lang: String, user: User): File {
     paintTitle.textSize = 14f
     paintTitle.isFakeBoldText = true
 
-    user.showUser(lang).mapValues {
-        canvas.drawText("${it.key}: ${it.value}", 10f, 25f, paint)
-    }
+    var startY = 25f
+    val lineHeight = 20f // Space between lines
 
-    user.experience?.mapIndexed { index, experience ->
-        canvas.drawText("Experience $index  :", 10f, 25f, paintTitle)
-        experience.showExperience(lang).mapValues {
-            canvas.drawText("${it.key}: ${it.value}", 15f, 25f, paint)
-        }
+    user.showUser(lang).mapValues {
+        canvas.drawText("${it.key} :  ", 10f, startY, paintTitle)
+        canvas.drawText(it.value, 200f, startY, paint)
+        startY += lineHeight // Move to the next line
     }
 
     pdfDocument.finishPage(page)
+    //profileViewModel.changeIndex()
+
+    /*if (pageIndex == 1) {
+        startY = 25f
+
+        allExp.mapIndexed { index, experience ->
+            canvas.drawText("Experience $index  :", 10f, startY, paintTitle)
+            startY += lineHeight // Move to the next line
+            experience.showExperience(lang).mapValues {
+                canvas.drawText("${it.key} :  ", 10f, startY, paintTitle)
+                canvas.drawText(it.value, 200f, startY, paint)
+
+                //Log.i("pageIndex", "s: ${startY >= 600}")
+
+                *//*if (startY >= 600) {
+                    pdfDocument.finishPage(page)
+                    profileViewModel.changeIndex()
+
+
+                } else*//* startY += lineHeight // Move to the next line
+            }
+        }
+    }*/
+
+
+    //Log.i("pageIndex", "s: ${startY >= 600}")
+
+    startY += lineHeight // Move to the next line
+
+    /*allEduc.mapIndexed { index, experience ->
+        canvas.drawText("Education $index  :", 10f, startY, paintTitle)
+        //Log.i("pageIndex", "s: ${startY >= 600}")
+
+        startY += lineHeight // Move to the next line
+
+        experience.showEducation(lang).mapValues {
+
+            canvas.drawText("${it.key} :  ", 10f, startY, paintTitle)
+            canvas.drawText(it.value, 200f, startY, paint)
+            Log.i("pageIndex", "s: ${startY >= 600}    $startY")
+
+            *//*if (startY >= 600) {
+                pdfDocument.finishPage(page)
+                profileViewModel.changeIndex()
+
+
+            } else*//* startY += lineHeight
+            //startY += lineHeight // Move to the next line
+        }
+         startY += lineHeight // Move to the next line
+    }*/
+
+    Log.i("rttttttt", "createPdf: $startY")
+
+    //pdfDocument.finishPage(page)
 
     // Save the PDF to external storage
-    val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "form_data.pdf")
+    val file = File(
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+        "form_data.pdf"
+    )
     pdfDocument.writeTo(FileOutputStream(file))
     pdfDocument.close()
 

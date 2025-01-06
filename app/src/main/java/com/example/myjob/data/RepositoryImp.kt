@@ -211,6 +211,30 @@ class RepositoryImp @Inject constructor(
         emit(Resource(ResourceState.ERROR, null, ex.message))
     }
 
+    override suspend fun getAllExp(id: Int): Flow<Resource<List<Experience>>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.getAllExp(id)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun getAllEduc(id: Int): Flow<Resource<List<Educations>>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.getAllEduc(id)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
     override suspend fun savePersonalInfo(user: User): Flow<Resource<UserResponse>> = flow {
         try {
             // Get data from RemoteDataSource

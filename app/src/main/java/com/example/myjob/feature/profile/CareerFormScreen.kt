@@ -18,12 +18,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Switch
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -42,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.colorResource
@@ -81,6 +86,8 @@ fun CareerFormScreen(
     val companyExp by profileViewModel.companyExp.collectAsState()
     val typeEmploymentExp by profileViewModel.typeEmploymentExp.collectAsState()
     val typeContractExp by profileViewModel.typeContractExp.collectAsState()
+    val freelanceFeeType by profileViewModel.freelanceFeeType.collectAsState()
+    val hourlyRateExp by profileViewModel.hourlyRateExp.collectAsState()
     val titleExp by profileViewModel.titleExp.collectAsState()
     val birthDate by profileViewModel.birthDate.collectAsState()
     val endDate by profileViewModel.endDate.collectAsState()
@@ -412,7 +419,7 @@ fun CareerFormScreen(
                                     }
                             ) {
                                 Text(
-                                    text = "${stringResource(id = R.string.location_text)}: ",
+                                    text = "${stringResource(id = R.string.company_name_text)}: ",
                                     style = TextStyle(
                                         color = colorResource(id = R.color.whatsapp),
                                         fontFamily = FontFamily.Default,
@@ -503,6 +510,7 @@ fun CareerFormScreen(
                         stringResource(R.string.type1_text),
                         stringResource(R.string.type2_text)
                     )
+
                     CustomDropdownMenu(
                         list = list,
                         defaultSelected = typeEmploymentExp,
@@ -513,7 +521,6 @@ fun CareerFormScreen(
                         },
                         modifier = Modifier.padding(top = 10.dp, start = 20.dp)
                     )
-
 
                     if (typeEmploymentExp == list[0]) {
                         //type
@@ -609,139 +616,52 @@ fun CareerFormScreen(
                             thickness = 1.dp,
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
                         )
-                    }
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 20.dp, top = 30.dp)
-                    ) {
-                        Text(
-                            text = "${stringResource(id = R.string.salary_text)}: ",
-                            style = TextStyle(
-                                color = colorResource(id = R.color.whatsapp),
-                                fontFamily = FontFamily.Default,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-
-                        Text(
+                        Box(
                             modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(end = 20.dp),
-                            text = defaultSalary.toString()
-                        )
-                    }
-
-                    SimpleSlider(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 10.dp),
-                        defaultSalary = defaultSalary.toFloat()
-                    ) {
-                        sliderPosition = it
-                        profileViewModel.changeSalary(exp, it)
-                    }
-
-                    HorizontalDivider(
-                        thickness = 1.dp,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 30.dp)
-                    ) {
-                        Text(
-                            text = "${stringResource(id = R.string.start_date_text)}: ",
-                            modifier = Modifier
-                                .padding(start = 20.dp)
-                                .align(Alignment.CenterStart),
-                            style = TextStyle(
-                                color = colorResource(id = R.color.whatsapp),
-                                fontFamily = FontFamily.Default,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-
-                        Row(
-                            modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                                .padding(end = 20.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .fillMaxWidth()
+                                .padding(start = 20.dp, top = 30.dp)
                         ) {
+                            Text(
+                                text = "${stringResource(id = R.string.salary_text)}: ",
+                                style = TextStyle(
+                                    color = colorResource(id = R.color.whatsapp),
+                                    fontFamily = FontFamily.Default,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
 
-                            Text(text = birthDate, color = Color.Black)
-
-                            Icon(
+                            Text(
                                 modifier = Modifier
-                                    .padding(start = 10.dp)
-                                    .clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null
-                                    ) {
-                                        type = "start"
-                                        isDateShowed = true
-                                    },
-                                imageVector = Icons.Filled.CalendarMonth,
-                                tint = Color.Black,
-                                contentDescription = ""
+                                    .align(Alignment.BottomEnd)
+                                    .padding(end = 20.dp),
+                                text = defaultSalary.toString()
                             )
                         }
 
-                    }
-
-                    HorizontalDivider(
-                        thickness = 1.dp,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
-                    )
-
-                    val switchValue by profileViewModel.switchValue.collectAsState()
-
-                    val switchOn = if (endDate.isNotEmpty()) false
-                    else if (endDate == "Present") true
-                    else switchValue
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(0.95f)
-                            .padding(top = 15.dp, start = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    )
-                    {
-                        Text(
+                        SimpleSlider(
                             modifier = Modifier
-                                .weight(0.3f)
-                                .padding(start = 10.dp),
-                            text = stringResource(id = R.string.work_still_text),
-                            color = colorResource(id = R.color.whatsapp),
-                            style = TextStyle(
-                                fontFamily = FontFamily.Default,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 10.dp),
+                            defaultSalary = defaultSalary.toFloat()
+                        ) {
+                            sliderPosition = it
+                            profileViewModel.changeSalary(exp, it)
+                        }
+
+                        HorizontalDivider(
+                            thickness = 1.dp,
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
                         )
 
-                        Switch(
-                            checked = switchOn,
-                            onCheckedChange = {
-                                profileViewModel.changeSwitch(it)
-                            }
-                        )
-                    }
-
-                    //switch
-                    if (!switchOn) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 30.dp)
                         ) {
                             Text(
-                                text = "${stringResource(id = R.string.end_date_text)}: ",
+                                text = "${stringResource(id = R.string.start_date_text)}: ",
                                 modifier = Modifier
                                     .padding(start = 20.dp)
                                     .align(Alignment.CenterStart),
@@ -760,7 +680,7 @@ fun CareerFormScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
 
-                                Text(text = endDate, color = Color.Black)
+                                Text(text = birthDate, color = Color.Black)
 
                                 Icon(
                                     modifier = Modifier
@@ -769,7 +689,7 @@ fun CareerFormScreen(
                                             interactionSource = interactionSource,
                                             indication = null
                                         ) {
-                                            type = "end"
+                                            type = "start"
                                             isDateShowed = true
                                         },
                                     imageVector = Icons.Filled.CalendarMonth,
@@ -782,8 +702,322 @@ fun CareerFormScreen(
 
                         HorizontalDivider(
                             thickness = 1.dp,
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
                         )
+
+                        val switchValue by profileViewModel.switchValue.collectAsState()
+
+                        val switchOn = if (endDate.isNotEmpty()) false
+                        else if (endDate == "Present") true
+                        else switchValue
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(0.95f)
+                                .padding(top = 15.dp, start = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        )
+                        {
+                            Text(
+                                modifier = Modifier
+                                    .weight(0.3f)
+                                    .padding(start = 10.dp),
+                                text = stringResource(id = R.string.work_still_text),
+                                color = colorResource(id = R.color.whatsapp),
+                                style = TextStyle(
+                                    fontFamily = FontFamily.Default,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+
+                            Switch(
+                                checked = switchOn,
+                                onCheckedChange = {
+                                    profileViewModel.changeSwitch(it)
+                                }
+                            )
+                        }
+
+                        //switch
+                        if (!switchOn) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 30.dp)
+                            ) {
+                                Text(
+                                    text = "${stringResource(id = R.string.end_date_text)}: ",
+                                    modifier = Modifier
+                                        .padding(start = 20.dp)
+                                        .align(Alignment.CenterStart),
+                                    style = TextStyle(
+                                        color = colorResource(id = R.color.whatsapp),
+                                        fontFamily = FontFamily.Default,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+
+                                Row(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd)
+                                        .padding(end = 20.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+
+                                    Text(text = endDate, color = Color.Black)
+
+                                    Icon(
+                                        modifier = Modifier
+                                            .padding(start = 10.dp)
+                                            .clickable(
+                                                interactionSource = interactionSource,
+                                                indication = null
+                                            ) {
+                                                type = "end"
+                                                isDateShowed = true
+                                            },
+                                        imageVector = Icons.Filled.CalendarMonth,
+                                        tint = Color.Black,
+                                        contentDescription = ""
+                                    )
+                                }
+
+                            }
+
+                            HorizontalDivider(
+                                thickness = 1.dp,
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)
+                            )
+                        }
+
+
+
+
+                    }
+                    else {
+
+                        Text(
+                            text = "${stringResource(id = R.string.fee_freelance_text)}: ",
+                            modifier = Modifier.padding(start = 20.dp, top = 20.dp),
+                            style = TextStyle(
+                                color = colorResource(id = R.color.whatsapp),
+                                fontFamily = FontFamily.Default,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+
+                        val listFreelanceFee = listOf(
+                            "Hourly",
+                            "Daily"
+                        )
+
+                        CustomDropdownMenu(
+                            list = listFreelanceFee,
+                            defaultSelected = freelanceFeeType,
+                            color = colorResource(id = R.color.whatsapp),
+                            withIcon = false,
+                            onSelected = {
+                                profileViewModel.changeFeeType(listFreelanceFee[it])
+                            },
+                            modifier = Modifier.padding(top = 10.dp, start = 20.dp)
+                        )
+
+                        if (freelanceFeeType == listFreelanceFee[0]) {
+
+                            //hourly rate
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 30.dp, start = 20.dp)
+                            ) {
+
+                                Text(
+                                    text = "${stringResource(id = R.string.contract_type_text)}: ",
+                                    modifier = Modifier.align(Alignment.CenterStart),
+                                    style = TextStyle(
+                                        color = colorResource(id = R.color.whatsapp),
+                                        fontFamily = FontFamily.Default,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+
+                                var value by remember { mutableStateOf("") }
+                                var isFocused by remember { mutableStateOf(false) }
+                                var isLabelVisible by remember { mutableStateOf(true) }
+
+                                Row(
+                                    modifier = Modifier
+                                        .width(200.dp)
+                                        .align(Alignment.CenterEnd)
+                                ) {
+                                    OutlinedTextField(
+                                        value = value,
+                                        onValueChange = {
+                                            value = it
+                                            profileViewModel.changeHourlyRateExp(value.toInt())
+                                        },
+                                        modifier = Modifier
+                                            .size(width = 150.dp, height = 55.dp)
+                                            .padding(start = 20.dp)
+                                            .onFocusChanged { focusState ->
+                                                isFocused = focusState.isFocused
+                                                if (focusState.isFocused) {
+                                                    isLabelVisible = false
+                                                } else if (value.isEmpty()) {
+                                                    isLabelVisible = true
+                                                }
+                                            },
+                                        shape = RoundedCornerShape(8.dp),
+                                        textStyle = TextStyle(fontSize = 12.sp),
+                                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                                            textColor = Color.Black,
+                                            unfocusedBorderColor = colorResource(id = R.color.whatsapp),
+                                            focusedBorderColor = colorResource(id = R.color.whatsapp),
+                                            cursorColor = Color.Black
+                                        ),
+                                        label = {
+                                            /*if (isLabelVisible) {
+                                                Text(text = "Hint")
+                                            }*/
+                                        }
+                                    )
+                                }
+                            }
+
+                            //nb hour per day
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 20.dp, start = 20.dp)
+                            ) {
+
+                                Text(
+                                    text = "${stringResource(id = R.string.nb_hours_text)}: ",
+                                    modifier = Modifier.align(Alignment.CenterStart),
+                                    style = TextStyle(
+                                        color = colorResource(id = R.color.whatsapp),
+                                        fontFamily = FontFamily.Default,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+
+                                var value by remember { mutableStateOf("") }
+                                var isFocused by remember { mutableStateOf(false) }
+                                var isLabelVisible by remember { mutableStateOf(true) }
+
+                                Row(
+                                    modifier = Modifier
+                                        .width(200.dp)
+                                        .align(Alignment.CenterEnd)
+                                ) {
+                                    OutlinedTextField(
+                                        value = value,
+                                        onValueChange = {
+                                            value = it
+                                            profileViewModel.changeHourlyRateExp(value.toInt())
+                                        },
+                                        modifier = Modifier
+                                            .size(width = 150.dp, height = 55.dp)
+                                            .padding(start = 20.dp)
+                                            .onFocusChanged { focusState ->
+                                                isFocused = focusState.isFocused
+                                                if (focusState.isFocused) {
+                                                    isLabelVisible = false
+                                                } else if (value.isEmpty()) {
+                                                    isLabelVisible = true
+                                                }
+                                            },
+                                        shape = RoundedCornerShape(8.dp),
+                                        textStyle = TextStyle(fontSize = 12.sp),
+                                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                                            textColor = Color.Black,
+                                            unfocusedBorderColor = colorResource(id = R.color.whatsapp),
+                                            focusedBorderColor = colorResource(id = R.color.whatsapp),
+                                            cursorColor = Color.Black
+                                        ),
+                                        label = {
+                                            /*if (isLabelVisible) {
+                                                Text(text = "Hint")
+                                            }*/
+                                        }
+                                    )
+                                }
+                            }
+
+                            //nb day per week
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 20.dp, start = 20.dp)
+                            ) {
+
+                                Text(
+                                    text = "${stringResource(id = R.string.nb_day_text)}: ",
+                                    modifier = Modifier.align(Alignment.CenterStart),
+                                    style = TextStyle(
+                                        color = colorResource(id = R.color.whatsapp),
+                                        fontFamily = FontFamily.Default,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+
+                                var value by remember { mutableStateOf("") }
+                                var isFocused by remember { mutableStateOf(false) }
+                                var isLabelVisible by remember { mutableStateOf(true) }
+
+                                Row(
+                                    modifier = Modifier
+                                        .width(200.dp)
+                                        .align(Alignment.CenterEnd)
+                                ) {
+                                    OutlinedTextField(
+                                        value = value,
+                                        onValueChange = {
+                                            value = it
+                                            profileViewModel.changeHourlyRateExp(value.toInt())
+                                        },
+                                        modifier = Modifier
+                                            .size(width = 150.dp, height = 55.dp)
+                                            .padding(start = 20.dp)
+                                            .onFocusChanged { focusState ->
+                                                isFocused = focusState.isFocused
+                                                if (focusState.isFocused) {
+                                                    isLabelVisible = false
+                                                } else if (value.isEmpty()) {
+                                                    isLabelVisible = true
+                                                }
+                                            },
+                                        shape = RoundedCornerShape(8.dp),
+                                        textStyle = TextStyle(fontSize = 12.sp),
+                                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                                            textColor = Color.Black,
+                                            unfocusedBorderColor = colorResource(id = R.color.whatsapp),
+                                            focusedBorderColor = colorResource(id = R.color.whatsapp),
+                                            cursorColor = Color.Black
+                                        ),
+                                        label = {}
+                                    )
+                                }
+                            }
+
+                            HorizontalDivider(
+                                thickness = 1.dp,
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+                            )
+
+
+                        } else {
+
+                        }
+
+
+
                     }
 
                 }

@@ -133,6 +133,11 @@
     <string name="contract_type_text">Contract type</string>
 
 
+    <string name="fee_freelance_text">Freelance fee</string>
+    <string name="nb_hours_text">Hours per day</string>
+    <string name="nb_day_text">Days per week</string>
+
+
 
     <string name="salary_text">Salary</string>
     <string name="work_still_text">I\'m still in this role</string>

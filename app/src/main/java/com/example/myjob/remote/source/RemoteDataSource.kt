@@ -20,6 +20,8 @@ interface RemoteDataSource {
     suspend fun saveExperience(experience: Experience): UserResponse
     suspend fun saveEducation(educations: Educations): UserResponse
     suspend fun getAllExperiences(id: Int, pageNumber: Int): GenericResponse<Experience>
+    suspend fun getAllExp(id: Int): List<Experience>
+    suspend fun getAllEduc(id: Int): List<Educations>
     suspend fun getAllEducations(id: Int, pageNumber: Int): GenericResponse<Educations>
     suspend fun getAllUser(pageNumber: Int): GenericResponse<User>
     suspend fun forgotPassword(email: String): UserResponse

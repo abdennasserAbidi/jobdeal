@@ -1,5 +1,6 @@
 package com.example.myjob.domain.entities
 
+import android.util.Log
 import android.view.View
 
 data class Experience(
@@ -11,7 +12,9 @@ data class Experience(
     val place: String? = "",
     val type: String? = "",
     val typeContract: String? = "",
+    val freelanceFee: String? = "",
     val salary: Int? = 1000,
+    val hourlyRate: Int? = 10,
     var idUser: Int? = 0
 ) {
 
@@ -22,7 +25,7 @@ data class Experience(
         val companyNameValid = !companyName.isNullOrEmpty()
         val countryValid = !place.isNullOrEmpty()
         val dateStartValid = dateStart != null && dateStart != "Choose Date"
-        val dateEndValid = dateEnd != null && dateEnd != "Choose Date"
+        val dateEndValid = dateEnd != null && dateEnd != "Choose Date" && dateEnd.isNotEmpty()
         val typeValid = !type.isNullOrEmpty()
         val typeContractValid = !typeContract.isNullOrEmpty()
         val salaryValid = salary != null && salary != 1000
@@ -35,6 +38,7 @@ data class Experience(
                 "Date de début",
                 "Date de fin",
                 "Emplacement",
+                "Type",
                 "Type du contrat",
                 "Salaire"
             )
@@ -46,6 +50,7 @@ data class Experience(
                 "End date",
                 "Place",
                 "Type",
+                "Contract type",
                 "Salary"
             )
         }

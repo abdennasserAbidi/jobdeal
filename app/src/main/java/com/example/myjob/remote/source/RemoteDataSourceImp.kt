@@ -27,6 +27,8 @@ class RemoteDataSourceImp @Inject constructor(
     override suspend fun saveEducation(educations: Educations): UserResponse = apiService.saveEducation(educations)
     override suspend fun getAllExperiences(id: Int, pageNumber: Int): GenericResponse<Experience> =
         apiService.getAllExperiences(id, pageNumber)
+    override suspend fun getAllExp(id: Int): List<Experience> = apiService.getAllExp(id)
+    override suspend fun getAllEduc(id: Int): List<Educations> = apiService.getAllEduc(id)
     override suspend fun getAllEducations(id: Int, pageNumber: Int): GenericResponse<Educations> = apiService.getAllEducations(id, pageNumber)
     override suspend fun getAllUser(pageNumber: Int): GenericResponse<User> = apiService.getAllUser(pageNumber = pageNumber)
 
