@@ -95,6 +95,8 @@ fun AllCareer(
         }
     }
 
+
+
     Column(modifier = Modifier
         .fillMaxSize()
         .background(White)) {
@@ -211,49 +213,6 @@ fun AllCareer(
                                         fontWeight = FontWeight.Bold
                                     )
                                 )
-
-                                /*Row(
-                                    modifier = Modifier
-                                        .weight(0.2f)
-                                        .padding(start = 10.dp)
-                                ) {
-
-                                    Icon(
-                                        modifier = Modifier
-                                            .clickable(
-                                                interactionSource = interactionSource,
-                                                indication = null
-                                            ) {
-                                                id = item.id
-                                                GlobalEntries.idExp = item.id
-                                                GlobalEntries.experience = item
-                                                sliderPosition = item.salary ?: 1000
-                                                profileViewModel.changeUpdateOrAdd(item)
-                                                profileViewModel.changeDestinationExpForm("list")
-                                                navController.navigate(Screen.CareerFormScreen.route)
-                                            },
-                                        imageVector = Icons.Filled.Create,
-                                        tint = Color.Black,
-                                        contentDescription = "update"
-                                    )
-
-                                    Icon(
-                                        modifier = Modifier
-                                            .padding(start = 10.dp)
-                                            .clickable(
-                                                interactionSource = interactionSource,
-                                                indication = null
-                                            ) {
-                                                id = item.id
-                                                profileViewModel.removeExperience(item.id)
-                                                profileViewModel.changeDestinationExpForm("list")
-                                            },
-                                        imageVector = Icons.Filled.Delete,
-                                        tint = Color.Black,
-                                        contentDescription = "delete"
-                                    )
-
-                                }*/
                             }
 
                             Column(
@@ -282,48 +241,62 @@ fun AllCareer(
                                     Text(text = "- ${item.type ?: ""}", color = Color.Black)
                                 }
 
+                                val text = if (item.type == "Freelance") {
+                                    val s = if (item.freelanceFee == stringResource(id = R.string.hourly_text))
+                                        R.string.per_hour_text  else R.string.per_day_text
+
+                                    val q = if (item.freelanceFee == stringResource(id = R.string.hourly_text))
+                                        "${item.nbHours ?: 0} hours - ${item.nbDays} days"
+                                    else "${item.nbDays} days"
+
+                                    "${item.hourlyRate} dt ${stringResource(id = s)} - $q"
+                                } else item.place ?: ""
+
                                 Text(
-                                    text = item.place ?: "",
+                                    text = text,
                                     modifier = Modifier.padding(top = 5.dp),
                                     color = Gray
                                 )
 
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 5.dp)
-                                ) {
-                                    val d1 = item.dateStart ?: ""
-                                    val s1 = d1.split(",")[1]
-                                    val s2 = d1.split(",")[2]
-                                    Text(
-                                        text = "$s1 $s2",
-                                        color = Gray
-                                    )
+                                if (!item.dateStart.isNullOrEmpty()) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 5.dp)
+                                    ) {
+                                        val d1 = item.dateStart ?: ""
 
-                                    Text(
-                                        text = " to ",
-                                        color = Gray
-                                    )
+                                        val s1 = d1.split(",")[1]
+                                        val s2 = d1.split(",")[2]
+                                        Text(
+                                            text = "$s1 $s2",
+                                            color = Gray
+                                        )
 
-                                    val d3 = item.dateEnd ?: ""
+                                        Text(
+                                            text = " ${stringResource(id = R.string.to_text)} ",
+                                            color = Gray
+                                        )
 
-                                    if (d3.isNotEmpty()) {
-                                        val d2 = if (d3 == "Present") "Present" else {
-                                            val e1 = d3.split(",")[1]
-                                            val e2 = d3.split(",")[2]
-                                            "$e1 $e2"
+                                        val d3 = item.dateEnd ?: ""
+
+                                        if (d3.isNotEmpty()) {
+                                            val d2 = if (d3 == "Present") "Present" else {
+                                                val e1 = d3.split(",")[1]
+                                                val e2 = d3.split(",")[2]
+                                                "$e1 $e2"
+                                            }
+
+                                            Text(
+                                                text = d2,
+                                                color = Gray,
+                                            )
+                                        } else {
+                                            Text(
+                                                text = "Present",
+                                                color = Gray,
+                                            )
                                         }
-
-                                        Text(
-                                            text = d2,
-                                            color = Gray,
-                                        )
-                                    } else {
-                                        Text(
-                                            text = "Present",
-                                            color = Gray,
-                                        )
                                     }
                                 }
 
@@ -338,7 +311,7 @@ fun AllCareer(
                             .padding(top = 10.dp, start = 20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Update",
+                        Text(text = stringResource(id = R.string.update_text),
                             modifier = Modifier.clickable(
                               interactionSource = interactionSource,
                               indication = null
@@ -356,7 +329,7 @@ fun AllCareer(
                         Box(
                             modifier = Modifier
                                 .height(30.dp)
-                                .width(70.dp)
+                                .width(90.dp)
                                 .padding(start = 20.dp)
                                 .clickable(
                                     interactionSource = interactionSource,
@@ -378,7 +351,7 @@ fun AllCareer(
                             )
 
                             Text(
-                                text = "Delete",
+                                text = stringResource(id = R.string.delete_text),
                                 color = colorResource(id = R.color.dark_red)
                             )
                         }

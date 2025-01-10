@@ -133,6 +133,16 @@
     <string name="contract_type_text">Contract type</string>
 
 
+    <string name="to_text">to</string>
+
+    <string name="update_text">Update</string>
+    <string name="delete_text">Delete</string>
+    <string name="hourly_text">Hourly</string>
+    <string name="daily_text">Daily</string>
+    <string name="per_hour_text">Per hour</string>
+    <string name="per_day_text">Per day</string>
+    <string name="hourly_rate_text">Hourly rate</string>
+    <string name="daily_rate_text">Daily rate</string>
     <string name="fee_freelance_text">Freelance fee</string>
     <string name="nb_hours_text">Hours per day</string>
     <string name="nb_day_text">Days per week</string>

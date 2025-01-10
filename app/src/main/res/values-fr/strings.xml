@@ -129,6 +129,16 @@
     <string name="type2_text">Freelance</string>
     <string name="contract_type_text">Type du contrat</string>
 
+    <string name="to_text">au</string>
+
+    <string name="update_text">Modifier</string>
+    <string name="delete_text">Supprimer</string>
+    <string name="hourly_text">Par heurs</string>
+    <string name="daily_text">Par jours</string>
+    <string name="per_hour_text">Par heurs</string>
+    <string name="per_day_text">Par jours</string>
+    <string name="hourly_rate_text">Taux horaire</string>
+    <string name="daily_rate_text">Tarif journalier</string>
     <string name="fee_freelance_text">Freelance fee</string>
     <string name="nb_hours_text">Heurs par jours</string>
     <string name="nb_day_text">Jours par semaine</string>

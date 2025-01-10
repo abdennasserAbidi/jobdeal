@@ -45,7 +45,7 @@ data class User(
         }
     }
 
-    fun changeSituation(name: String, lang: String) {
+    fun changeSituation(name: String, lang: String): String {
         val traduction = if (lang == "French" || lang == "Français") {
             when(name) {
                 "Married" -> "Marrié"
@@ -63,6 +63,7 @@ data class User(
         }
 
         situation = traduction
+        return traduction
     }
 
     fun getSex(lang: String): String {
@@ -81,7 +82,7 @@ data class User(
         }
     }
 
-    fun changeSex(name: String, lang: String) {
+    fun changeSex(name: String, lang: String): String {
         val traduction = if (lang == "French" || lang == "Français") {
             when(name) {
                 "Male" -> "Homme"
@@ -97,6 +98,7 @@ data class User(
         }
 
         sexe = traduction
+        return traduction
     }
 
     fun showUser(lang: String): Map<String, String> {
@@ -130,6 +132,9 @@ data class User(
                 "Disponibilité",
                 "Marge salariale",
                 "Votre sécteur d'activité",
+                "Téléphone",
+                "Pays",
+                "New Country"
             )
         } else {
             listOf(
@@ -144,6 +149,9 @@ data class User(
                 "Availability",
                 "Salary range",
                 "Your activity sector",
+                "Phone",
+                "Country",
+                "New Country"
             )
         }
 

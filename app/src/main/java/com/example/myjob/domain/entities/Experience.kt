@@ -12,9 +12,12 @@ data class Experience(
     val place: String? = "",
     val type: String? = "",
     val typeContract: String? = "",
+    val anotherActivitySector: String? = "",
     val freelanceFee: String? = "",
+    val nbHours: Int? = 0,
+    val nbDays: Int? = 0,
     val salary: Int? = 1000,
-    val hourlyRate: Int? = 10,
+    val hourlyRate: Int? = 0,
     var idUser: Int? = 0
 ) {
 

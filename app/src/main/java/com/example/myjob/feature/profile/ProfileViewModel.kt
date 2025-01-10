@@ -134,7 +134,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    var titleGeneric = MutableStateFlow(user.value.preferredActivitySector ?: "")
+    var titleGeneric = MutableStateFlow("")
 
     fun changeTitleGeneric(item: String) {
         titleGeneric.update { item }
@@ -144,6 +144,25 @@ class ProfileViewModel @Inject constructor(
             it
         }
 
+    }
+
+    var completePhone = MutableStateFlow("")
+    var phone = MutableStateFlow("")
+
+    fun changePhone(search: String) {
+        phone.update {
+            search
+        }
+    }
+    fun changeCompletePhone(search: String) {
+        completePhone.update {
+            search
+        }
+
+        user.update {
+            it.phone = search
+            it
+        }
     }
 
     var availability = MutableStateFlow("")
@@ -176,6 +195,7 @@ class ProfileViewModel @Inject constructor(
     // FULLNAME
     ///////////////////////////////////////////////////////////////////////////
     val isFirstNameValid = MutableStateFlow(false)
+    val userFullName = MutableStateFlow("")
 
     fun validateFullName(text: String): Boolean {
         var t = false
@@ -189,6 +209,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun changeUserName(name: String) {
+        userFullName.update { name }
         user.update {
             it.fullName = name
             if (it.fullName?.contains(" ") == true) {
@@ -203,6 +224,7 @@ class ProfileViewModel @Inject constructor(
     // ADDRESS
     ///////////////////////////////////////////////////////////////////////////
     val isAddressValid = MutableStateFlow(false)
+    val userAddress = MutableStateFlow("")
 
     fun validateAddress(text: String): Boolean {
         var t = false
@@ -216,13 +238,14 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun changeAddress(name: String) {
+        userAddress.update { name }
         user.update {
             it.address = name
             it
         }
     }
 
-    var birthDateUser = MutableStateFlow(user.value.birthDate ?: "")
+    var birthDateUser = MutableStateFlow("")
 
     fun changeBirthDate(name: String) {
         user.update {
@@ -233,6 +256,8 @@ class ProfileViewModel @Inject constructor(
         birthDateUser.update { name }
 
     }
+
+    var userSex = MutableStateFlow("")
 
     fun getSex(): String {
         val lang = sharedPreference.getString("lang", "") ?: ""
@@ -246,16 +271,20 @@ class ProfileViewModel @Inject constructor(
 
     fun changeSex(name: String) {
         val lang = sharedPreference.getString("lang", "") ?: ""
-
+        userSex.update {
+            user.value.changeSex(name, lang)
+        }
         user.update {
             it.changeSex(name, lang)
             it
         }
     }
-
+    var userSituation = MutableStateFlow("")
     fun changeSituation(name: String) {
         val lang = sharedPreference.getString("lang", "") ?: ""
-
+        userSituation.update {
+            user.value.changeSituation(name, lang)
+        }
         user.update {
             it.changeSituation(name, lang)
             it
@@ -266,6 +295,21 @@ class ProfileViewModel @Inject constructor(
         user.update {
             it.activitySector = activity
             it
+        }
+    }
+
+    fun mapperPersonalInfo(user: User) {
+        availability.update { user.availability ?: "" }
+        rangeSalary.update { user.rangeSalary ?: "" }
+
+        with(user) {
+            titleGeneric.update { preferredActivitySector ?: "" }
+            userSituation.update { situation ?: "" }
+            userSex.update { sexe ?: "" }
+            birthDateUser.update { birthDate ?: "" }
+            userAddress.update { address ?: "" }
+            userFullName.update { fullName ?: "" }
+            completePhone.update { phone ?: "" }
         }
     }
 
@@ -294,6 +338,8 @@ class ProfileViewModel @Inject constructor(
                     user.update { u }
                     GlobalEntries.user = u
                     sharedPreference.putString("username", u.fullName ?: "")
+                    Log.i("userValue", "getUser: $u")
+                    Log.i("userValue", "getUser: ${u.showUser(lang)}")
                     showUser.update {
                         u.showUser(lang)
                     }
@@ -499,12 +545,15 @@ class ProfileViewModel @Inject constructor(
     var typeEmploymentExp = MutableStateFlow("")
     var typeContractExp = MutableStateFlow("")
     var freelanceFeeType = MutableStateFlow("Hourly")
-    var hourlyRateExp = MutableStateFlow(10)
+    var hourlyRateExp = MutableStateFlow(0)
+    var nbHoursExp = MutableStateFlow(0)
+    var nbDaysExp = MutableStateFlow(0)
     var birthDate = MutableStateFlow("")
     var endDate = MutableStateFlow("")
     var salary = MutableStateFlow(0)
     var id = MutableStateFlow(0)
     var titleExp = MutableStateFlow("")
+    var anotherActivity = MutableStateFlow("")
 
     fun changeSalary(exp: Experience, search: Int) {
         salary.update { search }
@@ -535,20 +584,26 @@ class ProfileViewModel @Inject constructor(
     fun mapperExperience(experiences: Experience) {
         with(experiences) {
             titleExp.update { title ?: "" }
+            anotherActivity.update { anotherActivitySector ?: "" }
             locationExp.update { place ?: "" }
             companyExp.update { companyName ?: "" }
-
             val typeLang = if (lang == "French") "Contrat" else "Contract"
             typeEmploymentExp.update { if (type.isNullOrEmpty()) typeLang else type }
-            freelanceFeeType.update { freelanceFee ?: "Hourly" }
+            val typeFee = if (lang == "French") "Par heurs" else "Hourly"
+            freelanceFeeType.update { if (freelanceFee.isNullOrEmpty()) typeFee else freelanceFee }
             typeContractExp.update { typeContract ?: "" }
-            hourlyRateExp.update { hourlyRate ?: 10 }
+            hourlyRateExp.update { hourlyRate ?: 0 }
+            nbHoursExp.update { nbHours ?: 0 }
+            nbDaysExp.update { nbDays ?: 0 }
             birthDate.update { dateStart ?: "" }
             endDate.update { dateEnd ?: "" }
         }
         salary.update { experiences.salary ?: 0 }
     }
 
+    fun changeAnotherActivityExp(item: String) {
+        anotherActivity.update { item }
+    }
     fun changeLocationExp(item: String) {
         locationExp.update { item }
     }
@@ -567,6 +622,12 @@ class ProfileViewModel @Inject constructor(
 
     fun changeHourlyRateExp(item: Int) {
         hourlyRateExp.update { item }
+    }
+    fun changeNbHoursExp(item: Int) {
+        nbHoursExp.update { item }
+    }
+    fun changeNbDaysExp(item: Int) {
+        nbDaysExp.update { item }
     }
 
     fun changeFeeType(item: String) {
@@ -587,12 +648,16 @@ class ProfileViewModel @Inject constructor(
 
     fun changeUpdateOrAdd(item: Experience = Experience()) {
         titleExp.update { item.title ?: "" }
+        anotherActivity.update { item.anotherActivitySector ?: "" }
         locationExp.update { item.place ?: "" }
         companyExp.update { item.companyName ?: "" }
         val typeLang = if (lang == "French") "Contrat" else "Contract"
         typeEmploymentExp.update { if (item.type.isNullOrEmpty()) typeLang else item.type }
         typeContractExp.update { item.typeContract ?: "" }
-        freelanceFeeType.update { item.freelanceFee ?: "Hourly" }
+        val typeFee = if (lang == "French") "Par heurs" else "Hourly"
+        freelanceFeeType.update { if (item.freelanceFee.isNullOrEmpty()) typeFee else item.freelanceFee }
+        nbHoursExp.update { item.nbHours ?: 10 }
+        nbDaysExp.update { item.nbDays ?: 10 }
         birthDate.update { item.dateStart ?: "" }
         endDate.update { item.dateEnd ?: "" }
         salary.update { item.salary ?: 0 }
@@ -609,6 +674,9 @@ class ProfileViewModel @Inject constructor(
                 type = item.type ?: "",
                 typeContract = item.typeContract ?: "",
                 freelanceFee = item.freelanceFee ?: "",
+                anotherActivitySector = item.anotherActivitySector ?: "",
+                nbHours = item.nbHours ?: 0,
+                nbDays = item.nbDays ?: 0,
                 salary = item.salary ?: 0,
                 idUser = user.value.id ?: 0,
             )
@@ -675,6 +743,10 @@ class ProfileViewModel @Inject constructor(
                 if (res.data?.message == "removed successfully") getAllExperience(user.value.id ?: 0)
             }
         }
+    }
+
+    fun getUserById() {
+        getUser(lang, sharedPreference.getInt("idUser", 0))
     }
 
     init {

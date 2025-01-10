@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,11 +48,17 @@ import com.example.myjob.domain.entities.NewCountry
 fun CustomPhoneKit(
     modifier: Modifier,
     selectedCountry: NewCountry,
-    onClick: () -> Unit
+    defaultPhone: String,
+    onClick: () -> Unit,
+    onValueChanged: (phone: String) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val context = LocalContext.current
     var phone by remember { mutableStateOf("") }
+
+    LaunchedEffect(defaultPhone.isNotEmpty()) {
+        phone = defaultPhone
+    }
 
     Column(
         modifier = modifier,
@@ -129,6 +136,7 @@ fun CustomPhoneKit(
                     onValueChange = { input ->
                         if (input.all { it.isDigit() }) {
                             phone = input
+                            onValueChanged(input)
                         }
                     },
                     placeholder = { Text(text = "") },

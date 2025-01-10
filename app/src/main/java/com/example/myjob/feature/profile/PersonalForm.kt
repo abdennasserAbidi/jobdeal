@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -55,11 +56,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.GenericSearch
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.SalaryRangeSeekBar
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.domain.entities.User
@@ -79,12 +82,22 @@ fun PersonalForm(
 ) {
 
     val interactionSource = remember { MutableInteractionSource() }
-    val user = GlobalEntries.user
+    //val user = GlobalEntries.user
+    val user by profileViewModel.user.collectAsState()
+    Log.i("hahidefault", "PersonalForm: $user")
     var showCountryPicker by remember { mutableStateOf(false) }
     var selectedCountry by remember { mutableStateOf(NewCountry("tn", "Tunisia", 216)) }
     val isShowed by profileViewModel.isCountryShowed.collectAsState()
     val isSearch by profileViewModel.isSearch.collectAsState()
     val isDateShowed by profileViewModel.isDateShowed.collectAsState()
+
+    val lifecycleEvent = rememberLifecycleEvent()
+    LaunchedEffect(lifecycleEvent) {
+        if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+            profileViewModel.getUserById()
+            profileViewModel.mapperPersonalInfo(user)
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -97,9 +110,7 @@ fun PersonalForm(
             val isFullNameValid by profileViewModel.isFirstNameValid.collectAsState()
 
             var activatedCheck by remember { mutableStateOf(false) }
-            var userName by remember { mutableStateOf(user.fullName ?: "") }
             val submitEnabled by remember { derivedStateOf { isFullNameValid } }
-
             var textFieldVisible by remember { mutableStateOf(true) }
             val focusManager = LocalFocusManager.current
 
@@ -146,6 +157,8 @@ fun PersonalForm(
                 )
             )
 
+            val userName by profileViewModel.userFullName.collectAsState()
+
             if (textFieldVisible) {
                 TextField(
                     modifier = Modifier
@@ -171,7 +184,6 @@ fun PersonalForm(
                     ),
                     value = userName,
                     onValueChange = {
-                        userName = it
                         if (activatedCheck) profileViewModel.validateFullName(it)
                         profileViewModel.changeUserName(it)
                     },
@@ -191,7 +203,6 @@ fun PersonalForm(
             }
 
             val isAddressValid by profileViewModel.isAddressValid.collectAsState()
-            var address by remember { mutableStateOf(user.address ?: "") }
             val addressCheck by remember { derivedStateOf { isAddressValid } }
             var addressVisible by remember { mutableStateOf(true) }
 
@@ -205,6 +216,7 @@ fun PersonalForm(
                     fontWeight = FontWeight.Bold
                 )
             )
+            val address by profileViewModel.userAddress.collectAsState()
 
             if (addressVisible) {
                 TextField(
@@ -231,7 +243,6 @@ fun PersonalForm(
                     ),
                     value = address,
                     onValueChange = {
-                        address = it
                         if (activatedCheck) profileViewModel.validateAddress(it)
                         profileViewModel.changeAddress(it)
                     },
@@ -275,8 +286,8 @@ fun PersonalForm(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
-                    //val birthDateUser by profileViewModel.birthDateUser.collectAsState()
-                    val birthDateUser = user.birthDate?: ""
+                    val birthDateUser by profileViewModel.birthDateUser.collectAsState()
+                    //val birthDateUser = user.birthDate?: ""
 
                     Text(text = birthDateUser, color = Color.Black)
 
@@ -307,10 +318,11 @@ fun PersonalForm(
             val singleText = stringResource(id = R.string.single_text)
             val engagedText = stringResource(id = R.string.engaged_text)
 
+            val userSituation by profileViewModel.userSituation.collectAsState()
+
             val situationOptions = listOf(marriedText, singleText, engagedText)
             var selectedSituation by remember {
-                mutableStateOf(
-                    profileViewModel.getSituation().ifEmpty { situationOptions[0] })
+                mutableStateOf(userSituation.ifEmpty { situationOptions[0] })
             }
             profileViewModel.changeSituation(selectedSituation)
 
@@ -344,13 +356,15 @@ fun PersonalForm(
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)
             )
 
+            val userSex by profileViewModel.userSex.collectAsState()
+
             val sexeOptions = listOf(
                 stringResource(id = R.string.male_text),
                 stringResource(id = R.string.female_text)
             )
             var selectedSexe by remember {
                 mutableStateOf(
-                    profileViewModel.getSex().ifEmpty { sexeOptions[0] })
+                    userSex.ifEmpty { sexeOptions[0] })
             }
             profileViewModel.changeSex(selectedSexe)
 
@@ -390,7 +404,8 @@ fun PersonalForm(
                     .fillMaxWidth()
                     .padding(top = 10.dp)
             ) {
-                val title = user.preferredActivitySector ?: ""
+                //val title = user.preferredActivitySector ?: ""
+                val title by profileViewModel.titleGeneric.collectAsState()
 
                 if (title.isNotEmpty()) {
                     Column(
@@ -575,7 +590,9 @@ fun PersonalForm(
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)
             )
 
-            val rangeSalaryUser = user.rangeSalary?: ""
+            //val rangeSalaryUser = user.rangeSalary?: ""
+            val rangeSalaryUser by profileViewModel.rangeSalary.collectAsState()
+
             var minRange = 50f
             var maxRange = 150f
 
@@ -650,12 +667,24 @@ fun PersonalForm(
                 )
             )
 
+            val phone by profileViewModel.phone.collectAsState()
+            val completePhone by profileViewModel.completePhone.collectAsState()
+
+            Log.i("hahidefault", "completePhone: $completePhone")
+
             CustomPhoneKit(
                 modifier = Modifier.padding(top = 10.dp, start = 20.dp),
-                selectedCountry = selectedCountry
-            ) {
-                showCountryPicker = true
-            }
+                selectedCountry = selectedCountry,
+                defaultPhone = if (completePhone.contains(" ")) completePhone.split(" ")[1] else completePhone,
+                onClick = {
+                    showCountryPicker = true
+                },
+                onValueChanged = {
+                    val phoneComplete = "+${selectedCountry.code} $it"
+                    profileViewModel.changePhone(it)
+                    profileViewModel.changeCompletePhone(phoneComplete)
+                }
+            )
 
             Box(
                 modifier = Modifier

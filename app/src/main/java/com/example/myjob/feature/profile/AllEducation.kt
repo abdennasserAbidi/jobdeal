@@ -237,7 +237,7 @@ fun AllEducation(
                                     )
 
                                     Text(
-                                        text = " to ",
+                                        text = " ${stringResource(id = R.string.to_text)} ",
                                         color = Color.Gray
                                     )
 

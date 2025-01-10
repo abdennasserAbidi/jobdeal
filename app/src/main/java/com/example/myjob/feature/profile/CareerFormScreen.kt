@@ -69,6 +69,7 @@ import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.signup.CustomDropdownMenu
+import kotlinx.coroutines.delay
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -86,8 +87,13 @@ fun CareerFormScreen(
     val companyExp by profileViewModel.companyExp.collectAsState()
     val typeEmploymentExp by profileViewModel.typeEmploymentExp.collectAsState()
     val typeContractExp by profileViewModel.typeContractExp.collectAsState()
+    //freelance
     val freelanceFeeType by profileViewModel.freelanceFeeType.collectAsState()
     val hourlyRateExp by profileViewModel.hourlyRateExp.collectAsState()
+    val nbHoursExp by profileViewModel.nbHoursExp.collectAsState()
+    val nbDaysExp by profileViewModel.nbDaysExp.collectAsState()
+
+    val anotherActivity by profileViewModel.anotherActivity.collectAsState()
     val titleExp by profileViewModel.titleExp.collectAsState()
     val birthDate by profileViewModel.birthDate.collectAsState()
     val endDate by profileViewModel.endDate.collectAsState()
@@ -99,6 +105,7 @@ fun CareerFormScreen(
     var isCompanyVisible by remember { mutableStateOf(false) }
     var isTypeEmploymentVisible by remember { mutableStateOf(false) }
     var isSearch by remember { mutableStateOf(false) }
+    var isAnother by remember { mutableStateOf(false) }
     var type by remember { mutableStateOf("") }
     var isDateShowed by remember { mutableStateOf(false) }
 
@@ -110,7 +117,6 @@ fun CareerFormScreen(
             profileViewModel.mapperExperience(exp)
         }
     }
-
     val defaultSalary = if (salary == 0) 10000 else salary
     var sliderPosition by remember { mutableIntStateOf(defaultSalary) }
 
@@ -185,7 +191,12 @@ fun CareerFormScreen(
                                     place = locationExp,
                                     salary = defaultSalary,
                                     type = typeEmploymentExp,
-                                    typeContract = typeContractExp
+                                    typeContract = typeContractExp,
+                                    freelanceFee = freelanceFeeType,
+                                    anotherActivitySector = anotherActivity,
+                                    hourlyRate = hourlyRateExp,
+                                    nbHours = nbHoursExp,
+                                    nbDays = nbDaysExp
                                 )
 
                                 profileViewModel.saveExperience(experienceToAdd)
@@ -227,6 +238,7 @@ fun CareerFormScreen(
                                         indication = null
                                     ) {
                                         isSearch = true
+                                        isAnother = false
                                     }
                             ) {
                                 Text(
@@ -792,9 +804,6 @@ fun CareerFormScreen(
                             )
                         }
 
-
-
-
                     }
                     else {
 
@@ -810,10 +819,11 @@ fun CareerFormScreen(
                         )
 
                         val listFreelanceFee = listOf(
-                            "Hourly",
-                            "Daily"
+                            stringResource(id = R.string.hourly_text),
+                            stringResource(id = R.string.daily_text)
                         )
 
+                        //if (hourlyRateExp != 10) freelanceFeeType = listFreelanceFee[0]
                         CustomDropdownMenu(
                             list = listFreelanceFee,
                             defaultSelected = freelanceFeeType,
@@ -825,199 +835,123 @@ fun CareerFormScreen(
                             modifier = Modifier.padding(top = 10.dp, start = 20.dp)
                         )
 
-                        if (freelanceFeeType == listFreelanceFee[0]) {
-
-                            //hourly rate
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 30.dp, start = 20.dp)
-                            ) {
-
-                                Text(
-                                    text = "${stringResource(id = R.string.contract_type_text)}: ",
-                                    modifier = Modifier.align(Alignment.CenterStart),
-                                    style = TextStyle(
-                                        color = colorResource(id = R.color.whatsapp),
-                                        fontFamily = FontFamily.Default,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
-
-                                var value by remember { mutableStateOf("") }
-                                var isFocused by remember { mutableStateOf(false) }
-                                var isLabelVisible by remember { mutableStateOf(true) }
-
-                                Row(
+                        /*Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 30.dp)
+                        ) {
+                            if (anotherActivity.isNotEmpty()) {
+                                Column(
                                     modifier = Modifier
-                                        .width(200.dp)
-                                        .align(Alignment.CenterEnd)
-                                ) {
-                                    OutlinedTextField(
-                                        value = value,
-                                        onValueChange = {
-                                            value = it
-                                            profileViewModel.changeHourlyRateExp(value.toInt())
-                                        },
-                                        modifier = Modifier
-                                            .size(width = 150.dp, height = 55.dp)
-                                            .padding(start = 20.dp)
-                                            .onFocusChanged { focusState ->
-                                                isFocused = focusState.isFocused
-                                                if (focusState.isFocused) {
-                                                    isLabelVisible = false
-                                                } else if (value.isEmpty()) {
-                                                    isLabelVisible = true
-                                                }
-                                            },
-                                        shape = RoundedCornerShape(8.dp),
-                                        textStyle = TextStyle(fontSize = 12.sp),
-                                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                                            textColor = Color.Black,
-                                            unfocusedBorderColor = colorResource(id = R.color.whatsapp),
-                                            focusedBorderColor = colorResource(id = R.color.whatsapp),
-                                            cursorColor = Color.Black
-                                        ),
-                                        label = {
-                                            /*if (isLabelVisible) {
-                                                Text(text = "Hint")
-                                            }*/
+                                        .padding(start = 20.dp)
+                                        .clickable(
+                                            interactionSource = interactionSource,
+                                            indication = null
+                                        ) {
+                                            isSearch = true
+                                            isAnother = true
                                         }
-                                    )
-                                }
-                            }
-
-                            //nb hour per day
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 20.dp, start = 20.dp)
-                            ) {
-
-                                Text(
-                                    text = "${stringResource(id = R.string.nb_hours_text)}: ",
-                                    modifier = Modifier.align(Alignment.CenterStart),
-                                    style = TextStyle(
-                                        color = colorResource(id = R.color.whatsapp),
-                                        fontFamily = FontFamily.Default,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
-
-                                var value by remember { mutableStateOf("") }
-                                var isFocused by remember { mutableStateOf(false) }
-                                var isLabelVisible by remember { mutableStateOf(true) }
-
-                                Row(
-                                    modifier = Modifier
-                                        .width(200.dp)
-                                        .align(Alignment.CenterEnd)
                                 ) {
-                                    OutlinedTextField(
-                                        value = value,
-                                        onValueChange = {
-                                            value = it
-                                            profileViewModel.changeHourlyRateExp(value.toInt())
-                                        },
+                                    Text(
+                                        text = "${stringResource(id = R.string.activity_text)}: ",
+                                        style = TextStyle(
+                                            color = colorResource(id = R.color.whatsapp),
+                                            fontFamily = FontFamily.Default,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    )
+
+                                    Row(
                                         modifier = Modifier
-                                            .size(width = 150.dp, height = 55.dp)
-                                            .padding(start = 20.dp)
-                                            .onFocusChanged { focusState ->
-                                                isFocused = focusState.isFocused
-                                                if (focusState.isFocused) {
-                                                    isLabelVisible = false
-                                                } else if (value.isEmpty()) {
-                                                    isLabelVisible = true
-                                                }
-                                            },
-                                        shape = RoundedCornerShape(8.dp),
-                                        textStyle = TextStyle(fontSize = 12.sp),
-                                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                                            textColor = Color.Black,
-                                            unfocusedBorderColor = colorResource(id = R.color.whatsapp),
-                                            focusedBorderColor = colorResource(id = R.color.whatsapp),
-                                            cursorColor = Color.Black
-                                        ),
-                                        label = {
-                                            /*if (isLabelVisible) {
-                                                Text(text = "Hint")
-                                            }*/
+                                            .fillMaxWidth()
+                                            .padding(end = 20.dp),
+                                        verticalAlignment = Alignment.Bottom
+                                    ) {
+
+                                        Text(
+                                            text = anotherActivity,
+                                            modifier = Modifier
+                                                .padding(top = 10.dp, bottom = 5.dp)
+                                                .weight(0.9f),
+                                            color = Color.Black
+                                        )
+
+                                        Icon(
+                                            modifier = Modifier
+                                                .weight(0.1f)
+                                                .size(24.dp),
+                                            imageVector = Icons.Filled.ArrowDropDown,
+                                            tint = Color.Black,
+                                            contentDescription = ""
+                                        )
+
+                                    }
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 20.dp)
+                                        .clickable(
+                                            interactionSource = interactionSource,
+                                            indication = null
+                                        ) {
+                                            isSearch = true
+                                            isAnother = true
                                         }
-                                    )
-                                }
-                            }
-
-                            //nb day per week
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 20.dp, start = 20.dp)
-                            ) {
-
-                                Text(
-                                    text = "${stringResource(id = R.string.nb_day_text)}: ",
-                                    modifier = Modifier.align(Alignment.CenterStart),
-                                    style = TextStyle(
-                                        color = colorResource(id = R.color.whatsapp),
-                                        fontFamily = FontFamily.Default,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
-
-                                var value by remember { mutableStateOf("") }
-                                var isFocused by remember { mutableStateOf(false) }
-                                var isLabelVisible by remember { mutableStateOf(true) }
-
-                                Row(
-                                    modifier = Modifier
-                                        .width(200.dp)
-                                        .align(Alignment.CenterEnd)
                                 ) {
-                                    OutlinedTextField(
-                                        value = value,
-                                        onValueChange = {
-                                            value = it
-                                            profileViewModel.changeHourlyRateExp(value.toInt())
-                                        },
+                                    Text(
+                                        text = "${stringResource(id = R.string.activity_text)}: ",
+                                        modifier = Modifier.align(Alignment.CenterStart),
+                                        style = TextStyle(
+                                            color = colorResource(id = R.color.whatsapp),
+                                            fontFamily = FontFamily.Default,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    )
+
+                                    Icon(
                                         modifier = Modifier
-                                            .size(width = 150.dp, height = 55.dp)
-                                            .padding(start = 20.dp)
-                                            .onFocusChanged { focusState ->
-                                                isFocused = focusState.isFocused
-                                                if (focusState.isFocused) {
-                                                    isLabelVisible = false
-                                                } else if (value.isEmpty()) {
-                                                    isLabelVisible = true
-                                                }
-                                            },
-                                        shape = RoundedCornerShape(8.dp),
-                                        textStyle = TextStyle(fontSize = 12.sp),
-                                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                                            textColor = Color.Black,
-                                            unfocusedBorderColor = colorResource(id = R.color.whatsapp),
-                                            focusedBorderColor = colorResource(id = R.color.whatsapp),
-                                            cursorColor = Color.Black
-                                        ),
-                                        label = {}
+                                            .align(Alignment.BottomEnd)
+                                            .padding(end = 20.dp),
+                                        imageVector = Icons.Filled.ArrowDropDown,
+                                        tint = Color.Black,
+                                        contentDescription = ""
                                     )
                                 }
                             }
-
-                            HorizontalDivider(
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
-                            )
-
-
-                        } else {
-
                         }
 
+                        HorizontalDivider(
+                            thickness = 1.dp,
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+                        )*/
 
+                        //hourly rate
+                        val textId = if (freelanceFeeType == listFreelanceFee[0]) R.string.hourly_rate_text
+                        else R.string.daily_rate_text
 
+                        Log.i("freelance", "hourlyRateExp: $hourlyRateExp")
+                        Log.i("freelance", "nbHoursExp: $nbHoursExp")
+                        Log.i("freelance", "nbDaysExp: $nbDaysExp")
+
+                        FreelanceForm(defaultValue = "$hourlyRateExp", text = "${stringResource(id = textId)}: ", false) {
+                            profileViewModel.changeHourlyRateExp(it)
+                        }
+
+                        if (freelanceFeeType == listFreelanceFee[0]) {
+                            //nb hour per day
+                            FreelanceForm(defaultValue = "$nbHoursExp", text = "${stringResource(id = R.string.nb_hours_text)}: ", false) {
+                                profileViewModel.changeNbHoursExp(it)
+                            }
+                        }
+
+                        //nb day per week
+                        FreelanceForm(defaultValue = "$nbDaysExp", text = "${stringResource(id = R.string.nb_day_text)}: ", true) {
+                            profileViewModel.changeNbDaysExp(it)
+                        }
                     }
 
                 }
@@ -1055,7 +989,8 @@ fun CareerFormScreen(
                     },
                     onSelectedBank = { item, index ->
                         isSearch = false
-                        profileViewModel.changeTitleExp(item)
+                        if (isAnother) profileViewModel.changeAnotherActivityExp(item)
+                        else profileViewModel.changeTitleExp(item)
                     },
                     title = stringResource(id = R.string.activity_text)
                 )
