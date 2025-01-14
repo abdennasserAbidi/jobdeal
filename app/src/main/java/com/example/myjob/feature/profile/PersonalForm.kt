@@ -90,12 +90,14 @@ fun PersonalForm(
     val isShowed by profileViewModel.isCountryShowed.collectAsState()
     val isSearch by profileViewModel.isSearch.collectAsState()
     val isDateShowed by profileViewModel.isDateShowed.collectAsState()
+    val listNames by profileViewModel.listNames.collectAsState()
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
             profileViewModel.getUserById()
             profileViewModel.mapperPersonalInfo(user)
+            profileViewModel.mapperToListNames(list)
         }
     }
 
@@ -501,7 +503,7 @@ fun PersonalForm(
                     .padding(top = 10.dp)
             ) {
 
-                val title = user.newCountry?: ""
+                val title = user.newCountry ?: ""
 
                 if (title.isNotEmpty()) {
                     Column(
@@ -793,17 +795,33 @@ fun PersonalForm(
             )
         }
 
-        AnimatedVisibility(visible = isShowed) {
-            /*CountryPicker(
-                list,
-                onClick = { newCountry ->
-                    selectedCountry = newCountry
-                    profileViewModel.changeVisibilityCountry(false)
-                },
-                onBack = {
-                    profileViewModel.changeVisibilityCountry(false)
-                }
-            )*/
+        AnimatedVisibility(
+            visible = isShowed,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
+        ) {
+            Log.i("jkgrehbgre", "PersonalForm: $listNames")
+            Box(modifier = Modifier.fillMaxSize()) {
+
+                GenericSearch(
+                    mListOfJobs = listNames,
+                    onDismissRequest = {
+                        profileViewModel.changeVisibilityCountry(false)
+                    },
+                    onSelectedBank = { item, index ->
+                        profileViewModel.changeVisibilityCountry(false)
+                        profileViewModel.changeTitleGeneric(item)
+                        user.country = item
+                    },
+                    title = stringResource(id = R.string.country_text)
+                )
+            }
         }
     }
 }

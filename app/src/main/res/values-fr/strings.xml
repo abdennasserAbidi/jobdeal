@@ -95,6 +95,8 @@
     <string name="end_date_text">Date de fin</string>
     <string name="study_still_text">En train d\'étudier</string>
 
+    <string name="edit_profile_text">Modifier votre profil</string>
+
     <!--personal form-->
     <string name="full_name_text">Nom et prénom</string>
     <string name="error_full_name_text">Nom complet invalide</string>

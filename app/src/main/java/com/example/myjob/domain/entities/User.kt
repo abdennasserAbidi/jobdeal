@@ -175,6 +175,78 @@ data class User(
         return mapUser
     }
 
+    fun showUserList(lang: String): List<Pair<String, String>> {
+        val mapUser = mutableListOf<Pair<String, String>> ()
+
+        val nameValid = fullName?.isNotEmpty() == true
+        val addressValid = !address.isNullOrEmpty()
+        val newCountryValid = !newCountry.isNullOrEmpty()
+        val phoneValid = !phone.isNullOrEmpty()
+        val countryValid = !country.isNullOrEmpty()
+        val companyNameValid = !companyName.isNullOrEmpty()
+        val nationalityValid = !nationality.isNullOrEmpty()
+        val activitySectorValid = activitySector != null && activitySector != "Choose activity sector"
+        val birthDateValid = birthDate != null && birthDate != "Choose Date"
+        val availabilityValid = !availability.isNullOrEmpty()
+        val rangeSalaryValid = !rangeSalary.isNullOrEmpty()
+        val sexValid = !sexe.isNullOrEmpty()
+        val situationValid = !situation.isNullOrEmpty()
+        val preferredActivitySectorValid = !preferredActivitySector.isNullOrEmpty()
+
+        val listTag = if (lang == "French" || lang == "Français") {
+            listOf(
+                "Nom et prénom",
+                "Adresse",
+                "Sécteur d'activity",
+                "Nom de la societé",
+                "Date de naissance",
+                "Nationalité",
+                "Sexe",
+                "Situation",
+                "Disponibilité",
+                "Marge salariale",
+                "Votre sécteur d'activité",
+                "Téléphone",
+                "Pays",
+                "New Country"
+            )
+        } else {
+            listOf(
+                "Full name",
+                "Address",
+                "Activity sector",
+                "Company name",
+                "Birth date",
+                "Nationality",
+                "Sex",
+                "Situation",
+                "Availability",
+                "Salary range",
+                "Your activity sector",
+                "Phone",
+                "Country",
+                "New Country"
+            )
+        }
+
+        if (nameValid) mapUser.add(Pair(listTag[0], fullName ?: ""))
+        if (addressValid) mapUser.add(Pair(listTag[1], address ?: ""))
+        if (activitySectorValid) mapUser.add(Pair(listTag[2], activitySector ?: ""))
+        if (companyNameValid) mapUser.add(Pair(listTag[3], companyName ?: ""))
+        if (birthDateValid) mapUser.add(Pair(listTag[4], birthDate ?: ""))
+        if (nationalityValid) mapUser.add(Pair(listTag[5], nationality ?: ""))
+        if (sexValid) mapUser.add(Pair(listTag[6], sexe ?: ""))
+        if (situationValid) mapUser.add(Pair(listTag[7], situation ?: ""))
+        if (availabilityValid) mapUser.add(Pair(listTag[8], availability ?: ""))
+        if (rangeSalaryValid) mapUser.add(Pair(listTag[9], rangeSalary ?: ""))
+        if (preferredActivitySectorValid) mapUser.add(Pair(listTag[10], preferredActivitySector ?: ""))
+        if (phoneValid) mapUser.add(Pair(listTag[11], phone ?: ""))
+        if (countryValid) mapUser.add(Pair(listTag[12], country ?: ""))
+        if (newCountryValid) mapUser.add(Pair(listTag[13], newCountry ?: ""))
+
+        return mapUser
+    }
+
 }
 
 val DEFAULT_USER = listOf(

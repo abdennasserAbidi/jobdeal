@@ -95,6 +95,8 @@
     <string name="end_date_text">End date</string>
     <string name="study_still_text">I\'m still studying</string>
 
+    <string name="edit_profile_text">Edit profile</string>
+
     <!--personal form-->
     <string name="full_name_text">Full name</string>
     <string name="error_full_name_text">Invalid full name</string>

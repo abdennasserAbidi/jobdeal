@@ -1,13 +1,14 @@
 package com.example.myjob.remote.source
 
+import com.example.myjob.base.GenericResponse
 import com.example.myjob.common.network.ApiResult
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.LoginResponse
-import com.example.myjob.base.GenericResponse
 import com.example.myjob.domain.response.UserResponse
+import okhttp3.MultipartBody
 
 /**
  * Methods of Remote Data Source
@@ -32,4 +33,6 @@ interface RemoteDataSource {
     suspend fun removeExperience(id: Int, experienceId: Int): UserResponse
     suspend fun removeEducation(id: Int, educationId: Int): UserResponse
     suspend fun getUser(id: Int): User
+    suspend fun uploadFile(file: MultipartBody.Part): UserResponse
+    suspend fun validateProfile(email: String): UserResponse
 }

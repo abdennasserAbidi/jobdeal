@@ -9,6 +9,7 @@ import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
 import kotlinx.coroutines.flow.Flow
+import okhttp3.MultipartBody
 
 /**
  * Methods of Repository
@@ -36,4 +37,6 @@ interface Repository {
     suspend fun removeExperience(id: Int, experienceId: Int): Flow<Resource<UserResponse>>
     suspend fun removeEducation(id: Int, educationId: Int): Flow<Resource<UserResponse>>
     suspend fun getUser(id: Int): Flow<Resource<User>>
+    suspend fun uploadFile(file: MultipartBody.Part): Flow<Resource<String>>
+    suspend fun validateProfile(email: String): Flow<Resource<String>>
 }

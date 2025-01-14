@@ -71,4 +71,56 @@ data class Educations(
 
         return mapUser
     }
+    fun showEducationList(lang: String): List<Pair<String, String>> {
+        val mapUser = mutableListOf<Pair<String, String>>()
+
+        val titleValid = title?.isNotEmpty() == true
+        val schoolNameValid = !schoolName.isNullOrEmpty()
+        val countryValid = !place.isNullOrEmpty()
+        val dateStartValid = dateStart != null && dateStart != "Choose Date"
+        val dateEndValid = dateEnd != null && dateEnd != "Choose Date" && dateEnd.isNotEmpty()
+        val degreeValid = !degree.isNullOrEmpty()
+        val fieldStudyValid = !fieldStudy.isNullOrEmpty()
+        val gradeValid = !grade.isNullOrEmpty()
+        val descriptionValid = !description.isNullOrEmpty()
+
+
+        val listTag = if (lang == "French" || lang == "Français") {
+            listOf(
+                "Titre",
+                "Nom de l'école",
+                "Date de début",
+                "Date de fin",
+                "Emplacement",
+                "Field of study",
+                "Degree",
+                "Grade",
+                "Description"
+            )
+        } else {
+            listOf(
+                "Title",
+                "School name",
+                "Start date",
+                "End date",
+                "Place",
+                "Field of study",
+                "Degree",
+                "Grade",
+                "Description"
+            )
+        }
+
+        if (titleValid) mapUser.add(Pair(listTag[0],title ?: ""))
+        if (schoolNameValid) mapUser.add(Pair(listTag[1],schoolName ?: ""))
+        if (dateStartValid) mapUser.add(Pair(listTag[2],dateStart ?: ""))
+        if (dateEndValid) mapUser.add(Pair(listTag[3],dateEnd ?: ""))
+        if (countryValid) mapUser.add(Pair(listTag[4],place ?: ""))
+        if (degreeValid) mapUser.add(Pair(listTag[5],degree ?: ""))
+        if (fieldStudyValid) mapUser.add(Pair(listTag[6],fieldStudy ?: ""))
+        if (gradeValid) mapUser.add(Pair(listTag[7],grade ?: ""))
+        if (descriptionValid) mapUser.add(Pair(listTag[8],description ?: ""))
+
+        return mapUser
+    }
 }

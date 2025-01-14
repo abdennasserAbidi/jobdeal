@@ -97,9 +97,11 @@ fun AllCareer(
 
 
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .background(White)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(White)
+    ) {
 
         Card(
             elevation = 5.dp,
@@ -222,32 +224,32 @@ fun AllCareer(
                             )
                             {
 
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 5.dp)
-                                ) {
+                                val name = item.companyName ?: ""
+                                val newName =
+                                    if (name.contains('(')) name.split('(')[1].dropLast(1)
+                                    else name
 
-                                    val name = item.companyName ?: ""
-                                    val newName =
-                                        if (name.contains('(')) name.split('(')[1].dropLast(1)
-                                        else name
+                                Text(
+                                    modifier = Modifier.padding(top = 5.dp),
+                                    text = "$newName ",
+                                    color = Color.Black
+                                )
 
-                                    Text(
-                                        text = "$newName ",
-                                        color = Color.Black
-                                    )
-
-                                    Text(text = "- ${item.type ?: ""}", color = Color.Black)
-                                }
+                                Text(
+                                    modifier = Modifier.padding(top = 5.dp),
+                                    text = item.type ?: "",
+                                    color = Color.Black
+                                )
 
                                 val text = if (item.type == "Freelance") {
-                                    val s = if (item.freelanceFee == stringResource(id = R.string.hourly_text))
-                                        R.string.per_hour_text  else R.string.per_day_text
+                                    val s =
+                                        if (item.freelanceFee == stringResource(id = R.string.hourly_text))
+                                            R.string.per_hour_text else R.string.per_day_text
 
-                                    val q = if (item.freelanceFee == stringResource(id = R.string.hourly_text))
-                                        "${item.nbHours ?: 0} hours - ${item.nbDays} days"
-                                    else "${item.nbDays} days"
+                                    val q =
+                                        if (item.freelanceFee == stringResource(id = R.string.hourly_text))
+                                            "${item.nbHours ?: 0} hours - ${item.nbDays} days"
+                                        else "${item.nbDays} days"
 
                                     "${item.hourlyRate} dt ${stringResource(id = s)} - $q"
                                 } else item.place ?: ""
@@ -311,10 +313,11 @@ fun AllCareer(
                             .padding(top = 10.dp, start = 20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = stringResource(id = R.string.update_text),
+                        Text(
+                            text = stringResource(id = R.string.update_text),
                             modifier = Modifier.clickable(
-                              interactionSource = interactionSource,
-                              indication = null
+                                interactionSource = interactionSource,
+                                indication = null
                             ) {
                                 id = item.id
                                 GlobalEntries.idExp = item.id
@@ -324,7 +327,8 @@ fun AllCareer(
                                 profileViewModel.changeDestinationExpForm("list")
                                 navController.navigate(Screen.CareerFormScreen.route)
                             },
-                            color = colorResource(id = R.color.whatsapp))
+                            color = colorResource(id = R.color.whatsapp)
+                        )
 
                         Box(
                             modifier = Modifier

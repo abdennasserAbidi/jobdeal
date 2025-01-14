@@ -1,19 +1,30 @@
 package com.example.myjob.feature.setting
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myjob.base.reources.ResourceState
+import com.example.myjob.common.FileReader
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.domain.usecase.UploadCVUseCase
+import com.example.myjob.domain.usecase.ValidateAccountUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
-    private val sharedPreferences: SharedPreference
+    private val sharedPreferences: SharedPreference,
+    private val uploadCVUseCase: UploadCVUseCase,
+    private val validateAccountUseCase: ValidateAccountUseCase
 ): ViewModel() {
 
     val username = MutableStateFlow("AA")
@@ -55,6 +66,53 @@ class SettingViewModel @Inject constructor(
         GlobalEntries.langState.update {
             sharedPreferences.getString("lang", "English") ?: ""
         }
+    }
+
+    var validationMessage = MutableStateFlow("")
+
+    fun validateAccount() {
+        Log.i("lktrdgvtd", "validateAccount: ${GlobalEntries.user.email}")
+        viewModelScope.launch {
+            validateAccountUseCase.execute("abidi.abdennasser@gmail.com").collect { res ->
+                when(res.status) {
+                    ResourceState.SUCCESS -> {
+                        Log.i("lktrdgvtd", "uploadCV: ${res.data}")
+                        validationMessage.update {
+                            res.data ?: ""
+                        }
+                    }
+                    else -> {
+                        Log.i("lktrdgvtd", "error: ${res.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    var uploadMessage = MutableStateFlow("")
+
+    fun uploadCV(context: Context, fileUri: Uri) {
+        val file = FileReader.getFile(context, fileUri) // Helper function to convert URI to File
+
+        val requestBody: RequestBody = RequestBody.create("application/pdf".toMediaTypeOrNull(), file)
+        val multipartBody: MultipartBody.Part = MultipartBody.Part.createFormData("file", file.name, requestBody)
+
+        viewModelScope.launch {
+            uploadCVUseCase.execute(multipartBody).collect { res ->
+                when(res.status) {
+                    ResourceState.SUCCESS -> {
+                        Log.i("lktrdgvtd", "uploadCV: ${res.data}")
+                        uploadMessage.update {
+                            res.data ?: ""
+                        }
+                    }
+                    else -> {
+                        Log.i("lktrdgvtd", "error: ${res.message}")
+                    }
+                }
+            }
+        }
+
     }
 
     fun logout() {

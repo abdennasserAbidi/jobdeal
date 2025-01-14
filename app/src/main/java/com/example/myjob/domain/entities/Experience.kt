@@ -1,6 +1,5 @@
 package com.example.myjob.domain.entities
 
-import android.util.Log
 import android.view.View
 
 data class Experience(
@@ -71,4 +70,54 @@ data class Experience(
 
         return mapUser
     }
+
+    fun showUser1(lang: String): List<Pair<String, String>> {
+        val mapUser = mutableListOf<Pair<String, String>> ()
+
+        val titleValid = title?.isNotEmpty() == true
+        val companyNameValid = !companyName.isNullOrEmpty()
+        val countryValid = !place.isNullOrEmpty()
+        val dateStartValid = dateStart != null && dateStart != "Choose Date"
+        val dateEndValid = dateEnd != null && dateEnd != "Choose Date" && dateEnd.isNotEmpty()
+        val typeValid = !type.isNullOrEmpty()
+        val typeContractValid = !typeContract.isNullOrEmpty()
+        val salaryValid = salary != null && salary != 1000
+
+
+        val listTag = if (lang == "French" || lang == "Français") {
+            listOf(
+                "Titre",
+                "Nom de l'entreprise",
+                "Date de début",
+                "Date de fin",
+                "Emplacement",
+                "Type",
+                "Type du contrat",
+                "Salaire"
+            )
+        } else {
+            listOf(
+                "Title",
+                "Company name",
+                "Start date",
+                "End date",
+                "Place",
+                "Type",
+                "Contract type",
+                "Salary"
+            )
+        }
+
+        if (titleValid) mapUser.add(Pair(listTag[0], title ?: ""))
+        if (companyNameValid) mapUser.add(Pair(listTag[1], companyName ?: ""))
+        if (dateStartValid) mapUser.add(Pair(listTag[2], dateStart ?: ""))
+        if (dateEndValid) mapUser.add(Pair(listTag[3], dateEnd ?: ""))
+        if (countryValid) mapUser.add(Pair(listTag[4], place ?: ""))
+        if (typeValid) mapUser.add(Pair(listTag[5], type ?: ""))
+        if (typeContractValid) mapUser.add(Pair(listTag[6], typeContract ?: ""))
+        if (salaryValid) mapUser.add(Pair(listTag[7], "${salary ?: 1000}"))
+
+        return mapUser
+    }
+
 }

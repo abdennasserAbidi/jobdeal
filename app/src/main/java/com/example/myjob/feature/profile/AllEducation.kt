@@ -198,24 +198,18 @@ fun AllEducation(
                             )
                             {
 
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 5.dp)
-                                ) {
+                                val name = item.schoolName ?: ""
+                                val newName =
+                                    if (name.contains('(')) name.split('(')[1].dropLast(1)
+                                    else name
 
-                                    val name = item.schoolName ?: ""
-                                    val newName =
-                                        if (name.contains('(')) name.split('(')[1].dropLast(1)
-                                        else name
+                                Text(
+                                    modifier = Modifier.padding(top = 5.dp),
+                                    text = "$newName ",
+                                    color = Color.Black
+                                )
 
-                                    Text(
-                                        text = "$newName ",
-                                        color = Color.Black
-                                    )
-
-                                    Text(text = "- ${item.degree ?: ""}", color = Color.Black)
-                                }
+                                Text(modifier = Modifier.padding(top = 5.dp), text = item.degree ?: "", color = Color.Black)
 
                                 Text(
                                     text = item.place ?: "",

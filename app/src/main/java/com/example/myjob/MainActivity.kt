@@ -354,7 +354,7 @@ class MainActivity : ComponentActivity() {
                         route = Screen.ForgotPasswordScreen.route,
                         deepLinks = listOf(
                             navDeepLink {
-                                uriPattern = "http://192.168.1.12/{token}"
+                                uriPattern = "http://192.168.1.13/{token}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),
@@ -376,13 +376,14 @@ class MainActivity : ComponentActivity() {
                     }*/
 
                     composable(route = Screen.SettingScreen.route) {
+                        isVisibleNav = false
                         SettingScreen(
                             navController = navController,
                             clearData = {
                                 selectedTabIndex = 0
                             },
                             onResumed = { index ->
-                                isVisibleNav = true
+                                isVisibleNav = false
                                 selectedTabIndex = index
                             }
                         )

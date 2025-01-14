@@ -306,6 +306,7 @@
     { "libelly": "Financial Mathematics" },
     { "libelly": "Mathematical Modeling" },
     { "libelly": "Biostatistics" },
-    { "libelly": "Data Analytics" }
+    { "libelly": "Data Analytics" },
+    { "libelly": "Other" }
   ]
 }

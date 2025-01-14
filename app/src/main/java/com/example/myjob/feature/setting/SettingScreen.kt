@@ -1,5 +1,6 @@
 package com.example.myjob.feature.setting
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -60,10 +61,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.base.LanguageHelper
-import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.FileReader
 import com.example.myjob.common.getFileNameFromUri
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.feature.navigation.Screen
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 
 @Composable
 fun SettingScreen(
@@ -89,7 +93,7 @@ fun SettingScreen(
     LaunchedEffect(lifecycleEvent) {
         Log.i("lifecycleExp", "login: $lifecycleEvent")
 
-        if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+        if (lifecycleEvent == Lifecycle.Event.ON_START) {
             onResumed(3)
         }
     }
@@ -165,7 +169,7 @@ fun SettingScreen(
             )
 
             Text(
-                text = "Edit profile",
+                text = stringResource(id = R.string.edit_profile_text),
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .align(Alignment.TopEnd)
@@ -197,6 +201,9 @@ fun SettingScreen(
                 // Handle the selected PDF URI
                 selectedPdfUri = uri
                 pdfName = uri?.let { context.getFileNameFromUri(it) } // Get file name
+                uri?.let {
+                    uploadFile(settingViewModel, context, it)
+                }
             }
         )
 
@@ -341,6 +348,12 @@ fun SettingScreen(
                 .fillMaxWidth()
                 .padding(top = 5.dp)
                 .padding(horizontal = 10.dp)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null
+                ) {
+                    settingViewModel.validateAccount()
+                }
         ) {
             Box(
                 modifier = Modifier
@@ -627,4 +640,7 @@ fun SettingScreen(
     }
 
 
+}
+fun uploadFile(settingViewModel: SettingViewModel, context: Context, fileUri: Uri) {
+    settingViewModel.uploadCV(context, fileUri)
 }

@@ -702,6 +702,10 @@
     {
       "type": "child",
       "libelly": "VP of Engineering"
+    },
+    {
+      "type": "head",
+      "libelly": "Other"
     }
   ]
 }

@@ -11,6 +11,7 @@ import com.example.myjob.domain.entities.DEFAULT_ROLE
 import com.example.myjob.domain.entities.DEFAULT_TYPE
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
+import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.GetAllEducationUseCase
 import com.example.myjob.domain.usecase.GetAllExperienceUseCase
@@ -65,6 +66,18 @@ class ProfileViewModel @Inject constructor(
     fun createPage(pdfDocument: PdfDocument, pageIndex: Int): PdfDocument.Page {
         val pageInfo = PdfDocument.PageInfo.Builder(300, 600, pageIndex).create()
         return pdfDocument.startPage(pageInfo)
+    }
+
+    val listNames = MutableStateFlow<List<String>>(emptyList())
+    fun mapperToListNames(list: List<NewCountry>) {
+        val listCountry = mutableListOf<String>()
+        list.map { newCountry ->
+            val name = newCountry.name
+            val finalName = if (name.contains("(")) name.split("(")[0].trimEnd()
+            else name
+            listCountry.add(finalName)
+        }
+        listNames.update { listCountry }
     }
 
 

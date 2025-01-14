@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import okhttp3.MultipartBody
 import javax.inject.Inject
 
 /**
@@ -281,6 +282,28 @@ class RepositoryImp @Inject constructor(
             val data = remoteDataSource.getUser(id)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+    override suspend fun uploadFile(file: MultipartBody.Part): Flow<Resource<String>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.uploadFile(file)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data.message, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+    override suspend fun validateProfile(email: String): Flow<Resource<String>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.validateProfile(email)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data.message, null))
         } catch (ex: Exception) {
             // Emit error
             emit(Resource(ResourceState.ERROR, null, ex.message))

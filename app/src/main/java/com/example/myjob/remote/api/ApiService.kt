@@ -1,18 +1,21 @@
 package com.example.myjob.remote.api
 
+import com.example.myjob.base.GenericResponse
 import com.example.myjob.common.network.ApiResult
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
-import com.example.myjob.base.GenericResponse
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
+import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Query
 
 /**
@@ -98,4 +101,11 @@ interface ApiService {
 
     @GET("auth/getUser")
     suspend fun getUser(@Query("id") id: Int): User
+
+    @Multipart
+    @POST("auth/uploadCV")
+    suspend fun uploadFile(@Part file: MultipartBody.Part): UserResponse
+
+    @POST("auth/validate-profile")
+    suspend fun validateProfile(@Query("email") email: String): UserResponse
 }

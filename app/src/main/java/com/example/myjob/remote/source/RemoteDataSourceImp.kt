@@ -1,5 +1,6 @@
 package com.example.myjob.remote.source
 
+import android.util.Log
 import com.example.myjob.common.network.ApiResult
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
@@ -9,6 +10,7 @@ import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.base.GenericResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.remote.api.ApiService
+import okhttp3.MultipartBody
 import javax.inject.Inject
 
 /**
@@ -36,6 +38,8 @@ class RemoteDataSourceImp @Inject constructor(
     override suspend fun removeExperience(id: Int, experienceId: Int): UserResponse = apiService.removeExperience(id, experienceId)
     override suspend fun removeEducation(id: Int, educationId: Int): UserResponse = apiService.removeEducation(id, educationId)
     override suspend fun getUser(id: Int): User = apiService.getUser(id)
+    override suspend fun uploadFile(file: MultipartBody.Part): UserResponse = apiService.uploadFile(file)
+    override suspend fun validateProfile(email: String): UserResponse = apiService.validateProfile(email)
 
     override suspend fun forgotPassword(email: String): UserResponse =
         apiService.forgotPassword(email)

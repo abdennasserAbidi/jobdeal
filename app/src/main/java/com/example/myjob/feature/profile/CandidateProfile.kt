@@ -1,6 +1,7 @@
 package com.example.myjob.feature.profile
 
 import android.content.Intent
+import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.pdf.PdfDocument
 import android.os.Build
@@ -319,7 +320,8 @@ fun CandidateProfile(
                                 allExp,
                                 allEduc,
                                 langState,
-                                user
+                                user,
+                                0
                             )
                             val uri = FileProvider.getUriForFile(
                                 context,
@@ -368,93 +370,14 @@ fun CandidateProfile(
         if (showPdf) {
             val langState by profileViewModel.langState.collectAsState()
 
-            /*var selectedFile by remember { mutableStateOf<File?>(null) }
-            var i = 1
-            val pdfDocument = PdfDocument()
-            val file = File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                "form_data.pdf"
-            )
-            CoroutineScope(Dispatchers.Main).launch {
-                profileViewModel.pageIndex.collect { ind ->
-                    Log.i("feagrsbhteht", "end: $ind")
-                    i = ind
-                    val page = profileViewModel.createPage(pdfDocument, i)
-                    val canvas = page.canvas
+            val pageIndex by profileViewModel.pageIndex.collectAsState()
 
-                    val paint = Paint()
-                    paint.textSize = 12f
-
-                    val paintTitle = Paint()
-                    paintTitle.textSize = 14f
-                    paintTitle.isFakeBoldText = true
-
-                    var startY = 25f
-                    val lineHeight = 20f // Space between lines
-
-                    user.showUser(langState).mapValues {
-                        canvas.drawText("${it.key} :  ", 10f, startY, paintTitle)
-                        canvas.drawText(it.value, 200f, startY, paint)
-                        startY += lineHeight // Move to the next line
-                    }
-
-                    if (i == 3) {
-                        pdfDocument.finishPage(page)
-                        pdfDocument.pages.size
-
-                        pdfDocument.writeTo(FileOutputStream(file))
-                        pdfDocument.close()
-
-                        selectedFile = file
-                    } else {
-                        pdfDocument.finishPage(page)
-                        profileViewModel.changeIndex()
-                    }
-                }
-            }*/
-
-            val file = createPdf(profileViewModel, allExp, allEduc, langState, user)
+            val file = createPdf(profileViewModel, allExp, allEduc, langState, user, pageIndex)
 
             var isLoading by remember { mutableStateOf(false) }
             var currentLoadingPage by remember { mutableStateOf<Int?>(null) }
             var pageCount by remember { mutableStateOf<Int?>(null) }
 
-            /*selectedFile?.let {
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    PdfViewer(
-                        modifier = Modifier.fillMaxSize(),
-                        pdfResId = it,
-                        loadingListener = { loading, currentPage, maxPage ->
-                            isLoading = loading
-                            if (currentPage != null) currentLoadingPage = currentPage
-                            if (maxPage != null) pageCount = maxPage
-                        }
-                    )
-                    if (isLoading) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            LinearProgressIndicator(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 30.dp),
-                                progress = if (currentLoadingPage == null || pageCount == null) 0f
-                                else currentLoadingPage!!.toFloat() / pageCount!!.toFloat()
-                            )
-                            Text(
-                                modifier = Modifier
-                                    .align(Alignment.End)
-                                    .padding(top = 5.dp)
-                                    .padding(horizontal = 30.dp),
-                                text = "${currentLoadingPage ?: "-"} pages loaded/${pageCount ?: "-"} total pages"
-                            )
-                        }
-                    }
-                }
-            }*/
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -492,100 +415,205 @@ fun CandidateProfile(
 
         }
     }
-
-
 }
 
-fun createPdf(profileViewModel: ProfileViewModel, allExp: List<Experience>, allEduc: List<Educations>, lang: String, user: User): File {
+fun calculateTextSize(text: String, textSize: Float): Pair<Float, Float> {
+    val paint = Paint()
+    paint.textSize = textSize // Set the desired text size in pixels
+
+    // Calculate the width of the text
+    val textWidth = paint.measureText(text)
+
+    // Calculate the height of the text
+    val fontMetrics = paint.fontMetrics
+    val textHeight = fontMetrics.descent - fontMetrics.ascent
+
+    return Pair(textWidth, textHeight)
+}
+
+fun createPdf(
+    profileViewModel: ProfileViewModel,
+    allExp: List<Experience>,
+    allEduc: List<Educations>,
+    lang: String,
+    user: User,
+    pageIndex: Int
+): File {
 
     val pdfDocument = PdfDocument()
-    val page = profileViewModel.createPage(pdfDocument, 0)
-    val canvas = page.canvas
-
-/*    val pageInfo = PdfDocument.PageInfo.Builder(300, 600, 1).create()
-    val page = pdfDocument.startPage(pageInfo)
-    val canvas = page.canvas*/
-
     val paint = Paint()
-    paint.textSize = 12f
-
     val paintTitle = Paint()
-    paintTitle.textSize = 14f
-    paintTitle.isFakeBoldText = true
+    val pageWidth = 595 // A4 size in points (72 PPI)
+    val pageHeight = 842
+    val lineHeight = 30
+    val maxItemsPerPage = 3
+
+    var currentPage: PdfDocument.Page? = null
+    var canvas: Canvas? = null
+    var itemCount = 0
+
+    var currentPageEducation: PdfDocument.Page? = null
+    var canvasEducation: Canvas? = null
+    var itemCountEducation = 0
+
+    val padding = 50
+    var yPosition = padding
+    val xPosition = 250f
+
+    val paddingEducation = yPosition + 50
+    var yPositionEducation = paddingEducation
+
+    // Create a new page
+    val pageInfo1 = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create()
+    val currentPage1 = pdfDocument.startPage(pageInfo1)
+    val canvas1 = currentPage1?.canvas
 
     var startY = 25f
-    val lineHeight = 20f // Space between lines
 
-    user.showUser(lang).mapValues {
-        canvas.drawText("${it.key} :  ", 10f, startY, paintTitle)
-        canvas.drawText(it.value, 200f, startY, paint)
+    paintTitle.textSize = 20f
+    paintTitle.isFakeBoldText = true
+    canvas1?.drawText("Your profile", (pageWidth/2).toFloat(), startY, paintTitle)
+
+    startY += 70f
+
+    user.showUserList(lang).map {
+        paintTitle.textSize = 20f
+        paintTitle.isFakeBoldText = true
+        paintTitle.textAlign = Paint.Align.LEFT
+        canvas1?.drawText("${it.first} :  ", 10f, startY, paintTitle)
+        canvas1?.drawText(it.second, 250f, startY, paint)
         startY += lineHeight // Move to the next line
     }
 
-    pdfDocument.finishPage(page)
-    //profileViewModel.changeIndex()
+    allExp.mapIndexed { index, experience ->
+        // Start a new page every 3 items or on the first item
+        if (startY >= pageHeight - 100) {
+            if (itemCount % maxItemsPerPage == 0) {
+                pdfDocument.finishPage(currentPage1)
+                // Finish the current page if it exists
+                currentPage?.let { pdfDocument.finishPage(it) }
 
-    /*if (pageIndex == 1) {
-        startY = 25f
+                // Create a new page
+                val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, (index / maxItemsPerPage) + 1).create()
+                currentPage = pdfDocument.startPage(pageInfo)
+                canvas = currentPage?.canvas
+                yPosition = padding // Reset Y position
+            }
 
-        allExp.mapIndexed { index, experience ->
-            canvas.drawText("Experience $index  :", 10f, startY, paintTitle)
+            // Draw content
+            canvas?.apply {
+                paintTitle.textSize = 20f
+                paintTitle.isFakeBoldText = true
+                drawText("Experience ${index + 1}:", padding.toFloat(), yPosition.toFloat(), paintTitle)
+
+                paint.textSize = 14f
+                paint.isFakeBoldText = false
+                yPosition += lineHeight
+                experience.showUser1(lang).map {
+                    drawText("${it.first} :  ", 10f, yPosition.toFloat(), paintTitle)
+                    drawText(it.second, xPosition, yPosition.toFloat(), paint)
+                    yPosition += 40
+                }
+
+                yPosition += 2 * lineHeight // Add spacing between items
+            }
+
+            itemCount++
+
+        } else {
+            // Draw content
+            paintTitle.textSize = 20f
+            paintTitle.isFakeBoldText = true
+            paintTitle.textAlign = Paint.Align.LEFT
             startY += lineHeight // Move to the next line
-            experience.showExperience(lang).mapValues {
-                canvas.drawText("${it.key} :  ", 10f, startY, paintTitle)
-                canvas.drawText(it.value, 200f, startY, paint)
+            canvas1?.drawText("Experience ${index + 1}:", padding.toFloat(), startY, paintTitle)
+            startY += lineHeight // Move to the next line
 
-                //Log.i("pageIndex", "s: ${startY >= 600}")
-
-                *//*if (startY >= 600) {
-                    pdfDocument.finishPage(page)
-                    profileViewModel.changeIndex()
-
-
-                } else*//* startY += lineHeight // Move to the next line
+            paint.textSize = 14f
+            paint.isFakeBoldText = false
+            experience.showUser1(lang).map {
+                canvas1?.drawText("${it.first} :  ", 10f, startY, paintTitle)
+                canvas1?.drawText(it.second, xPosition, startY, paint)
+                startY += lineHeight // Move to the next line
             }
         }
-    }*/
+    }
 
 
-    //Log.i("pageIndex", "s: ${startY >= 600}")
+    allEduc.mapIndexed { index, educations ->
+        // Start a new page every 3 items or on the first item
 
-    startY += lineHeight // Move to the next line
+        if (yPosition >= pageHeight - 100) {
+            if (itemCountEducation % maxItemsPerPage == 0) {
+                currentPage?.let { pdfDocument.finishPage(it) }
+                // Finish the current page if it exists
+                currentPageEducation?.let { pdfDocument.finishPage(it) }
 
-    /*allEduc.mapIndexed { index, experience ->
-        canvas.drawText("Education $index  :", 10f, startY, paintTitle)
-        //Log.i("pageIndex", "s: ${startY >= 600}")
+                // Create a new page
+                val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, (index / maxItemsPerPage) + 1).create()
+                currentPageEducation = pdfDocument.startPage(pageInfo)
+                canvasEducation = currentPageEducation?.canvas
+                yPositionEducation = paddingEducation // Reset Y position
+            }
 
-        startY += lineHeight // Move to the next line
+            // Draw content
+            canvasEducation?.apply {
+                paintTitle.textSize = 20f
+                paintTitle.isFakeBoldText = true
+                paintTitle.textAlign = Paint.Align.LEFT
+                drawText("Education ${index + 1}:", padding.toFloat(), yPositionEducation.toFloat(), paintTitle)
 
-        experience.showEducation(lang).mapValues {
+                paint.textSize = 14f
+                paint.isFakeBoldText = false
+                yPositionEducation += lineHeight
+                educations.showEducationList(lang).map {
+                    drawText("${it.first} :  ", 10f, yPositionEducation.toFloat(), paintTitle)
+                    drawText(it.second, xPosition, yPositionEducation.toFloat(), paint)
+                    yPositionEducation += 40
+                }
 
-            canvas.drawText("${it.key} :  ", 10f, startY, paintTitle)
-            canvas.drawText(it.value, 200f, startY, paint)
-            Log.i("pageIndex", "s: ${startY >= 600}    $startY")
+                yPositionEducation += 2 * lineHeight // Add spacing between items
+            }
 
-            *//*if (startY >= 600) {
-                pdfDocument.finishPage(page)
-                profileViewModel.changeIndex()
+            itemCountEducation++
+        } else {
+            paintTitle.textSize = 20f
+            paintTitle.isFakeBoldText = true
+            paintTitle.textAlign = Paint.Align.LEFT
+            canvas?.drawText("Education ${index + 1}:", padding.toFloat(), yPosition.toFloat(), paintTitle)
 
+            paint.textSize = 14f
+            paint.isFakeBoldText = false
+            yPosition += lineHeight
+            educations.showEducationList(lang).map {
+                canvas?.drawText("${it.first} :  ", 10f, yPosition.toFloat(), paintTitle)
+                canvas?.drawText(it.second, xPosition, yPosition.toFloat(), paint)
+                yPosition += 40
+            }
 
-            } else*//* startY += lineHeight
-            //startY += lineHeight // Move to the next line
+            yPosition += 2 * lineHeight // Add spacing between items
         }
-         startY += lineHeight // Move to the next line
-    }*/
+    }
 
-    Log.i("rttttttt", "createPdf: $startY")
+    currentPageEducation?.let { pdfDocument.finishPage(it) }
 
-    //pdfDocument.finishPage(page)
-
-    // Save the PDF to external storage
+    // Save the PDF to a file
     val file = File(
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-        "form_data.pdf"
+        "UserExperiences.pdf"
     )
-    pdfDocument.writeTo(FileOutputStream(file))
-    pdfDocument.close()
+
+    try {
+        FileOutputStream(file).use { outputStream ->
+            pdfDocument.writeTo(outputStream)
+        }
+        println("PDF saved to ${file.absolutePath}")
+    } catch (e: Exception) {
+        e.printStackTrace()
+        println("Error creating PDF: ${e.message}")
+    } finally {
+        pdfDocument.close()
+    }
 
     return file
 }
