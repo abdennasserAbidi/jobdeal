@@ -27,10 +27,18 @@ class SettingViewModel @Inject constructor(
     private val validateAccountUseCase: ValidateAccountUseCase
 ): ViewModel() {
 
+    val role = MutableStateFlow("")
     val username = MutableStateFlow("AA")
     val userFullName = MutableStateFlow("")
     val allLanguages = MutableStateFlow(listOf("English", "French"))
     val language = MutableStateFlow(sharedPreferences.getString("lang", "English"))
+
+    fun getRole() {
+        role.update {
+            sharedPreferences.getString("role", "") ?: ""
+        }
+    }
+
 
     init {
         val fullName = sharedPreferences.getString("username", "") ?: ""

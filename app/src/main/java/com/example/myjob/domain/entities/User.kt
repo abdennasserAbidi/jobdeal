@@ -1,6 +1,8 @@
 package com.example.myjob.domain.entities
 
+import android.util.Log
 import android.view.View
+import java.util.Calendar
 
 data class User(
     var id: Int? = View.generateViewId(),
@@ -245,6 +247,43 @@ data class User(
         if (newCountryValid) mapUser.add(Pair(listTag[13], newCountry ?: ""))
 
         return mapUser
+    }
+    fun resumeUser(): String {
+        var resume = ""
+
+        val addressValid = !address.isNullOrEmpty()
+        val phoneValid = !phone.isNullOrEmpty()
+        val countryValid = !country.isNullOrEmpty()
+        val nationalityValid = !nationality.isNullOrEmpty()
+        val birthDateValid = birthDate != null && birthDate != "Choose Date"
+        val availabilityValid = !availability.isNullOrEmpty()
+        val rangeSalaryValid = !rangeSalary.isNullOrEmpty()
+        val sexValid = !sexe.isNullOrEmpty()
+        val situationValid = !situation.isNullOrEmpty()
+        val preferredActivitySectorValid = !preferredActivitySector.isNullOrEmpty()
+
+        val t = if (sexe == "Male") "he" else "she"
+        val t1 = if (sexe == "Male") "him" else "her"
+        val t2 = if (sexe == "Male") "his" else "her"
+
+        if (birthDateValid) {
+            val year = birthDate?.split(",")?.get(2)?.trimStart()?.trimEnd()?.toInt() ?: 0
+            val age = Calendar.getInstance().get(Calendar.YEAR) - year
+            resume += "$t is $age years old "
+        }
+        if (nationalityValid) resume += "${nationality}n"
+        if (situationValid) resume += "${situation}, "
+        if (addressValid) resume += "$t situated in $address "
+        if (countryValid) resume += "${country}, "
+        if (preferredActivitySectorValid) resume += "$t preferred working in $preferredActivitySector, "
+        if (rangeSalaryValid) resume += "$t wants a salary range between $rangeSalary, "
+        if (availabilityValid) resume += "$t is available ${availability}, "
+        resume += "you can contact $t1 via $t2 email : $email "
+        if (phoneValid) resume += "or on $t2 phone $phone"
+
+        Log.i("resume", "resumeUser: $resume")
+
+        return resume
     }
 
 }

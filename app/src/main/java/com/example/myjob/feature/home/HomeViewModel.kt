@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.example.myjob.domain.entities.HOME_ENTITY
-import com.example.myjob.domain.entities.HomeEntity
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.home.GetAllUserUseCase
 import com.example.myjob.local.database.SharedPreference
@@ -29,6 +28,15 @@ class HomeViewModel @Inject constructor(
     val listHomeEntity = MutableStateFlow(HOME_ENTITY)
 
     var currentProfile by mutableStateOf(User())
+
+    var lang = ""
+    var langState = MutableStateFlow(lang)
+
+    val resume = MutableStateFlow("")
+
+    fun getResume(user: User) {
+        resume.update { user.resumeUser() }
+    }
 
     fun skipCurrentProfile() {
         // Handle skipping the profile (e.g., move to the next profile)
@@ -83,6 +91,8 @@ class HomeViewModel @Inject constructor(
     }
 
     init {
+        lang = sharedPreference.getString("lang", "") ?: ""
+        langState.update { lang }
         getAllUser()
     }
 }

@@ -4,7 +4,9 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,94 +46,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun JobSwipeStack(
-    profiles: List<User>,
-    onSwipe: (User, String) -> Unit
-) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.7f)
-    ) {
-        profiles.forEachIndexed { index, profile ->
-            if (index == 0) {
-                SwipeableCard(
-                    profile = profile,
-                    onSwiped = onSwipe,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                JobSwipeCard(
-                    profile = profile,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer(
-                            scaleX = 1f - (0.05f * index),
-                            scaleY = 1f - (0.05f * index),
-                            translationY = (20 * index).toFloat()
-                        )
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun SwipeableCard(
-    profile: User, // The data model for the card
-    onSwiped: (User, String) -> Unit, // Callback with swipe direction ("Left" or "Right")
-    modifier: Modifier = Modifier
-) {
-    // Animatable values for X and Y offsets
-    val offsetX = remember { Animatable(0f) }
-    val offsetY = remember { Animatable(0f) }
-
-    Box(
-        modifier = modifier
-            .graphicsLayer(
-                translationX = offsetX.value, // Move the card horizontally
-                translationY = offsetY.value, // Move the card vertically
-                rotationZ = offsetX.value / 20f // Rotate slightly based on horizontal drag
-            )
-            .pointerInput(Unit) {
-                detectDragGestures(
-                    onDragEnd = {
-                        // Determine swipe direction
-                        val swipeThreshold = 300f
-                        when {
-                            offsetX.value > swipeThreshold -> { // Swiped Right
-                                onSwiped(profile, "Right")
-                            }
-
-                            offsetX.value < -swipeThreshold -> { // Swiped Left
-                                onSwiped(profile, "Left")
-                            }
-
-                            else -> { // Reset if not swiped past threshold
-                                CoroutineScope(Dispatchers.Main).launch {
-                                    offsetX.animateTo(0f, animationSpec = tween(300))
-                                    offsetY.animateTo(0f, animationSpec = tween(300))
-                                }
-                            }
-                        }
-                    },
-                    onDrag = { change, dragAmount ->
-                        // Update the offsets during drag
-                        change.consume() // Consume the gesture to prevent propagation
-                        CoroutineScope(Dispatchers.Main).launch {
-                            offsetX.snapTo(offsetX.value + dragAmount.x)
-                            offsetY.snapTo(offsetY.value + dragAmount.y)
-                        }
-                    }
-                )
-            }
-    ) {
-        // Card content goes here
-        JobSwipeCard(profile = profile)
-    }
-}
-
-@Composable
 fun ActionButtons(
     onSave: () -> Unit,
     onSkip: () -> Unit,
@@ -158,12 +72,21 @@ fun ActionButtons(
 @Composable
 fun JobSwipeCard(
     profile: User,
+    lang: String,
+    openProfile: (profile: User) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier,
-        elevation = 8.dp,
-        shape = RoundedCornerShape(20.dp)
+
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Box(
+        modifier = modifier
+            .border(
+                1.dp,
+                Color.Black,
+                RoundedCornerShape(20.dp)
+            )
+            .background(color = Color.Transparent, shape = RoundedCornerShape(20.dp))
     ) {
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -174,9 +97,9 @@ fun JobSwipeCard(
                     .align(Alignment.TopStart)
                     .padding(16.dp)
             ) {
-                val fullName = profile.fullName ?: ""
+                val fullName = (profile.fullName ?: "").trimEnd().trimStart()
                 var l = ""
-                if (fullName.isNotEmpty()) {
+                if (fullName.isNotEmpty() && fullName != " ") {
                     val s = fullName.split(" ")
                     l = "${s[0][0].uppercaseChar()}${s[1][0].uppercaseChar()}"
                 }
@@ -188,17 +111,12 @@ fun JobSwipeCard(
                     Box(
                         modifier = Modifier
                             .size(70.dp)
-                            .border(
-                                1.dp,
-                                colorResource(id = R.color.whatsapp),
-                                CircleShape
-                            )
-                            .background(Color.Transparent, shape = CircleShape),
+                            .background(colorResource(id = R.color.whatsapp), shape = CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = l,
-                            color = colorResource(id = R.color.whatsapp),
+                            color = Color.White,
                             style = TextStyle(
                                 fontSize = 16.sp,
                                 fontFamily = FontFamily(
@@ -231,20 +149,31 @@ fun JobSwipeCard(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // Job or Candidate Details
-
                 Text(profile.address ?: "", style = MaterialTheme.typography.subtitle1)
                 Text(profile.activitySector ?: "", style = MaterialTheme.typography.body2)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(profile.email ?: "", style = MaterialTheme.typography.body2, maxLines = 3)
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    text = profile.resumeUser(),
+                    style = MaterialTheme.typography.body2
+                )
             }
 
             Text(
                 text = "View profile",
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 10.dp)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
+                        openProfile(profile)
+                    },
                 color = colorResource(id = R.color.whatsapp)
             )
         }
-
 
     }
 }

@@ -62,6 +62,7 @@ import com.example.myjob.domain.entities.Subject
 import com.example.myjob.feature.favorites.CandidateFavorites
 import com.example.myjob.feature.favorites.CompanyFavorites
 import com.example.myjob.feature.forgotpassword.ForgotPasswordScreen
+import com.example.myjob.feature.home.DetailsScreen
 import com.example.myjob.feature.home.HomeCandidate
 import com.example.myjob.feature.home.HomeCompany
 import com.example.myjob.feature.login.LoginScreen
@@ -354,7 +355,7 @@ class MainActivity : ComponentActivity() {
                         route = Screen.ForgotPasswordScreen.route,
                         deepLinks = listOf(
                             navDeepLink {
-                                uriPattern = "http://192.168.1.13/{token}"
+                                uriPattern = "http://192.168.170.209/{token}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),
@@ -419,12 +420,17 @@ class MainActivity : ComponentActivity() {
                         )
                     }*/
 
+                    composable(route = Screen.DetailScreen.route) {
+                        DetailsScreen(navController)
+                    }
+
                     composable(route = Screen.HomeScreen.route) {
-                        //isVisibleNav = true
-
-                        if (role == "Company" || role == "Entreprise") HomeCompany(navController)
-                        else HomeCandidate(navController)
-
+                        if (role == "Company" || role == "Entreprise") {
+                            HomeCompany(navController = navController, onResumed = { index ->
+                                isVisibleNav = true
+                                selectedTabIndex = index
+                            })
+                        } else HomeCandidate(navController)
                     }
 
                     composable(route = Screen.CareerScreen.route) {

@@ -8,9 +8,15 @@ import com.example.myjob.domain.entities.User
 fun ProfileCard(
     modifier: Modifier,
     matchProfile: User,
+    lang: String,
+    openProfile: (profile: User) -> Unit
 ) {
     JobSwipeCard(
         profile = matchProfile,
+        openProfile = {
+            openProfile(it)
+        },
+        lang = lang,
         modifier = modifier
     )
 }

@@ -65,6 +65,7 @@ import com.example.myjob.common.FileReader
 import com.example.myjob.common.getFileNameFromUri
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.feature.navigation.Screen
+import com.example.myjob.feature.profile.CompanyProfile
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -80,6 +81,7 @@ fun SettingScreen(
     val language by settingViewModel.language.collectAsState()
     val username by settingViewModel.username.collectAsState()
     val userFullName by settingViewModel.userFullName.collectAsState()
+    val role by settingViewModel.role.collectAsState()
     //val userFullName = GlobalEntries.user.fullName ?: ""
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -94,6 +96,7 @@ fun SettingScreen(
         Log.i("lifecycleExp", "login: $lifecycleEvent")
 
         if (lifecycleEvent == Lifecycle.Event.ON_START) {
+            settingViewModel.getRole()
             onResumed(3)
         }
     }
@@ -177,7 +180,12 @@ fun SettingScreen(
                         interactionSource = interactionSource,
                         indication = null
                     ) {
-                        navController.navigate(Screen.ProfileScreen.route)
+                        if (role.isNotEmpty()) {
+                            val screen =
+                                if (role == "Company" || role == "Entreprise") Screen.CompanyProfileScreen.route
+                                else Screen.ProfileScreen.route
+                            navController.navigate(screen)
+                        } else navController.navigate(Screen.ProfileScreen.route)
                     },
                 style = TextStyle(
                     fontSize = 14.sp,
