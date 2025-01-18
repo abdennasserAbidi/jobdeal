@@ -9,6 +9,7 @@ import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
 import okhttp3.MultipartBody
+import okhttp3.ResponseBody
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -108,4 +109,7 @@ interface ApiService {
 
     @POST("auth/validate-profile")
     suspend fun validateProfile(@Query("email") email: String): UserResponse
+
+    @GET("auth/download")
+    suspend fun downloadFile(@Query("fileName") fileName: String): ResponseBody
 }

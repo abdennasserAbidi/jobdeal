@@ -50,6 +50,12 @@ class SettingViewModel @Inject constructor(
         }
     }
 
+    fun getPDFName(): String {
+        val fullName = sharedPreferences.getString("username", "") ?: ""
+        return if (fullName.contains(" "))
+            "${fullName.replace(" ", "").trim()}Detail.pdf" else ""
+    }
+
     fun changeLanguage(lang: String) {
         if (lang == "French") {
             val list = listOf("Anglais", "Français")
@@ -99,11 +105,12 @@ class SettingViewModel @Inject constructor(
 
     var uploadMessage = MutableStateFlow("")
 
-    fun uploadCV(context: Context, fileUri: Uri) {
+    fun uploadCV(context: Context, fileUri: Uri, pdfName: String) {
         val file = FileReader.getFile(context, fileUri) // Helper function to convert URI to File
 
         val requestBody: RequestBody = RequestBody.create("application/pdf".toMediaTypeOrNull(), file)
-        val multipartBody: MultipartBody.Part = MultipartBody.Part.createFormData("file", file.name, requestBody)
+        val expectedName = if (pdfName.contains("(")) pdfName.split(" ")[0] else pdfName
+        val multipartBody: MultipartBody.Part = MultipartBody.Part.createFormData("file", expectedName, requestBody)
 
         viewModelScope.launch {
             uploadCVUseCase.execute(multipartBody).collect { res ->

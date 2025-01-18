@@ -1,7 +1,16 @@
 package com.example.myjob.base
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
+import androidx.work.Configuration
+import androidx.work.Constraints
+import androidx.work.Data
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.example.myjob.base.workmanager.FileDownloadWorker
+import com.example.myjob.base.workmanager.MyWorkerFactory
 import com.example.myjob.common.loadJSONFromAsset
 import com.example.myjob.domain.entities.AllSchools
 import com.example.myjob.domain.entities.AllSubject
@@ -12,16 +21,25 @@ import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Core Application Class
  */
 @HiltAndroidApp
-class MyApp : Application() {
+class MyApp : Application(), Configuration.Provider {
 
     var allSubjectList: MutableList<Subject> = mutableListOf()
     var listNameCountries: MutableList<String> = mutableListOf()
     var listSchools: MutableList<School> = mutableListOf()
+
+    @Inject
+    lateinit var workerFactory: MyWorkerFactory
+
+    override fun getWorkManagerConfiguration() =
+        Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 
     override fun onCreate() {
         super.onCreate()
@@ -37,6 +55,7 @@ class MyApp : Application() {
         /*CoroutineScope(Dispatchers.Default).launch {
             generateCountriesList()
         }*/
+
     }
 
     private fun generateSubjectList() {

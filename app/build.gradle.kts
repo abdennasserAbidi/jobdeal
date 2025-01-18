@@ -67,6 +67,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.hilt:hilt-common:1.2.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
@@ -105,9 +106,9 @@ dependencies {
     implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
 
     // Room
-    implementation ("androidx.room:room-runtime:2.4.3")
-    kapt ("androidx.room:room-compiler:2.4.3")
-    implementation ("androidx.room:room-ktx:2.4.3")
+    implementation ("androidx.room:room-runtime:2.6.1")
+    kapt ("androidx.room:room-compiler:2.6.1")
+    implementation ("androidx.room:room-ktx:2.6.1")
 
     // Preferences DataStore
     implementation ("androidx.datastore:datastore-preferences:1.0.0")
@@ -165,4 +166,8 @@ dependencies {
 
     implementation ("androidx.paging:paging-runtime:3.2.0-alpha06")
     implementation ("androidx.paging:paging-compose:1.0.0-alpha20")
+
+    implementation ("androidx.work:work-runtime-ktx:2.8.0")
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0") // Retrofit
+    implementation ("com.squareup.okhttp3:okhttp:4.10.0") // OkHttp for ResponseBody
 }

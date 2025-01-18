@@ -597,10 +597,12 @@ fun createPdf(
 
     currentPageEducation?.let { pdfDocument.finishPage(it) }
 
+    val expectedName = user.fullName?.replace(" ", "")
+
     // Save the PDF to a file
     val file = File(
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-        "UserExperiences.pdf"
+        "${expectedName?.trim()}Detail.pdf"
     )
 
     try {

@@ -51,6 +51,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -65,6 +66,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myjob.R
+import com.example.myjob.common.GlobalEntries.scheduleFileDownload
 import com.example.myjob.domain.entities.HOME_ENTITY
 import com.example.myjob.domain.entities.HomeEntity
 import com.example.myjob.feature.favorites.Button3D
@@ -76,6 +78,10 @@ import com.example.myjob.feature.navigation.Screen
 fun HomeCandidate(navController: NavController, homeViewModel: HomeViewModel = hiltViewModel()) {
 
     val interactionSource = remember { MutableInteractionSource() }
+
+    Log.i("rzzghgrzhtzh", "HomeCandidate: ${homeViewModel.getPDFName()}")
+
+    scheduleFileDownload(LocalContext.current, homeViewModel.getPDFName())
 
     HomeCandidatePreview(navController, interactionSource, homeViewModel)
 

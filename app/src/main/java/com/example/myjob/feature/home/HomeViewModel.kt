@@ -70,6 +70,12 @@ class HomeViewModel @Inject constructor(
         MutableStateFlow(value = PagingData.empty())
     val user: MutableStateFlow<PagingData<User>> get() = _user
 
+    fun getPDFName(): String {
+        val fullName = sharedPreference.getString("username", "") ?: ""
+        return if (fullName.contains(" "))
+            "${fullName.replace(" ", "").trim()}Detail.pdf" else ""
+    }
+
     private fun getAllUser() {
         viewModelScope.launch {
             getAllUserUseCase.execute().collectLatest { res ->

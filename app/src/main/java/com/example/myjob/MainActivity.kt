@@ -12,6 +12,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresExtension
+import androidx.compose.foundation.border
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
@@ -35,8 +36,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -290,7 +294,6 @@ class MainActivity : ComponentActivity() {
             // creating a list of all the tabs
             val tabBarItems = listOf(homeTab, alertsTab, settingsTab, moreTab)
 
-
             Scaffold(bottomBar = {
                 if (isVisibleNav) TabView(
                     tabBarItems,
@@ -355,7 +358,7 @@ class MainActivity : ComponentActivity() {
                         route = Screen.ForgotPasswordScreen.route,
                         deepLinks = listOf(
                             navDeepLink {
-                                uriPattern = "http://192.168.170.209/{token}"
+                                uriPattern = "http://192.168.1.13/{token}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),
@@ -491,7 +494,10 @@ fun TabView(
 ) {
     //var selectedTabIndex by rememberSaveable { mutableStateOf(defaultIndex) }
 
-    NavigationBar {
+    NavigationBar(
+        modifier = Modifier.border(1.dp, Color.LightGray),
+        containerColor = Color.White
+    ) {
         // looping over each tab to generate the views and navigation for each item
         tabBarItems.forEachIndexed { index, tabBarItem ->
             NavigationBarItem(
