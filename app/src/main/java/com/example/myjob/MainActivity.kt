@@ -49,8 +49,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import com.example.myjob.base.GenericSource
 import com.example.myjob.base.MyApp
 import com.example.myjob.common.FileReader
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.langState
 import com.example.myjob.common.VoiceToTextParser
 import com.example.myjob.common.default
@@ -63,10 +65,12 @@ import com.example.myjob.domain.entities.AllSchools
 import com.example.myjob.domain.entities.CountryPickerViewState
 import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.Subject
+import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.favorites.CandidateFavorites
 import com.example.myjob.feature.favorites.CompanyFavorites
 import com.example.myjob.feature.forgotpassword.ForgotPasswordScreen
 import com.example.myjob.feature.home.DetailsScreen
+import com.example.myjob.feature.home.FilterScreen
 import com.example.myjob.feature.home.HomeCandidate
 import com.example.myjob.feature.home.HomeCompany
 import com.example.myjob.feature.login.LoginScreen
@@ -78,6 +82,7 @@ import com.example.myjob.feature.profile.AllEducation
 import com.example.myjob.feature.profile.CandidateProfile
 import com.example.myjob.feature.profile.CareerFormScreen
 import com.example.myjob.feature.profile.CompanyProfile
+import com.example.myjob.feature.profile.CountryCodeScreen
 import com.example.myjob.feature.profile.EducationForm
 import com.example.myjob.feature.profile.PersonalForm
 import com.example.myjob.feature.profile.ProfileScreen
@@ -221,6 +226,7 @@ class MainActivity : ComponentActivity() {
             FileReader.readAssetFile(this@MainActivity, "countries.json").toCountryList()
         }
         listCountry = countries
+
         viewState.value = CountryPickerViewState(countries)
     }
 
@@ -309,6 +315,7 @@ class MainActivity : ComponentActivity() {
                 val cameraPermissionState: PermissionState =
                     rememberPermissionState(Manifest.permission.CAMERA)
 
+                GlobalEntries.role
                 val role = sharedPreference.getString("role", "") ?: ""
                 isVisibleNav = role == "Company" || role == "Entreprise"
 
@@ -380,14 +387,15 @@ class MainActivity : ComponentActivity() {
                     }*/
 
                     composable(route = Screen.SettingScreen.route) {
-                        isVisibleNav = false
+                        if (role == "Candidate" || role == "Candidat") isVisibleNav = false
+
                         SettingScreen(
                             navController = navController,
                             clearData = {
                                 selectedTabIndex = 0
                             },
                             onResumed = { index ->
-                                isVisibleNav = false
+                                if (role == "Candidate" || role == "Candidat") isVisibleNav = false
                                 selectedTabIndex = index
                             }
                         )
@@ -423,12 +431,31 @@ class MainActivity : ComponentActivity() {
                         )
                     }*/
 
-                    composable(route = Screen.DetailScreen.route) {
-                        DetailsScreen(navController)
+                    /*composable(
+                        route = "${Screen.DetailScreen.route}/userJson",
+                        arguments = listOf(navArgument("userJson") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val userJson = backStackEntry.arguments?.getString("userJson")
+                        val user = Gson().fromJson(userJson, User::class.java)
+                        DetailsScreen(navController, user)
+                    }*/
+
+                    composable(
+                        route = Screen.DetailScreen.route,
+                    ) {
+                        isVisibleNav = false
+                        DetailsScreen(navController, hideNavigation = {
+                            isVisibleNav = false
+                        })
+                    }
+
+                    composable(route = Screen.FilterScreen.route) {
+                        FilterScreen(navController)
                     }
 
                     composable(route = Screen.HomeScreen.route) {
                         if (role == "Company" || role == "Entreprise") {
+                            isVisibleNav = true
                             HomeCompany(navController = navController, onResumed = { index ->
                                 isVisibleNav = true
                                 selectedTabIndex = index
@@ -458,6 +485,10 @@ class MainActivity : ComponentActivity() {
                             list = listCountry,
                             allSubjects = allSubjects
                         )
+                    }
+
+                    composable(route = Screen.CountryCodeScreen.route) {
+                        CountryCodeScreen(navController = navController)
                     }
 
                     composable(route = Screen.EducationScreen.route) {

@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -40,6 +41,11 @@ fun ProfileScreen(
     navController: NavController,
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
+    PreviewScreen()
+}
+
+@Composable
+fun PreviewScreen() {
     // Scroll state to track the scroll position of the Column
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
@@ -136,13 +142,13 @@ fun ProfileScreen(
         ) {
 
             SummarySection()
-            CareerSection()
+            //CareerSection(scrollState, experience)
             EducationSection()
             LicenceSection()
             SkillSection()
             LanguageSection()
             ResumeSection()
-            RoleSection(profileViewModel)
+            //RoleSection(profileViewModel)
             Spacer(modifier = Modifier.height(50.dp))
 
             val density = LocalDensity.current
@@ -308,4 +314,10 @@ fun ProfileScreen(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun PreviewDetail() {
+    PreviewScreen()
 }

@@ -1,10 +1,19 @@
 package com.example.myjob.feature.profile
 
+import android.content.Context
 import android.graphics.pdf.PdfDocument
 import android.util.Log
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import com.example.myjob.base.GenericSource
+import com.example.myjob.base.JsonPagingSource
+import com.example.myjob.base.reources.Resource
+import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.DEFAULT_DEGREE
 import com.example.myjob.domain.entities.DEFAULT_ROLE
@@ -28,8 +37,13 @@ import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -48,6 +62,52 @@ class ProfileViewModel @Inject constructor(
     private val removeExperienceUseCase: RemoveExperienceUseCase,
     private val removeEducationUseCase: RemoveEducationUseCase
 ) : ViewModel() {
+
+
+    val listFlag: MutableStateFlow<PagingData<NewCountry>> = MutableStateFlow(value = PagingData.empty())
+
+    fun loadItems(page: Int, pageSize: Int, context: Context): List<NewCountry> {
+        // Read the JSON file
+        val json = context.assets.open("countries.json").bufferedReader().use { it.readText() }
+        val items: List<NewCountry> = Gson().fromJson(json, Array<NewCountry>::class.java).toList()
+        Log.i("reachedLast", "CountryPicker: $page")
+
+
+        // Calculate start and end indices
+        val startIndex = page * pageSize
+        val endIndex = (startIndex + pageSize).coerceAtMost(items.size)
+        Log.i("reachedLast", "startIndex: $startIndex")
+        Log.i("reachedLast", "endIndex: $endIndex")
+        // Return the sublist for the requested page
+        return if (startIndex < items.size) items.subList(startIndex, endIndex) else emptyList()
+    }
+
+    private fun fetchCountriesFlag(context: Context): Flow<Resource<PagingData<NewCountry>>> = flow {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            pagingSourceFactory = {
+                JsonPagingSource(context, "countries.json")
+            }
+        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+        emitAll(
+            pager.map { pagingData ->
+                Resource(ResourceState.SUCCESS, pagingData, null)
+            }
+        )
+    }.catch { ex ->
+        emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
+
+    fun changeListFlag(context: Context) {
+        viewModelScope.launch {
+            fetchCountriesFlag(context).collect { res ->
+                listFlag.update {
+                    res.data ?: PagingData.empty()
+                }
+            }
+        }
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // PDF

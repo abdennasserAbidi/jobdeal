@@ -32,6 +32,7 @@ interface RemoteDataSource {
     suspend fun savePersonalInfo(user: User): UserResponse
     suspend fun removeExperience(id: Int, experienceId: Int): UserResponse
     suspend fun removeEducation(id: Int, educationId: Int): UserResponse
+    suspend fun saveToFavorite(id: Int, isFavorite: Boolean): UserResponse
     suspend fun getUser(id: Int): User
     suspend fun uploadFile(file: MultipartBody.Part): UserResponse
     suspend fun validateProfile(email: String): UserResponse

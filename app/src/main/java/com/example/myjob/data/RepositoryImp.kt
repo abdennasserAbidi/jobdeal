@@ -275,6 +275,18 @@ class RepositoryImp @Inject constructor(
                 emit(Resource(ResourceState.ERROR, null, ex.message))
             }
         }
+    override suspend fun saveToFavorite(id: Int, isFavorite: Boolean): Flow<Resource<UserResponse>> =
+        flow {
+            try {
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.saveToFavorite(id, isFavorite)
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
+        }
 
     override suspend fun getUser(id: Int): Flow<Resource<User>> = flow {
         try {

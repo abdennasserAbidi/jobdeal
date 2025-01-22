@@ -37,6 +37,7 @@ class RemoteDataSourceImp @Inject constructor(
     override suspend fun savePersonalInfo(user: User): UserResponse = apiService.savePersonalInfo(user)
     override suspend fun removeExperience(id: Int, experienceId: Int): UserResponse = apiService.removeExperience(id, experienceId)
     override suspend fun removeEducation(id: Int, educationId: Int): UserResponse = apiService.removeEducation(id, educationId)
+    override suspend fun saveToFavorite(id: Int, isFavorite: Boolean): UserResponse = apiService.saveToFavorite(id, isFavorite)
     override suspend fun getUser(id: Int): User = apiService.getUser(id)
     override suspend fun uploadFile(file: MultipartBody.Part): UserResponse = apiService.uploadFile(file)
     override suspend fun validateProfile(email: String): UserResponse = apiService.validateProfile(email)

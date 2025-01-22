@@ -46,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -58,14 +59,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.GenericSearch
-import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.SalaryRangeSeekBar
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.Subject
-import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.home.CountryPicker
 import com.example.myjob.feature.home.CustomPhoneKit
 import com.example.myjob.feature.navigation.Screen
@@ -82,25 +82,27 @@ fun PersonalForm(
 ) {
 
     val interactionSource = remember { MutableInteractionSource() }
+    val context = LocalContext.current
     //val user = GlobalEntries.user
     val user by profileViewModel.user.collectAsState()
-    Log.i("hahidefault", "PersonalForm: $user")
     var showCountryPicker by remember { mutableStateOf(false) }
     var selectedCountry by remember { mutableStateOf(NewCountry("tn", "Tunisia", 216)) }
     val isShowed by profileViewModel.isCountryShowed.collectAsState()
     val isSearch by profileViewModel.isSearch.collectAsState()
     val isDateShowed by profileViewModel.isDateShowed.collectAsState()
     val listNames by profileViewModel.listNames.collectAsState()
+    val listFlagLazy = profileViewModel.listFlag.collectAsLazyPagingItems()
+    val listFlag = listFlagLazy.itemSnapshotList.items
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+            profileViewModel.changeListFlag(context)
             profileViewModel.getUserById()
             profileViewModel.mapperPersonalInfo(user)
             profileViewModel.mapperToListNames(list)
         }
     }
-
     Box(modifier = Modifier.fillMaxSize()) {
 
         Column(
@@ -680,6 +682,7 @@ fun PersonalForm(
                 defaultPhone = if (completePhone.contains(" ")) completePhone.split(" ")[1] else completePhone,
                 onClick = {
                     showCountryPicker = true
+                    //navController.navigate(Screen.CountryCodeScreen.route)
                 },
                 onValueChanged = {
                     val phoneComplete = "+${selectedCountry.code} $it"
@@ -784,15 +787,15 @@ fun PersonalForm(
 
         AnimatedVisibility(visible = showCountryPicker) {
             CountryPicker(
-                list,
+                listFlagLazy,
+                profileViewModel,
                 onClick = { newCountry ->
                     selectedCountry = newCountry
                     showCountryPicker = false
-                },
-                onBack = {
-                    showCountryPicker = false
                 }
-            )
+            ) {
+                showCountryPicker = false
+            }
         }
 
         AnimatedVisibility(

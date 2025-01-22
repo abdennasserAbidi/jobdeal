@@ -23,6 +23,9 @@
         <domain includeSubdomains="true">192.168.129.209</domain> <!-- Your server IP -->
         <domain includeSubdomains="true">192.168.110.209</domain> <!-- Your server IP -->
         <domain includeSubdomains="true">192.168.29.209</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.133.209</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.1.161</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.244.209</domain> <!-- Your server IP -->
         <domain includeSubdomains="true">192.168.1.13</domain> <!-- Your server IP -->
     </domain-config>
 </network-security-config>

@@ -93,6 +93,11 @@ interface ApiService {
         @Query("id") id: Int,
         @Query("experienceId") experienceId: Int
     ): UserResponse
+    @POST("auth/updatefavorite")
+    suspend fun saveToFavorite(
+        @Query("id") id: Int,
+        @Query("isFavorite") isFavorite: Boolean
+    ): UserResponse
 
     @POST("auth/removeEducation")
     suspend fun removeEducation(

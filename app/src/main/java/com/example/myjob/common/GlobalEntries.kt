@@ -27,10 +27,14 @@ object GlobalEntries {
     var isFiltering = false
     var idExp = 0
     var idStudy = 0
+    var listIdToRemove = mutableListOf<Int>()
+    var listIdAccepted = mutableListOf<Int>()
     var experience = Experience()
     var educations = Educations()
     var user = User()
+    var userForCompany = User()
     var language = "Français"
+    var role = "Candidate"
     var isVisibleNav = MutableStateFlow(true)
     var langState = MutableStateFlow("Français")
     var languageShared = MutableSharedFlow<String>()

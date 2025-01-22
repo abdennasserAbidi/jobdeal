@@ -36,6 +36,7 @@ interface Repository {
     suspend fun savePersonalInfo(user: User): Flow<Resource<UserResponse>>
     suspend fun removeExperience(id: Int, experienceId: Int): Flow<Resource<UserResponse>>
     suspend fun removeEducation(id: Int, educationId: Int): Flow<Resource<UserResponse>>
+    suspend fun saveToFavorite(id: Int, isFavorite: Boolean): Flow<Resource<UserResponse>>
     suspend fun getUser(id: Int): Flow<Resource<User>>
     suspend fun uploadFile(file: MultipartBody.Part): Flow<Resource<String>>
     suspend fun validateProfile(email: String): Flow<Resource<String>>

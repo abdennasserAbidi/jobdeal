@@ -31,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -122,7 +123,7 @@ fun SettingScreen(
                     .padding(end = 20.dp)
             ) {
 
-                Column(
+                /*Column(
                     modifier = Modifier
                         .padding(top = 30.dp)
                         .align(Alignment.Center),
@@ -162,26 +163,28 @@ fun SettingScreen(
                             )
                         )
                     )
+                }*/
+
+                if (role == "Candidate" || role == "Candidat") {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        modifier = Modifier
+                            .padding(top = 10.dp, start = 10.dp)
+                            .align(Alignment.TopStart)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                navController.popBackStack()
+                            },
+                        contentDescription = ""
+                    )
                 }
 
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.Default.Edit,
                     modifier = Modifier
                         .padding(top = 10.dp, start = 10.dp)
-                        .align(Alignment.TopStart)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null
-                        ) {
-                            navController.popBackStack()
-                        },
-                    contentDescription = ""
-                )
-
-                Text(
-                    text = stringResource(id = R.string.edit_profile_text),
-                    modifier = Modifier
-                        .padding(top = 10.dp)
                         .align(Alignment.TopEnd)
                         .clickable(
                             interactionSource = interactionSource,
@@ -194,8 +197,16 @@ fun SettingScreen(
                                 navController.navigate(screen)
                             } else navController.navigate(Screen.ProfileScreen.route)
                         },
+                    contentDescription = ""
+                )
+
+                Text(
+                    text = "Settings",
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .align(Alignment.TopCenter),
                     style = TextStyle(
-                        fontSize = 14.sp,
+                        fontSize = 16.sp,
                         fontFamily = FontFamily(
                             Font(
                                 R.font.rubik_medium,
@@ -227,144 +238,152 @@ fun SettingScreen(
                 }
             )
 
-            if (pdfName != null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
-                        .padding(top = 20.dp)
-                        .padding(horizontal = 10.dp)
-                        .border(
-                            1.dp,
-                            shape = RoundedCornerShape(3.dp),
-                            color = colorResource(id = R.color.whatsapp)
-                        )
-                        .background(Color.Transparent),
-                    contentAlignment = Alignment.Center
-                ) {
-
-                    Column(
-                        modifier = Modifier.clickable(
-                            interactionSource = interactionSource,
-                            indication = null
-                        ) {
-                            showPdf = true
-                        },
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.pdf),
-                            tint = Color.Red,
-                            modifier = Modifier.size(30.dp),
-                            contentDescription = ""
-                        )
-                        Text(
-                            text = expectedName ?: "",
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(top = 5.dp)
-                        )
-                    }
-                }
-
-            } else {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
-                        .padding(top = 20.dp)
-                        .padding(horizontal = 10.dp)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null
-                        ) {
-                            isUploaded = true
-                            pdfPickerLauncher.launch(arrayOf("application/pdf"))
-                        },
-                    elevation = 5.dp
-                ) {
+            if (role == "Candidate" || role == "Candidat") {
+                if (pdfName != null) {
                     Box(
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp)
+                            .padding(top = 20.dp)
+                            .padding(horizontal = 10.dp)
+                            .border(
+                                1.dp,
+                                shape = RoundedCornerShape(3.dp),
+                                color = colorResource(id = R.color.whatsapp)
+                            )
+                            .background(Color.Transparent),
+                        contentAlignment = Alignment.Center
                     ) {
 
-                        Image(
-                            painter = painterResource(id = R.drawable.cvtable),
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop,
-                            contentDescription = ""
-                        )
+                        Column(
+                            modifier = Modifier.clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                showPdf = true
+                            },
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.pdf),
+                                tint = Color.Red,
+                                modifier = Modifier.size(30.dp),
+                                contentDescription = ""
+                            )
+                            Text(
+                                text = expectedName ?: "",
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.padding(top = 5.dp)
+                            )
+                        }
+                    }
 
+                } else {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp)
+                            .padding(top = 20.dp)
+                            .padding(horizontal = 10.dp)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                isUploaded = true
+                                pdfPickerLauncher.launch(arrayOf("application/pdf"))
+                            },
+                        elevation = 5.dp
+                    ) {
                         Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    Brush.horizontalGradient(
-                                        colors = listOf(
-                                            Color.White,       // Start color
-                                            Color.White,      // Keep the first half white
-                                            Color.White.copy(alpha = 0.8f),     // Keep the first half white
-                                            Color.Transparent // End transparent
-                                        ),
-                                        startX = 0f,         // Start at the left
-                                        endX = 1000f         // End at the right (adjust as needed)
-                                    )
-                                )
+                            modifier = Modifier.fillMaxSize()
                         ) {
 
-                            Column(
+                            Image(
+                                painter = painterResource(id = R.drawable.cvtable),
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                                contentDescription = ""
+                            )
+
+                            Box(
                                 modifier = Modifier
-                                    .align(Alignment.CenterStart)
-                                    .padding(start = 20.dp)
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            colors = listOf(
+                                                Color.White,       // Start color
+                                                Color.White,      // Keep the first half white
+                                                Color.White.copy(alpha = 0.8f),     // Keep the first half white
+                                                Color.Transparent // End transparent
+                                            ),
+                                            startX = 0f,         // Start at the left
+                                            endX = 1000f         // End at the right (adjust as needed)
+                                        )
+                                    )
                             ) {
 
-                                Text(
-                                    text = stringResource(id = R.string.my_resume_text),
-                                    color = colorResource(id = R.color.whatsapp),
-                                    modifier = Modifier.padding(top = 10.dp),
-                                    style = TextStyle(
-                                        fontSize = 16.sp,
-                                        fontFamily = FontFamily(
-                                            Font(
-                                                R.font.rubikbold,
-                                                weight = FontWeight.Bold
+                                Column(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterStart)
+                                        .padding(start = 20.dp)
+                                ) {
+
+                                    Text(
+                                        text = stringResource(id = R.string.my_resume_text),
+                                        color = colorResource(id = R.color.whatsapp),
+                                        modifier = Modifier.padding(top = 10.dp),
+                                        style = TextStyle(
+                                            fontSize = 16.sp,
+                                            fontFamily = FontFamily(
+                                                Font(
+                                                    R.font.rubikbold,
+                                                    weight = FontWeight.Bold
+                                                )
                                             )
                                         )
                                     )
-                                )
 
-                                Text(
-                                    text = stringResource(id = R.string.upload_resume_text),
-                                    color = Color.Gray,
-                                    modifier = Modifier.padding(top = 10.dp)
-                                )
+                                    Text(
+                                        text = stringResource(id = R.string.upload_resume_text),
+                                        color = Color.Gray,
+                                        modifier = Modifier.padding(top = 10.dp)
+                                    )
+                                }
+
                             }
-
                         }
                     }
                 }
             }
 
-            Card(
-                elevation = 5.dp,
-                shape = RectangleShape,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 10.dp)
-            ) {
-                Box(
+            Spacer(modifier = Modifier.height(50.dp))
+
+            if (role == "Candidate" || role == "Candidat") {
+                Card(
+                    elevation = 5.dp,
+                    shape = RectangleShape,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 15.dp, horizontal = 10.dp)
+                        .padding(horizontal = 10.dp)
                 ) {
-                    Text(text = "Notifications", modifier = Modifier.align(Alignment.CenterStart))
-                    Icon(
-                        imageVector = Icons.Default.ArrowForwardIos,
+                    Box(
                         modifier = Modifier
-                            .size(20.dp)
-                            .align(Alignment.CenterEnd),
-                        contentDescription = ""
-                    )
+                            .fillMaxWidth()
+                            .padding(vertical = 15.dp, horizontal = 10.dp)
+                    ) {
+                        Text(
+                            text = "Notifications",
+                            modifier = Modifier.align(Alignment.CenterStart)
+                        )
+                        Icon(
+                            imageVector = Icons.Default.ArrowForwardIos,
+                            modifier = Modifier
+                                .size(20.dp)
+                                .align(Alignment.CenterEnd),
+                            contentDescription = ""
+                        )
+                    }
                 }
             }
 
@@ -675,7 +694,7 @@ fun SettingScreen(
             // Save the PDF to a file
             val file = File(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                userName
+                pdfName
             )
 
             Box(

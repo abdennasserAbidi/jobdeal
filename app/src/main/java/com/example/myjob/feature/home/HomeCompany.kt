@@ -25,7 +25,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -41,8 +44,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.rememberLifecycleEvent
+import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.navigation.Screen
+import com.google.gson.Gson
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalSwipeableCardApi::class)
@@ -53,7 +59,10 @@ fun HomeCompany(
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
 
+    var visibleUser by remember { mutableStateOf(User()) }
     val allUser by homeViewModel.users.collectAsState()
+    val updateFavoriteState by homeViewModel.updateFavoriteState.collectAsState()
+    val qs by homeViewModel.qs.collectAsState()
     val resume by homeViewModel.resume.collectAsState()
     val lazyPagingItems = homeViewModel.user.collectAsLazyPagingItems()
 
@@ -62,6 +71,8 @@ fun HomeCompany(
     }
 
     val users = lazyPagingItems.itemSnapshotList.items
+
+    val filteredItems by homeViewModel.filterdUser.collectAsState()
 
     val scope = rememberCoroutineScope()
 
@@ -86,6 +97,7 @@ fun HomeCompany(
                         .fillMaxWidth(0.8f)
                         .padding(top = 10.dp)
                         .clickable {
+                            navController.navigate(Screen.FilterScreen.route)
                         },
                     elevation = 5.dp
                 ) {
@@ -130,9 +142,12 @@ fun HomeCompany(
                 .padding(paddingValues)
         ) {
 
-            if (allUser.isNotEmpty()) {
-                val userState = allUser.reversed().map { it to rememberSwipeableCardState() }
+            val list = if (qs.isNotEmpty()) filteredItems else users
+            if (list.isNotEmpty()) visibleUser = list[0]
+            Log.i("zalazlmzlmzalmaz", "HomeCompany: $list")
 
+            if (list.isNotEmpty()) {
+                val userState = list.reversed().map { it to rememberSwipeableCardState() }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -151,7 +166,10 @@ fun HomeCompany(
                                         state = state,
                                         blockedDirections = listOf(Direction.Down),
                                         onSwiped = {
-
+                                            homeViewModel.removeFromGlobal(user.id ?: 0)
+                                            if (it == Direction.Left)
+                                                homeViewModel.skipCurrentProfile(users)
+                                            else homeViewModel.matchCurrentProfile()
                                         },
                                         onSwipeCancel = {
                                             Log.d("Swipeable-Card", "Cancelled swipe")
@@ -163,7 +181,11 @@ fun HomeCompany(
                                         shape = RoundedCornerShape(20.dp)
                                     ),
                                 openProfile = {
+                                    val gson = Gson()
+                                    val userJson = gson.toJson(user, User::class.java)
+                                    GlobalEntries.userForCompany = user
                                     navController.navigate(Screen.DetailScreen.route)
+                                    //navController.navigate("${Screen.DetailScreen.route}/$userJson")
                                 },
                                 lang = resume,
                                 matchProfile = user
@@ -179,7 +201,9 @@ fun HomeCompany(
 
                 Spacer(modifier = Modifier.height(50.dp))
                 ActionButtons(
-                    onSave = {},
+                    onSave = {
+                        homeViewModel.saveToFavorites(visibleUser.id ?: 0)
+                    },
                     onSkip = {
                         scope.launch {
                             val last = userState.reversed()
@@ -188,6 +212,10 @@ fun HomeCompany(
                                 }?.second
                             last?.swipe(Direction.Left)
                         }
+
+                        homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
+                        homeViewModel.skipCurrentProfile(users)
+
                     },
                     onMatch = {
                         scope.launch {
@@ -198,6 +226,9 @@ fun HomeCompany(
 
                             last?.swipe(Direction.Right)
                         }
+
+                        homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
+                        homeViewModel.matchCurrentProfile()
                     },
                 )
 

@@ -2,6 +2,7 @@ package com.example.myjob.domain.entities
 
 import android.util.Log
 import android.view.View
+import com.google.gson.annotations.SerializedName
 import java.util.Calendar
 
 data class User(
@@ -25,6 +26,7 @@ data class User(
     var availability: String? = "",
     var rangeSalary: String? = "",
     var preferredActivitySector: String? = "",
+    @SerializedName("experiences")
     var experience: MutableList<Experience>? = mutableListOf(),
     var education: MutableList<Educations>? = mutableListOf()
 ) {
