@@ -169,17 +169,20 @@ class SignUpViewModel @Inject constructor(
 
     fun saveUser(user: User) {
         user.id = View.generateViewId()
+        //if (user.role == "Company") user.companyName = ""
         user.fullName = "${user.firstName} ${user.lastName}"
         viewModelScope.launch {
             saveUserUseCase.execute(user).collect { res ->
                 if (res.status == ResourceState.SUCCESS) {
-                    Log.i("saveUserRes", "saveUser: ${res.data?.user}")
+
                     sharedPreferences.putString("token", res.data?.token ?: "")
                     sharedPreferences.putString("role", res.data?.user?.role ?: "")
                     sharedPreferences.putInt("idUser", res.data?.user?.id ?: 0)
                     sharedPreferences.putString("username", res.data?.user?.fullName ?: "")
-
+                    sharedPreferences.putString("companyName", res.data?.user?.companyName ?: "")
+                    GlobalEntries.role = res.data?.user?.role ?: ""
                     GlobalEntries.user = res.data?.user ?: User()
+                    Log.i("saveUserRes", "saveUser: ${GlobalEntries.user}")
                     token.update { sharedPreferences.getString("token", "") ?: "" }
 
                     saveUserRes.update { res.data ?: LoginResponse() }

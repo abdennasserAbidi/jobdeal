@@ -6,6 +6,7 @@ import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
 import okhttp3.MultipartBody
@@ -117,4 +118,7 @@ interface ApiService {
 
     @GET("auth/download")
     suspend fun downloadFile(@Query("fileName") fileName: String): ResponseBody
+
+    @GET("auth/isExisted")
+    suspend fun verifyExisting(@Query("fileName") fileName: String): FileExistingResponse
 }

@@ -390,7 +390,7 @@ fun SignUpScreen(
                     )
 
                     if (activatedCheck) {
-                        if (userFirstName.isEmpty() || !companyNameVerified) {
+                        if (companyName.isEmpty() || !companyNameVerified) {
                             Log.i("submitEnabled", "SignUpScreen: $companyNameVerified")
 
                             Text(

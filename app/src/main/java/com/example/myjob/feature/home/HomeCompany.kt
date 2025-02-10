@@ -3,8 +3,11 @@ package com.example.myjob.feature.home
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +36,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -46,6 +51,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.rememberLifecycleEvent
+import com.example.myjob.common.tablayout.CustomTab
 import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.navigation.Screen
 import com.google.gson.Gson
@@ -60,6 +66,12 @@ fun HomeCompany(
 ) {
 
     var visibleUser by remember { mutableStateOf(User()) }
+    var selected by remember { mutableStateOf(0) }
+
+    val interactionSource = remember {
+        MutableInteractionSource()
+    }
+
     val allUser by homeViewModel.users.collectAsState()
     val updateFavoriteState by homeViewModel.updateFavoriteState.collectAsState()
     val qs by homeViewModel.qs.collectAsState()
@@ -83,20 +95,32 @@ fun HomeCompany(
         }
     }
 
-    Scaffold(
-        topBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                contentAlignment = Alignment.Center
-            ) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+        ) {
+
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .background(color = colorResource(id = R.color.whatsapp)))
+
+            Box(modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center) {
                 Card(
                     shape = RoundedCornerShape(40.dp),
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
-                        .padding(top = 10.dp)
-                        .clickable {
+                        .padding(top = 75.dp)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
                             navController.navigate(Screen.FilterScreen.route)
                         },
                     elevation = 5.dp
@@ -134,105 +158,98 @@ fun HomeCompany(
                     }
                 }
             }
-        })
-    { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
 
-            val list = if (qs.isNotEmpty()) filteredItems else users
-            if (list.isNotEmpty()) visibleUser = list[0]
-            Log.i("zalazlmzlmzalmaz", "HomeCompany: $list")
+        }
 
-            if (list.isNotEmpty()) {
-                val userState = list.reversed().map { it to rememberSwipeableCardState() }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.7f),
-                    contentAlignment = Alignment.Center
-                ) {
+        val list = if (qs.isNotEmpty()) filteredItems else users
+        if (list.isNotEmpty()) visibleUser = list[0]
 
-                    userState.forEach { (user, state) ->
-                        homeViewModel.getResume(user)
-                        if (state.swipedDirection == null) {
-                            ProfileCard(
-                                modifier = Modifier
-                                    .fillMaxWidth(0.9f)
-                                    .fillMaxHeight(0.7f)
-                                    .swipableCard(
-                                        state = state,
-                                        blockedDirections = listOf(Direction.Down),
-                                        onSwiped = {
-                                            homeViewModel.removeFromGlobal(user.id ?: 0)
-                                            if (it == Direction.Left)
-                                                homeViewModel.skipCurrentProfile(users)
-                                            else homeViewModel.matchCurrentProfile()
-                                        },
-                                        onSwipeCancel = {
-                                            Log.d("Swipeable-Card", "Cancelled swipe")
-                                            //hint = "You canceled the swipe"
-                                        }
-                                    )
-                                    .background(
-                                        color = Color.White,
-                                        shape = RoundedCornerShape(20.dp)
-                                    ),
-                                openProfile = {
-                                    val gson = Gson()
-                                    val userJson = gson.toJson(user, User::class.java)
-                                    GlobalEntries.userForCompany = user
-                                    navController.navigate(Screen.DetailScreen.route)
-                                    //navController.navigate("${Screen.DetailScreen.route}/$userJson")
-                                },
-                                lang = resume,
-                                matchProfile = user
-                            )
-                        }
-                        LaunchedEffect(user, state.swipedDirection) {
-                            if (state.swipedDirection != null) {
-                                //hint = "You swiped ${stringFrom(state.swipedDirection!!)}"
-                            }
+        if (list.isNotEmpty()) {
+            val userState = list.reversed().map { it to rememberSwipeableCardState() }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.7f),
+                contentAlignment = Alignment.Center
+            ) {
+
+                userState.forEach { (user, state) ->
+                    homeViewModel.getResume(user)
+                    if (state.swipedDirection == null) {
+                        ProfileCard(
+                            modifier = Modifier
+                                .fillMaxWidth(0.9f)
+                                .fillMaxHeight(0.7f)
+                                .swipableCard(
+                                    state = state,
+                                    blockedDirections = listOf(Direction.Down),
+                                    onSwiped = {
+                                        homeViewModel.removeFromGlobal(user.id ?: 0)
+                                        if (it == Direction.Left)
+                                            homeViewModel.skipCurrentProfile(users)
+                                        else homeViewModel.matchCurrentProfile()
+                                    },
+                                    onSwipeCancel = {
+                                        Log.d("Swipeable-Card", "Cancelled swipe")
+                                        //hint = "You canceled the swipe"
+                                    }
+                                )
+                                .background(
+                                    color = Color.White,
+                                    shape = RoundedCornerShape(20.dp)
+                                ),
+                            openProfile = {
+                                val gson = Gson()
+                                val userJson = gson.toJson(user, User::class.java)
+                                GlobalEntries.userForCompany = user
+                                navController.navigate(Screen.DetailScreen.route)
+                                //navController.navigate("${Screen.DetailScreen.route}/$userJson")
+                            },
+                            lang = resume,
+                            matchProfile = user
+                        )
+                    }
+                    LaunchedEffect(user, state.swipedDirection) {
+                        if (state.swipedDirection != null) {
+                            //hint = "You swiped ${stringFrom(state.swipedDirection!!)}"
                         }
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(50.dp))
-                ActionButtons(
-                    onSave = {
-                        homeViewModel.saveToFavorites(visibleUser.id ?: 0)
-                    },
-                    onSkip = {
-                        scope.launch {
-                            val last = userState.reversed()
-                                .firstOrNull {
-                                    it.second.offset.value == Offset(0f, 0f)
-                                }?.second
-                            last?.swipe(Direction.Left)
-                        }
+            Spacer(modifier = Modifier.height(50.dp))
+            ActionButtons(
+                onSave = {
+                    homeViewModel.saveToFavorites(visibleUser.id ?: 0)
+                },
+                onSkip = {
+                    scope.launch {
+                        val last = userState.reversed()
+                            .firstOrNull {
+                                it.second.offset.value == Offset(0f, 0f)
+                            }?.second
+                        last?.swipe(Direction.Left)
+                    }
 
-                        homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
-                        homeViewModel.skipCurrentProfile(users)
+                    homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
+                    homeViewModel.skipCurrentProfile(users)
 
-                    },
-                    onMatch = {
-                        scope.launch {
-                            val last = userState.reversed()
-                                .firstOrNull {
-                                    it.second.offset.value == Offset(0f, 0f)
-                                }?.second
+                },
+                onMatch = {
+                    scope.launch {
+                        val last = userState.reversed()
+                            .firstOrNull {
+                                it.second.offset.value == Offset(0f, 0f)
+                            }?.second
 
-                            last?.swipe(Direction.Right)
-                        }
+                        last?.swipe(Direction.Right)
+                    }
 
-                        homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
-                        homeViewModel.matchCurrentProfile()
-                    },
-                )
+                    homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
+                    homeViewModel.matchCurrentProfile()
+                },
+            )
 
-            } else Text("No more profiles!")
-        }
+        } else Text("No more profiles!")
     }
 }

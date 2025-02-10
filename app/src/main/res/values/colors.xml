@@ -13,4 +13,6 @@
     <color name="dark_whatsapp">#075E54</color>
     <color name="dark_red">#8B0000</color>
     <color name="lighter_gray">#F2F2F2</color> <!--ECECEC-->
+    <color name="ligt_white">#F3F0E9</color>
+
 </resources>

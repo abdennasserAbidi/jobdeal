@@ -14,6 +14,7 @@ import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.local.database.SharedPreference
@@ -77,6 +78,8 @@ class RepositoryImp @Inject constructor(
                 val errorMessage = apiResult.message
                 emit(Resource(ResourceState.ERROR, null, errorMessage))
             }
+
+            else -> {}
         }
     }
 
@@ -108,6 +111,8 @@ class RepositoryImp @Inject constructor(
                 Log.e("ERROR", "Error: $errorMessage, Code: ${apiResult.code}")
                 emit(Resource(ResourceState.ERROR, null, errorMessage))
             }
+
+            else -> {}
         }
     }
 
@@ -216,6 +221,17 @@ class RepositoryImp @Inject constructor(
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.getAllExp(id)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+    override suspend fun verifyExisting(fileName: String): Flow<Resource<FileExistingResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.verifyExisting(fileName)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {

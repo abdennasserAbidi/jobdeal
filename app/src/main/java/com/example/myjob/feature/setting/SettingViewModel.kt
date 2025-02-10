@@ -10,6 +10,7 @@ import com.example.myjob.common.FileReader
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.usecase.UploadCVUseCase
 import com.example.myjob.domain.usecase.ValidateAccountUseCase
+import com.example.myjob.domain.usecase.VerifyExistingFileUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,9 +25,11 @@ import javax.inject.Inject
 class SettingViewModel @Inject constructor(
     private val sharedPreferences: SharedPreference,
     private val uploadCVUseCase: UploadCVUseCase,
-    private val validateAccountUseCase: ValidateAccountUseCase
+    private val validateAccountUseCase: ValidateAccountUseCase,
+    private val verifyExistingFileUseCase: VerifyExistingFileUseCase
 ): ViewModel() {
 
+    val isExisting = MutableStateFlow(false)
     val role = MutableStateFlow("")
     val username = MutableStateFlow("AA")
     val userFullName = MutableStateFlow("")
@@ -43,10 +46,29 @@ class SettingViewModel @Inject constructor(
     init {
         val fullName = sharedPreferences.getString("username", "") ?: ""
         userFullName.update { fullName }
-        if (fullName.isNotEmpty()) {
+        if (fullName.isNotEmpty() && fullName != " ") {
             val s = fullName.trimStart().split(" ")
             val name = "${s[0][0].uppercaseChar()}${s[1][0].uppercaseChar()}"
             username.update { name }
+        }
+
+        verifyFile()
+    }
+
+    private fun verifyFile() {
+        viewModelScope.launch {
+            verifyExistingFileUseCase.execute(getPDFName()).collect { res ->
+                when(res.status) {
+                    ResourceState.SUCCESS -> {
+                        Log.i("pdfName", "2: ${res.data?.existed}")
+
+                        isExisting.update { res.data?.existed ?: false }
+                    }
+                    else -> {
+
+                    }
+                }
+            }
         }
     }
 
@@ -103,7 +125,7 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    var uploadMessage = MutableStateFlow("")
+    var uploadMessage = MutableStateFlow(getPDFName())
 
     fun uploadCV(context: Context, fileUri: Uri, pdfName: String) {
         val file = FileReader.getFile(context, fileUri) // Helper function to convert URI to File
@@ -117,12 +139,15 @@ class SettingViewModel @Inject constructor(
                 when(res.status) {
                     ResourceState.SUCCESS -> {
                         Log.i("lktrdgvtd", "uploadCV: ${res.data}")
+
                         uploadMessage.update {
                             res.data ?: ""
                         }
+
+                        verifyFile()
                     }
                     else -> {
-                        Log.i("lktrdgvtd", "error: ${res.message}")
+                        uploadMessage.update { "" }
                     }
                 }
             }

@@ -72,6 +72,7 @@ import com.example.myjob.feature.forgotpassword.ForgotPasswordScreen
 import com.example.myjob.feature.home.DetailsScreen
 import com.example.myjob.feature.home.FilterScreen
 import com.example.myjob.feature.home.HomeCandidate
+import com.example.myjob.feature.home.HomeChoice
 import com.example.myjob.feature.home.HomeCompany
 import com.example.myjob.feature.login.LoginScreen
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
@@ -315,8 +316,8 @@ class MainActivity : ComponentActivity() {
                 val cameraPermissionState: PermissionState =
                     rememberPermissionState(Manifest.permission.CAMERA)
 
-                GlobalEntries.role
-                val role = sharedPreference.getString("role", "") ?: ""
+                //val role = sharedPreference.getString("role", "") ?: ""
+                val role = GlobalEntries.role
                 isVisibleNav = role == "Company" || role == "Entreprise"
 
                 NavHost(
@@ -365,7 +366,7 @@ class MainActivity : ComponentActivity() {
                         route = Screen.ForgotPasswordScreen.route,
                         deepLinks = listOf(
                             navDeepLink {
-                                uriPattern = "http://192.168.1.13/{token}"
+                                uriPattern = "http://192.168.1.12/{token}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),
@@ -401,10 +402,12 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
+                    //TODO("numéro registre de commerce")
+
                     composable(route = Screen.ProfileScreen.route) {
                         isVisibleNav = false
                         //ProfileScreen(navController)
-                        if (role == "Company" || role == "Entreprise") CompanyProfile(navController)
+                        if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") CompanyProfile(navController)
                         else CandidateProfile(navController)
                     }
 
@@ -454,13 +457,18 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(route = Screen.HomeScreen.route) {
-                        if (role == "Company" || role == "Entreprise") {
-                            isVisibleNav = true
-                            HomeCompany(navController = navController, onResumed = { index ->
-                                isVisibleNav = true
-                                selectedTabIndex = index
-                            })
+                        Log.i("klelklggenl", "onCreate: ${GlobalEntries.role}")
+                        if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") {
+                            HomeChoice(navController)
                         } else HomeCandidate(navController)
+                    }
+
+                    composable(route = Screen.HomeCompanyScreen.route) {
+                        isVisibleNav = true
+                        HomeCompany(navController = navController, onResumed = { index ->
+                            isVisibleNav = true
+                            selectedTabIndex = index
+                        })
                     }
 
                     composable(route = Screen.CareerScreen.route) {
