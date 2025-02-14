@@ -5,12 +5,16 @@ import com.example.myjob.common.network.ApiResult
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
+import com.example.myjob.domain.entities.FavoriteModel
+import com.example.myjob.domain.entities.InvitationParams
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.remote.api.ApiService
 import okhttp3.MultipartBody
+import retrofit2.http.Body
+import retrofit2.http.Query
 import javax.inject.Inject
 
 /**
@@ -32,12 +36,13 @@ class RemoteDataSourceImp @Inject constructor(
     override suspend fun getAllExp(id: Int): List<Experience> = apiService.getAllExp(id)
     override suspend fun getAllEduc(id: Int): List<Educations> = apiService.getAllEduc(id)
     override suspend fun getAllEducations(id: Int, pageNumber: Int): GenericResponse<Educations> = apiService.getAllEducations(id, pageNumber)
-    override suspend fun getAllUser(pageNumber: Int): GenericResponse<User> = apiService.getAllUser(pageNumber = pageNumber)
-
+    override suspend fun getFavorites(id: Int, pageNumber: Int): GenericResponse<FavoriteModel> = apiService.getFavorites(id, pageNumber)
+    override suspend fun getAllUser(pageNumber: Int): List<User> = apiService.getAllUser(pageNumber = pageNumber)
+    override suspend fun sendInvitation(@Body invitationParams: InvitationParams): UserResponse = apiService.sendInvitation(invitationParams)
     override suspend fun savePersonalInfo(user: User): UserResponse = apiService.savePersonalInfo(user)
     override suspend fun removeExperience(id: Int, experienceId: Int): UserResponse = apiService.removeExperience(id, experienceId)
     override suspend fun removeEducation(id: Int, educationId: Int): UserResponse = apiService.removeEducation(id, educationId)
-    override suspend fun saveToFavorite(id: Int, isFavorite: Boolean): UserResponse = apiService.saveToFavorite(id, isFavorite)
+    override suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): UserResponse = apiService.saveToFavorite(idUserConnected, candidateId)
     override suspend fun getUser(id: Int): User = apiService.getUser(id)
     override suspend fun uploadFile(file: MultipartBody.Part): UserResponse = apiService.uploadFile(file)
     override suspend fun validateProfile(email: String): UserResponse = apiService.validateProfile(email)

@@ -4,23 +4,18 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
-import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Text
@@ -36,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -51,7 +45,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.rememberLifecycleEvent
-import com.example.myjob.common.tablayout.CustomTab
 import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.navigation.Screen
 import com.google.gson.Gson
@@ -72,6 +65,7 @@ fun HomeCompany(
         MutableInteractionSource()
     }
 
+    val currentPage by homeViewModel.currentPage.collectAsState()
     val allUser by homeViewModel.users.collectAsState()
     val updateFavoriteState by homeViewModel.updateFavoriteState.collectAsState()
     val qs by homeViewModel.qs.collectAsState()
@@ -83,6 +77,7 @@ fun HomeCompany(
     }
 
     val users = lazyPagingItems.itemSnapshotList.items
+    val usersProfiles by homeViewModel.users.collectAsState()
 
     val filteredItems by homeViewModel.filterdUser.collectAsState()
 
@@ -105,10 +100,12 @@ fun HomeCompany(
             .height(200.dp)
         ) {
 
+            val shape = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
+
             Box(modifier = Modifier
                 .fillMaxWidth()
                 .height(100.dp)
-                .background(color = colorResource(id = R.color.whatsapp)))
+                .background(color = colorResource(id = R.color.whatsapp), shape = shape))
 
             Box(modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center) {
@@ -164,13 +161,12 @@ fun HomeCompany(
         val list = if (qs.isNotEmpty()) filteredItems else users
         if (list.isNotEmpty()) visibleUser = list[0]
 
-        if (list.isNotEmpty()) {
-            val userState = list.reversed().map { it to rememberSwipeableCardState() }
+        if (usersProfiles.isNotEmpty()) {
+            val userState = usersProfiles.reversed().map { it to rememberSwipeableCardState() }
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.7f),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth(0.6f)
             ) {
 
                 userState.forEach { (user, state) ->
@@ -179,7 +175,8 @@ fun HomeCompany(
                         ProfileCard(
                             modifier = Modifier
                                 .fillMaxWidth(0.9f)
-                                .fillMaxHeight(0.7f)
+                                .fillMaxWidth(0.6f)
+                                .align(Alignment.TopCenter)
                                 .swipableCard(
                                     state = state,
                                     blockedDirections = listOf(Direction.Down),
@@ -187,7 +184,7 @@ fun HomeCompany(
                                         homeViewModel.removeFromGlobal(user.id ?: 0)
                                         if (it == Direction.Left)
                                             homeViewModel.skipCurrentProfile(users)
-                                        else homeViewModel.matchCurrentProfile()
+                                        else homeViewModel.matchCurrentProfile(visibleUser.id ?: 0)
                                     },
                                     onSwipeCancel = {
                                         Log.d("Swipeable-Card", "Cancelled swipe")
@@ -217,10 +214,10 @@ fun HomeCompany(
                 }
             }
 
-            Spacer(modifier = Modifier.height(50.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             ActionButtons(
                 onSave = {
-                    homeViewModel.saveToFavorites(visibleUser.id ?: 0)
+                    homeViewModel.saveToFavorites(GlobalEntries.user.id?: -1, visibleUser.id ?: 0)
                 },
                 onSkip = {
                     scope.launch {
@@ -230,6 +227,8 @@ fun HomeCompany(
                             }?.second
                         last?.swipe(Direction.Left)
                     }
+
+                    homeViewModel.updateCurrentPage()
 
                     homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
                     homeViewModel.skipCurrentProfile(users)
@@ -245,8 +244,9 @@ fun HomeCompany(
                         last?.swipe(Direction.Right)
                     }
 
+                    homeViewModel.updateCurrentPage()
                     homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
-                    homeViewModel.matchCurrentProfile()
+                    homeViewModel.matchCurrentProfile(visibleUser.id ?: 0)
                 },
             )
 

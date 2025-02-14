@@ -71,10 +71,10 @@ class DetailViewModel @Inject constructor(
     val updateFavoriteState = MutableStateFlow(false)
 
     fun saveToFavorites(id: Int) {
-        viewModelScope.launch {
+        /*viewModelScope.launch {
             saveToFavoriteUseCase.execute(Pair(id, true)).collect { res ->
                 updateFavoriteState.update { res.data?.message == "saved successfully" }
             }
-        }
+        }*/
     }
 }

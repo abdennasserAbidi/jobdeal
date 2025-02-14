@@ -173,6 +173,7 @@
     <string name="strFetchingDataFromServer" translatable="false">Fetching data from server</string>
     <string name="strOriginalLanguage" translatable="false">Original Language</string>
 
+    <string name="manage_profiles_text">Manage Profiles</string>
     <string name="choose_language_text">Choose language</string>
     <string name="language_text">language</string>
     <string name="change_language_text">Change</string>

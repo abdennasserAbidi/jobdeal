@@ -7,16 +7,16 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
-import androidx.paging.filter
-import androidx.paging.map
-import com.example.myjob.common.GlobalEntries
+import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries.listIdToRemove
 import com.example.myjob.domain.entities.HOME_ENTITY
+import com.example.myjob.domain.entities.InvitationModel
+import com.example.myjob.domain.entities.InvitationParams
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.SaveToFavoriteUseCase
+import com.example.myjob.domain.usecase.SendInvitationUseCase
 import com.example.myjob.domain.usecase.home.GetAllUserUseCase
 import com.example.myjob.local.database.SharedPreference
-import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -28,6 +28,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val sharedPreference: SharedPreference,
     private val getAllUserUseCase: GetAllUserUseCase,
+    private val sendInvitationUseCase: SendInvitationUseCase,
     private val saveToFavoriteUseCase: SaveToFavoriteUseCase
 ) : ViewModel() {
 
@@ -53,11 +54,25 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun matchCurrentProfile() {
-        // Handle matching the profile (e.g., send match notification, store match)
+    fun matchCurrentProfile(id: Int) {
+        val invitationModel = InvitationModel(
+            idTo = id,
+            message = "",
+            typeContract = "CDI"
+        )
+        val invitationParams = InvitationParams(
+            idConnected = sharedPreference.getInt("idUser", -1),
+            invitationModel = invitationModel
+        )
         viewModelScope.launch {
-            println("Profile matched: ${currentProfile.fullName}")
-            // Example: Notify user of the match
+            sendInvitationUseCase.execute(invitationParams).collect { res ->
+                when(res.status) {
+                    ResourceState.SUCCESS -> {
+                        Log.i("responseDataMessage", "matchCurrentProfile: ${res.data?.message}")
+                    }
+                    else -> {}
+                }
+            }
         }
     }
 
@@ -105,7 +120,33 @@ class HomeViewModel @Inject constructor(
             "${fullName.replace(" ", "").trim()}Detail.pdf" else ""
     }
 
-    private fun getAllUser() {
+
+    val currentPage = MutableStateFlow(1)
+
+    fun updateCurrentPage() {
+        var page = currentPage.value
+        currentPage.update {
+            page ++
+            page
+        }
+    }
+
+    private fun getAllUser(currentPage: Int) {
+        viewModelScope.launch {
+            getAllUserUseCase.execute(currentPage).collectLatest { res ->
+
+                users.update {
+                    res.data ?: emptyList()
+                }
+
+                /*_user.update {
+                    res.data ?: PagingData.empty()
+                }*/
+            }
+        }
+    }
+
+    /*private fun getAllUser() {
         viewModelScope.launch {
             getAllUserUseCase.execute().collectLatest { res ->
 
@@ -123,13 +164,13 @@ class HomeViewModel @Inject constructor(
                 }
             }
         }
-    }
+    }*/
 
     val updateFavoriteState = MutableStateFlow(false)
 
-    fun saveToFavorites(id: Int) {
+    fun saveToFavorites(idUserConnected: Int, candidateId: Int) {
         viewModelScope.launch {
-            saveToFavoriteUseCase.execute(Pair(id, true)).collect { res ->
+            saveToFavoriteUseCase.execute(Pair(idUserConnected, candidateId)).collect { res ->
                 updateFavoriteState.update { res.data?.message == "saved successfully" }
             }
         }
@@ -138,6 +179,6 @@ class HomeViewModel @Inject constructor(
     init {
         lang = sharedPreference.getString("lang", "") ?: ""
         langState.update { lang }
-        getAllUser()
+        getAllUser(1)
     }
 }

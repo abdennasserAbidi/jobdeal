@@ -85,7 +85,9 @@ import com.example.myjob.common.getFileNameFromUri
 import com.example.myjob.common.pdf.PdfViewer
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.common.tablayout.CustomTab
+import com.example.myjob.domain.entities.SettingsParams
 import com.example.myjob.feature.navigation.Screen
+import kotlinx.coroutines.flow.update
 import java.io.File
 import kotlin.math.roundToInt
 
@@ -218,14 +220,14 @@ fun SettingScreen(
                     Card(
                         shape = RoundedCornerShape(40.dp),
                         modifier = Modifier
-                            .fillMaxWidth(if (expanded) 0.5f else 0.8f)
+                            .fillMaxWidth(if (expanded) 0.5f else 0.5f)
                             .padding(top = if (expanded) (screenHeightDp - 175.dp) else 75.dp)
                             .clickable(
                                 interactionSource = interactionSource,
                                 indication = null
                             ) {
-                                //navController.navigate(Screen.ProfileScreen.route)
-                                expanded = !expanded
+                                expanded = false
+                                GlobalEntries.isVisibleNav.update { true }
                             },
                         elevation = 5.dp
                     ) {
@@ -255,24 +257,22 @@ fun SettingScreen(
                             )
 
                             if (!expanded) {
-                                Icon(
-                                    imageVector = Icons.Default.Edit,
+                                val color = colorResource(id = R.color.whatsapp)
+                                Box(
                                     modifier = Modifier
-                                        .padding(top = 10.dp, start = 10.dp)
+                                        .size(20.dp)
                                         .align(Alignment.CenterEnd)
-                                        .clickable(
-                                            interactionSource = interactionSource,
-                                            indication = null
-                                        ) {
-                                            if (role.isNotEmpty()) {
-                                                val screen =
-                                                    if (role == "Company" || role == "Entreprise") Screen.CompanyProfileScreen.route
-                                                    else Screen.ProfileScreen.route
-                                                navController.navigate(screen)
-                                            } else navController.navigate(Screen.ProfileScreen.route)
-                                        },
-                                    contentDescription = ""
-                                )
+                                        .background(color = color, shape = CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_settings_privacy),
+                                        tint = Color.White,
+                                        contentDescription = ""
+                                    )
+
+                                }
                             }
                         }
                     }
@@ -302,10 +302,66 @@ fun SettingScreen(
             )
 
             if (!expanded) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                Column(modifier = Modifier.fillMaxSize()) {
+
+                    var selected by remember { mutableStateOf(0) }
+
+                    Text(
+                        modifier = Modifier.padding(start = 10.dp, top = 10.dp),
+                        text = stringResource(id = R.string.choose_language_text),
+                        color = colorResource(id = R.color.dark_blue),
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            fontFamily = FontFamily(
+                                Font(
+                                    R.font.rubikbold,
+                                    weight = FontWeight.Medium
+                                )
+                            )
+                        )
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        CustomTab(
+                            items = allLanguages,
+                            modifier = Modifier.padding(top = 10.dp, start = 10.dp),
+                            selectedItemIndex = selected,
+                            onClick = {
+                                selected = it
+
+                                settingViewModel.changeLanguage(allLanguages[it])
+
+                                lc =
+                                    if (allLanguages[it] == "English" || allLanguages[it] == "Anglais") "en" else "fr"
+
+                                LanguageHelper.changeLanguage(context, lc)
+
+                                LanguageHelper.updateLanguage(context, lc)
+                            }
+                        )
+                    }
+
+                    Text(
+                        modifier = Modifier.padding(start = 10.dp, top = 50.dp),
+                        text = stringResource(id = R.string.manage_profiles_text),
+                        color = colorResource(id = R.color.dark_blue),
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            fontFamily = FontFamily(
+                                Font(
+                                    R.font.rubikbold,
+                                    weight = FontWeight.Medium
+                                )
+                            )
+                        )
+                    )
+
                     if (role == "Candidate" || role == "Candidat") {
                         Log.i("pdfName", "SettingScreen: $isExisting")
 
@@ -429,43 +485,79 @@ fun SettingScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(50.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                    val list = if (role == "Candidate" || role == "Candidat") mutableListOf(
-                        "Notifications",
-                        "Valider votre profile",
-                        "Partager",
-                        "Terms of use",
-                        "Privacy",
-                        "Licences",
-                        "Email",
-                        stringResource(id = R.string.password_text)
-                    ) else mutableListOf(
-                        "Valider votre profile",
-                        "Partager",
-                        "Terms of use",
-                        "Privacy",
-                        "Licences",
-                        "Email",
-                        stringResource(id = R.string.password_text)
+                    val list = mutableListOf(
+                        SettingsParams(
+                            icon = R.drawable.ic_settings_notifications,
+                            title = "Notifications"
+                        ),
+                        SettingsParams(
+                            icon = R.drawable.ic_settings_privacy,
+                            title = "Valider votre profile"
+                        ),
+                        SettingsParams(
+                            icon = R.drawable.ic_settings_terms,
+                            title = "Terms & Conditions"
+                        ),
+                        SettingsParams(
+                            icon = R.drawable.ic_settings_privacy,
+                            title = "Politique de Confidentialité"
+                        ),
+                        SettingsParams(icon = R.drawable.ic_settings_account, title = "Mon Compte")
                     )
-
 
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 10.dp)
                     ) {
-                        list.map { item ->
+                        list.mapIndexed { index, item ->
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(top = 15.dp)
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) {
+                                        if (index == list.lastIndex) {
+                                            expanded = true
+                                            GlobalEntries.isVisibleNav.update { false }
+                                        }
+                                    }
                             ) {
-                                Text(
-                                    text = item,
+
+                                Row(
                                     modifier = Modifier.align(Alignment.CenterStart)
-                                )
+                                ) {
+
+                                    Icon(
+                                        painter = painterResource(
+                                            id = item.icon ?: R.drawable.ic_icon_back
+                                        ),
+                                        tint = colorResource(id = R.color.whatsapp),
+                                        modifier = Modifier.size(20.dp),
+                                        contentDescription = ""
+                                    )
+
+                                    Text(
+                                        text = item.title ?: "",
+                                        modifier = Modifier.padding(start = 10.dp),
+                                        color = colorResource(id = R.color.dark_blue),
+                                        style = TextStyle(
+                                            fontSize = 16.sp,
+                                            fontFamily = FontFamily(
+                                                Font(
+                                                    R.font.rubik_medium,
+                                                    weight = FontWeight.Medium
+                                                )
+                                            )
+                                        )
+                                    )
+                                }
+
+
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_icon_back),
                                     tint = colorResource(id = R.color.whatsapp),
@@ -478,370 +570,41 @@ fun SettingScreen(
                         }
                     }
 
-                    Text(
-                        modifier = Modifier.padding(start = 10.dp, top = 20.dp),
-                        text = stringResource(id = R.string.choose_language_text),
-                        color = colorResource(id = R.color.dark_blue),
-                        style = TextStyle(
-                            fontSize = 16.sp,
-                            fontFamily = FontFamily(
-                                Font(
-                                    R.font.rubik_medium,
-                                    weight = FontWeight.Medium
-                                )
-                            )
-                        )
-                    )
-
-                    var selected by remember { mutableStateOf(0) }
-
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        CustomTab(
-                            items = listOf("Français", "Anglais"),
-                            modifier = Modifier.padding(top = 10.dp, start = 10.dp),
-                            selectedItemIndex = selected,
-                            onClick = {
-                                selected = it
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 50.dp, start = 10.dp)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                settingViewModel.logout()
+                                clearData()
+                                navController.navigate(Screen.LoginScreen.route)
                             }
+                    ) {
+
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_settings_account),
+                            tint = colorResource(id = R.color.whatsapp),
+                            modifier = Modifier.size(20.dp),
+                            contentDescription = ""
                         )
-                    }
 
-
-                    /*if (role == "Candidate" || role == "Candidat") {
-                        Card(
-                            elevation = 5.dp,
-                            shape = RectangleShape,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 10.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 15.dp, horizontal = 10.dp)
-                            ) {
-                                Text(
-                                    text = "Notifications",
-                                    modifier = Modifier.align(Alignment.CenterStart)
+                        Text(
+                            text = stringResource(id = R.string.logout_text),
+                            modifier = Modifier.padding(start = 10.dp),
+                            color = colorResource(id = R.color.dark_blue),
+                            style = TextStyle(
+                                fontSize = 16.sp,
+                                fontFamily = FontFamily(
+                                    Font(
+                                        R.font.rubikbold,
+                                        weight = FontWeight.Bold
+                                    )
                                 )
-                                Icon(
-                                    imageVector = Icons.Default.ArrowForwardIos,
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                        .align(Alignment.CenterEnd),
-                                    contentDescription = ""
-                                )
-                            }
-                        }
-                    }
-
-
-
-
-                    Card(
-                        elevation = 5.dp,
-                        shape = RectangleShape,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 5.dp)
-                            .padding(horizontal = 10.dp)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                settingViewModel.validateAccount()
-                            }
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 15.dp, horizontal = 10.dp)
-                        ) {
-                            Text(
-                                text = "Valider votre profile",
-                                modifier = Modifier.align(Alignment.CenterStart)
                             )
-                            Icon(
-                                imageVector = Icons.Default.ArrowForwardIos,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .align(Alignment.CenterEnd),
-                                contentDescription = ""
-                            )
-                        }
-                    }
-
-                    Card(
-                        elevation = 5.dp,
-                        shape = RectangleShape,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 5.dp)
-                            .padding(horizontal = 10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 15.dp, horizontal = 10.dp)
-                        ) {
-                            Text(text = "Partager", modifier = Modifier.align(Alignment.CenterStart))
-                            Icon(
-                                imageVector = Icons.Default.Share,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .align(Alignment.CenterEnd),
-                                contentDescription = ""
-                            )
-                        }
-                    }
-
-                    Card(
-                        elevation = 5.dp,
-                        shape = RectangleShape,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 5.dp)
-                            .padding(horizontal = 10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 15.dp, horizontal = 10.dp)
-                        ) {
-                            Text(text = "Terms of use", modifier = Modifier.align(Alignment.CenterStart))
-                            Icon(
-                                imageVector = Icons.Default.ArrowForwardIos,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .align(Alignment.CenterEnd),
-                                contentDescription = ""
-                            )
-                        }
-                    }
-
-                    Card(
-                        elevation = 5.dp,
-                        shape = RectangleShape,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 5.dp)
-                            .padding(horizontal = 10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 15.dp, horizontal = 10.dp)
-                        ) {
-                            Text(text = "Privacy", modifier = Modifier.align(Alignment.CenterStart))
-                            Icon(
-                                imageVector = Icons.Default.ArrowForwardIos,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .align(Alignment.CenterEnd),
-                                contentDescription = ""
-                            )
-                        }
-                    }
-
-                    Card(
-                        elevation = 5.dp,
-                        shape = RectangleShape,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 5.dp)
-                            .padding(horizontal = 10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 15.dp, horizontal = 10.dp)
-                        ) {
-                            Text(text = "Licences", modifier = Modifier.align(Alignment.CenterStart))
-                            Icon(
-                                imageVector = Icons.Default.ArrowForwardIos,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .align(Alignment.CenterEnd),
-                                contentDescription = ""
-                            )
-                        }
-                    }
-
-                    Card(
-                        elevation = 5.dp,
-                        shape = RectangleShape,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 5.dp)
-                            .padding(horizontal = 10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 15.dp, horizontal = 10.dp)
-                        ) {
-                            Text(
-                                text = "Email",
-                                modifier = Modifier.align(Alignment.CenterStart)
-                            )
-                            Icon(
-                                imageVector = Icons.Default.ArrowForwardIos,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .align(Alignment.CenterEnd),
-                                contentDescription = ""
-                            )
-                        }
-                    }
-
-                    Card(
-                        elevation = 5.dp,
-                        shape = RectangleShape,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 5.dp)
-                            .padding(horizontal = 10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 15.dp, horizontal = 10.dp)
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.password_text),
-                                modifier = Modifier.align(Alignment.CenterStart)
-                            )
-                            Icon(
-                                imageVector = Icons.Default.ArrowForwardIos,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .align(Alignment.CenterEnd),
-                                contentDescription = ""
-                            )
-                        }
-                    }*/
-
-                    Card(
-                        elevation = 5.dp,
-                        shape = RectangleShape,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 5.dp)
-                            .padding(horizontal = 10.dp)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                expend = !expend
-                            }
-                    ) {
-
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .background(color = Color.White)
-                        ) {
-
-                            Card(
-                                elevation = 3.dp,
-                                shape = RectangleShape,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 15.dp, horizontal = 10.dp)
-                                ) {
-
-                                    val text =
-                                        if (expend) stringResource(id = R.string.choose_language_text)
-                                        else language ?: stringResource(id = R.string.language_text)
-
-                                    Text(
-                                        text = text,
-                                        modifier = Modifier.align(Alignment.CenterStart)
-                                    )
-                                    if (expend) Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "",
-                                        modifier = Modifier.align(Alignment.CenterEnd)
-                                    )
-                                    else Text(
-                                        text = stringResource(id = R.string.change_language_text),
-                                        modifier = Modifier.align(Alignment.CenterEnd)
-                                    )
-                                }
-                            }
-
-                            if (expend) {
-                                allLanguages.mapIndexed { index, item ->
-                                    val paddingTop = if (index == 0) 20.dp else 10.dp
-                                    Box(modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 20.dp, bottom = 20.dp)
-                                        .padding(start = 10.dp)
-                                        .clickable(
-                                            interactionSource = interactionSource,
-                                            indication = null
-                                        ) {
-                                            settingViewModel.changeLanguage(allLanguages[index])
-
-                                            lc =
-                                                if (allLanguages[index] == "English" || allLanguages[index] == "Anglais") "en" else "fr"
-
-                                            LanguageHelper.changeLanguage(context, lc)
-
-                                            LanguageHelper.updateLanguage(context, lc)
-
-                                            expend = false
-                                        }) {
-                                        androidx.compose.material.Text(
-                                            text = item,
-                                            color = Color.Black
-                                        )
-                                    }
-
-                                    if (index < allLanguages.lastIndex) {
-                                        HorizontalDivider(
-                                            thickness = 1.dp,
-                                            modifier = Modifier.padding(horizontal = 10.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-
-                    Card(
-                        elevation = 5.dp,
-                        shape = RectangleShape,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 30.dp)
-                            .padding(horizontal = 10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 15.dp, horizontal = 10.dp)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    settingViewModel.logout()
-                                    clearData()
-                                    navController.navigate(Screen.LoginScreen.route)
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = stringResource(id = R.string.logout_text))
-                        }
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(100.dp))

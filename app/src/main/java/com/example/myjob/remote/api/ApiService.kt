@@ -5,6 +5,8 @@ import com.example.myjob.common.network.ApiResult
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
+import com.example.myjob.domain.entities.FavoriteModel
+import com.example.myjob.domain.entities.InvitationParams
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
@@ -84,7 +86,10 @@ interface ApiService {
     suspend fun getAllUser(
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
-    ): GenericResponse<User>
+    ): List<User>
+
+    @POST("auth/sendInvitation")
+    suspend fun sendInvitation(@Body invitationParams: InvitationParams): UserResponse
 
     @POST("auth/updateuser")
     suspend fun savePersonalInfo(@Body user: User): UserResponse
@@ -96,9 +101,16 @@ interface ApiService {
     ): UserResponse
     @POST("auth/updatefavorite")
     suspend fun saveToFavorite(
-        @Query("id") id: Int,
-        @Query("isFavorite") isFavorite: Boolean
+        @Query("idUserConnected") idUserConnected: Int,
+        @Query("candidateId") candidateId: Int
     ): UserResponse
+
+    @GET("auth/getFavorites")
+    suspend fun getFavorites(
+        @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<FavoriteModel>
 
     @POST("auth/removeEducation")
     suspend fun removeEducation(

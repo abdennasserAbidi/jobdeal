@@ -70,32 +70,16 @@ fun HomeChoice(
                 Card(
                     shape = RoundedCornerShape(40.dp),
                     modifier = Modifier
-                        .fillMaxWidth(0.8f)
+                        .fillMaxWidth(0.5f)
                         .padding(top = 75.dp),
                     elevation = 5.dp
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 15.dp, horizontal = 15.dp)
+                            .padding(vertical = 15.dp, horizontal = 15.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-
-                        Icon(
-                            modifier = Modifier
-                                .size(20.dp)
-                                .align(Alignment.CenterEnd)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    navController.navigate(Screen.SettingScreen.route)
-                                },
-                            imageVector = Icons.Filled.Settings,
-                            contentDescription = ""
-                        )
-
-                        Spacer(modifier = Modifier.width(50.dp))
-
                         Text(
                             modifier = Modifier.align(Alignment.Center),
                             text = GlobalEntries.user.companyName ?: "",

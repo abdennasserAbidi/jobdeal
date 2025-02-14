@@ -165,6 +165,7 @@
     <string name="log_in_text">Se connecter</string>
     <string name="create_new_account_text">Créer un nouveau compte</string>
 
+    <string name="manage_profiles_text">Gérer Profils</string>
     <string name="choose_language_text">Choisir langue</string>
     <string name="language_text">langue</string>
     <string name="change_language_text">Changer</string>

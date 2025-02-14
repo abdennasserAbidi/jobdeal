@@ -5,12 +5,15 @@ import com.example.myjob.base.reources.Resource
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
+import com.example.myjob.domain.entities.FavoriteModel
+import com.example.myjob.domain.entities.InvitationParams
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
+import retrofit2.http.Body
 
 /**
  * Methods of Repository
@@ -26,18 +29,20 @@ interface Repository {
     suspend fun resetPassword(token: String, newPassword: String): Flow<Resource<UserResponse>>
     suspend fun authenticate(user: User): Flow<Resource<LoginResponse>>
     suspend fun verifyEmail(email: String): Flow<Resource<LoginResponse>>
-
+    suspend fun sendInvitation(@Body invitationParams: InvitationParams): Flow<Resource<UserResponse>>
     suspend fun saveEducation(educations: Educations): Flow<Resource<UserResponse>>
     suspend fun getAllEducations(id: Int): Flow<Resource<PagingData<Educations>>>
+    suspend fun getFavorites(id: Int): Flow<Resource<PagingData<FavoriteModel>>>
     suspend fun verifyExisting(fileName: String): Flow<Resource<FileExistingResponse>>
     suspend fun getAllExp(id: Int): Flow<Resource<List<Experience>>>
     suspend fun getAllEduc(id: Int): Flow<Resource<List<Educations>>>
-    suspend fun getAllUser(): Flow<Resource<PagingData<User>>>
+    //suspend fun getAllUser(): Flow<Resource<PagingData<User>>>
+    suspend fun getAllUser(currentPage: Int): Flow<Resource<List<User>>>
 
     suspend fun savePersonalInfo(user: User): Flow<Resource<UserResponse>>
     suspend fun removeExperience(id: Int, experienceId: Int): Flow<Resource<UserResponse>>
     suspend fun removeEducation(id: Int, educationId: Int): Flow<Resource<UserResponse>>
-    suspend fun saveToFavorite(id: Int, isFavorite: Boolean): Flow<Resource<UserResponse>>
+    suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): Flow<Resource<UserResponse>>
     suspend fun getUser(id: Int): Flow<Resource<User>>
     suspend fun uploadFile(file: MultipartBody.Part): Flow<Resource<String>>
     suspend fun validateProfile(email: String): Flow<Resource<String>>

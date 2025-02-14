@@ -12,6 +12,9 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresExtension
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.border
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -302,14 +305,21 @@ class MainActivity : ComponentActivity() {
             val tabBarItems = listOf(homeTab, alertsTab, settingsTab, moreTab)
 
             Scaffold(bottomBar = {
-                if (isVisibleNav) TabView(
-                    tabBarItems,
-                    defaultIndex = selectedTabIndex,
-                    changeIndex = {
-                        selectedTabIndex = it
-                    },
-                    navController = navController
-                )
+
+                AnimatedVisibility(
+                    visible = isVisibleNav,
+                    enter = slideInVertically(initialOffsetY = { it }),
+                    exit = slideOutVertically(targetOffsetY = { it })
+                ) {
+                    TabView(
+                        tabBarItems,
+                        defaultIndex = selectedTabIndex,
+                        changeIndex = {
+                            selectedTabIndex = it
+                        },
+                        navController = navController
+                    )
+                }
             }) { padding ->
                 Log.i("", "onCreate: $padding")
 
@@ -366,7 +376,7 @@ class MainActivity : ComponentActivity() {
                         route = Screen.ForgotPasswordScreen.route,
                         deepLinks = listOf(
                             navDeepLink {
-                                uriPattern = "http://192.168.1.12/{token}"
+                                uriPattern = "http://192.168.116.209/{token}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),
@@ -387,8 +397,15 @@ class MainActivity : ComponentActivity() {
                         else NoPermissionScreen(cameraPermissionState::launchPermissionRequest)
                     }*/
 
+
                     composable(route = Screen.SettingScreen.route) {
-                        if (role == "Candidate" || role == "Candidat") isVisibleNav = false
+
+                        CoroutineScope(Dispatchers.Main).launch {
+                            GlobalEntries.isVisibleNav.collect {
+                                isVisibleNav = if (role == "Candidate" || role == "Candidat") false
+                                else it
+                            }
+                        }
 
                         SettingScreen(
                             navController = navController,
@@ -413,10 +430,7 @@ class MainActivity : ComponentActivity() {
 
                     composable(route = Screen.FavoritesScreen.route) {
                         isVisibleNav = true
-                        if (role == "Company" || role == "Entreprise") CompanyFavorites(
-                            navController
-                        )
-                        else CandidateFavorites(navController)
+                        CompanyFavorites(navController)
                     }
 
                     composable(route = Screen.CompanyProfileScreen.route) {
@@ -453,12 +467,14 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(route = Screen.FilterScreen.route) {
+                        isVisibleNav = false
                         FilterScreen(navController)
                     }
 
                     composable(route = Screen.HomeScreen.route) {
                         Log.i("klelklggenl", "onCreate: ${GlobalEntries.role}")
                         if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") {
+                            isVisibleNav = true
                             HomeChoice(navController)
                         } else HomeCandidate(navController)
                     }

@@ -6,6 +6,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.example.myapplication.local.source.LocalDataSource
+import com.example.myjob.base.GenericResponse
 import com.example.myjob.base.GenericSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
@@ -13,6 +14,8 @@ import com.example.myjob.common.network.ApiResult
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
+import com.example.myjob.domain.entities.FavoriteModel
+import com.example.myjob.domain.entities.InvitationParams
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
@@ -28,6 +31,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import okhttp3.MultipartBody
+import retrofit2.http.Body
 import javax.inject.Inject
 
 /**
@@ -142,7 +146,31 @@ class RepositoryImp @Inject constructor(
             }
         }
 
-    override suspend fun getAllUser(): Flow<Resource<PagingData<User>>> = flow {
+    override suspend fun sendInvitation(@Body invitationParams: InvitationParams): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.sendInvitation(invitationParams)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+    override suspend fun getAllUser(currentPage: Int): Flow<Resource<List<User>>> = flow {
+
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.getAllUser(pageNumber = currentPage)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    /*override suspend fun getAllUser(): Flow<Resource<PagingData<User>>> = flow {
         val pager = Pager(
             config = PagingConfig(pageSize = 10, prefetchDistance = 2),
             pagingSourceFactory = {
@@ -164,7 +192,7 @@ class RepositoryImp @Inject constructor(
         )
     }.catch { ex ->
         emit(Resource(ResourceState.ERROR, null, ex.message))
-    }
+    }*/
 
     override suspend fun getAllEducations(id: Int): Flow<Resource<PagingData<Educations>>> = flow {
         val pager = Pager(
@@ -176,6 +204,30 @@ class RepositoryImp @Inject constructor(
 
                     val json = Gson().toJson(educations.content)
                     sharedPreference.putString("jsonEducation", json)
+
+                    educations
+                }
+            }
+        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+        emitAll(
+            pager.map { pagingData ->
+                Resource(ResourceState.SUCCESS, pagingData, null)
+            }
+        )
+    }.catch { ex ->
+        emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
+    override suspend fun getFavorites(id: Int): Flow<Resource<PagingData<FavoriteModel>>> = flow {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            pagingSourceFactory = {
+                GenericSource { currentPage ->
+                    val educations =
+                        remoteDataSource.getFavorites(id = id, pageNumber = currentPage)
+
+                    val json = Gson().toJson(educations.content)
+                    sharedPreference.putString("jsonFavorites", json)
 
                     educations
                 }
@@ -291,11 +343,11 @@ class RepositoryImp @Inject constructor(
                 emit(Resource(ResourceState.ERROR, null, ex.message))
             }
         }
-    override suspend fun saveToFavorite(id: Int, isFavorite: Boolean): Flow<Resource<UserResponse>> =
+    override suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): Flow<Resource<UserResponse>> =
         flow {
             try {
                 // Get data from RemoteDataSource
-                val data = remoteDataSource.saveToFavorite(id, isFavorite)
+                val data = remoteDataSource.saveToFavorite(idUserConnected, candidateId)
                 // Emit data
                 emit(Resource(ResourceState.SUCCESS, data, null))
             } catch (ex: Exception) {

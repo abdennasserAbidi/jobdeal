@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -145,99 +146,111 @@ fun JobSwipeCard(
 
     val interactionSource = remember { MutableInteractionSource() }
 
-    Box(
-        modifier = modifier
-            .border(
-                1.dp,
-                Color.Black,
-                RoundedCornerShape(20.dp)
-            )
-            .background(color = Color.Transparent, shape = RoundedCornerShape(20.dp))
+    Box(modifier = modifier
+        .fillMaxWidth()
+        .fillMaxHeight(0.65f)
     ) {
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .align(Alignment.TopCenter)
+                .padding(top = 25.dp)
+                .border(
+                    1.dp,
+                    Color.Black,
+                    RoundedCornerShape(20.dp)
+                )
+                .background(color = Color.Transparent, shape = RoundedCornerShape(20.dp))
+        ) {
 
             Column(
-                Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.TopStart)
-                    .padding(16.dp)
+                modifier = Modifier.align(Alignment.TopCenter)
             ) {
-                val fullName = (profile.fullName ?: "").trimEnd().trimStart()
-                var l = ""
-                if (fullName.isNotEmpty() && fullName != " ") {
-                    val s = fullName.split(" ")
-                    l = "${s[0][0].uppercaseChar()}${s[1][0].uppercaseChar()}"
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(70.dp)
-                            .background(colorResource(id = R.color.whatsapp), shape = CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = l,
-                            color = Color.White,
-                            style = TextStyle(
-                                fontSize = 16.sp,
-                                fontFamily = FontFamily(
-                                    Font(
-                                        R.font.rubikbold,
-                                        weight = FontWeight.Bold
-                                    )
-                                )
-                            )
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            text = profile.fullName ?: "",
-                            style = MaterialTheme.typography.h6
-                        )
-
-                        Text(
-                            text = profile.activitySector ?: "",
-                            color = Color.Gray
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Job or Candidate Details
-                Text(profile.address ?: "", style = MaterialTheme.typography.subtitle1)
-                Text(profile.activitySector ?: "", style = MaterialTheme.typography.body2)
 
                 Spacer(modifier = Modifier.height(10.dp))
 
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(top = 50.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = profile.fullName ?: "",
+                        style = MaterialTheme.typography.h6
+                    )
+
+                    Text(
+                        text = "${profile.activitySector ?: ""} - ${profile.address ?: ""}",
+                        color = Color.Gray
+                    )
+                }
+
+
                 Text(
+                    modifier = Modifier.padding(start = 10.dp, top = 20.dp),
                     text = profile.resumeUser(),
                     style = MaterialTheme.typography.body2
                 )
             }
 
+            val shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
+            Box(modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .border(
+                    1.dp,
+                    Color.Black,
+                    shape
+                )
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null
+                ) {
+                    openProfile(profile)
+                }
+                .background(Color.Transparent, shape = shape),
+                contentAlignment = Alignment.Center) {
+
+                Text(
+                    text = "View profile",
+                    modifier = Modifier.padding(vertical = 10.dp),
+                    fontWeight = FontWeight.Bold,
+                    color = colorResource(id = R.color.whatsapp)
+                )
+
+            }
+
+        }
+
+
+        val fullName = (profile.fullName ?: "").trimEnd().trimStart()
+        var l = ""
+        if (fullName.isNotEmpty() && fullName != " ") {
+            val s = fullName.split(" ")
+            l = "${s[0][0].uppercaseChar()}${s[1][0].uppercaseChar()}"
+        }
+
+        Box(
+            modifier = Modifier
+                .size(70.dp)
+                .align(Alignment.TopCenter)
+                .background(colorResource(id = R.color.whatsapp), shape = CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
             Text(
-                text = "View profile",
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 10.dp)
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null
-                    ) {
-                        openProfile(profile)
-                    },
-                color = colorResource(id = R.color.whatsapp)
+                text = l,
+                color = Color.White,
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    fontFamily = FontFamily(
+                        Font(
+                            R.font.rubikbold,
+                            weight = FontWeight.Bold
+                        )
+                    )
+                )
             )
         }
 
