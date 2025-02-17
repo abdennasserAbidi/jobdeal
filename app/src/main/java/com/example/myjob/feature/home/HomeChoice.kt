@@ -124,7 +124,7 @@ fun HomeChoice(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = stringResource(id = R.string.start_app),
+                    text = "Find Candidate",
                     modifier = Modifier.padding(vertical = 20.dp),
                     style = TextStyle(
                         color = color,

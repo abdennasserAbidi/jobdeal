@@ -187,7 +187,6 @@ fun JobSwipeCard(
                     )
                 }
 
-
                 Text(
                     modifier = Modifier.padding(start = 10.dp, top = 20.dp),
                     text = profile.resumeUser(),
@@ -219,11 +218,8 @@ fun JobSwipeCard(
                     fontWeight = FontWeight.Bold,
                     color = colorResource(id = R.color.whatsapp)
                 )
-
             }
-
         }
-
 
         val fullName = (profile.fullName ?: "").trimEnd().trimStart()
         var l = ""
