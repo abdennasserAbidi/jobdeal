@@ -1,48 +1,90 @@
 package com.example.myjob.feature.setting
 
-import android.content.Context
-import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myjob.base.reources.ResourceState
-import com.example.myjob.common.FileReader
 import com.example.myjob.common.GlobalEntries
-import com.example.myjob.domain.usecase.UploadCVUseCase
 import com.example.myjob.domain.usecase.ValidateAccountUseCase
-import com.example.myjob.domain.usecase.VerifyExistingFileUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
     private val sharedPreferences: SharedPreference,
-    private val uploadCVUseCase: UploadCVUseCase,
     private val validateAccountUseCase: ValidateAccountUseCase,
-    private val verifyExistingFileUseCase: VerifyExistingFileUseCase
 ): ViewModel() {
 
-    val isExisting = MutableStateFlow(false)
     val role = MutableStateFlow("")
     val username = MutableStateFlow("AA")
     val userFullName = MutableStateFlow("")
     val allLanguages = MutableStateFlow(listOf("English", "French"))
     val language = MutableStateFlow(sharedPreferences.getString("lang", "English"))
+    val user = MutableStateFlow(GlobalEntries.user)
+
+    fun changeCompanyWebsite(name: String) {
+        user.update {
+            it.linkWebsite = name
+            it
+        }
+    }
+
+    fun changeCompanyLinkedIn(name: String) {
+        user.update {
+            it.linkLinkedIn = name
+            it
+        }
+    }
+
+    fun changeCompanyName(name: String) {
+        user.update {
+            it.companyName = name
+            it
+        }
+    }
+
+    fun changeCompanyEmail(name: String) {
+        user.update {
+            it.email = name
+            it
+        }
+    }
+    fun changeCompanyActivitySector(name: String) {
+        user.update {
+            it.companyActivitySector = name
+            it
+        }
+    }
+    fun changeCompanyDescription(name: String) {
+        user.update {
+            it.companyDescription = name
+            it
+        }
+    }
+
+    fun changeCompanyNum(name: String, index: Int) {
+        user.update {
+            it.listNum?.set(index, name)
+            it
+        }
+    }
+
+    fun addCompanyNum(name: String) {
+        user.update {
+            if (it.listNum?.contains(name) == false) it.listNum.add(name)
+            it
+        }
+    }
 
     fun getRole() {
         role.update {
             sharedPreferences.getString("role", "") ?: ""
         }
     }
-
-
     init {
         val fullName = sharedPreferences.getString("username", "") ?: ""
         userFullName.update { fullName }
@@ -51,31 +93,6 @@ class SettingViewModel @Inject constructor(
             val name = "${s[0][0].uppercaseChar()}${s[1][0].uppercaseChar()}"
             username.update { name }
         }
-
-        verifyFile()
-    }
-
-    private fun verifyFile() {
-        viewModelScope.launch {
-            verifyExistingFileUseCase.execute(getPDFName()).collect { res ->
-                when(res.status) {
-                    ResourceState.SUCCESS -> {
-                        Log.i("pdfName", "2: ${res.data?.existed}")
-
-                        isExisting.update { res.data?.existed ?: false }
-                    }
-                    else -> {
-
-                    }
-                }
-            }
-        }
-    }
-
-    fun getPDFName(): String {
-        val fullName = sharedPreferences.getString("username", "") ?: ""
-        return if (fullName.contains(" "))
-            "${fullName.replace(" ", "").trim()}Detail.pdf" else ""
     }
 
     fun changeLanguage(lang: String) {
@@ -123,36 +140,6 @@ class SettingViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    var uploadMessage = MutableStateFlow(getPDFName())
-
-    fun uploadCV(context: Context, fileUri: Uri, pdfName: String) {
-        val file = FileReader.getFile(context, fileUri) // Helper function to convert URI to File
-
-        val requestBody: RequestBody = RequestBody.create("application/pdf".toMediaTypeOrNull(), file)
-        val expectedName = if (pdfName.contains("(")) pdfName.split(" ")[0] else pdfName
-        val multipartBody: MultipartBody.Part = MultipartBody.Part.createFormData("file", expectedName, requestBody)
-
-        viewModelScope.launch {
-            uploadCVUseCase.execute(multipartBody).collect { res ->
-                when(res.status) {
-                    ResourceState.SUCCESS -> {
-                        Log.i("lktrdgvtd", "uploadCV: ${res.data}")
-
-                        uploadMessage.update {
-                            res.data ?: ""
-                        }
-
-                        verifyFile()
-                    }
-                    else -> {
-                        uploadMessage.update { "" }
-                    }
-                }
-            }
-        }
-
     }
 
     fun logout() {

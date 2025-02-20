@@ -15,6 +15,7 @@ import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.FavoriteModel
+import com.example.myjob.domain.entities.InvitationModel
 import com.example.myjob.domain.entities.InvitationParams
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.FileExistingResponse
@@ -157,7 +158,7 @@ class RepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
-    override suspend fun getAllUser(currentPage: Int): Flow<Resource<List<User>>> = flow {
+    /*override suspend fun getAllUser(currentPage: Int): Flow<Resource<PagingData<User>>> = flow {
 
         try {
             // Get data from RemoteDataSource
@@ -168,9 +169,9 @@ class RepositoryImp @Inject constructor(
             // Emit error
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
-    }
+    }*/
 
-    /*override suspend fun getAllUser(): Flow<Resource<PagingData<User>>> = flow {
+    override suspend fun getAllUser(): Flow<Resource<PagingData<User>>> = flow {
         val pager = Pager(
             config = PagingConfig(pageSize = 10, prefetchDistance = 2),
             pagingSourceFactory = {
@@ -192,7 +193,7 @@ class RepositoryImp @Inject constructor(
         )
     }.catch { ex ->
         emit(Resource(ResourceState.ERROR, null, ex.message))
-    }*/
+    }
 
     override suspend fun getAllEducations(id: Int): Flow<Resource<PagingData<Educations>>> = flow {
         val pager = Pager(
@@ -228,6 +229,30 @@ class RepositoryImp @Inject constructor(
 
                     val json = Gson().toJson(educations.content)
                     sharedPreference.putString("jsonFavorites", json)
+
+                    educations
+                }
+            }
+        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+        emitAll(
+            pager.map { pagingData ->
+                Resource(ResourceState.SUCCESS, pagingData, null)
+            }
+        )
+    }.catch { ex ->
+        emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
+    override suspend fun getInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>> = flow {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            pagingSourceFactory = {
+                GenericSource { currentPage ->
+                    val educations =
+                        remoteDataSource.getInvitations(id = id, pageNumber = currentPage)
+
+                    val json = Gson().toJson(educations.content)
+                    sharedPreference.putString("jsonInvitations", json)
 
                     educations
                 }

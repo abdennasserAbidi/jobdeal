@@ -1,11 +1,13 @@
 package com.example.myjob.data
 
 import androidx.paging.PagingData
+import com.example.myjob.base.GenericResponse
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.FavoriteModel
+import com.example.myjob.domain.entities.InvitationModel
 import com.example.myjob.domain.entities.InvitationParams
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.FileExistingResponse
@@ -33,11 +35,12 @@ interface Repository {
     suspend fun saveEducation(educations: Educations): Flow<Resource<UserResponse>>
     suspend fun getAllEducations(id: Int): Flow<Resource<PagingData<Educations>>>
     suspend fun getFavorites(id: Int): Flow<Resource<PagingData<FavoriteModel>>>
+    suspend fun getInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>>
     suspend fun verifyExisting(fileName: String): Flow<Resource<FileExistingResponse>>
     suspend fun getAllExp(id: Int): Flow<Resource<List<Experience>>>
     suspend fun getAllEduc(id: Int): Flow<Resource<List<Educations>>>
-    //suspend fun getAllUser(): Flow<Resource<PagingData<User>>>
-    suspend fun getAllUser(currentPage: Int): Flow<Resource<List<User>>>
+    suspend fun getAllUser(): Flow<Resource<PagingData<User>>>
+    //suspend fun getAllUser(currentPage: Int): Flow<Resource<PagingData<User>>>
 
     suspend fun savePersonalInfo(user: User): Flow<Resource<UserResponse>>
     suspend fun removeExperience(id: Int, experienceId: Int): Flow<Resource<UserResponse>>

@@ -1,15 +1,24 @@
 package com.example.myjob.feature.profile
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.pdf.PdfDocument
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.util.Log
 import android.view.View
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateIntOffsetAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,13 +27,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
@@ -38,6 +51,7 @@ import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -47,35 +61,50 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Red
+import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.getFileNameFromUri
 import com.example.myjob.common.pdf.PdfViewer
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.navigation.Screen
+import com.example.myjob.feature.setting.SettingViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalFoundationApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -84,7 +113,7 @@ fun CandidateProfile(
     navController: NavController,
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val expanded = remember { mutableStateListOf(true, false, false) }
+    val expanded = remember { mutableStateListOf(true, false, false, false) }
     val enableNextCard = remember { mutableStateListOf(true, false, false) }
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -99,53 +128,29 @@ fun CandidateProfile(
     val allEduc by profileViewModel.allEduc.collectAsState()
     profileViewModel.getAllEduc(user.id ?: 0)
 
+    val scrollState = rememberScrollState()
+    var positionTitle by remember { mutableStateOf(Offset.Zero) }
+
+    var changeToolBar by remember { mutableStateOf(false) }
+
     Box(modifier = Modifier.fillMaxSize()) {
+        changeToolBar = scrollState.value > 53f
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .then(
-                    if (!expanded[0]) Modifier.verticalScroll(rememberScrollState())
-                    else Modifier.padding(end = 5.dp)
-                ),
+                    if (!expanded[0]) Modifier.verticalScroll(scrollState)
+                    else Modifier.padding(end = 0.dp)
+                )
+                .verticalScroll(scrollState),
         ) {
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 10.dp, top = 10.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowBack,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null
-                        ) {
-                            profileViewModel.isFromLogin(false)
-                            navController.popBackStack(
-                                Screen.SettingScreen.route, false
-                            )
-                        },
-                    contentDescription = ""
-                )
-
-                Text(
-                    text = stringResource(id = R.string.profile_candidate_type_text),
-                    modifier = Modifier.align(Alignment.Center),
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        fontFamily = FontFamily.Default,
-                        fontWeight = FontWeight.Medium
-                    )
-                )
-            }
 
             //First card
             Card(
                 modifier = Modifier
-                    .padding(top = 10.dp)
                     .animateContentSize()
+                    .padding(top = 85.dp)
                     .fillMaxWidth(0.98f)
                     .then(
                         if (expanded[0]) Modifier.wrapContentHeight()
@@ -160,6 +165,7 @@ fun CandidateProfile(
                         if (expanded[0]) {
                             expanded[1] = false
                             expanded[2] = false
+                            expanded[3] = false
                         }
                     },
                 shape = RoundedCornerShape(20.dp),
@@ -190,6 +196,7 @@ fun CandidateProfile(
                             if (expanded[1]) {
                                 expanded[0] = false
                                 expanded[2] = false
+                                expanded[3] = false
                             }
                         }
                     },
@@ -223,7 +230,7 @@ fun CandidateProfile(
             }
 
 
-            //Second card
+            //third card
             Card(
                 modifier = Modifier
                     .animateContentSize()
@@ -239,6 +246,7 @@ fun CandidateProfile(
                             if (expanded[2]) {
                                 expanded[0] = false
                                 expanded[1] = false
+                                expanded[3] = false
                             }
                         }
                     },
@@ -257,6 +265,31 @@ fun CandidateProfile(
 
                         GlobalEntries.idExp = View.generateViewId()
                         navController.navigate(destination)
+                    })
+            }
+
+            //resume card
+            Card(
+                modifier = Modifier
+                    .animateContentSize()
+                    .padding(start = 10.dp, top = 10.dp, bottom = 5.dp, end = 5.dp)
+                    .fillMaxWidth(0.98f)
+                    .height(80.dp),
+                shape = RoundedCornerShape(20.dp),
+                contentColor = Color.Blue,
+                elevation = 5.dp
+            ) {
+                ResumeCard(
+                    profileViewModel,
+                    next = { withDetail ->
+                        /*val destination = if (withDetail) Screen.CareerScreen.route
+                        else {
+                            profileViewModel.changeDestinationForm("profile")
+                            Screen.CareerFormScreen.route
+                        }
+
+                        GlobalEntries.idExp = View.generateViewId()
+                        navController.navigate(destination)*/
                     })
             }
 
@@ -288,7 +321,7 @@ fun CandidateProfile(
 
                     Icon(
                         imageVector = Icons.Default.Print,
-                        tint = Color.White,
+                        tint = White,
                         modifier = Modifier
                             .padding(vertical = 10.dp)
                             .padding(start = 20.dp),
@@ -299,7 +332,7 @@ fun CandidateProfile(
                         text = stringResource(id = R.string.exported_text),
                         modifier = Modifier.padding(vertical = 10.dp, horizontal = 20.dp),
                         style = TextStyle(
-                            color = Color.White,
+                            color = White,
                             fontFamily = FontFamily.Default,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -345,7 +378,7 @@ fun CandidateProfile(
 
                     Icon(
                         imageVector = Icons.Default.Share,
-                        tint = Color.White,
+                        tint = White,
                         modifier = Modifier
                             .padding(vertical = 10.dp)
                             .padding(start = 20.dp),
@@ -356,7 +389,7 @@ fun CandidateProfile(
                         text = stringResource(id = R.string.share_text),
                         modifier = Modifier.padding(vertical = 10.dp, horizontal = 20.dp),
                         style = TextStyle(
-                            color = Color.White,
+                            color = White,
                             fontFamily = FontFamily.Default,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -364,8 +397,55 @@ fun CandidateProfile(
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(50.dp))
         }
 
+        val shapeInit =  RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(70.dp)
+                .background(color = colorResource(id = R.color.whatsapp), shape = shapeInit),
+            contentAlignment = Alignment.Center
+        ) {
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 15.dp, horizontal = 15.dp)
+                    .onGloballyPositioned { positionTitle = it.positionInRoot() }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack,
+                    tint = White,
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            profileViewModel.isFromLogin(false)
+                            navController.popBackStack(
+                                Screen.SettingScreen.route, false
+                            )
+                        },
+                    contentDescription = ""
+                )
+
+                Text(
+                    text = stringResource(id = R.string.profile_candidate_type_text),
+                    modifier = Modifier.align(Alignment.Center),
+                    color = White,
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontFamily = FontFamily.Default,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+            }
+        }
 
         if (showPdf) {
             val langState by profileViewModel.langState.collectAsState()
@@ -472,7 +552,7 @@ fun createPdf(
 
     paintTitle.textSize = 20f
     paintTitle.isFakeBoldText = true
-    canvas1?.drawText("Your profile", (pageWidth/2).toFloat(), startY, paintTitle)
+    canvas1?.drawText("Your profile", (pageWidth / 2).toFloat(), startY, paintTitle)
 
     startY += 70f
 
@@ -494,7 +574,11 @@ fun createPdf(
                 currentPage?.let { pdfDocument.finishPage(it) }
 
                 // Create a new page
-                val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, (index / maxItemsPerPage) + 1).create()
+                val pageInfo = PdfDocument.PageInfo.Builder(
+                    pageWidth,
+                    pageHeight,
+                    (index / maxItemsPerPage) + 1
+                ).create()
                 currentPage = pdfDocument.startPage(pageInfo)
                 canvas = currentPage?.canvas
                 yPosition = padding // Reset Y position
@@ -504,7 +588,12 @@ fun createPdf(
             canvas?.apply {
                 paintTitle.textSize = 20f
                 paintTitle.isFakeBoldText = true
-                drawText("Experience ${index + 1}:", padding.toFloat(), yPosition.toFloat(), paintTitle)
+                drawText(
+                    "Experience ${index + 1}:",
+                    padding.toFloat(),
+                    yPosition.toFloat(),
+                    paintTitle
+                )
 
                 paint.textSize = 14f
                 paint.isFakeBoldText = false
@@ -550,7 +639,11 @@ fun createPdf(
                 currentPageEducation?.let { pdfDocument.finishPage(it) }
 
                 // Create a new page
-                val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, (index / maxItemsPerPage) + 1).create()
+                val pageInfo = PdfDocument.PageInfo.Builder(
+                    pageWidth,
+                    pageHeight,
+                    (index / maxItemsPerPage) + 1
+                ).create()
                 currentPageEducation = pdfDocument.startPage(pageInfo)
                 canvasEducation = currentPageEducation?.canvas
                 yPositionEducation = paddingEducation // Reset Y position
@@ -561,7 +654,12 @@ fun createPdf(
                 paintTitle.textSize = 20f
                 paintTitle.isFakeBoldText = true
                 paintTitle.textAlign = Paint.Align.LEFT
-                drawText("Education ${index + 1}:", padding.toFloat(), yPositionEducation.toFloat(), paintTitle)
+                drawText(
+                    "Education ${index + 1}:",
+                    padding.toFloat(),
+                    yPositionEducation.toFloat(),
+                    paintTitle
+                )
 
                 paint.textSize = 14f
                 paint.isFakeBoldText = false
@@ -580,7 +678,12 @@ fun createPdf(
             paintTitle.textSize = 20f
             paintTitle.isFakeBoldText = true
             paintTitle.textAlign = Paint.Align.LEFT
-            canvas?.drawText("Education ${index + 1}:", padding.toFloat(), yPosition.toFloat(), paintTitle)
+            canvas?.drawText(
+                "Education ${index + 1}:",
+                padding.toFloat(),
+                yPosition.toFloat(),
+                paintTitle
+            )
 
             paint.textSize = 14f
             paint.isFakeBoldText = false
@@ -737,7 +840,7 @@ fun EducationCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White),
+            .background(White),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -799,6 +902,136 @@ fun EducationCard(
     }
 }
 
+fun uploadFile(
+    profileViewModel: ProfileViewModel,
+    context: Context,
+    fileUri: Uri,
+    pdfName: String
+) {
+    profileViewModel.uploadCV(context, fileUri, pdfName)
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun ResumeCard(
+    profileViewModel: ProfileViewModel,
+    next: (withDetail: Boolean) -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+
+    var selectedPdfUri by remember { mutableStateOf<Uri?>(null) }
+    var pdfName by remember { mutableStateOf<String?>(null) }
+    var expectedName by remember { mutableStateOf<String?>(null) }
+    var isUploaded by remember { mutableStateOf(false) }
+    var expend by remember { mutableStateOf(false) }
+    var showPdf by remember { mutableStateOf(false) }
+
+    val isExisting by profileViewModel.isExisting.collectAsState()
+    val uploadMessage by profileViewModel.uploadMessage.collectAsState()
+    val context = LocalContext.current
+
+    val lifecycleEvent = rememberLifecycleEvent()
+    LaunchedEffect(lifecycleEvent) {
+        Log.i("lifecycleExp", "login: $lifecycleEvent")
+
+        if (lifecycleEvent == Lifecycle.Event.ON_START) {
+            pdfName = profileViewModel.getPDFName()
+        }
+    }
+
+    // Launcher for opening a file picker
+    val pdfPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { uri ->
+            // Handle the selected PDF URI
+            selectedPdfUri = uri
+            pdfName = uri?.let { context.getFileNameFromUri(it) } // Get file name
+
+            expectedName = if (pdfName?.isNotEmpty() == true) {
+                if (pdfName?.contains("(") == true) "${
+                    pdfName?.split(" ")?.get(0)
+                }.pdf" else (pdfName ?: "")
+            } else ""
+            Log.i("fileUri", "createPdf: $expectedName")
+
+            uri?.let {
+                uploadFile(profileViewModel, context, it, expectedName ?: "")
+            }
+        }
+    )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(White),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        val text = if (isExisting) "View resume" else "Add resume"
+
+        Text(
+            modifier = Modifier
+                .weight(0.8f)
+                .padding(start = 10.dp),
+            text = text,
+            color = Color.Black,
+            style = TextStyle(
+                fontSize = 14.sp,
+                fontFamily = FontFamily(
+                    Font(
+                        R.font.rubik_medium,
+                        weight = FontWeight.Medium
+                    )
+                )
+            )
+        )
+
+        //withDetail
+        if (!isExisting) {
+            Icon(
+                modifier = Modifier
+                    .weight(0.2f)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
+                        next(false)
+                        pdfPickerLauncher.launch(arrayOf("application/pdf"))
+                    },
+                imageVector = Icons.Filled.Add,
+                tint = Color.Black,
+                contentDescription = "add"
+            )
+        } else {
+            Text(
+                modifier = Modifier
+                    .weight(0.3f)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            delay(200)
+                            next(true)
+                        }
+
+                    },
+                text = pdfName ?: "",
+                color = Color.Black,
+                style = TextStyle(
+                    fontSize = 14.sp,
+                    fontFamily = FontFamily(
+                        Font(
+                            R.font.rubik_medium,
+                            weight = FontWeight.Medium
+                        )
+                    )
+                )
+            )
+        }
+    }
+}
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -818,7 +1051,7 @@ fun CareerFilterCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White),
+            .background(White),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(

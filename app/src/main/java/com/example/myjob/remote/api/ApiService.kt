@@ -6,6 +6,7 @@ import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.FavoriteModel
+import com.example.myjob.domain.entities.InvitationModel
 import com.example.myjob.domain.entities.InvitationParams
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.FileExistingResponse
@@ -86,7 +87,7 @@ interface ApiService {
     suspend fun getAllUser(
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
-    ): List<User>
+    ): GenericResponse<User>
 
     @POST("auth/sendInvitation")
     suspend fun sendInvitation(@Body invitationParams: InvitationParams): UserResponse
@@ -111,6 +112,13 @@ interface ApiService {
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
     ): GenericResponse<FavoriteModel>
+
+    @GET("auth/getInvitations")
+    suspend fun getInvitations(
+        @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<InvitationModel>
 
     @POST("auth/removeEducation")
     suspend fun removeEducation(

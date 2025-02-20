@@ -1,15 +1,12 @@
 package com.example.myjob.feature.setting
 
-import android.content.Context
-import android.net.Uri
-import android.os.Environment
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateIntOffsetAsState
-import androidx.compose.foundation.Image
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,15 +22,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
-import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -50,9 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -63,7 +55,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -73,41 +64,33 @@ import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.base.LanguageHelper
 import com.example.myjob.common.GlobalEntries
-import com.example.myjob.common.getFileNameFromUri
-import com.example.myjob.common.pdf.PdfViewer
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.common.tablayout.CustomTab
 import com.example.myjob.domain.entities.SettingsParams
 import com.example.myjob.feature.navigation.Screen
 import kotlinx.coroutines.flow.update
-import java.io.File
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingScreen(
     navController: NavController,
-    clearData: () -> Unit,
-    onResumed: (index: Int) -> Unit,
+    clearData: () -> Unit = {},
+    onResumed: (index: Int) -> Unit = {},
     settingViewModel: SettingViewModel = hiltViewModel()
 ) {
     val allLanguages by settingViewModel.allLanguages.collectAsState()
     val language by settingViewModel.language.collectAsState()
     val role by settingViewModel.role.collectAsState()
-    val isExisting by settingViewModel.isExisting.collectAsState()
-    val uploadMessage by settingViewModel.uploadMessage.collectAsState()
+    val user by settingViewModel.user.collectAsState()
+
+    val userName = if (role == "Candidate" || role == "Candidat") GlobalEntries.user.fullName
+    else GlobalEntries.user.companyName
 
     val interactionSource = remember { MutableInteractionSource() }
 
     var lc by remember { mutableStateOf(if (language == "English") "en" else "fr") }
 
-    var isUploaded by remember { mutableStateOf(false) }
-    var expend by remember { mutableStateOf(false) }
-    var showPdf by remember { mutableStateOf(false) }
-
-    var selectedPdfUri by remember { mutableStateOf<Uri?>(null) }
-    var pdfName by remember { mutableStateOf<String?>(null) }
-    var expectedName by remember { mutableStateOf<String?>(null) }
     var expanded by remember { mutableStateOf(false) }
     val animatedPadding by animateDpAsState(
         if (expanded) {
@@ -123,7 +106,7 @@ fun SettingScreen(
     }
     val offset by animateIntOffsetAsState(
         targetValue = if (expanded) {
-            IntOffset(0, pxToMove)
+            IntOffset(0, 0)
         } else {
             IntOffset.Zero
         },
@@ -136,7 +119,6 @@ fun SettingScreen(
 
         if (lifecycleEvent == Lifecycle.Event.ON_START) {
             settingViewModel.getRole()
-            pdfName = settingViewModel.getPDFName()
             onResumed(3)
         }
     }
@@ -157,225 +139,66 @@ fun SettingScreen(
         ) {
             val context = LocalContext.current
 
-            if (expanded) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                        .padding(top = 10.dp)
-                ) {
-
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        modifier = Modifier.align(Alignment.TopStart),
-                        contentDescription = ""
-                    )
-
-                    Text(text = "Edit profile", modifier = Modifier.align(Alignment.TopCenter))
-
-                }
-            }
-
-            Log.i("screenHeight", "SettingScreen: $screenHeight")
             Box(modifier = Modifier
                 .fillMaxWidth()
                 .height(if (expanded) (screenHeightDp - 50.dp) else 200.dp)
-                .offset {
-                    offset
-                }
+                .offset { offset }
             ) {
                 val shapeInit = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
-                val shapeAfter = RoundedCornerShape(10.dp)
-                val shape = if (expanded) shapeAfter else shapeInit
 
                 Box(
                     modifier = Modifier
                         .animateContentSize()
                         .fillMaxWidth()
-                        .height(if (expanded) (screenHeightDp - 150.dp) else 100.dp)
-                        .padding(horizontal = animatedPadding)
-                        .background(color = colorResource(id = R.color.whatsapp), shape = shape)
+                        .height(100.dp)
+                        .background(color = colorResource(id = R.color.whatsapp), shape = shapeInit)
                 ) {
-                    if (expanded) {
-                        var numSocial by remember { mutableStateOf("") }
-                        Column {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                TextField(
-                                    modifier = Modifier
-                                        .wrapContentWidth()
-                                        .padding(horizontal = 20.dp)
-                                        .padding(top = 10.dp)
-                                        .border(
-                                            width = 1.dp,
-                                            color = /*if (activatedCheck && !submitEnabled) Color.Red else*/ Color.Transparent,
-                                            shape = RoundedCornerShape(30.dp)
-                                        )
-                                        .clip(shape = RoundedCornerShape(30.dp)),
-                                    colors = TextFieldDefaults.textFieldColors(
-                                        focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent
-                                    ),
-                                    label = { Text(text = "Numéro social" ) },
-                                    value = numSocial,
-                                    onValueChange = {
-                                        numSocial = it
-                                        /*if (activatedCheck) viewModel.validateFirstName(it)
-                                        viewModel.changeUserFirstName(it)*/
+
+                    this@Column.AnimatedVisibility(
+                        visible = expanded,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp)
+                                .padding(top = 15.dp)
+                        ) {
+
+                            Icon(
+                                imageVector = Icons.Filled.ArrowBack,
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) {
+                                        expanded = false
+                                        GlobalEntries.isVisibleNav.update { true }
                                     },
-                                    textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                                )
+                                tint = Color.White,
+                                contentDescription = ""
+                            )
 
-                                Icon(
-                                    imageVector = Icons.Filled.Add,
-                                    modifier = Modifier.padding(start = 20.dp),
-                                    contentDescription = ""
-                                )
-                            }
+                            Text(
+                                text = "Edit profile",
+                                color = Color.White,
+                                modifier = Modifier.align(Alignment.TopCenter)
+                            )
 
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                TextField(
-                                    modifier = Modifier
-                                        .wrapContentWidth()
-                                        .padding(horizontal = 20.dp)
-                                        .padding(top = 10.dp)
-                                        .border(
-                                            width = 1.dp,
-                                            color = /*if (activatedCheck && !submitEnabled) Color.Red else*/ Color.Transparent,
-                                            shape = RoundedCornerShape(30.dp)
-                                        )
-                                        .clip(shape = RoundedCornerShape(30.dp)),
-                                    colors = TextFieldDefaults.textFieldColors(
-                                        focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent
-                                    ),
-                                    label = { Text(text = "Address" ) },
-                                    value = numSocial,
-                                    onValueChange = {
-                                        numSocial = it
-                                        /*if (activatedCheck) viewModel.validateFirstName(it)
-                                        viewModel.changeUserFirstName(it)*/
-                                    },
-                                    textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                                )
-
-                                Icon(
-                                    imageVector = Icons.Filled.Add,
-                                    modifier = Modifier.padding(start = 20.dp),
-                                    contentDescription = ""
-                                )
-                            }
-
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                TextField(
-                                    modifier = Modifier
-                                        .wrapContentWidth()
-                                        .padding(horizontal = 20.dp)
-                                        .padding(top = 10.dp)
-                                        .border(
-                                            width = 1.dp,
-                                            color = /*if (activatedCheck && !submitEnabled) Color.Red else*/ Color.Transparent,
-                                            shape = RoundedCornerShape(30.dp)
-                                        )
-                                        .clip(shape = RoundedCornerShape(30.dp)),
-                                    colors = TextFieldDefaults.textFieldColors(
-                                        focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent
-                                    ),
-                                    label = { Text(text = "Email" ) },
-                                    value = numSocial,
-                                    onValueChange = {
-                                        numSocial = it
-                                        /*if (activatedCheck) viewModel.validateFirstName(it)
-                                        viewModel.changeUserFirstName(it)*/
-                                    },
-                                    textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                                )
-
-                                Icon(
-                                    imageVector = Icons.Filled.Add,
-                                    modifier = Modifier.padding(start = 20.dp),
-                                    contentDescription = ""
-                                )
-                            }
-
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                TextField(
-                                    modifier = Modifier
-                                        .wrapContentWidth()
-                                        .padding(horizontal = 20.dp)
-                                        .padding(top = 10.dp)
-                                        .border(
-                                            width = 1.dp,
-                                            color = /*if (activatedCheck && !submitEnabled) Color.Red else*/ Color.Transparent,
-                                            shape = RoundedCornerShape(30.dp)
-                                        )
-                                        .clip(shape = RoundedCornerShape(30.dp)),
-                                    colors = TextFieldDefaults.textFieldColors(
-                                        focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent
-                                    ),
-                                    label = { Text(text = "Phone" ) },
-                                    value = numSocial,
-                                    onValueChange = {
-                                        numSocial = it
-                                        /*if (activatedCheck) viewModel.validateFirstName(it)
-                                        viewModel.changeUserFirstName(it)*/
-                                    },
-                                    textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                                )
-
-                                Icon(
-                                    imageVector = Icons.Filled.Add,
-                                    modifier = Modifier.padding(start = 20.dp),
-                                    contentDescription = ""
-                                )
-                            }
-
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                TextField(
-                                    modifier = Modifier
-                                        .wrapContentWidth()
-                                        .padding(horizontal = 20.dp)
-                                        .padding(top = 10.dp)
-                                        .border(
-                                            width = 1.dp,
-                                            color = /*if (activatedCheck && !submitEnabled) Color.Red else*/ Color.Transparent,
-                                            shape = RoundedCornerShape(30.dp)
-                                        )
-                                        .clip(shape = RoundedCornerShape(30.dp)),
-                                    colors = TextFieldDefaults.textFieldColors(
-                                        focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent
-                                    ),
-                                    label = { Text(text = "Name" ) },
-                                    value = numSocial,
-                                    onValueChange = {
-                                        numSocial = it
-                                        /*if (activatedCheck) viewModel.validateFirstName(it)
-                                        viewModel.changeUserFirstName(it)*/
-                                    },
-                                    textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                                )
-
-                                Icon(
-                                    imageVector = Icons.Filled.Add,
-                                    modifier = Modifier.padding(start = 20.dp),
-                                    contentDescription = ""
-                                )
-                            }
+                            Text(
+                                text = stringResource(id = R.string.save_text),
+                                color = Color.White,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) {
+                                        //TODO("save updated company")
+                                    }
+                            )
 
                         }
                     }
@@ -384,36 +207,15 @@ fun SettingScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 20.dp, end = 20.dp)
-                ) {
-
-                    if (role == "Candidate" || role == "Candidat") {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            tint = Color.White,
-                            modifier = Modifier
-                                .padding(top = 10.dp, start = 10.dp)
-                                .align(Alignment.TopStart)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    navController.popBackStack()
-                                },
-                            contentDescription = ""
-                        )
-                    }
-                }
-
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
+                        .padding(top = 75.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Card(
                         shape = RoundedCornerShape(40.dp),
                         modifier = Modifier
-                            .fillMaxWidth(if (expanded) 0.5f else 0.5f)
-                            .padding(top = if (expanded) (screenHeightDp - 175.dp) else 75.dp)
+                            .animateContentSize()
+                            .fillMaxWidth(if (expanded) 0.85f else 0.5f)
+                            .height(if (expanded) (screenHeightDp - 50.dp) else 50.dp)
                             .clickable(
                                 interactionSource = interactionSource,
                                 indication = null
@@ -428,27 +230,23 @@ fun SettingScreen(
                                 .fillMaxWidth()
                                 .padding(vertical = 15.dp, horizontal = 15.dp)
                         ) {
-
-                            val align = if (expanded) Alignment.Center else Alignment.CenterStart
-                            val text =
-                                if (expanded) "Validate" else GlobalEntries.user.companyName ?: ""
-
-                            Text(
-                                modifier = Modifier.align(align),
-                                text = text,
-                                color = Color.Black,
-                                style = TextStyle(
-                                    fontSize = 16.sp,
-                                    fontFamily = FontFamily(
-                                        Font(
-                                            R.font.rubik_medium,
-                                            weight = FontWeight.Medium
+                            if (!expanded) {
+                                Text(
+                                    modifier = Modifier.align(Alignment.CenterStart),
+                                    text = userName ?: "",
+                                    color = Color.Black,
+                                    style = TextStyle(
+                                        fontSize = 16.sp,
+                                        fontFamily = FontFamily(
+                                            Font(
+                                                R.font.rubik_medium,
+                                                weight = FontWeight.Medium
+                                            )
                                         )
                                     )
                                 )
-                            )
 
-                            if (!expanded) {
+
                                 val color = colorResource(id = R.color.whatsapp)
                                 Box(
                                     modifier = Modifier
@@ -465,33 +263,320 @@ fun SettingScreen(
                                     )
 
                                 }
+                            } else {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+
+                                    var isLinkOpened by remember { mutableStateOf(false) }
+
+                                    AnimatedVisibility(visible = !isLinkOpened) {
+                                        Column(
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+
+                                            Text(
+                                                text = "Name",
+                                                modifier = Modifier.padding(
+                                                    top = 20.dp,
+                                                    start = 20.dp
+                                                ),
+                                                style = TextStyle(
+                                                    color = colorResource(id = R.color.whatsapp),
+                                                    fontFamily = FontFamily.Default,
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            )
+
+                                            TextField(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 20.dp)
+                                                    .padding(top = 10.dp)
+                                                    .border(
+                                                        width = 1.dp,
+                                                        color = colorResource(id = R.color.whatsapp),
+                                                        shape = RoundedCornerShape(30.dp)
+                                                    )
+                                                    .clip(shape = RoundedCornerShape(30.dp)),
+                                                colors = TextFieldDefaults.textFieldColors(
+                                                    focusedIndicatorColor = Color.Transparent,
+                                                    unfocusedIndicatorColor = Color.Transparent
+                                                ),
+                                                value = user.companyName ?: "",
+                                                onValueChange = {
+                                                    settingViewModel.changeCompanyName(it)
+                                                },
+                                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                                            )
+
+                                            Text(
+                                                text = stringResource(id = R.string.activity_text),
+                                                modifier = Modifier.padding(
+                                                    top = 10.dp,
+                                                    start = 20.dp
+                                                ),
+                                                style = TextStyle(
+                                                    color = colorResource(id = R.color.whatsapp),
+                                                    fontFamily = FontFamily.Default,
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            )
+
+                                            TextField(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 20.dp)
+                                                    .padding(top = 10.dp)
+                                                    .border(
+                                                        width = 1.dp,
+                                                        color = colorResource(id = R.color.whatsapp),
+                                                        shape = RoundedCornerShape(30.dp)
+                                                    )
+                                                    .clip(shape = RoundedCornerShape(30.dp)),
+                                                colors = TextFieldDefaults.textFieldColors(
+                                                    focusedIndicatorColor = Color.Transparent,
+                                                    unfocusedIndicatorColor = Color.Transparent
+                                                ),
+                                                value = user.companyActivitySector ?: "",
+                                                onValueChange = {
+                                                    settingViewModel.changeCompanyActivitySector(it)
+                                                },
+                                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                                            )
+
+                                            Text(
+                                                text = "A propos",
+                                                modifier = Modifier.padding(
+                                                    top = 10.dp,
+                                                    start = 20.dp
+                                                ),
+                                                style = TextStyle(
+                                                    color = colorResource(id = R.color.whatsapp),
+                                                    fontFamily = FontFamily.Default,
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            )
+
+                                            TextField(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 20.dp)
+                                                    .padding(top = 10.dp)
+                                                    .border(
+                                                        width = 1.dp,
+                                                        color = colorResource(id = R.color.whatsapp),
+                                                        shape = RoundedCornerShape(30.dp)
+                                                    )
+                                                    .clip(shape = RoundedCornerShape(30.dp)),
+                                                colors = TextFieldDefaults.textFieldColors(
+                                                    focusedIndicatorColor = Color.Transparent,
+                                                    unfocusedIndicatorColor = Color.Transparent
+                                                ),
+                                                value = user.companyDescription ?: "",
+                                                onValueChange = {
+                                                    settingViewModel.changeCompanyDescription(it)
+                                                },
+                                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                                            )
+                                        }
+                                    }
+
+                                    AnimatedVisibility(visible = isLinkOpened) {
+                                        Column(
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+
+                                            Text(
+                                                text = "Website",
+                                                modifier = Modifier.padding(
+                                                    top = 20.dp,
+                                                    start = 20.dp
+                                                ),
+                                                style = TextStyle(
+                                                    color = colorResource(id = R.color.whatsapp),
+                                                    fontFamily = FontFamily.Default,
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            )
+
+                                            TextField(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 20.dp)
+                                                    .padding(top = 10.dp)
+                                                    .border(
+                                                        width = 1.dp,
+                                                        color = colorResource(id = R.color.whatsapp),
+                                                        shape = RoundedCornerShape(30.dp)
+                                                    )
+                                                    .clip(shape = RoundedCornerShape(30.dp)),
+                                                colors = TextFieldDefaults.textFieldColors(
+                                                    focusedIndicatorColor = Color.Transparent,
+                                                    unfocusedIndicatorColor = Color.Transparent
+                                                ),
+                                                value = user.linkWebsite ?: "",
+                                                onValueChange = {
+                                                    settingViewModel.changeCompanyWebsite(it)
+                                                },
+                                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                                            )
+
+                                            Text(
+                                                text = "LinkedIn",
+                                                modifier = Modifier.padding(
+                                                    top = 10.dp,
+                                                    start = 20.dp
+                                                ),
+                                                style = TextStyle(
+                                                    color = colorResource(id = R.color.whatsapp),
+                                                    fontFamily = FontFamily.Default,
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            )
+
+                                            TextField(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 20.dp)
+                                                    .padding(top = 10.dp)
+                                                    .border(
+                                                        width = 1.dp,
+                                                        color = colorResource(id = R.color.whatsapp),
+                                                        shape = RoundedCornerShape(30.dp)
+                                                    )
+                                                    .clip(shape = RoundedCornerShape(30.dp)),
+                                                colors = TextFieldDefaults.textFieldColors(
+                                                    focusedIndicatorColor = Color.Transparent,
+                                                    unfocusedIndicatorColor = Color.Transparent
+                                                ),
+                                                value = user.linkLinkedIn ?: "",
+                                                onValueChange = {
+                                                    settingViewModel.changeCompanyLinkedIn(it)
+                                                },
+                                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                                            )
+
+                                            if (user.listNum?.isNotEmpty() == true) {
+                                                user.listNum?.mapIndexed { index, numSocial ->
+                                                    Text(
+                                                        text = "Numéro social",
+                                                        modifier = Modifier.padding(
+                                                            top = 20.dp,
+                                                            start = 20.dp
+                                                        ),
+                                                        style = TextStyle(
+                                                            color = colorResource(id = R.color.whatsapp),
+                                                            fontFamily = FontFamily.Default,
+                                                            fontSize = 12.sp,
+                                                            fontWeight = FontWeight.Bold
+                                                        )
+                                                    )
+
+                                                    TextField(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .padding(horizontal = 20.dp)
+                                                            .padding(top = 10.dp)
+                                                            .border(
+                                                                width = 1.dp,
+                                                                color = colorResource(id = R.color.whatsapp),
+                                                                shape = RoundedCornerShape(30.dp)
+                                                            )
+                                                            .clip(shape = RoundedCornerShape(30.dp)),
+                                                        colors = TextFieldDefaults.textFieldColors(
+                                                            focusedIndicatorColor = Color.Transparent,
+                                                            unfocusedIndicatorColor = Color.Transparent
+                                                        ),
+                                                        value = numSocial,
+                                                        onValueChange = {
+                                                            settingViewModel.changeCompanyNum(
+                                                                it,
+                                                                index
+                                                            )
+                                                        },
+                                                        textStyle = TextStyle(
+                                                            Color.Black,
+                                                            fontSize = 14.sp
+                                                        )
+                                                    )
+                                                }
+                                            } else {
+                                                var companyNum by remember { mutableStateOf("") }
+
+                                                Text(
+                                                    text = "Numéro social",
+                                                    modifier = Modifier.padding(
+                                                        top = 20.dp,
+                                                        start = 20.dp
+                                                    ),
+                                                    style = TextStyle(
+                                                        color = colorResource(id = R.color.whatsapp),
+                                                        fontFamily = FontFamily.Default,
+                                                        fontSize = 12.sp,
+                                                        fontWeight = FontWeight.Bold
+                                                    )
+                                                )
+
+                                                TextField(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(horizontal = 20.dp)
+                                                        .padding(top = 10.dp)
+                                                        .border(
+                                                            width = 1.dp,
+                                                            color = colorResource(id = R.color.whatsapp),
+                                                            shape = RoundedCornerShape(30.dp)
+                                                        )
+                                                        .clip(shape = RoundedCornerShape(30.dp)),
+                                                    colors = TextFieldDefaults.textFieldColors(
+                                                        focusedIndicatorColor = Color.Transparent,
+                                                        unfocusedIndicatorColor = Color.Transparent
+                                                    ),
+                                                    value = companyNum,
+                                                    onValueChange = {
+                                                        companyNum = it
+                                                        settingViewModel.addCompanyNum(it)
+                                                    },
+                                                    textStyle = TextStyle(
+                                                        Color.Black,
+                                                        fontSize = 14.sp
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    val text =
+                                        if (isLinkOpened) "Change other info" else "Change links as well?"
+
+                                    Text(
+                                        text = text,
+                                        modifier = Modifier
+                                            .padding(top = 20.dp)
+                                            .clickable(
+                                                interactionSource = interactionSource,
+                                                indication = null
+                                            ) {
+                                                isLinkOpened = !isLinkOpened
+                                            },
+                                        color = Color.Blue,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 16.sp
+                                    )
+
+                                }
                             }
                         }
                     }
                 }
 
             }
-
-            // Launcher for opening a file picker
-            val pdfPickerLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.OpenDocument(),
-                onResult = { uri ->
-                    // Handle the selected PDF URI
-                    selectedPdfUri = uri
-                    pdfName = uri?.let { context.getFileNameFromUri(it) } // Get file name
-
-                    expectedName = if (pdfName?.isNotEmpty() == true) {
-                        if (pdfName?.contains("(") == true) "${
-                            pdfName?.split(" ")?.get(0)
-                        }.pdf" else (pdfName ?: "")
-                    } else ""
-                    Log.i("fileUri", "createPdf: $expectedName")
-
-                    uri?.let {
-                        uploadFile(settingViewModel, context, it, expectedName ?: "")
-                    }
-                }
-            )
 
             if (!expanded) {
                 Column(modifier = Modifier.fillMaxSize()) {
@@ -555,9 +640,8 @@ fun SettingScreen(
                     )
 
                     if (role == "Candidate" || role == "Candidat") {
-                        Log.i("pdfName", "SettingScreen: $isExisting")
 
-                        if (isExisting) {
+                        /*if (isExisting) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -599,7 +683,8 @@ fun SettingScreen(
                                 }
                             }
 
-                        } else {
+                        }
+                        else {
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -674,7 +759,7 @@ fun SettingScreen(
                                     }
                                 }
                             }
-                        }
+                        }*/
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -713,10 +798,11 @@ fun SettingScreen(
                                         interactionSource = interactionSource,
                                         indication = null
                                     ) {
-                                        if (index == list.lastIndex) {
-                                            expanded = true
-                                            GlobalEntries.isVisibleNav.update { false }
-                                        }
+
+                                        if (role == "Candidate" || role == "Candidat")
+                                            navController.navigate(Screen.ProfileScreen.route)
+                                        else expanded = true
+                                        GlobalEntries.isVisibleNav.update { false }
                                     }
                             ) {
 
@@ -803,62 +889,5 @@ fun SettingScreen(
                 }
             }
         }
-
-        if (showPdf) {
-
-            var isLoading by remember { mutableStateOf(false) }
-            var currentLoadingPage by remember { mutableStateOf<Int?>(null) }
-            var pageCount by remember { mutableStateOf<Int?>(null) }
-            // Save the PDF to a file
-            val file = File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                pdfName ?: ""
-            )
-
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                PdfViewer(
-                    modifier = Modifier.fillMaxSize(),
-                    pdfResId = file,
-                    loadingListener = { loading, currentPage, maxPage ->
-                        isLoading = loading
-                        if (currentPage != null) currentLoadingPage = currentPage
-                        if (maxPage != null) pageCount = maxPage
-                    }
-                )
-                if (isLoading) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        LinearProgressIndicator(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 30.dp),
-                            progress = if (currentLoadingPage == null || pageCount == null) 0f
-                            else currentLoadingPage!!.toFloat() / pageCount!!.toFloat()
-                        )
-                        Text(
-                            modifier = Modifier
-                                .align(Alignment.End)
-                                .padding(top = 5.dp)
-                                .padding(horizontal = 30.dp),
-                            text = "${currentLoadingPage ?: "-"} pages loaded/${pageCount ?: "-"} total pages"
-                        )
-                    }
-                }
-            }
-
-        }
     }
-}
-
-fun uploadFile(
-    settingViewModel: SettingViewModel,
-    context: Context,
-    fileUri: Uri,
-    pdfName: String
-) {
-    settingViewModel.uploadCV(context, fileUri, pdfName)
 }

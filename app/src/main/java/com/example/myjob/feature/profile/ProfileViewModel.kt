@@ -2,6 +2,7 @@ package com.example.myjob.feature.profile
 
 import android.content.Context
 import android.graphics.pdf.PdfDocument
+import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
@@ -14,6 +15,7 @@ import com.example.myjob.base.GenericSource
 import com.example.myjob.base.JsonPagingSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
+import com.example.myjob.common.FileReader
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.DEFAULT_DEGREE
 import com.example.myjob.domain.entities.DEFAULT_ROLE
@@ -30,6 +32,8 @@ import com.example.myjob.domain.usecase.RemoveExperienceUseCase
 import com.example.myjob.domain.usecase.SaveEducationUseCase
 import com.example.myjob.domain.usecase.SaveExperienceUseCase
 import com.example.myjob.domain.usecase.SavePersonalUseCase
+import com.example.myjob.domain.usecase.UploadCVUseCase
+import com.example.myjob.domain.usecase.VerifyExistingFileUseCase
 import com.example.myjob.domain.usecase.home.GetAllEducUseCase
 import com.example.myjob.domain.usecase.home.GetAllExpUseCase
 import com.example.myjob.local.database.SharedPreference
@@ -46,6 +50,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import javax.inject.Inject
 
 @HiltViewModel
@@ -60,11 +67,74 @@ class ProfileViewModel @Inject constructor(
     private val savePersonalUseCase: SavePersonalUseCase,
     private val getUserUseCase: GetUserUseCase,
     private val removeExperienceUseCase: RemoveExperienceUseCase,
-    private val removeEducationUseCase: RemoveEducationUseCase
+    private val removeEducationUseCase: RemoveEducationUseCase,
+    private val uploadCVUseCase: UploadCVUseCase,
+    private val verifyExistingFileUseCase: VerifyExistingFileUseCase
 ) : ViewModel() {
 
+    val isExisting = MutableStateFlow(false)
 
-    val listFlag: MutableStateFlow<PagingData<NewCountry>> = MutableStateFlow(value = PagingData.empty())
+    private fun verifyFile() {
+        viewModelScope.launch {
+            verifyExistingFileUseCase.execute(getPDFName()).collect { res ->
+                when (res.status) {
+                    ResourceState.SUCCESS -> {
+                        Log.i("pdfName", "2: ${res.data?.existed}")
+
+                        isExisting.update { res.data?.existed ?: false }
+                    }
+
+                    else -> {
+
+                    }
+                }
+            }
+        }
+    }
+
+    fun getPDFName(): String {
+        val fullName = sharedPreference.getString("username", "") ?: ""
+        return if (fullName.contains(" "))
+            "${fullName.replace(" ", "").trim()}Detail.pdf" else ""
+    }
+
+
+    var uploadMessage = MutableStateFlow(getPDFName())
+
+    fun uploadCV(context: Context, fileUri: Uri, pdfName: String) {
+        val file = FileReader.getFile(context, fileUri) // Helper function to convert URI to File
+
+        val requestBody: RequestBody =
+            RequestBody.create("application/pdf".toMediaTypeOrNull(), file)
+        val expectedName = if (pdfName.contains("(")) pdfName.split(" ")[0] else pdfName
+        val multipartBody: MultipartBody.Part =
+            MultipartBody.Part.createFormData("file", expectedName, requestBody)
+
+        viewModelScope.launch {
+            uploadCVUseCase.execute(multipartBody).collect { res ->
+                when (res.status) {
+                    ResourceState.SUCCESS -> {
+                        Log.i("lktrdgvtd", "uploadCV: ${res.data}")
+
+                        uploadMessage.update {
+                            res.data ?: ""
+                        }
+
+                        verifyFile()
+                    }
+
+                    else -> {
+                        uploadMessage.update { "" }
+                    }
+                }
+            }
+        }
+
+    }
+
+
+    val listFlag: MutableStateFlow<PagingData<NewCountry>> =
+        MutableStateFlow(value = PagingData.empty())
 
     fun loadItems(page: Int, pageSize: Int, context: Context): List<NewCountry> {
         // Read the JSON file
@@ -82,22 +152,23 @@ class ProfileViewModel @Inject constructor(
         return if (startIndex < items.size) items.subList(startIndex, endIndex) else emptyList()
     }
 
-    private fun fetchCountriesFlag(context: Context): Flow<Resource<PagingData<NewCountry>>> = flow {
-        val pager = Pager(
-            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
-            pagingSourceFactory = {
-                JsonPagingSource(context, "countries.json")
-            }
-        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+    private fun fetchCountriesFlag(context: Context): Flow<Resource<PagingData<NewCountry>>> =
+        flow {
+            val pager = Pager(
+                config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+                pagingSourceFactory = {
+                    JsonPagingSource(context, "countries.json")
+                }
+            ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
 
-        emitAll(
-            pager.map { pagingData ->
-                Resource(ResourceState.SUCCESS, pagingData, null)
-            }
-        )
-    }.catch { ex ->
-        emit(Resource(ResourceState.ERROR, null, ex.message))
-    }
+            emitAll(
+                pager.map { pagingData ->
+                    Resource(ResourceState.SUCCESS, pagingData, null)
+                }
+            )
+        }.catch { ex ->
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
 
     fun changeListFlag(context: Context) {
         viewModelScope.launch {
@@ -227,6 +298,7 @@ class ProfileViewModel @Inject constructor(
             search
         }
     }
+
     fun changeCompletePhone(search: String) {
         completePhone.update {
             search
@@ -352,6 +424,7 @@ class ProfileViewModel @Inject constructor(
             it
         }
     }
+
     var userSituation = MutableStateFlow("")
     fun changeSituation(name: String) {
         val lang = sharedPreference.getString("lang", "") ?: ""
@@ -581,7 +654,9 @@ class ProfileViewModel @Inject constructor(
             val pair = Pair(user.value.id ?: -1, educationId)
             removeEducationUseCase.execute(pair).collect { res ->
                 removeEducationState.update { res.data?.message ?: "" }
-                if (res.data?.message == "removed successfully") getAllEducations(user.value.id ?: 0)
+                if (res.data?.message == "removed successfully") getAllEducations(
+                    user.value.id ?: 0
+                )
             }
         }
     }
@@ -677,6 +752,7 @@ class ProfileViewModel @Inject constructor(
     fun changeAnotherActivityExp(item: String) {
         anotherActivity.update { item }
     }
+
     fun changeLocationExp(item: String) {
         locationExp.update { item }
     }
@@ -696,9 +772,11 @@ class ProfileViewModel @Inject constructor(
     fun changeHourlyRateExp(item: Int) {
         hourlyRateExp.update { item }
     }
+
     fun changeNbHoursExp(item: Int) {
         nbHoursExp.update { item }
     }
+
     fun changeNbDaysExp(item: Int) {
         nbDaysExp.update { item }
     }
@@ -770,13 +848,15 @@ class ProfileViewModel @Inject constructor(
                 }
         }
     }
+
     fun getAllExperience(idUser: Int) {
         viewModelScope.launch {
             getAllExperienceUseCase.execute(idUser)
                 .collectLatest { res ->
                     val json = sharedPreference.getString("jsonExperience", "")
                     if (!json.isNullOrEmpty()) {
-                        val objectList = Gson().fromJson(json, Array<Experience>::class.java).asList()
+                        val objectList =
+                            Gson().fromJson(json, Array<Experience>::class.java).asList()
                         exp.update {
                             objectList
                         }
@@ -800,7 +880,7 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             experiences.idUser = user.value.id
             saveExperienceUseCase.execute(experiences).collect { res ->
-                saveExpState.update { res.data?.message?: "" }
+                saveExpState.update { res.data?.message ?: "" }
                 if (res.data?.message == "saved successfully") getAllExperience(user.value.id ?: 0)
             }
         }
@@ -812,8 +892,10 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val pair = Pair(user.value.id ?: -1, experienceId)
             removeExperienceUseCase.execute(pair).collect { res ->
-                removeExpState.update { res.data?.message?: "" }
-                if (res.data?.message == "removed successfully") getAllExperience(user.value.id ?: 0)
+                removeExpState.update { res.data?.message ?: "" }
+                if (res.data?.message == "removed successfully") getAllExperience(
+                    user.value.id ?: 0
+                )
             }
         }
     }
@@ -838,6 +920,8 @@ class ProfileViewModel @Inject constructor(
         CoroutineScope(Dispatchers.Default).launch {
             getAllEducations(user.value.id ?: 0)
         }
+
+        verifyFile()
     }
 
 }

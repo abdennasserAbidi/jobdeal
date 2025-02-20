@@ -1,6 +1,5 @@
 package com.example.myjob.feature.splash
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myjob.base.reources.ResourceState
@@ -10,7 +9,6 @@ import com.example.myjob.domain.usecase.GetUserUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,6 +26,7 @@ class SplashViewModel @Inject constructor(
             sharedPreferences.getString("role", "") ?: ""
         }
         GlobalEntries.role = role.value
+        GlobalEntries.user.fullName = sharedPreferences.getString("username", "") ?: ""
         GlobalEntries.user.companyName = sharedPreferences.getString("companyName", "") ?: ""
         val id = sharedPreferences.getInt("idUser", -1)
         if (id != -1) getUser(id)

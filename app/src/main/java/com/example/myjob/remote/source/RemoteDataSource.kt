@@ -6,6 +6,7 @@ import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.FavoriteModel
+import com.example.myjob.domain.entities.InvitationModel
 import com.example.myjob.domain.entities.InvitationParams
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.FileExistingResponse
@@ -29,7 +30,8 @@ interface RemoteDataSource {
     suspend fun getAllEduc(id: Int): List<Educations>
     suspend fun getAllEducations(id: Int, pageNumber: Int): GenericResponse<Educations>
     suspend fun getFavorites(id: Int, pageNumber: Int): GenericResponse<FavoriteModel>
-    suspend fun getAllUser(pageNumber: Int): List<User>
+    suspend fun getInvitations(id: Int, pageNumber: Int): GenericResponse<InvitationModel>
+    suspend fun getAllUser(pageNumber: Int): GenericResponse<User>
     suspend fun sendInvitation(@Body invitationParams: InvitationParams): UserResponse
     suspend fun forgotPassword(email: String): UserResponse
     suspend fun resetPassword(token: String, newPassword: String): UserResponse

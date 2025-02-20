@@ -3,6 +3,7 @@ package com.example.myjob.feature.home
 import android.util.Log
 import android.view.View
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -28,11 +29,13 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -66,6 +69,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myjob.R
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.scheduleFileDownload
 import com.example.myjob.domain.entities.HOME_ENTITY
 import com.example.myjob.domain.entities.HomeEntity
@@ -73,6 +77,7 @@ import com.example.myjob.feature.favorites.Button3D
 import com.example.myjob.feature.favorites.DuolingoButtonStyle
 import com.example.myjob.feature.favorites.New3D
 import com.example.myjob.feature.navigation.Screen
+import kotlinx.coroutines.flow.update
 
 @Composable
 fun HomeCandidate(navController: NavController, homeViewModel: HomeViewModel = hiltViewModel()) {
@@ -98,48 +103,9 @@ fun HomeCandidatePreview(
     homeViewModel: HomeViewModel
 ) {
     val listHomeEntity by homeViewModel.listHomeEntity.collectAsState()
-    Scaffold(
-        topBar = {
-            Card(
-                elevation = 5.dp,
-                shape = RectangleShape,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                        .height(70.dp)
-                ) {
 
-                    Text(
-                        text = "JobDeal",
-                        modifier = Modifier.align(Alignment.CenterStart),
-                        style = MaterialTheme.typography.h6,
-                        color = colorResource(id = R.color.whatsapp)
-                    )
-
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        modifier = Modifier
-                            .padding(end = 10.dp)
-                            .align(Alignment.CenterEnd)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                navController.navigate(Screen.SettingScreen.route)
-                            },
-                        contentDescription = "settings"
-                    )
-                }
-            }
-        }
-    ) {
-
-        LazyColumn(modifier = Modifier
-            .fillMaxSize()
-            .padding(it)) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(modifier = Modifier.fillMaxSize().padding(top = 160.dp)) {
             itemsIndexed(
                 items = listHomeEntity,
                 key = { i, _ ->
@@ -152,8 +118,16 @@ fun HomeCandidatePreview(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(150.dp)
+
                         .padding(top = 10.dp)
-                        .padding(horizontal = 10.dp),
+                        .padding(horizontal = 10.dp)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            navController.navigate(Screen.InvitationScreen.route)
+                        }
+                    ,
                     elevation = 5.dp
                 ) {
                     Box(
@@ -216,6 +190,80 @@ fun HomeCandidatePreview(
                     }
                 }
             }
+        }
+
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .align(Alignment.TopCenter)
+        ) {
+            val shapeInit = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
+
+            Box(
+                modifier = Modifier
+                    .animateContentSize()
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .background(color = colorResource(id = R.color.whatsapp), shape = shapeInit)
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 75.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    shape = RoundedCornerShape(40.dp),
+                    modifier = Modifier
+                        .animateContentSize()
+                        .fillMaxWidth(0.5f)
+                        .height(50.dp)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            GlobalEntries.isVisibleNav.update { true }
+                        },
+                    elevation = 5.dp
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 15.dp, horizontal = 15.dp)
+                    ) {
+                        Text(
+                            modifier = Modifier.align(Alignment.CenterStart),
+                            text = GlobalEntries.user.fullName ?: "",
+                            color = Color.Black,
+                            style = TextStyle(
+                                fontSize = 16.sp,
+                                fontFamily = FontFamily(
+                                    Font(
+                                        R.font.rubik_medium,
+                                        weight = FontWeight.Medium
+                                    )
+                                )
+                            )
+                        )
+
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            modifier = Modifier
+                                .size(20.dp)
+                                .align(Alignment.CenterEnd)
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    navController.navigate(Screen.SettingScreen.route)
+                                },
+                            contentDescription = "settings"
+                        )
+                    }
+                }
+            }
+
         }
     }
 }

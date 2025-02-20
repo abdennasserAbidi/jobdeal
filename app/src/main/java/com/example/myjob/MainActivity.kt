@@ -77,6 +77,7 @@ import com.example.myjob.feature.home.FilterScreen
 import com.example.myjob.feature.home.HomeCandidate
 import com.example.myjob.feature.home.HomeChoice
 import com.example.myjob.feature.home.HomeCompany
+import com.example.myjob.feature.home.InvitationScreen
 import com.example.myjob.feature.login.LoginScreen
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
@@ -376,7 +377,7 @@ class MainActivity : ComponentActivity() {
                         route = Screen.ForgotPasswordScreen.route,
                         deepLinks = listOf(
                             navDeepLink {
-                                uriPattern = "http://192.168.116.209/{token}"
+                                uriPattern = "http://10.0.2.2/{token}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),
@@ -472,7 +473,6 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(route = Screen.HomeScreen.route) {
-                        Log.i("klelklggenl", "onCreate: ${GlobalEntries.role}")
                         if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") {
                             isVisibleNav = true
                             HomeChoice(navController)
@@ -480,11 +480,21 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(route = Screen.HomeCompanyScreen.route) {
-                        isVisibleNav = true
+                        CoroutineScope(Dispatchers.Main).launch {
+                            GlobalEntries.isVisibleNav.collect {
+                                isVisibleNav = if (role == "Candidate" || role == "Candidat") false
+                                else it
+                            }
+                        }
                         HomeCompany(navController = navController, onResumed = { index ->
                             isVisibleNav = true
                             selectedTabIndex = index
                         })
+                    }
+
+                    composable(route = Screen.InvitationScreen.route) {
+                        if (role == "Candidate" || role == "Candidat") isVisibleNav = false
+                        InvitationScreen(navController = navController)
                     }
 
                     composable(route = Screen.CareerScreen.route) {

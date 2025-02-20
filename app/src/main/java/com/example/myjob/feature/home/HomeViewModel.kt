@@ -7,7 +7,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.filter
 import com.example.myjob.base.reources.ResourceState
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.listIdToRemove
 import com.example.myjob.domain.entities.HOME_ENTITY
 import com.example.myjob.domain.entities.InvitationModel
@@ -15,8 +17,10 @@ import com.example.myjob.domain.entities.InvitationParams
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.SaveToFavoriteUseCase
 import com.example.myjob.domain.usecase.SendInvitationUseCase
+import com.example.myjob.domain.usecase.home.GetAllInvitationsUseCase
 import com.example.myjob.domain.usecase.home.GetAllUserUseCase
 import com.example.myjob.local.database.SharedPreference
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -46,23 +50,38 @@ class HomeViewModel @Inject constructor(
         resume.update { user.resumeUser() }
     }
 
-    fun skipCurrentProfile(list: List<User>) {
-        // Handle skipping the profile (e.g., move to the next profile)
-        viewModelScope.launch {
-            println("Profile skipped: ${currentProfile.fullName}")
-            moveToNextProfile(list)
+    val invitationParam = MutableStateFlow(InvitationModel())
+    fun changePostName(name: String) {
+        invitationParam.update {
+            it.message = name
+            it
+        }
+    }
+    fun changeDescriptions(name: String) {
+        invitationParam.update {
+            it.description = name
+            it
+        }
+    }
+
+    fun changeTypeContract(name: String) {
+        invitationParam.update {
+            it.typeContract = name
+            it
         }
     }
 
     fun matchCurrentProfile(id: Int) {
-        val invitationModel = InvitationModel(
-            idTo = id,
-            message = "",
-            typeContract = "CDI"
-        )
+        invitationParam.update {
+            it.idCompany = sharedPreference.getInt("idUser", -1)
+            it.companyName = GlobalEntries.user.companyName ?: ""
+            it.idTo = id
+            it
+        }
+        Log.i("flengfrzlngjlrzngz", "matchCurrentProfile: ${invitationParam.value}")
         val invitationParams = InvitationParams(
             idConnected = sharedPreference.getInt("idUser", -1),
-            invitationModel = invitationModel
+            invitationModel = invitationParam.value
         )
         viewModelScope.launch {
             sendInvitationUseCase.execute(invitationParams).collect { res ->
@@ -95,21 +114,6 @@ class HomeViewModel @Inject constructor(
         filterdUser.update { s }
     }
 
-    // Load next profile from the list
-    private fun moveToNextProfile(list: List<User>) {
-        // Shift the list to show the next profile
-
-
-        filtering(list)
-        val s = users.value.toMutableList()
-        users.update {
-            s.removeLast()
-            s
-        }
-        currentProfile = users.value.firstOrNull() ?: User()
-    }
-
-
     private val _user: MutableStateFlow<PagingData<User>> =
         MutableStateFlow(value = PagingData.empty())
     val user: MutableStateFlow<PagingData<User>> get() = _user
@@ -133,16 +137,21 @@ class HomeViewModel @Inject constructor(
 
     private fun getAllUser(currentPage: Int) {
         viewModelScope.launch {
-            getAllUserUseCase.execute(currentPage).collectLatest { res ->
-
-                users.update {
-                    res.data ?: emptyList()
-                }
-
-                /*_user.update {
+            getAllUserUseCase.execute().collectLatest { res ->
+                _user.update {
                     res.data ?: PagingData.empty()
-                }*/
+                }
             }
+        }
+    }
+
+    fun skipCurrentProfile(user: User) {
+        // Handle skipping the profile (e.g., move to the next profile)
+        viewModelScope.launch {
+            val s = _user.value.filter {
+                it.id != user.id
+            }
+            _user.update { s }
         }
     }
 

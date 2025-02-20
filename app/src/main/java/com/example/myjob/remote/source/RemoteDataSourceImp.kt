@@ -6,6 +6,7 @@ import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.FavoriteModel
+import com.example.myjob.domain.entities.InvitationModel
 import com.example.myjob.domain.entities.InvitationParams
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.FileExistingResponse
@@ -14,7 +15,6 @@ import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.remote.api.ApiService
 import okhttp3.MultipartBody
 import retrofit2.http.Body
-import retrofit2.http.Query
 import javax.inject.Inject
 
 /**
@@ -37,7 +37,8 @@ class RemoteDataSourceImp @Inject constructor(
     override suspend fun getAllEduc(id: Int): List<Educations> = apiService.getAllEduc(id)
     override suspend fun getAllEducations(id: Int, pageNumber: Int): GenericResponse<Educations> = apiService.getAllEducations(id, pageNumber)
     override suspend fun getFavorites(id: Int, pageNumber: Int): GenericResponse<FavoriteModel> = apiService.getFavorites(id, pageNumber)
-    override suspend fun getAllUser(pageNumber: Int): List<User> = apiService.getAllUser(pageNumber = pageNumber)
+    override suspend fun getInvitations(id: Int, pageNumber: Int): GenericResponse<InvitationModel> = apiService.getInvitations(id, pageNumber)
+    override suspend fun getAllUser(pageNumber: Int): GenericResponse<User> = apiService.getAllUser(pageNumber = pageNumber)
     override suspend fun sendInvitation(@Body invitationParams: InvitationParams): UserResponse = apiService.sendInvitation(invitationParams)
     override suspend fun savePersonalInfo(user: User): UserResponse = apiService.savePersonalInfo(user)
     override suspend fun removeExperience(id: Int, experienceId: Int): UserResponse = apiService.removeExperience(id, experienceId)

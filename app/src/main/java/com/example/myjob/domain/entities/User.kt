@@ -9,7 +9,6 @@ data class User(
     var id: Int? = View.generateViewId(),
     var firstName: String? = "",
     var lastName: String? = "",
-    var companyName: String? = "",
     var phone: String? = "",
     var country: String? = "",
     var newCountry: String? = "",
@@ -28,7 +27,14 @@ data class User(
     var preferredActivitySector: String? = "",
     @SerializedName("experiences")
     var experience: MutableList<Experience>? = mutableListOf(),
-    var education: MutableList<Educations>? = mutableListOf()
+    var education: MutableList<Educations>? = mutableListOf(),
+    //company
+    val listNum: MutableList<String>? = mutableListOf(),
+    var companyName: String? = "",
+    var linkWebsite: String? = "",
+    var linkLinkedIn: String? = "",
+    var companyActivitySector: String? = "",
+    var companyDescription: String? = "",
 ) {
 
     fun getSituation(lang: String): String {
