@@ -1,6 +1,7 @@
 package com.example.myjob.feature.favorites
 
 import android.util.Log
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -21,6 +22,7 @@ fun CompanyFavorites(
         favoritesViewModel.favorites.collectAsLazyPagingItems()
 
     Log.i("favorites", "CompanyFavorites: ${favorites.itemSnapshotList}")
+
 
 
 

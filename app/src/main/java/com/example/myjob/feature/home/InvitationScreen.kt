@@ -1,6 +1,5 @@
 package com.example.myjob.feature.home
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,8 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -232,7 +229,7 @@ fun InvitationScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(70.dp)
-                .background(color = colorResource(id = R.color.whatsapp), shape = shapeInit),
+                .background(color = colorResource(id = R.color.whatsapp)),
             contentAlignment = Alignment.Center
         ) {
 
@@ -250,7 +247,7 @@ fun InvitationScreen(
                             interactionSource = interactionSource,
                             indication = null
                         ) {
-
+                            navController.popBackStack()
                         },
                     contentDescription = ""
                 )

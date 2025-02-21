@@ -407,7 +407,7 @@ fun CandidateProfile(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(70.dp)
-                .background(color = colorResource(id = R.color.whatsapp), shape = shapeInit),
+                .background(color = colorResource(id = R.color.whatsapp)),
             contentAlignment = Alignment.Center
         ) {
 

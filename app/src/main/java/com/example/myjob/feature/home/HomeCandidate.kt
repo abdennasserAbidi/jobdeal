@@ -27,6 +27,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -104,95 +107,237 @@ fun HomeCandidatePreview(
 ) {
     val listHomeEntity by homeViewModel.listHomeEntity.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(modifier = Modifier.fillMaxSize().padding(top = 160.dp)) {
-            itemsIndexed(
-                items = listHomeEntity,
-                key = { i, _ ->
-                    View.generateViewId()
-                }
-            ) { index, item ->
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = colorResource(id = R.color.whatsapp)),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
 
-                //My invitation contract
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 20.dp)
+            .padding(horizontal = 20.dp)
+        ) {
+            Text(
+                text = "Hello, ${GlobalEntries.user.fullName}",
+                fontSize = 24.sp,
+                color = Color.White,
+                modifier = Modifier.align(Alignment.CenterStart),
+                fontWeight = FontWeight.Bold
+            )
 
-                        .padding(top = 10.dp)
-                        .padding(horizontal = 10.dp)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null
-                        ) {
-                            navController.navigate(Screen.InvitationScreen.route)
-                        }
-                    ,
-                    elevation = 5.dp
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize()
+            Icon(
+                imageVector = Icons.Default.Settings,
+                tint = Color.White,
+                modifier = Modifier
+                    .size(20.dp)
+                    .align(Alignment.CenterEnd)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
                     ) {
+                        navController.navigate(Screen.SettingScreen.route)
+                    },
+                contentDescription = "settings"
+            )
+        }
 
-                        Image(
-                            painter = painterResource(id = item.img),
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop,
-                            contentDescription = ""
-                        )
+        val shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
 
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 70.dp)
+                .background(color = Color.White, shape = shape)
+        ) {
+
+            LazyVerticalGrid(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 30.dp),
+                columns = GridCells.Fixed(2)
+            ) {
+                itemsIndexed(
+                    items = listHomeEntity,
+                    key = { i, _ ->
+                        View.generateViewId()
+                    }
+                ) { index, item ->
+
+                    //My invitation contract
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp)
+
+                            .padding(top = 10.dp)
+                            .padding(horizontal = 10.dp)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                navController.navigate(Screen.InvitationScreen.route)
+                            },
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = 5.dp
+                    ) {
                         Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    Brush.horizontalGradient(
-                                        colors = listOf(
-                                            Color.White,       // Start color
-                                            Color.White,      // Keep the first half white
-                                            Color.White.copy(alpha = 0.8f),     // Keep the first half white
-                                            Color.Transparent // End transparent
-                                        ),
-                                        startX = 0f,         // Start at the left
-                                        endX = 1000f         // End at the right (adjust as needed)
-                                    )
-                                )
+                            modifier = Modifier.fillMaxSize()
                         ) {
 
-                            Column(
+                            Image(
+                                painter = painterResource(id = item.img),
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                                contentDescription = ""
+                            )
+
+                            Box(
                                 modifier = Modifier
-                                    .align(Alignment.CenterStart)
-                                    .padding(start = 20.dp)
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            colors = listOf(
+                                                Color.White,       // Start color
+                                                Color.White,      // Keep the first half white
+                                                Color.White.copy(alpha = 0.8f),     // Keep the first half white
+                                                Color.Transparent // End transparent
+                                            ),
+                                            startX = 0f,         // Start at the left
+                                            endX = 1000f         // End at the right (adjust as needed)
+                                        )
+                                    )
                             ) {
 
-                                Text(
-                                    text = item.title,
-                                    color = colorResource(id = R.color.whatsapp),
-                                    modifier = Modifier.padding(top = 10.dp),
-                                    style = TextStyle(
-                                        fontSize = 16.sp,
-                                        fontFamily = FontFamily(
-                                            Font(
-                                                R.font.rubikbold,
-                                                weight = FontWeight.Bold
+                                Column(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterStart)
+                                        .padding(start = 20.dp)
+                                ) {
+
+                                    Text(
+                                        text = item.title,
+                                        color = colorResource(id = R.color.whatsapp),
+                                        modifier = Modifier.padding(top = 10.dp),
+                                        style = TextStyle(
+                                            fontSize = 16.sp,
+                                            fontFamily = FontFamily(
+                                                Font(
+                                                    R.font.rubikbold,
+                                                    weight = FontWeight.Bold
+                                                )
                                             )
                                         )
                                     )
-                                )
 
-                                Text(
-                                    text = item.subTitle,
-                                    color = Color.Gray,
-                                    modifier = Modifier.padding(top = 10.dp)
-                                )
+                                    Text(
+                                        text = item.subTitle,
+                                        color = Color.Gray,
+                                        modifier = Modifier.padding(top = 10.dp)
+                                    )
+                                }
+
                             }
-
                         }
                     }
                 }
             }
+
+
+            /*LazyColumn(modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 30.dp)
+            ) {
+itemsIndexed(
+                    items = listHomeEntity,
+                    key = { i, _ ->
+                        View.generateViewId()
+                    }
+                ) { index, item ->
+
+                    //My invitation contract
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp)
+
+                            .padding(top = 10.dp)
+                            .padding(horizontal = 10.dp)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                navController.navigate(Screen.InvitationScreen.route)
+                            }
+                        ,
+                        elevation = 5.dp
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+
+                            Image(
+                                painter = painterResource(id = item.img),
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                                contentDescription = ""
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            colors = listOf(
+                                                Color.White,       // Start color
+                                                Color.White,      // Keep the first half white
+                                                Color.White.copy(alpha = 0.8f),     // Keep the first half white
+                                                Color.Transparent // End transparent
+                                            ),
+                                            startX = 0f,         // Start at the left
+                                            endX = 1000f         // End at the right (adjust as needed)
+                                        )
+                                    )
+                            ) {
+
+                                Column(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterStart)
+                                        .padding(start = 20.dp)
+                                ) {
+
+                                    Text(
+                                        text = item.title,
+                                        color = colorResource(id = R.color.whatsapp),
+                                        modifier = Modifier.padding(top = 10.dp),
+                                        style = TextStyle(
+                                            fontSize = 16.sp,
+                                            fontFamily = FontFamily(
+                                                Font(
+                                                    R.font.rubikbold,
+                                                    weight = FontWeight.Bold
+                                                )
+                                            )
+                                        )
+                                    )
+
+                                    Text(
+                                        text = item.subTitle,
+                                        color = Color.Gray,
+                                        modifier = Modifier.padding(top = 10.dp)
+                                    )
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }*/
+
         }
 
-        Box(modifier = Modifier
+        /*Box(modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
             .align(Alignment.TopCenter)
@@ -264,7 +409,7 @@ fun HomeCandidatePreview(
                 }
             }
 
-        }
+        }*/
     }
 }
 
@@ -314,11 +459,12 @@ fun HomeCandidate2(navigation: () -> Unit) {
             )
         ) {
 
-            Column(modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .fillMaxHeight(0.4f)
-                .border(1.dp, Color.Black, RoundedCornerShape(2.dp))
-                .background(Color.Gray)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .fillMaxHeight(0.4f)
+                    .border(1.dp, Color.Black, RoundedCornerShape(2.dp))
+                    .background(Color.Gray)
             ) {
 
                 Box(
