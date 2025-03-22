@@ -1,12 +1,16 @@
 package com.example.myjob.feature.home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
+import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.GetAllEducationUseCase
 import com.example.myjob.domain.usecase.GetAllExperienceUseCase
+import com.example.myjob.domain.usecase.GetUserUseCase
 import com.example.myjob.domain.usecase.SaveToFavoriteUseCase
 import com.example.myjob.local.database.SharedPreference
 import com.google.gson.Gson
@@ -22,8 +26,15 @@ class DetailViewModel @Inject constructor(
     private val sharedPreference: SharedPreference,
     private val getAllExperienceUseCase: GetAllExperienceUseCase,
     private val getAllEducationUseCase: GetAllEducationUseCase,
+    private val getUserUseCase: GetUserUseCase,
     private val saveToFavoriteUseCase: SaveToFavoriteUseCase
 ) : ViewModel() {
+
+    var lang = ""
+    init {
+        lang = sharedPreference.getString("lang", "") ?: ""
+        //getUser(lang, sharedPreference.getInt("idUser", 0))
+    }
 
     val userFullName = MutableStateFlow("")
     val username = MutableStateFlow("AA")
@@ -34,6 +45,30 @@ class DetailViewModel @Inject constructor(
             val s = userName.trimStart().split(" ")
             val name = "${s[0][0].uppercaseChar()}${s[1][0].uppercaseChar()}"
             username.update { name }
+        }
+    }
+
+    val showUser = MutableStateFlow(mapOf<String, String>())
+    val user = MutableStateFlow(User(id = 0))
+
+    fun getUserById(id: Int) {
+        getUser(lang, id)
+    }
+
+    private fun getUser(lang: String, id: Int) {
+        viewModelScope.launch {
+            getUserUseCase.execute(id).collect {
+                it.data?.let { u ->
+                    user.update { u }
+                    GlobalEntries.userCandidate = u
+                    sharedPreference.putString("username", u.fullName ?: "")
+                    Log.i("userValue", "getUser: $u")
+                    Log.i("userValue", "getUser: ${u.showUser(lang)}")
+                    showUser.update {
+                        u.showUser(lang)
+                    }
+                }
+            }
         }
     }
 

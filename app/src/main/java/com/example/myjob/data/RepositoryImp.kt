@@ -219,7 +219,7 @@ class RepositoryImp @Inject constructor(
     }.catch { ex ->
         emit(Resource(ResourceState.ERROR, null, ex.message))
     }
-    override suspend fun getFavorites(id: Int): Flow<Resource<PagingData<FavoriteModel>>> = flow {
+    override suspend fun getFavorites(id: Int): Flow<Resource<PagingData<User>>> = flow {
         val pager = Pager(
             config = PagingConfig(pageSize = 10, prefetchDistance = 2),
             pagingSourceFactory = {
@@ -333,6 +333,17 @@ class RepositoryImp @Inject constructor(
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.savePersonalInfo(user)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+    override suspend fun saveCompanyInfo(user: User): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.saveCompanyInfo(user)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {

@@ -3,12 +3,13 @@ package com.example.myjob.feature.setting
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateIntOffsetAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -22,18 +23,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -43,7 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -62,6 +65,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
+import com.example.myjob.base.CustomTextField
 import com.example.myjob.base.LanguageHelper
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.rememberLifecycleEvent
@@ -141,7 +145,7 @@ fun SettingScreen(
 
             Box(modifier = Modifier
                 .fillMaxWidth()
-                .height(if (expanded) (screenHeightDp - 50.dp) else 200.dp)
+                .height(if (expanded) (screenHeightDp - 20.dp) else 200.dp)
                 .offset { offset }
             ) {
                 val shapeInit = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
@@ -196,7 +200,7 @@ fun SettingScreen(
                                         interactionSource = interactionSource,
                                         indication = null
                                     ) {
-                                        //TODO("save updated company")
+                                        settingViewModel.saveCompanyInfo()
                                     }
                             )
 
@@ -207,375 +211,152 @@ fun SettingScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 75.dp),
+                        .padding(top = 75.dp, bottom = 10.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Card(
-                        shape = RoundedCornerShape(40.dp),
-                        modifier = Modifier
-                            .animateContentSize()
-                            .fillMaxWidth(if (expanded) 0.85f else 0.5f)
-                            .height(if (expanded) (screenHeightDp - 50.dp) else 50.dp)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                expanded = false
-                                GlobalEntries.isVisibleNav.update { true }
-                            },
-                        elevation = 5.dp
-                    ) {
-                        Box(
+
+                    Surface(
+                        elevation = 2.dp,
+                        color = MaterialTheme.colors.surface,
+                        shape = RoundedCornerShape(40.dp)) {
+
+                        Card(
+                            shape = RoundedCornerShape(40.dp),
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 15.dp, horizontal = 15.dp)
+                                .animateContentSize(
+                                    animationSpec = tween(
+                                        durationMillis = 300,
+                                        easing = LinearOutSlowInEasing
+                                    )
+                                )
+                                .fillMaxWidth(if (expanded) 0.85f else 0.5f)
+                                //.height(if (expanded) (screenHeightDp - 50.dp) else 50.dp)
+                                .wrapContentHeight()
+                                .shadow(
+                                    elevation = 5.dp,
+                                    shape = RoundedCornerShape(40.dp)
+                                )
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    expanded = false
+                                    GlobalEntries.isVisibleNav.update { true }
+                                },
+                            elevation = 5.dp
                         ) {
-                            if (!expanded) {
-                                Text(
-                                    modifier = Modifier.align(Alignment.CenterStart),
-                                    text = userName ?: "",
-                                    color = Color.Black,
-                                    style = TextStyle(
-                                        fontSize = 16.sp,
-                                        fontFamily = FontFamily(
-                                            Font(
-                                                R.font.rubik_medium,
-                                                weight = FontWeight.Medium
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 15.dp, horizontal = 15.dp)
+                            ) {
+                                if (!expanded) {
+                                    Text(
+                                        modifier = Modifier.align(Alignment.CenterStart),
+                                        text = userName ?: "",
+                                        color = Color.Black,
+                                        style = TextStyle(
+                                            fontSize = 16.sp,
+                                            fontFamily = FontFamily(
+                                                Font(
+                                                    R.font.rubik_medium,
+                                                    weight = FontWeight.Medium
+                                                )
                                             )
                                         )
                                     )
-                                )
 
 
-                                val color = colorResource(id = R.color.whatsapp)
-                                Box(
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                        .align(Alignment.CenterEnd)
-                                        .background(color = color, shape = CircleShape),
-                                    contentAlignment = Alignment.Center
-                                ) {
-
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_settings_privacy),
-                                        tint = Color.White,
-                                        contentDescription = ""
-                                    )
-
-                                }
-                            } else {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-
-                                    var isLinkOpened by remember { mutableStateOf(false) }
-
-                                    AnimatedVisibility(visible = !isLinkOpened) {
-                                        Column(
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-
-                                            Text(
-                                                text = "Name",
-                                                modifier = Modifier.padding(
-                                                    top = 20.dp,
-                                                    start = 20.dp
-                                                ),
-                                                style = TextStyle(
-                                                    color = colorResource(id = R.color.whatsapp),
-                                                    fontFamily = FontFamily.Default,
-                                                    fontSize = 12.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            )
-
-                                            TextField(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 20.dp)
-                                                    .padding(top = 10.dp)
-                                                    .border(
-                                                        width = 1.dp,
-                                                        color = colorResource(id = R.color.whatsapp),
-                                                        shape = RoundedCornerShape(30.dp)
-                                                    )
-                                                    .clip(shape = RoundedCornerShape(30.dp)),
-                                                colors = TextFieldDefaults.textFieldColors(
-                                                    focusedIndicatorColor = Color.Transparent,
-                                                    unfocusedIndicatorColor = Color.Transparent
-                                                ),
-                                                value = user.companyName ?: "",
-                                                onValueChange = {
-                                                    settingViewModel.changeCompanyName(it)
-                                                },
-                                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                                            )
-
-                                            Text(
-                                                text = stringResource(id = R.string.activity_text),
-                                                modifier = Modifier.padding(
-                                                    top = 10.dp,
-                                                    start = 20.dp
-                                                ),
-                                                style = TextStyle(
-                                                    color = colorResource(id = R.color.whatsapp),
-                                                    fontFamily = FontFamily.Default,
-                                                    fontSize = 12.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            )
-
-                                            TextField(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 20.dp)
-                                                    .padding(top = 10.dp)
-                                                    .border(
-                                                        width = 1.dp,
-                                                        color = colorResource(id = R.color.whatsapp),
-                                                        shape = RoundedCornerShape(30.dp)
-                                                    )
-                                                    .clip(shape = RoundedCornerShape(30.dp)),
-                                                colors = TextFieldDefaults.textFieldColors(
-                                                    focusedIndicatorColor = Color.Transparent,
-                                                    unfocusedIndicatorColor = Color.Transparent
-                                                ),
-                                                value = user.companyActivitySector ?: "",
-                                                onValueChange = {
-                                                    settingViewModel.changeCompanyActivitySector(it)
-                                                },
-                                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                                            )
-
-                                            Text(
-                                                text = "A propos",
-                                                modifier = Modifier.padding(
-                                                    top = 10.dp,
-                                                    start = 20.dp
-                                                ),
-                                                style = TextStyle(
-                                                    color = colorResource(id = R.color.whatsapp),
-                                                    fontFamily = FontFamily.Default,
-                                                    fontSize = 12.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            )
-
-                                            TextField(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 20.dp)
-                                                    .padding(top = 10.dp)
-                                                    .border(
-                                                        width = 1.dp,
-                                                        color = colorResource(id = R.color.whatsapp),
-                                                        shape = RoundedCornerShape(30.dp)
-                                                    )
-                                                    .clip(shape = RoundedCornerShape(30.dp)),
-                                                colors = TextFieldDefaults.textFieldColors(
-                                                    focusedIndicatorColor = Color.Transparent,
-                                                    unfocusedIndicatorColor = Color.Transparent
-                                                ),
-                                                value = user.companyDescription ?: "",
-                                                onValueChange = {
-                                                    settingViewModel.changeCompanyDescription(it)
-                                                },
-                                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                                            )
-                                        }
-                                    }
-
-                                    AnimatedVisibility(visible = isLinkOpened) {
-                                        Column(
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-
-                                            Text(
-                                                text = "Website",
-                                                modifier = Modifier.padding(
-                                                    top = 20.dp,
-                                                    start = 20.dp
-                                                ),
-                                                style = TextStyle(
-                                                    color = colorResource(id = R.color.whatsapp),
-                                                    fontFamily = FontFamily.Default,
-                                                    fontSize = 12.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            )
-
-                                            TextField(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 20.dp)
-                                                    .padding(top = 10.dp)
-                                                    .border(
-                                                        width = 1.dp,
-                                                        color = colorResource(id = R.color.whatsapp),
-                                                        shape = RoundedCornerShape(30.dp)
-                                                    )
-                                                    .clip(shape = RoundedCornerShape(30.dp)),
-                                                colors = TextFieldDefaults.textFieldColors(
-                                                    focusedIndicatorColor = Color.Transparent,
-                                                    unfocusedIndicatorColor = Color.Transparent
-                                                ),
-                                                value = user.linkWebsite ?: "",
-                                                onValueChange = {
-                                                    settingViewModel.changeCompanyWebsite(it)
-                                                },
-                                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                                            )
-
-                                            Text(
-                                                text = "LinkedIn",
-                                                modifier = Modifier.padding(
-                                                    top = 10.dp,
-                                                    start = 20.dp
-                                                ),
-                                                style = TextStyle(
-                                                    color = colorResource(id = R.color.whatsapp),
-                                                    fontFamily = FontFamily.Default,
-                                                    fontSize = 12.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            )
-
-                                            TextField(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 20.dp)
-                                                    .padding(top = 10.dp)
-                                                    .border(
-                                                        width = 1.dp,
-                                                        color = colorResource(id = R.color.whatsapp),
-                                                        shape = RoundedCornerShape(30.dp)
-                                                    )
-                                                    .clip(shape = RoundedCornerShape(30.dp)),
-                                                colors = TextFieldDefaults.textFieldColors(
-                                                    focusedIndicatorColor = Color.Transparent,
-                                                    unfocusedIndicatorColor = Color.Transparent
-                                                ),
-                                                value = user.linkLinkedIn ?: "",
-                                                onValueChange = {
-                                                    settingViewModel.changeCompanyLinkedIn(it)
-                                                },
-                                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                                            )
-
-                                            if (user.listNum?.isNotEmpty() == true) {
-                                                user.listNum?.mapIndexed { index, numSocial ->
-                                                    Text(
-                                                        text = "Numéro social",
-                                                        modifier = Modifier.padding(
-                                                            top = 20.dp,
-                                                            start = 20.dp
-                                                        ),
-                                                        style = TextStyle(
-                                                            color = colorResource(id = R.color.whatsapp),
-                                                            fontFamily = FontFamily.Default,
-                                                            fontSize = 12.sp,
-                                                            fontWeight = FontWeight.Bold
-                                                        )
-                                                    )
-
-                                                    TextField(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .padding(horizontal = 20.dp)
-                                                            .padding(top = 10.dp)
-                                                            .border(
-                                                                width = 1.dp,
-                                                                color = colorResource(id = R.color.whatsapp),
-                                                                shape = RoundedCornerShape(30.dp)
-                                                            )
-                                                            .clip(shape = RoundedCornerShape(30.dp)),
-                                                        colors = TextFieldDefaults.textFieldColors(
-                                                            focusedIndicatorColor = Color.Transparent,
-                                                            unfocusedIndicatorColor = Color.Transparent
-                                                        ),
-                                                        value = numSocial,
-                                                        onValueChange = {
-                                                            settingViewModel.changeCompanyNum(
-                                                                it,
-                                                                index
-                                                            )
-                                                        },
-                                                        textStyle = TextStyle(
-                                                            Color.Black,
-                                                            fontSize = 14.sp
-                                                        )
-                                                    )
-                                                }
-                                            } else {
-                                                var companyNum by remember { mutableStateOf("") }
-
-                                                Text(
-                                                    text = "Numéro social",
-                                                    modifier = Modifier.padding(
-                                                        top = 20.dp,
-                                                        start = 20.dp
-                                                    ),
-                                                    style = TextStyle(
-                                                        color = colorResource(id = R.color.whatsapp),
-                                                        fontFamily = FontFamily.Default,
-                                                        fontSize = 12.sp,
-                                                        fontWeight = FontWeight.Bold
-                                                    )
-                                                )
-
-                                                TextField(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(horizontal = 20.dp)
-                                                        .padding(top = 10.dp)
-                                                        .border(
-                                                            width = 1.dp,
-                                                            color = colorResource(id = R.color.whatsapp),
-                                                            shape = RoundedCornerShape(30.dp)
-                                                        )
-                                                        .clip(shape = RoundedCornerShape(30.dp)),
-                                                    colors = TextFieldDefaults.textFieldColors(
-                                                        focusedIndicatorColor = Color.Transparent,
-                                                        unfocusedIndicatorColor = Color.Transparent
-                                                    ),
-                                                    value = companyNum,
-                                                    onValueChange = {
-                                                        companyNum = it
-                                                        settingViewModel.addCompanyNum(it)
-                                                    },
-                                                    textStyle = TextStyle(
-                                                        Color.Black,
-                                                        fontSize = 14.sp
-                                                    )
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    val text =
-                                        if (isLinkOpened) "Change other info" else "Change links as well?"
-
-                                    Text(
-                                        text = text,
+                                    val color = colorResource(id = R.color.whatsapp)
+                                    Box(
                                         modifier = Modifier
-                                            .padding(top = 20.dp)
-                                            .clickable(
-                                                interactionSource = interactionSource,
-                                                indication = null
-                                            ) {
-                                                isLinkOpened = !isLinkOpened
-                                            },
-                                        color = Color.Blue,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 16.sp
-                                    )
+                                            .size(20.dp)
+                                            .align(Alignment.CenterEnd)
+                                            .background(color = color, shape = CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
 
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_settings_privacy),
+                                            tint = Color.White,
+                                            contentDescription = ""
+                                        )
+
+                                    }
+                                } else {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .verticalScroll(rememberScrollState())
+                                    ) {
+
+                                        var companyName by remember { mutableStateOf(user.companyName ?: "") }
+
+                                        CustomTextField(
+                                            text = stringResource(id = R.string.company_name_text),
+                                            value = companyName,
+                                        ) {
+                                            companyName = it
+                                            settingViewModel.changeCompanyName(it)
+                                        }
+
+                                        var companyActivitySector by remember { mutableStateOf(user.companyActivitySector ?: "") }
+                                        CustomTextField(
+                                            text = stringResource(id = R.string.activity_text),
+                                            value = companyActivitySector,
+                                        ) {
+                                            companyActivitySector = it
+                                            settingViewModel.changeCompanyActivitySector(it)
+                                        }
+
+                                        var companyPhone by remember { mutableStateOf(user.phoneCompany ?: "") }
+
+                                        CustomTextField(
+                                            text = "Phone",
+                                            value = companyPhone,
+                                        ) {
+                                            companyPhone = it
+                                            settingViewModel.changeCompanyPhone(it)
+                                        }
+
+                                        var companyLinkedIn by remember { mutableStateOf(user.linkLinkedIn ?: "") }
+
+                                        CustomTextField(
+                                            text = "LinkedIn",
+                                            value = companyLinkedIn,
+                                        ) {
+                                            companyLinkedIn = it
+                                            settingViewModel.changeCompanyLinkedIn(it)
+                                        }
+
+                                        var companyDescription by remember { mutableStateOf(user.companyDescription ?: "") }
+
+                                        CustomTextField(
+                                            text = "Description",
+                                            value = companyDescription,
+                                        ) {
+                                            companyDescription = it
+                                            settingViewModel.changeCompanyDescription(it)
+                                        }
+
+                                        var companyAddress by remember { mutableStateOf(user.companyAddress ?: "") }
+
+                                        CustomTextField(
+                                            text = "Address",
+                                            value = companyAddress,
+                                        ) {
+                                            companyAddress = it
+                                            settingViewModel.changeCompanyAddress(it)
+                                        }
+
+                                        Spacer(modifier = Modifier.height(50.dp))
+
+                                    }
                                 }
                             }
                         }
                     }
                 }
-
             }
 
             if (!expanded) {

@@ -95,6 +95,9 @@ interface ApiService {
     @POST("auth/updateuser")
     suspend fun savePersonalInfo(@Body user: User): UserResponse
 
+    @POST("auth/updatecompany")
+    suspend fun saveCompanyInfo(@Body user: User): UserResponse
+
     @POST("auth/removeExperience")
     suspend fun removeExperience(
         @Query("id") id: Int,
@@ -106,12 +109,19 @@ interface ApiService {
         @Query("candidateId") candidateId: Int
     ): UserResponse
 
-    @GET("auth/getFavorites")
+    /*@GET("auth/getFavorites")
     suspend fun getFavorites(
         @Query("id") id: Int,
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
-    ): GenericResponse<FavoriteModel>
+    ): GenericResponse<FavoriteModel>*/
+
+    @GET("auth/getAllFavoritesCandidates")
+    suspend fun getFavorites(
+        @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<User>
 
     @GET("auth/getInvitations")
     suspend fun getInvitations(

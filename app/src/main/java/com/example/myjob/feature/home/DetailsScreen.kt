@@ -1,10 +1,15 @@
 package com.example.myjob.feature.home
 
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,19 +19,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Card
 import androidx.compose.material.Scaffold
-import androidx.compose.material.ScrollableTabRow
-import androidx.compose.material.Tab
-import androidx.compose.material.TabRowDefaults
-import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -36,8 +40,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
@@ -53,14 +59,13 @@ import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.User
-import com.example.myjob.feature.profile.CareerSection
-import com.example.myjob.feature.profile.EducationSection
 import com.example.myjob.feature.profile.LicenceSection
 import com.example.myjob.feature.profile.ProfileTopAppBar
 import com.example.myjob.feature.profile.ResumeSection
 import com.example.myjob.feature.profile.SkillSection
 import com.example.myjob.feature.profile.SummarySection
 import com.example.myjob.feature.profile.TabItem
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.math.max
 
@@ -94,6 +99,8 @@ fun Detail(
     val userFullName by detailViewModel.userFullName.collectAsState()
     val username by detailViewModel.username.collectAsState()
 
+    val showUser by detailViewModel.showUser.collectAsState()
+
     val lazyPagingItems = detailViewModel.experience.collectAsLazyPagingItems()
     val experience = lazyPagingItems.itemSnapshotList.items
 
@@ -103,6 +110,7 @@ fun Detail(
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_START) {
+            detailViewModel.getUserById(user.id ?: 0)
             detailViewModel.getAllExperience(user.id ?: 0)
             detailViewModel.getAllEducations(user.id ?: 0)
             hideNavigation()
@@ -169,124 +177,193 @@ fun Detail(
             unSelectedItem = Icons.Outlined.Settings,
             selectedIcon = Icons.Filled.Settings
         ), TabItem(
-            title = stringResource(id = R.string.tab4),
-            unSelectedItem = Icons.Outlined.Settings,
-            selectedIcon = Icons.Filled.Settings
-        ), TabItem(
-            title = stringResource(id = R.string.tab5),
-            unSelectedItem = Icons.Outlined.Settings,
-            selectedIcon = Icons.Filled.Settings
-        ), TabItem(
-            title = stringResource(id = R.string.tab6),
-            unSelectedItem = Icons.Outlined.Settings,
-            selectedIcon = Icons.Filled.Settings
-        ), TabItem(
             title = stringResource(id = R.string.tab7),
-            unSelectedItem = Icons.Outlined.Settings,
-            selectedIcon = Icons.Filled.Settings
-        ), TabItem(
-            title = stringResource(id = R.string.tab8),
             unSelectedItem = Icons.Outlined.Settings,
             selectedIcon = Icons.Filled.Settings
         )
     )
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var openDetails by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            ProfileTopAppBar(
-                topBarHeight,
-                username,
-                userFullName,
-                shouldAutoScroll,
-                toolbarHeightPx,
-                tabItem,
-                selectedTabIndex,
-                navigate = { navController.popBackStack() },
-                changeIndex = { index ->
-                    coroutineScope.launch {
-                        selectedTabIndex = index
-                        shouldAutoScroll = true
-                        autoScroll = true
-                        isProgrammaticScroll = true
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        Scaffold(
+            topBar = {
+                ProfileTopAppBar(
+                    topBarHeight,
+                    username,
+                    userFullName,
+                    shouldAutoScroll,
+                    toolbarHeightPx,
+                    tabItem,
+                    selectedTabIndex,
+                    navigate = { navController.popBackStack() },
+                    changeIndex = { index ->
+                        coroutineScope.launch {
+                            selectedTabIndex = index
+                            shouldAutoScroll = true
+                            autoScroll = true
+                            isProgrammaticScroll = true
+                        }
                     }
-                }
-            )
-        },
-        bottomBar = {
-
-        }
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(it)
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(16.dp)
+                )
+            },
+            bottomBar = {}
         ) {
-            val context = LocalContext.current
-            val density = LocalDensity.current
+            Column(
+                modifier = Modifier
+                    .padding(it)
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(16.dp)
+            ) {
+                val context = LocalContext.current
+                val density = LocalDensity.current
 
+                when(selectedTabIndex) {
+                    0 -> SummarySection(showUser)
+                    1 -> {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            experience.map { exp ->
+                                //exp.showUser1()
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 10.dp)
+                                        .clickable(
+                                            interactionSource = interactionSource,
+                                            indication = null
+                                        ) {
+                                            openDetails = true
+                                        },
+                                    shape = RectangleShape,
+                                    elevation = 5.dp
+                                ) {
+                                    Column(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 10.dp)
+                                    ) {
+                                        Text(text = exp.title?:"",
+                                            Modifier
+                                                .padding(top = 10.dp)
+                                                .padding(horizontal = 10.dp))
+                                        Text(text = exp.place?:"", modifier = Modifier
+                                            .padding(top = 10.dp)
+                                            .padding(horizontal = 10.dp))
+
+                                        Text(text = exp.companyName?:"", modifier = Modifier
+                                            .padding(top = 10.dp)
+                                            .padding(horizontal = 10.dp))
+                                        Text(text = "${exp.salary?:0}", modifier = Modifier
+                                            .padding(top = 10.dp)
+                                            .padding(horizontal = 10.dp))
+                                    }
+
+                                }
+
+                                Spacer(modifier = Modifier.height(14.dp))
+                            }
+                        }
+                    }
+                    2 -> {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            education.map { exp ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 10.dp)
+                                        .clickable(
+                                            interactionSource = interactionSource,
+                                            indication = null
+                                        ) {
+                                            openDetails = true
+                                        },
+                                    shape = RectangleShape,
+                                    elevation = 5.dp
+                                ) {
+                                    Column(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 10.dp)
+                                    ) {
+                                        Text(text = exp.grade?:"",
+                                            Modifier
+                                                .padding(top = 10.dp)
+                                                .padding(horizontal = 10.dp))
+                                        Text(text = exp.place?:"", modifier = Modifier
+                                            .padding(top = 10.dp)
+                                            .padding(horizontal = 10.dp))
+                                        Text(text = exp.schoolName?:"", modifier = Modifier
+                                            .padding(top = 10.dp)
+                                            .padding(horizontal = 10.dp))
+                                        Text(text = exp.degree?:"", modifier = Modifier
+                                            .padding(top = 10.dp)
+                                            .padding(horizontal = 10.dp))
+                                        Text(text = exp.fieldStudy?:"", modifier = Modifier
+                                            .padding(top = 10.dp)
+                                            .padding(horizontal = 10.dp))
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(14.dp))
+                            }
+                        }
+
+                    }
+                    3 -> ResumeSection()
+                }
+
+                Spacer(modifier = Modifier.height(50.dp))
+
+            }
+            /*Log.i("", "Detail: $it")
             when(selectedTabIndex) {
                 0 -> SummarySection()
-                1 -> {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        experience.map { exp ->
-                            Column(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        color = colorResource(id = R.color.lighter_gray),
-                                        shape = RoundedCornerShape(10.dp)
-                                    )) {
-                                Text(text = exp.title?:"", Modifier.padding(top = 10.dp).padding(horizontal = 10.dp))
-                                Text(text = exp.place?:"", modifier = Modifier.padding(top = 10.dp).padding(horizontal = 10.dp))
-                                Text(text = exp.typeContract?:"", modifier = Modifier.padding(top = 10.dp).padding(horizontal = 10.dp))
-                                Text(text = exp.companyName?:"", modifier = Modifier.padding(top = 10.dp).padding(horizontal = 10.dp))
-                                Text(text = "${exp.salary?:0}", modifier = Modifier.padding(top = 10.dp).padding(horizontal = 10.dp))
-                            }
-                            Spacer(modifier = Modifier.height(14.dp))
-                        }
-                    }
-                }
-                2 -> {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        education.map { exp ->
-                            Column(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        color = colorResource(id = R.color.lighter_gray),
-                                        shape = RoundedCornerShape(10.dp)
-                                    )) {
-                                Text(text = exp.grade?:"", Modifier.padding(top = 10.dp).padding(horizontal = 10.dp))
-                                Text(text = exp.place?:"", modifier = Modifier.padding(top = 10.dp).padding(horizontal = 10.dp))
-                                Text(text = exp.schoolName?:"", modifier = Modifier.padding(top = 10.dp).padding(horizontal = 10.dp))
-                                Text(text = exp.degree?:"", modifier = Modifier.padding(top = 10.dp).padding(horizontal = 10.dp))
-                                Text(text = exp.fieldStudy?:"", modifier = Modifier.padding(top = 10.dp).padding(horizontal = 10.dp))
-                            }
-                            Spacer(modifier = Modifier.height(14.dp))
-                        }
-                    }
-                }
+                1 -> CareerSection(it, scrollState, experience)
+                2 -> EducationSection()
                 3 -> LicenceSection()
                 4 -> SkillSection()
                 5 -> ResumeSection()
+            }*/
+        }
+
+
+        AnimatedVisibility(visible = openDetails,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)) {
+
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                openDetails = false
+                            },
+                        tint = Color.Black,
+                        contentDescription = ""
+                    )
+
+                    Text(
+                        text = "title",
+                        color = Color.Black,
+                        modifier = Modifier.align(Alignment.TopCenter)
+                    )
+                }
+
             }
 
-            Spacer(modifier = Modifier.height(50.dp))
-
         }
-        /*Log.i("", "Detail: $it")
-        when(selectedTabIndex) {
-            0 -> SummarySection()
-            1 -> CareerSection(it, scrollState, experience)
-            2 -> EducationSection()
-            3 -> LicenceSection()
-            4 -> SkillSection()
-            5 -> ResumeSection()
-        }*/
     }
 }
 

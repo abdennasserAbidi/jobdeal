@@ -64,7 +64,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.NavController
 import com.example.myjob.R
+import com.example.myjob.base.LanguageHelper
 import com.example.myjob.common.CustomDialog
+import com.example.myjob.common.tablayout.CustomTab
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
 import kotlinx.coroutines.CoroutineScope
@@ -92,7 +94,7 @@ fun SignUpScreen(
     val user by viewModel.user.collectAsState()
     val isCompanyNameValid by viewModel.isCompanyNameValid.collectAsState()
 
-    var selectedIndex by remember { mutableStateOf(-1) }
+    var selectedIndex by remember { mutableStateOf(0) }
 
     var activatedCheck by remember { mutableStateOf(false) }
 
@@ -192,8 +194,6 @@ fun SignUpScreen(
             ).show()
         }
     }
-    //end gmail
-
 
     Scaffold { padding ->
 
@@ -228,7 +228,7 @@ fun SignUpScreen(
 
                     Spacer(modifier = Modifier.height(50.dp))
 
-                    CustomDropdownMenu(
+                    /*CustomDropdownMenu(
                         list = listOf(
                             stringResource(id = R.string.choose_companies_text),
                             stringResource(id = R.string.choose_candidate_text)
@@ -240,7 +240,27 @@ fun SignUpScreen(
                             viewModel.changeRole(if (it == 0) "Company" else "Candidate")
                         },
                         modifier = Modifier.padding(top = 10.dp)
-                    )
+                    )*/
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        CustomTab(
+                            items = listOf(
+                                stringResource(id = R.string.choose_companies_text),
+                                stringResource(id = R.string.choose_candidate_text)
+                            ),
+                            modifier = Modifier.padding(top = 10.dp, start = 10.dp),
+                            selectedItemIndex = selectedIndex,
+                            onClick = {
+                                selectedIndex = it
+                            }
+                        )
+                    }
                 }
 
                 if (activatedCheck) {

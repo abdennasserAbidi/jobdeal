@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.example.myjob.domain.entities.FavoriteModel
+import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.home.GetAllFavoritesUseCase
 import com.example.myjob.local.database.SharedPreference
 import com.google.gson.Gson
@@ -19,11 +20,11 @@ class FavoritesViewModel @Inject constructor(
     private val getAllFavoritesUseCase: GetAllFavoritesUseCase
 ): ViewModel() {
 
-    val allFavorites = MutableStateFlow<List<FavoriteModel>>(emptyList())
+    val allFavorites = MutableStateFlow<List<User>>(emptyList())
 
-    private val _favorites: MutableStateFlow<PagingData<FavoriteModel>> =
+    private val _favorites: MutableStateFlow<PagingData<User>> =
         MutableStateFlow(value = PagingData.empty())
-    val favorites: MutableStateFlow<PagingData<FavoriteModel>> get() = _favorites
+    val favorites: MutableStateFlow<PagingData<User>> get() = _favorites
 
     private fun getFavorites(idUserConnected: Int) {
         viewModelScope.launch {
@@ -31,7 +32,7 @@ class FavoritesViewModel @Inject constructor(
 
                 val json = sharedPreference.getString("jsonFavorites", "") ?: ""
                 if (json.isNotEmpty()) {
-                    val objectList = Gson().fromJson(json, Array<FavoriteModel>::class.java).asList()
+                    val objectList = Gson().fromJson(json, Array<User>::class.java).asList()
 
                     allFavorites.update {
                         objectList

@@ -1,22 +1,22 @@
-package com.example.myjob.domain.usecase.home
+package com.example.myjob.domain.usecase
 
-import androidx.paging.PagingData
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.usecase.FlowBaseUseCase
 import com.example.myjob.data.Repository
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.qualifiers.IoDispatcher
+import com.example.myjob.domain.response.UserResponse
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class GetAllFavoritesUseCase @Inject constructor(
+class SaveCompanyInfoUseCase @Inject constructor(
     private val repository: Repository,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
-) : FlowBaseUseCase<PagingData<User>, Int>() {
+) : FlowBaseUseCase<UserResponse, User>() {
 
-    override suspend fun buildRequest(params: Int?): Flow<Resource<PagingData<User>>> {
-        return repository.getFavorites(params ?: 0).flowOn(dispatcher)
+    override suspend fun buildRequest(params: User?): Flow<Resource<UserResponse>> {
+        return repository.saveCompanyInfo(params ?: User()).flowOn(dispatcher)
     }
 }

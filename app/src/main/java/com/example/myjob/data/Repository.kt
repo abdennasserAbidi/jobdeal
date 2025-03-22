@@ -34,7 +34,7 @@ interface Repository {
     suspend fun sendInvitation(@Body invitationParams: InvitationParams): Flow<Resource<UserResponse>>
     suspend fun saveEducation(educations: Educations): Flow<Resource<UserResponse>>
     suspend fun getAllEducations(id: Int): Flow<Resource<PagingData<Educations>>>
-    suspend fun getFavorites(id: Int): Flow<Resource<PagingData<FavoriteModel>>>
+    suspend fun getFavorites(id: Int): Flow<Resource<PagingData<User>>>
     suspend fun getInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>>
     suspend fun verifyExisting(fileName: String): Flow<Resource<FileExistingResponse>>
     suspend fun getAllExp(id: Int): Flow<Resource<List<Experience>>>
@@ -43,6 +43,7 @@ interface Repository {
     //suspend fun getAllUser(currentPage: Int): Flow<Resource<PagingData<User>>>
 
     suspend fun savePersonalInfo(user: User): Flow<Resource<UserResponse>>
+    suspend fun saveCompanyInfo(user: User): Flow<Resource<UserResponse>>
     suspend fun removeExperience(id: Int, experienceId: Int): Flow<Resource<UserResponse>>
     suspend fun removeEducation(id: Int, educationId: Int): Flow<Resource<UserResponse>>
     suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): Flow<Resource<UserResponse>>

@@ -15,5 +15,7 @@ data class InvitationModel(
     var companyName: String = "",
     var message: String = "Dveloppeur Android",
     var typeContract: String = "",
+    var disponibility: String = "",
+    var tgm: String = "",
     var accepted: Boolean = false
 )

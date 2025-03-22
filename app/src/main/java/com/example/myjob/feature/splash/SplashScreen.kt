@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,78 +38,110 @@ fun SplashScreen(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
-    val role by splashViewModel.role.collectAsState()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
 
-    Box(modifier = Modifier.fillMaxSize()) {
-
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
+                .fillMaxWidth()
+                .fillMaxHeight(0.87f),
+            contentAlignment = Alignment.Center
         ) {
 
-            Box(
+            Image(
+                painter = painterResource(id = R.drawable.logo),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.7f)
-            ) {
-
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    modifier = Modifier
-                        .padding(start = 20.dp)
-                        .align(Alignment.BottomCenter),
-                    contentDescription = ""
-                )
-
-            }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .padding(top = 10.dp)
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 50.dp)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null
-                        ) {
-
-                            val isFinished = splashViewModel.isOnBoardingFinished()
-
-                            val token = splashViewModel.getToken()
-                            Log.i("token", "SplashScreen: $token")
-
-                            if (isFinished) {
-                                if (token.isNotEmpty()) navController.navigate(Screen.HomeScreen.route)
-                                else navController.navigate(Screen.LoginScreen.route)
-
-                            } else navController.navigate(Screen.OnBoardingScreen.route)
-                        }
-                        .background(
-                            color = colorResource(id = R.color.whatsapp),
-                            shape = RoundedCornerShape(30.dp)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.start_app),
-                        modifier = Modifier.padding(vertical = 20.dp),
-                        style = TextStyle(
-                            color = Color.White,
-                            fontFamily = FontFamily.Default,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
-            }
+                    .padding(start = 20.dp),
+                contentDescription = ""
+            )
 
         }
+
+        Box(
+            modifier = Modifier.fillMaxWidth()
+                .fillMaxHeight()
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null
+                ) {
+
+                    val isFinished = splashViewModel.isOnBoardingFinished()
+
+                    val token = splashViewModel.getToken()
+                    Log.i("token", "SplashScreen: $token")
+
+                    if (isFinished) {
+                        if (token.isNotEmpty()) navController.navigate(Screen.HomeScreen.route)
+                        else navController.navigate(Screen.LoginScreen.route)
+
+                    } else navController.navigate(Screen.OnBoardingScreen.route)
+                }
+                .background(
+                    color = colorResource(id = R.color.whatsapp),
+                    shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = stringResource(id = R.string.start_app),
+                modifier = Modifier.padding(vertical = 20.dp),
+                style = TextStyle(
+                    color = Color.White,
+                    fontFamily = FontFamily.Default,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            )
+        }
+
+        /*Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .padding(top = 10.dp)
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 50.dp)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
+
+                        val isFinished = splashViewModel.isOnBoardingFinished()
+
+                        val token = splashViewModel.getToken()
+                        Log.i("token", "SplashScreen: $token")
+
+                        if (isFinished) {
+                            if (token.isNotEmpty()) navController.navigate(Screen.HomeScreen.route)
+                            else navController.navigate(Screen.LoginScreen.route)
+
+                        } else navController.navigate(Screen.OnBoardingScreen.route)
+                    }
+                    .background(
+                        color = colorResource(id = R.color.whatsapp),
+                        shape = RoundedCornerShape(30.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(id = R.string.start_app),
+                    modifier = Modifier.padding(vertical = 20.dp),
+                    style = TextStyle(
+                        color = Color.White,
+                        fontFamily = FontFamily.Default,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+        }
+*/
     }
 }

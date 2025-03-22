@@ -71,6 +71,20 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun changeDisponibility(name: String) {
+        invitationParam.update {
+            it.disponibility = name
+            it
+        }
+    }
+
+    fun changeSalary(name: String) {
+        invitationParam.update {
+            it.tgm = name
+            it
+        }
+    }
+
     fun matchCurrentProfile(id: Int) {
         invitationParam.update {
             it.idCompany = sharedPreference.getInt("idUser", -1)
@@ -78,7 +92,6 @@ class HomeViewModel @Inject constructor(
             it.idTo = id
             it
         }
-        Log.i("flengfrzlngjlrzngz", "matchCurrentProfile: ${invitationParam.value}")
         val invitationParams = InvitationParams(
             idConnected = sharedPreference.getInt("idUser", -1),
             invitationModel = invitationParam.value

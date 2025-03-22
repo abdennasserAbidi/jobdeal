@@ -29,7 +29,7 @@ interface RemoteDataSource {
     suspend fun getAllExp(id: Int): List<Experience>
     suspend fun getAllEduc(id: Int): List<Educations>
     suspend fun getAllEducations(id: Int, pageNumber: Int): GenericResponse<Educations>
-    suspend fun getFavorites(id: Int, pageNumber: Int): GenericResponse<FavoriteModel>
+    suspend fun getFavorites(id: Int, pageNumber: Int): GenericResponse<User>
     suspend fun getInvitations(id: Int, pageNumber: Int): GenericResponse<InvitationModel>
     suspend fun getAllUser(pageNumber: Int): GenericResponse<User>
     suspend fun sendInvitation(@Body invitationParams: InvitationParams): UserResponse
@@ -38,6 +38,7 @@ interface RemoteDataSource {
     suspend fun authenticate(user: User): ApiResult<LoginResponse>
     suspend fun verifyEmail(email: String): LoginResponse
     suspend fun savePersonalInfo(user: User): UserResponse
+    suspend fun saveCompanyInfo(user: User): UserResponse
     suspend fun removeExperience(id: Int, experienceId: Int): UserResponse
     suspend fun removeEducation(id: Int, educationId: Int): UserResponse
     suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): UserResponse

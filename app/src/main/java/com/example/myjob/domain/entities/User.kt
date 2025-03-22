@@ -31,10 +31,13 @@ data class User(
     //company
     val listNum: MutableList<String>? = mutableListOf(),
     var companyName: String? = "",
+    var phoneCompany: String? = "",
+    var faxCompany: String? = "",
     var linkWebsite: String? = "",
     var linkLinkedIn: String? = "",
     var companyActivitySector: String? = "",
     var companyDescription: String? = "",
+    var companyAddress: String? = "",
 ) {
 
     fun getSituation(lang: String): String {

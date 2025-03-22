@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.usecase.SaveCompanyInfoUseCase
 import com.example.myjob.domain.usecase.ValidateAccountUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,6 +19,7 @@ import javax.inject.Inject
 class SettingViewModel @Inject constructor(
     private val sharedPreferences: SharedPreference,
     private val validateAccountUseCase: ValidateAccountUseCase,
+    private val saveCompanyInfoUseCase: SaveCompanyInfoUseCase,
 ): ViewModel() {
 
     val role = MutableStateFlow("")
@@ -25,6 +28,14 @@ class SettingViewModel @Inject constructor(
     val allLanguages = MutableStateFlow(listOf("English", "French"))
     val language = MutableStateFlow(sharedPreferences.getString("lang", "English"))
     val user = MutableStateFlow(GlobalEntries.user)
+
+    fun saveCompanyInfo() {
+        viewModelScope.launch {
+            saveCompanyInfoUseCase.execute(user.value).collect {
+                Log.i("ffjlebfjkefbe", "saveCompanyInfo: ${it.data}")
+            }
+        }
+    }
 
     fun changeCompanyWebsite(name: String) {
         user.update {
@@ -62,6 +73,19 @@ class SettingViewModel @Inject constructor(
     fun changeCompanyDescription(name: String) {
         user.update {
             it.companyDescription = name
+            it
+        }
+    }
+    fun changeCompanyAddress(name: String) {
+        user.update {
+            it.companyAddress = name
+            it
+        }
+    }
+
+    fun changeCompanyPhone(name: String) {
+        user.update {
+            it.phoneCompany = name
             it
         }
     }

@@ -410,7 +410,7 @@ fun HomeCompany(
                         var type by remember { mutableStateOf("CDI") }
 
                         Text(
-                            text = "Type du contrat",
+                            text = "Type de contrat",
                             modifier = Modifier.padding(top = 20.dp, start = 20.dp),
                             style = TextStyle(
                                 color = colorResource(id = R.color.whatsapp),
@@ -439,6 +439,78 @@ fun HomeCompany(
                             onValueChange = {
                                 type = it
                                 homeViewModel.changeTypeContract(it)
+                            },
+                            textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                        )
+
+                        var disponibility by remember { mutableStateOf("Immidiat") }
+
+                        Text(
+                            text = "Disponibilité",
+                            modifier = Modifier.padding(top = 20.dp, start = 20.dp),
+                            style = TextStyle(
+                                color = colorResource(id = R.color.whatsapp),
+                                fontFamily = FontFamily.Default,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+
+                        TextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                                .padding(top = 10.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = colorResource(id = R.color.whatsapp),
+                                    shape = RoundedCornerShape(30.dp)
+                                )
+                                .clip(shape = RoundedCornerShape(30.dp)),
+                            colors = TextFieldDefaults.textFieldColors(
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            ),
+                            value = disponibility,
+                            onValueChange = {
+                                disponibility = it
+                                homeViewModel.changeDisponibility(it)
+                            },
+                            textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                        )
+
+                        var salary by remember { mutableStateOf("1000") }
+
+                        Text(
+                            text = "TGM",
+                            modifier = Modifier.padding(top = 20.dp, start = 20.dp),
+                            style = TextStyle(
+                                color = colorResource(id = R.color.whatsapp),
+                                fontFamily = FontFamily.Default,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+
+                        TextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                                .padding(top = 10.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = colorResource(id = R.color.whatsapp),
+                                    shape = RoundedCornerShape(30.dp)
+                                )
+                                .clip(shape = RoundedCornerShape(30.dp)),
+                            colors = TextFieldDefaults.textFieldColors(
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            ),
+                            value = salary,
+                            onValueChange = {
+                                salary = it
+                                homeViewModel.changeSalary(it)
                             },
                             textStyle = TextStyle(Color.Black, fontSize = 14.sp)
                         )

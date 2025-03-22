@@ -30,15 +30,6 @@ fun ResumeSection() {
     val interactionSource = remember { MutableInteractionSource() }
 
     Column {
-        Text(
-            text = stringResource(id = R.string.resume_title_text),
-            style = TextStyle(
-                color = Color.Black,
-                fontFamily = FontFamily.Default,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-        )
 
         Text(
             text = stringResource(id = R.string.resume_desc_text),

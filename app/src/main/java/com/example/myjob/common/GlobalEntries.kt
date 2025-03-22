@@ -32,6 +32,7 @@ object GlobalEntries {
     var experience = Experience()
     var educations = Educations()
     var user = User()
+    var userCandidate = User()
     var userForCompany = User()
     var language = "Français"
     var role = ""
