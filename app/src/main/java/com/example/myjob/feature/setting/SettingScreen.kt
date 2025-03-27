@@ -293,7 +293,7 @@ fun SettingScreen(
                                         var companyName by remember { mutableStateOf(user.companyName ?: "") }
 
                                         CustomTextField(
-                                            text = stringResource(id = R.string.company_name_text),
+                                            text = "${stringResource(id = R.string.company_name_text)}*",
                                             value = companyName,
                                         ) {
                                             companyName = it
@@ -302,51 +302,61 @@ fun SettingScreen(
 
                                         var companyActivitySector by remember { mutableStateOf(user.companyActivitySector ?: "") }
                                         CustomTextField(
-                                            text = stringResource(id = R.string.activity_text),
+                                            text = "${stringResource(id = R.string.activity_text)}*",
                                             value = companyActivitySector,
                                         ) {
                                             companyActivitySector = it
                                             settingViewModel.changeCompanyActivitySector(it)
                                         }
 
-                                        var companyPhone by remember { mutableStateOf(user.phoneCompany ?: "") }
-
-                                        CustomTextField(
-                                            text = "Phone",
-                                            value = companyPhone,
-                                        ) {
-                                            companyPhone = it
-                                            settingViewModel.changeCompanyPhone(it)
-                                        }
-
-                                        var companyLinkedIn by remember { mutableStateOf(user.linkLinkedIn ?: "") }
-
-                                        CustomTextField(
-                                            text = "LinkedIn",
-                                            value = companyLinkedIn,
-                                        ) {
-                                            companyLinkedIn = it
-                                            settingViewModel.changeCompanyLinkedIn(it)
-                                        }
-
                                         var companyDescription by remember { mutableStateOf(user.companyDescription ?: "") }
 
                                         CustomTextField(
-                                            text = "Description",
+                                            text = "Description*",
                                             value = companyDescription,
                                         ) {
                                             companyDescription = it
                                             settingViewModel.changeCompanyDescription(it)
                                         }
 
+                                        var companyPhone by remember { mutableStateOf(user.phoneCompany ?: "") }
+
+                                        CustomTextField(
+                                            text = "Phone*",
+                                            value = companyPhone,
+                                        ) {
+                                            companyPhone = it
+                                            settingViewModel.changeCompanyPhone(it)
+                                        }
+
+                                        var secondPhone by remember { mutableStateOf(user.secondPhoneCompany ?: "") }
+
+                                        CustomTextField(
+                                            text = "Extra phone",
+                                            value = secondPhone,
+                                        ) {
+                                            secondPhone = it
+                                            settingViewModel.changeCompanySecondPhone(it)
+                                        }
+
                                         var companyAddress by remember { mutableStateOf(user.companyAddress ?: "") }
 
                                         CustomTextField(
-                                            text = "Address",
+                                            text = "Address*",
                                             value = companyAddress,
                                         ) {
                                             companyAddress = it
                                             settingViewModel.changeCompanyAddress(it)
+                                        }
+
+                                        var secondAddress by remember { mutableStateOf(user.companySecondAddress ?: "") }
+
+                                        CustomTextField(
+                                            text = "Extra address",
+                                            value = secondAddress,
+                                        ) {
+                                            secondAddress = it
+                                            settingViewModel.changeCompanySecondAddress(it)
                                         }
 
                                         Spacer(modifier = Modifier.height(50.dp))

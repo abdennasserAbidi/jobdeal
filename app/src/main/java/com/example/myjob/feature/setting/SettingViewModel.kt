@@ -83,6 +83,20 @@ class SettingViewModel @Inject constructor(
         }
     }
 
+    fun changeCompanySecondAddress(name: String) {
+        user.update {
+            it.companySecondAddress = name
+            it
+        }
+    }
+
+    fun changeCompanySecondPhone(name: String) {
+        user.update {
+            it.secondPhoneCompany = name
+            it
+        }
+    }
+
     fun changeCompanyPhone(name: String) {
         user.update {
             it.phoneCompany = name

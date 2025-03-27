@@ -32,12 +32,14 @@ data class User(
     val listNum: MutableList<String>? = mutableListOf(),
     var companyName: String? = "",
     var phoneCompany: String? = "",
+    var secondPhoneCompany: String? = "",
     var faxCompany: String? = "",
     var linkWebsite: String? = "",
     var linkLinkedIn: String? = "",
     var companyActivitySector: String? = "",
     var companyDescription: String? = "",
     var companyAddress: String? = "",
+    var companySecondAddress: String? = "",
 ) {
 
     fun getSituation(lang: String): String {
