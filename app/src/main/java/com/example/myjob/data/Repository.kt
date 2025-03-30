@@ -3,6 +3,7 @@ package com.example.myjob.data
 import androidx.paging.PagingData
 import com.example.myjob.base.GenericResponse
 import com.example.myjob.base.reources.Resource
+import com.example.myjob.domain.entities.Candidate
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
@@ -39,6 +40,7 @@ interface Repository {
     suspend fun verifyExisting(fileName: String): Flow<Resource<FileExistingResponse>>
     suspend fun getAllExp(id: Int): Flow<Resource<List<Experience>>>
     suspend fun getAllEduc(id: Int): Flow<Resource<List<Educations>>>
+    suspend fun searchCandidate(word: String): Flow<Resource<List<User>>>
     suspend fun getAllUser(): Flow<Resource<PagingData<User>>>
     //suspend fun getAllUser(currentPage: Int): Flow<Resource<PagingData<User>>>
 

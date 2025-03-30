@@ -20,10 +20,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Filter
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -44,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -81,6 +86,8 @@ fun HomeCompany(
     val interactionSource = remember {
         MutableInteractionSource()
     }
+
+    var search by remember { mutableStateOf(false) }
 
     val currentPage by homeViewModel.currentPage.collectAsState()
     val allUser by homeViewModel.users.collectAsState()
@@ -138,7 +145,7 @@ fun HomeCompany(
                     contentAlignment = Alignment.Center
                 ) {
                     Card(
-                        shape = RoundedCornerShape(40.dp),
+                        shape = RoundedCornerShape(20.dp),
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
                             .padding(top = 75.dp)
@@ -146,7 +153,7 @@ fun HomeCompany(
                                 interactionSource = interactionSource,
                                 indication = null
                             ) {
-                                navController.navigate(Screen.FilterScreen.route)
+                                search = true
                             },
                         elevation = 5.dp
                     ) {
@@ -180,6 +187,30 @@ fun HomeCompany(
                                     )
                                 )
                             )
+
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) {
+                                        navController.navigate(Screen.FilterScreen.route)
+                                    }
+                                    .background(
+                                        color = Color.LightGray,
+                                        shape = RoundedCornerShape(10.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+
+                                Icon(
+                                    modifier = Modifier.size(30.dp).padding(10.dp),
+                                    imageVector = Icons.Filled.Menu,
+                                    contentDescription = ""
+                                )
+
+                            }
                         }
                     }
                 }
@@ -593,6 +624,95 @@ fun HomeCompany(
                             )
                         }
                     }
+                }
+            }
+        }
+
+        val query by homeViewModel.query.collectAsState()
+        val user by homeViewModel.words.collectAsState()
+
+        AnimatedVisibility(
+            visible = search,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+            ) {
+                TextField(
+                    value = query,
+                    onValueChange = { homeViewModel.updateQuery(it) }, // Met à jour la requête
+                    label = { Text("Rechercher un mot") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                    items(items = user) { user ->
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp)
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    GlobalEntries.userForCompany = user
+                                    navController.navigate(Screen.DetailScreen.route)
+                                },
+                            shape = RectangleShape,
+                            elevation = 5.dp
+                        ) {
+                            val experiences = user.experience
+                            Column(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 10.dp)
+                            ) {
+
+                                Text(
+                                    text = user.fullName ?: "",
+                                    modifier = Modifier
+                                        .padding(top = 10.dp)
+                                        .padding(horizontal = 10.dp)
+                                )
+                                Text(
+                                    text = user.availability ?: "",
+                                    modifier = Modifier
+                                        .padding(top = 10.dp)
+                                        .padding(horizontal = 10.dp)
+                                )
+                                Text(
+                                    text = user.email ?: "",
+                                    modifier = Modifier
+                                        .padding(top = 10.dp)
+                                        .padding(horizontal = 10.dp)
+                                )
+                                if (experiences?.isNotEmpty() == true) {
+                                    val nameCompany = experiences[experiences.lastIndex].companyName
+                                    Text(
+                                        text = nameCompany ?: "",
+                                        modifier = Modifier
+                                            .padding(top = 10.dp)
+                                            .padding(horizontal = 10.dp)
+                                    )
+                                }
+                            }
+
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                    }
+
                 }
             }
         }

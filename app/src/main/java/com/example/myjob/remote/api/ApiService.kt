@@ -2,10 +2,10 @@ package com.example.myjob.remote.api
 
 import com.example.myjob.base.GenericResponse
 import com.example.myjob.common.network.ApiResult
+import com.example.myjob.domain.entities.Candidate
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
-import com.example.myjob.domain.entities.FavoriteModel
 import com.example.myjob.domain.entities.InvitationModel
 import com.example.myjob.domain.entities.InvitationParams
 import com.example.myjob.domain.entities.User
@@ -72,6 +72,11 @@ interface ApiService {
     suspend fun getAllEduc(
         @Query("id") id: Int
     ): List<Educations>
+
+    @GET("auth/searchCandidate")
+    suspend fun searchCandidate(
+        @Query("word") word: String
+    ): List<User>
 
     @POST("auth/addEducation")
     suspend fun saveEducation(@Body educations: Educations): UserResponse

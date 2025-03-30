@@ -48,7 +48,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = "1.5.10"
     }
     packaging {
         resources {
@@ -124,6 +124,7 @@ dependencies {
     implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
     implementation ("androidx.compose.material:material:1.6.7")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.compose.foundation:foundation:1.7.8")
 
     implementation("io.coil-kt:coil-compose:2.0.0-rc01")
     implementation("com.google.accompanist:accompanist-pager:0.22.0-rc")
