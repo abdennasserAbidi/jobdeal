@@ -1,5 +1,10 @@
 package com.example.myjob.feature.home
 
+import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -40,12 +45,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
+import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.graphics.Color.Companion.LightGray
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -59,9 +68,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.domain.entities.Availabilities
 import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.navigation.Screen
 import com.google.gson.Gson
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -72,6 +83,7 @@ fun FilterScreen(navController: NavController, homeViewModel: FilterViewModel = 
 
     var disponibilityView by remember { mutableStateOf(false) }
     var typeContractView by remember { mutableStateOf(false) }
+    var bottomView by remember { mutableStateOf(true) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -246,7 +258,60 @@ fun FilterScreen(navController: NavController, homeViewModel: FilterViewModel = 
             }
 
             ItemFilter("Disponibility", 40.dp) {
-                disponibilityView = true
+                disponibilityView = !disponibilityView
+            }
+
+            if (disponibilityView) {
+
+                val availabilities by homeViewModel.availabilities.collectAsState()
+                val selectedAvailability by homeViewModel.selectedAvailability.collectAsState()
+
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp)
+                        .background(colorResource(id = R.color.lighter_gray))
+                ) {
+                    availabilities.mapIndexed { index, availabilities ->
+
+                        val color =
+                            if (selectedAvailability[index]) colorResource(id = R.color.whatsapp) else Black
+
+                        val bgColors =
+                            if (selectedAvailability[index]) colorResource(id = R.color.whatsapp) else Color.Transparent
+
+                        val textColors =
+                            if (selectedAvailability[index]) White else Black
+
+                        Box(
+                            modifier = Modifier
+                                .padding(vertical = 15.dp)
+                                .padding(start = 10.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = color,
+                                    shape = RoundedCornerShape(40.dp)
+                                )
+                                .background(bgColors, shape = RoundedCornerShape(40.dp))
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    homeViewModel.changeSelection(
+                                        index,
+                                        !selectedAvailability[index]
+                                    )
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(id = availabilities.title),
+                                color = textColors,
+                                modifier = Modifier.padding(10.dp)
+                            )
+                        }
+                    }
+                }
             }
 
             ItemFilter("Type du contrat", 40.dp) {
@@ -264,11 +329,14 @@ fun FilterScreen(navController: NavController, homeViewModel: FilterViewModel = 
                         Box(
 
 
-
                             modifier = Modifier
                                 .padding(vertical = 15.dp)
                                 .padding(start = 10.dp)
-                                .border(width = 1.dp, color = Black, shape = RoundedCornerShape(40.dp))
+                                .border(
+                                    width = 1.dp,
+                                    color = Black,
+                                    shape = RoundedCornerShape(40.dp)
+                                )
                                 .background(Color.Transparent, shape = RoundedCornerShape(40.dp)),
                             contentAlignment = Alignment.Center
                         ) {
@@ -278,15 +346,118 @@ fun FilterScreen(navController: NavController, homeViewModel: FilterViewModel = 
                 }
             }
 
+            ItemFilter("Activity sector", 40.dp) {
+                disponibilityView = true
+                bottomView = false
+            }
 
             ItemFilter("Activity sector", 40.dp) {
                 disponibilityView = true
+                bottomView = false
+            }
+
+            ItemFilter("Activity sector", 40.dp) {
+                disponibilityView = true
+                bottomView = false
+            }
+
+            ItemFilter("Activity sector", 40.dp) {
+                disponibilityView = true
+                bottomView = false
+            }
+        }
+
+        AnimatedVisibility(
+            visible = bottomView,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .align(Alignment.BottomCenter),
+                elevation = 5.dp
+            ) {
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp)
+                        .padding(horizontal = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+
+                    Box(
+                        modifier = Modifier
+                            .weight(0.45f)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+
+                            }
+                            .background(
+                                color = colorResource(id = R.color.whatsapp),
+                                shape = RoundedCornerShape(30.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Save",
+                            modifier = Modifier.padding(vertical = 20.dp, horizontal = 20.dp),
+                            style = TextStyle(
+                                color = White,
+                                fontFamily = FontFamily.Default,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
+
+
+                    Box(
+                        modifier = Modifier
+                            .weight(0.45f)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                            }
+                            .background(
+                                color = Color.Gray,
+                                shape = RoundedCornerShape(30.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            modifier = Modifier.padding(vertical = 20.dp, horizontal = 20.dp),
+                            style = TextStyle(
+                                color = White,
+                                fontFamily = FontFamily.Default,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
+                }
+
             }
         }
 
         if (disponibilityView) {
 
         }
+
+
     }
 
 }
