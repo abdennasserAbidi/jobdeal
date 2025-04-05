@@ -25,6 +25,7 @@ data class User(
     var availability: String? = "",
     var rangeSalary: String? = "",
     var preferredActivitySector: String? = "",
+    var userExperience: String? = "",
     @SerializedName("experiences")
     var experience: MutableList<Experience>? = mutableListOf(),
     var education: MutableList<Educations>? = mutableListOf(),
@@ -41,6 +42,18 @@ data class User(
     var companyAddress: String? = "",
     var companySecondAddress: String? = "",
 ) {
+
+    fun changeUserExperience() {
+        experience?.apply {
+            userExperience = when(size) {
+                0-2 -> ""
+                2-5 -> ""
+                6-10 -> ""
+                else -> ""
+            }
+        }
+
+    }
 
     fun getSituation(lang: String): String {
         return if (lang == "French" || lang == "Français") {

@@ -25,8 +25,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -36,7 +34,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -45,11 +42,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.Color.Companion.Blue
-import androidx.compose.ui.graphics.Color.Companion.LightGray
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.colorResource
@@ -67,23 +61,32 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myjob.R
-import com.example.myjob.common.GlobalEntries
-import com.example.myjob.domain.entities.Availabilities
-import com.example.myjob.domain.entities.User
-import com.example.myjob.feature.navigation.Screen
-import com.google.gson.Gson
-import kotlinx.coroutines.launch
+import com.example.myjob.common.GenericMultipleSearch
+import com.example.myjob.common.GenericSearch
+import com.example.myjob.domain.entities.Subject
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun FilterScreen(navController: NavController, homeViewModel: FilterViewModel = hiltViewModel()) {
+fun FilterScreen(
+    navController: NavController,
+    homeViewModel: FilterViewModel = hiltViewModel(),
+    allSubjects: MutableList<Subject>,
+    listSchools: MutableList<String>,
+    listCountries: MutableList<String>,
+    listCompany: MutableList<String>
+) {
 
     val interactionSource = remember { MutableInteractionSource() }
     val itemState by homeViewModel.itemState.collectAsState()
 
     var disponibilityView by remember { mutableStateOf(false) }
+    var experienceView by remember { mutableStateOf(false) }
     var typeContractView by remember { mutableStateOf(false) }
     var bottomView by remember { mutableStateOf(true) }
+    var showActivitySectorView by remember { mutableStateOf(false) }
+    var showInstitutionView by remember { mutableStateOf(false) }
+    var showLocationView by remember { mutableStateOf(false) }
+    var showCompanyView by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -95,7 +98,7 @@ fun FilterScreen(navController: NavController, homeViewModel: FilterViewModel = 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .height(150.dp)
             ) {
 
                 val shape = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
@@ -107,57 +110,62 @@ fun FilterScreen(navController: NavController, homeViewModel: FilterViewModel = 
                         .background(color = colorResource(id = R.color.whatsapp), shape = shape)
                 )
 
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+                Column(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Card(
-                        shape = RoundedCornerShape(40.dp),
-                        modifier = Modifier
-                            .fillMaxWidth(0.8f)
-                            .padding(top = 75.dp),
-                        elevation = 5.dp
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Box(
+                        Card(
+                            shape = RoundedCornerShape(40.dp),
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 15.dp, horizontal = 15.dp)
+                                .fillMaxWidth(0.8f)
+                                .padding(top = 75.dp),
+                            elevation = 5.dp
                         ) {
-
-                            Icon(
+                            Box(
                                 modifier = Modifier
-                                    .size(20.dp)
-                                    .align(Alignment.CenterStart)
-                                    .clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null
-                                    ) {
-                                        navController.popBackStack()
-                                    },
-                                imageVector = Icons.Filled.ArrowBack,
-                                contentDescription = ""
-                            )
+                                    .fillMaxWidth()
+                                    .padding(vertical = 15.dp, horizontal = 15.dp)
+                            ) {
 
-                            Spacer(modifier = Modifier.width(50.dp))
+                                Icon(
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .align(Alignment.CenterStart)
+                                        .clickable(
+                                            interactionSource = interactionSource,
+                                            indication = null
+                                        ) {
+                                            navController.popBackStack()
+                                        },
+                                    imageVector = Icons.Filled.ArrowBack,
+                                    contentDescription = ""
+                                )
 
-                            Text(
-                                modifier = Modifier.align(Alignment.Center),
-                                text = "Filter",
-                                color = Color.Black,
-                                style = TextStyle(
-                                    fontSize = 16.sp,
-                                    fontFamily = FontFamily(
-                                        Font(
-                                            R.font.rubik_medium,
-                                            weight = FontWeight.Medium
+                                Spacer(modifier = Modifier.width(50.dp))
+
+                                Text(
+                                    modifier = Modifier.align(Alignment.Center),
+                                    text = "Filter",
+                                    color = Color.Black,
+                                    style = TextStyle(
+                                        fontSize = 16.sp,
+                                        fontFamily = FontFamily(
+                                            Font(
+                                                R.font.rubik_medium,
+                                                weight = FontWeight.Medium
+                                            )
                                         )
                                     )
                                 )
-                            )
+                            }
                         }
                     }
-                }
 
+
+                }
             }
 
             var maxLines by remember { mutableStateOf(3) }
@@ -214,7 +222,6 @@ fun FilterScreen(navController: NavController, homeViewModel: FilterViewModel = 
 
             FlowRow(
                 modifier = Modifier
-                    .padding(top = 10.dp)
                     .padding(horizontal = 10.dp)
                     .fillMaxWidth(),
                 maxLines = maxLines,
@@ -224,18 +231,22 @@ fun FilterScreen(navController: NavController, homeViewModel: FilterViewModel = 
                     collapseIndicator = lessIndicator
                 ),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 itemState.forEachIndexed { index, txt ->
-
                     Box(
                         modifier = Modifier
-                            .background(color = colorResource(id = R.color.whatsapp))
+                            .border(
+                                1.dp,
+                                colorResource(id = R.color.whatsapp),
+                                RectangleShape
+                            )
+                            .background(color = White, shape = RectangleShape)
                             .clickable(
                                 interactionSource = interactionSource,
                                 indication = null
                             ) {
-
+                                homeViewModel.removeFromFlow(txt)
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -254,7 +265,58 @@ fun FilterScreen(navController: NavController, homeViewModel: FilterViewModel = 
 
             }
 
-            ItemFilter("Search word") {
+            ItemFilter("Experience", 20.dp) {
+                experienceView = !experienceView
+            }
+
+            if (experienceView) {
+
+                val experiences by homeViewModel.experiences.collectAsState()
+
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp)
+                        .background(colorResource(id = R.color.lighter_gray))
+                ) {
+                    experiences.mapIndexed { index, exp ->
+                        var selectedExp by remember { mutableStateOf(false) }
+
+                        val color =
+                            if (selectedExp) colorResource(id = R.color.whatsapp) else Black
+
+                        val bgColors =
+                            if (selectedExp) colorResource(id = R.color.whatsapp) else Color.Transparent
+
+                        val textColors =
+                            if (selectedExp) White else Black
+
+                        Box(
+                            modifier = Modifier
+                                .padding(vertical = 15.dp)
+                                .padding(start = 10.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = color,
+                                    shape = RoundedCornerShape(40.dp)
+                                )
+                                .background(bgColors, shape = RoundedCornerShape(40.dp))
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    selectedExp = !selectedExp
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = exp,
+                                color = textColors,
+                                modifier = Modifier.padding(10.dp)
+                            )
+                        }
+                    }
+                }
             }
 
             ItemFilter("Disponibility", 40.dp) {
@@ -319,51 +381,71 @@ fun FilterScreen(navController: NavController, homeViewModel: FilterViewModel = 
             }
 
             if (typeContractView) {
+                val employmentType by homeViewModel.employmentType.collectAsState()
                 FlowRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 10.dp)
                         .background(colorResource(id = R.color.lighter_gray))
                 ) {
-                    repeat(2) {
+                    employmentType.map {
+                        var selectedType by remember { mutableStateOf(false) }
+
+                        val color =
+                            if (selectedType) colorResource(id = R.color.whatsapp) else Black
+
+                        val bgColors =
+                            if (selectedType) colorResource(id = R.color.whatsapp) else Color.Transparent
+
+                        val textColors =
+                            if (selectedType) White else Black
+
                         Box(
-
-
                             modifier = Modifier
                                 .padding(vertical = 15.dp)
                                 .padding(start = 10.dp)
                                 .border(
                                     width = 1.dp,
-                                    color = Black,
+                                    color = color,
                                     shape = RoundedCornerShape(40.dp)
                                 )
-                                .background(Color.Transparent, shape = RoundedCornerShape(40.dp)),
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    selectedType = !selectedType
+                                }
+                                .background(bgColors, shape = RoundedCornerShape(40.dp)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = "Temps plein", modifier = Modifier.padding(10.dp))
+                            Text(
+                                text = it.type,
+                                color = textColors,
+                                modifier = Modifier.padding(10.dp)
+                            )
                         }
                     }
                 }
             }
 
             ItemFilter("Activity sector", 40.dp) {
-                disponibilityView = true
                 bottomView = false
+                showActivitySectorView = true
             }
 
-            ItemFilter("Activity sector", 40.dp) {
-                disponibilityView = true
+            ItemFilter("Institution", 40.dp) {
                 bottomView = false
+                showInstitutionView = true
             }
 
-            ItemFilter("Activity sector", 40.dp) {
-                disponibilityView = true
+            ItemFilter("Location", 40.dp) {
                 bottomView = false
+                showLocationView = true
             }
 
-            ItemFilter("Activity sector", 40.dp) {
-                disponibilityView = true
+            ItemFilter("Company name", 40.dp) {
                 bottomView = false
+                showCompanyView = true
             }
         }
 
@@ -453,10 +535,135 @@ fun FilterScreen(navController: NavController, homeViewModel: FilterViewModel = 
             }
         }
 
-        if (disponibilityView) {
+        val listSubject by homeViewModel.listSubject.collectAsState()
+        val criteria by homeViewModel.criteria.collectAsState()
+        Log.i("criteria", "FilterScreen: $criteria")
 
+        AnimatedVisibility(
+            visible = showActivitySectorView,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                val names = allSubjects.map {
+                    it.libelly
+                }
+
+                GenericMultipleSearch(
+                    mListOfJobs = names,
+                    savedList = criteria.activitySectors,
+                    onDismissRequest = {
+                        showActivitySectorView = false
+                        bottomView = true
+                    },
+                    onSelectedBank = { list ->
+                        showActivitySectorView = false
+                        bottomView = true
+                        homeViewModel.changeActivitySector(list)
+                        list.map { item ->
+                            homeViewModel.addToFlow(item)
+                            val f = allSubjects.filter { item == it.libelly }
+                            if (f.isNotEmpty()) {
+                                f[0].isSelected = true
+                            }
+                        }
+
+
+                    },
+                    title = stringResource(id = R.string.activity_text)
+                )
+            }
         }
 
+        AnimatedVisibility(
+            visible = showInstitutionView,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                GenericSearch(
+                    mListOfJobs = listSchools,
+                    onDismissRequest = {
+                        showInstitutionView = false
+                        bottomView = true
+                    },
+                    onSelectedBank = { item, index ->
+                        showInstitutionView = false
+                        bottomView = true
+                        homeViewModel.addToFlow(item)
+                    },
+                    title = stringResource(id = R.string.activity_text)
+                )
+            }
+        }
+
+        AnimatedVisibility(
+            visible = showLocationView,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                GenericSearch(
+                    mListOfJobs = listCountries,
+                    onDismissRequest = {
+                        showLocationView = false
+                        bottomView = true
+                    },
+                    onSelectedBank = { item, index ->
+                        showLocationView = false
+                        bottomView = true
+                        homeViewModel.addToFlow(item)
+                    },
+                    title = stringResource(id = R.string.activity_text)
+                )
+            }
+        }
+
+        AnimatedVisibility(
+            visible = showCompanyView,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                GenericSearch(
+                    mListOfJobs = listCompany,
+                    onDismissRequest = {
+                        showCompanyView = false
+                        bottomView = true
+                    },
+                    onSelectedBank = { item, index ->
+                        showCompanyView = false
+                        bottomView = true
+                        homeViewModel.addToFlow(item)
+                    },
+                    title = stringResource(id = R.string.activity_text)
+                )
+            }
+        }
 
     }
 

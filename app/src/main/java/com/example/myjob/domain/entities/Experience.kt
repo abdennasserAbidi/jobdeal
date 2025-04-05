@@ -2,6 +2,14 @@ package com.example.myjob.domain.entities
 
 import android.view.View
 
+val USER_EXP = listOf(
+    "Stagiare/Alternant",
+    "Premier emploi",
+    "Confirmé",
+    "Cadre",
+    "Directeur",
+    "Cadre supérieur",
+)
 data class Experience(
     var id: Int = View.generateViewId(),
     val title: String? = "",
@@ -21,7 +29,7 @@ data class Experience(
 ) {
 
     fun showExperience(lang: String): Map<String, String> {
-        val mapUser = hashMapOf<String, String> ()
+        val mapUser = hashMapOf<String, String>()
 
         val titleValid = title?.isNotEmpty() == true
         val companyNameValid = !companyName.isNullOrEmpty()
@@ -72,7 +80,7 @@ data class Experience(
     }
 
     fun showUser1(lang: String): List<Pair<String, String>> {
-        val mapUser = mutableListOf<Pair<String, String>> ()
+        val mapUser = mutableListOf<Pair<String, String>>()
 
         val titleValid = title?.isNotEmpty() == true
         val companyNameValid = !companyName.isNullOrEmpty()

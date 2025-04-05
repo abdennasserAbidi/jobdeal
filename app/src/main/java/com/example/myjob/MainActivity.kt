@@ -52,7 +52,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import com.example.myjob.base.GenericSource
 import com.example.myjob.base.MyApp
 import com.example.myjob.common.FileReader
 import com.example.myjob.common.GlobalEntries
@@ -68,8 +67,6 @@ import com.example.myjob.domain.entities.AllSchools
 import com.example.myjob.domain.entities.CountryPickerViewState
 import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.Subject
-import com.example.myjob.domain.entities.User
-import com.example.myjob.feature.favorites.CandidateFavorites
 import com.example.myjob.feature.favorites.CompanyFavorites
 import com.example.myjob.feature.forgotpassword.ForgotPasswordScreen
 import com.example.myjob.feature.home.DetailsScreen
@@ -425,7 +422,9 @@ class MainActivity : ComponentActivity() {
                     composable(route = Screen.ProfileScreen.route) {
                         isVisibleNav = false
                         //ProfileScreen(navController)
-                        if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") CompanyProfile(navController)
+                        if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") CompanyProfile(
+                            navController
+                        )
                         else CandidateProfile(navController)
                     }
 
@@ -469,7 +468,13 @@ class MainActivity : ComponentActivity() {
 
                     composable(route = Screen.FilterScreen.route) {
                         isVisibleNav = false
-                        FilterScreen(navController)
+                        FilterScreen(
+                            navController,
+                            allSubjects = allSubjects,
+                            listSchools = listSchools,
+                            listCountries = listCountries,
+                            listCompany = listCompany
+                        )
                     }
 
                     composable(route = Screen.HomeScreen.route) {

@@ -3,6 +3,7 @@ package com.example.myjob.remote.api
 import com.example.myjob.base.GenericResponse
 import com.example.myjob.common.network.ApiResult
 import com.example.myjob.domain.entities.Candidate
+import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
@@ -76,6 +77,11 @@ interface ApiService {
     @GET("auth/searchCandidate")
     suspend fun searchCandidate(
         @Query("word") word: String
+    ): List<User>
+
+    @GET("auth/getByCriteria")
+    suspend fun searchUsers(
+        @Body criteria: CriteriaModel
     ): List<User>
 
     @POST("auth/addEducation")
