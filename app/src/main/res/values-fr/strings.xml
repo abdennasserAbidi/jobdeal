@@ -63,7 +63,8 @@
 
     <!--Bottom bar-->
     <string name="item1">Acceuil</string>
-    <string name="item2">Notifications</string>
+    <string name="item2">Invitations</string>
+    <string name="item6">Notifications</string>
     <string name="item3">favoris</string>
     <string name="item4">Paramètre</string>
 

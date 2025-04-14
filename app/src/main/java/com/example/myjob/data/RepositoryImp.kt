@@ -12,6 +12,7 @@ import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.network.ApiResult
 import com.example.myjob.domain.entities.Candidate
+import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
@@ -294,6 +295,31 @@ class RepositoryImp @Inject constructor(
     }.catch { ex ->
         emit(Resource(ResourceState.ERROR, null, ex.message))
     }
+    override suspend fun getCompanyInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>> = flow {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            pagingSourceFactory = {
+                GenericSource { currentPage ->
+
+                    val experiences =
+                        remoteDataSource.getCompanyInvitations(id = id, pageNumber = currentPage)
+
+                    val json = Gson().toJson(experiences.content)
+                    sharedPreference.putString("jsonInvitation", json)
+
+                    experiences
+                }
+            }
+        ).flow.cachedIn(CoroutineScope(Dispatchers.Default))
+
+        emitAll(
+            pager.map { pagingData ->
+                Resource(ResourceState.SUCCESS, pagingData, null)
+            }
+        )
+    }.catch { ex ->
+        emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
 
     override suspend fun getAllExp(id: Int): Flow<Resource<List<Experience>>> = flow {
         try {
@@ -334,6 +360,18 @@ class RepositoryImp @Inject constructor(
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.searchCandidates(word)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun searchUsers(criteria: CriteriaModel): Flow<Resource<List<User>>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.searchUsers(criteria)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {

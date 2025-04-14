@@ -64,6 +64,14 @@ interface ApiService {
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
     ): GenericResponse<Experience>
+
+    @GET("auth/getCompanyInvitations")
+    suspend fun getCompanyInvitations(
+        @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<InvitationModel>
+
     @GET("auth/getAllExp")
     suspend fun getAllExp(
         @Query("id") id: Int
@@ -79,7 +87,7 @@ interface ApiService {
         @Query("word") word: String
     ): List<User>
 
-    @GET("auth/getByCriteria")
+    @POST("auth/getByCriteria")
     suspend fun searchUsers(
         @Body criteria: CriteriaModel
     ): List<User>

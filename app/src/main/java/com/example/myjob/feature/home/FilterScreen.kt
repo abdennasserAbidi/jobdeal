@@ -30,6 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -54,7 +55,6 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,6 +78,8 @@ fun FilterScreen(
 
     val interactionSource = remember { MutableInteractionSource() }
     val itemState by homeViewModel.itemState.collectAsState()
+    val filteredUser by homeViewModel.filteredUser.collectAsState()
+
 
     var disponibilityView by remember { mutableStateOf(false) }
     var experienceView by remember { mutableStateOf(false) }
@@ -291,28 +293,37 @@ fun FilterScreen(
                         val textColors =
                             if (selectedExp) White else Black
 
-                        Box(
+                        Row(
                             modifier = Modifier
                                 .padding(vertical = 15.dp)
                                 .padding(start = 10.dp)
                                 .border(
                                     width = 1.dp,
-                                    color = color,
+                                    color = colorResource(id = R.color.whatsapp),
                                     shape = RoundedCornerShape(40.dp)
                                 )
-                                .background(bgColors, shape = RoundedCornerShape(40.dp))
+                                .background(
+                                    colorResource(id = R.color.whatsapp),
+                                    shape = RoundedCornerShape(40.dp)
+                                )
                                 .clickable(
                                     interactionSource = interactionSource,
                                     indication = null
                                 ) {
                                     selectedExp = !selectedExp
                                 },
-                            contentAlignment = Alignment.Center
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 text = exp,
-                                color = textColors,
+                                color = White,
                                 modifier = Modifier.padding(10.dp)
+                            )
+
+                            Icon(
+                                imageVector = Icons.Filled.Add,
+                                tint = White,
+                                contentDescription = ""
                             )
                         }
                     }
@@ -468,68 +479,33 @@ fun FilterScreen(
                     .align(Alignment.BottomCenter),
                 elevation = 5.dp
             ) {
-
-                Row(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 10.dp)
-                        .padding(horizontal = 10.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                        .padding(horizontal = 10.dp)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            homeViewModel.validateFilter()
+                        }
+                        .background(
+                            color = colorResource(id = R.color.whatsapp),
+                            shape = RoundedCornerShape(30.dp)
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-
-                    Box(
-                        modifier = Modifier
-                            .weight(0.45f)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-
-                            }
-                            .background(
-                                color = colorResource(id = R.color.whatsapp),
-                                shape = RoundedCornerShape(30.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Save",
-                            modifier = Modifier.padding(vertical = 20.dp, horizontal = 20.dp),
-                            style = TextStyle(
-                                color = White,
-                                fontFamily = FontFamily.Default,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                    Text(
+                        text = "Save",
+                        modifier = Modifier.padding(vertical = 20.dp, horizontal = 20.dp),
+                        style = TextStyle(
+                            color = White,
+                            fontFamily = FontFamily.Default,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
                         )
-                    }
-
-
-                    Box(
-                        modifier = Modifier
-                            .weight(0.45f)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                            }
-                            .background(
-                                color = Color.Gray,
-                                shape = RoundedCornerShape(30.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Cancel",
-                            modifier = Modifier.padding(vertical = 20.dp, horizontal = 20.dp),
-                            style = TextStyle(
-                                color = White,
-                                fontFamily = FontFamily.Default,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                    }
+                    )
                 }
 
             }
@@ -557,7 +533,7 @@ fun FilterScreen(
 
                 GenericMultipleSearch(
                     mListOfJobs = names,
-                    savedList = criteria.activitySectors,
+                    savedList = criteria.preferredActivitySector,
                     onDismissRequest = {
                         showActivitySectorView = false
                         bottomView = true
@@ -593,18 +569,23 @@ fun FilterScreen(
             )
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                GenericSearch(
+                GenericMultipleSearch(
                     mListOfJobs = listSchools,
+                    savedList = criteria.institutions,
                     onDismissRequest = {
                         showInstitutionView = false
                         bottomView = true
                     },
-                    onSelectedBank = { item, index ->
+                    onSelectedBank = { list ->
                         showInstitutionView = false
                         bottomView = true
-                        homeViewModel.addToFlow(item)
+                        homeViewModel.changeInstitutions(list)
+                        list.map { item ->
+                            homeViewModel.addToFlow(item)
+
+                        }
                     },
-                    title = stringResource(id = R.string.activity_text)
+                    title = "Institution"
                 )
             }
         }
@@ -669,13 +650,6 @@ fun FilterScreen(
 
 }
 
-@Composable
-fun FilterPreview(
-
-) {
-
-}
-
 
 @Composable
 fun ItemFilter(itemText: String, padding: Dp = 10.dp, onClick: () -> Unit = {}) {
@@ -730,11 +704,4 @@ fun ItemFilter(itemText: String, padding: Dp = 10.dp, onClick: () -> Unit = {}) 
         )
     }
 
-}
-
-
-@Composable
-@Preview
-fun PreviewFilter() {
-    FilterPreview()
 }

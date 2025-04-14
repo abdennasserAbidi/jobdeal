@@ -24,7 +24,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -56,6 +60,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -67,6 +72,7 @@ import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.CustomDialog
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.signup.AddPassword
@@ -207,7 +213,9 @@ fun LoginScreen(
                 addPassword = false
             }
         } else {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())) {
 
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -273,7 +281,15 @@ fun LoginScreen(
                         if (activatedCheck) viewModel.validateEmail(it)
                         viewModel.changeUserEmail(it)
                     },
-                    textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                    textStyle = TextStyle(Color.Black, fontSize = 14.sp),
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+
+                        }
+                    )
                 )
 
                 if (activatedCheck) {
@@ -344,7 +360,15 @@ fun LoginScreen(
                             }
                         }
                     },
-                    textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                    textStyle = TextStyle(Color.Black, fontSize = 14.sp),
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+
+                        }
+                    )
                 )
                 Log.i("passwordVerified", "SignUpScreen: $passwordVerified")
 

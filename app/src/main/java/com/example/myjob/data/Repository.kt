@@ -4,6 +4,7 @@ import androidx.paging.PagingData
 import com.example.myjob.base.GenericResponse
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.domain.entities.Candidate
+import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
@@ -28,6 +29,7 @@ interface Repository {
     suspend fun saveUser(user: User): Flow<Resource<LoginResponse>>
     suspend fun saveExperience(experience: Experience): Flow<Resource<UserResponse>>
     suspend fun getAllExperiences(id: Int): Flow<Resource<PagingData<Experience>>>
+    suspend fun getCompanyInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>>
     suspend fun forgotPassword(email: String): Flow<Resource<UserResponse>>
     suspend fun resetPassword(token: String, newPassword: String): Flow<Resource<UserResponse>>
     suspend fun authenticate(user: User): Flow<Resource<LoginResponse>>
@@ -41,6 +43,7 @@ interface Repository {
     suspend fun getAllExp(id: Int): Flow<Resource<List<Experience>>>
     suspend fun getAllEduc(id: Int): Flow<Resource<List<Educations>>>
     suspend fun searchCandidate(word: String): Flow<Resource<List<User>>>
+    suspend fun searchUsers(criteria: CriteriaModel): Flow<Resource<List<User>>>
     suspend fun getAllUser(): Flow<Resource<PagingData<User>>>
     //suspend fun getAllUser(currentPage: Int): Flow<Resource<PagingData<User>>>
 

@@ -3,6 +3,7 @@ package com.example.myjob.remote.source
 import com.example.myjob.base.GenericResponse
 import com.example.myjob.common.network.ApiResult
 import com.example.myjob.domain.entities.Candidate
+import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
@@ -34,10 +35,13 @@ class RemoteDataSourceImp @Inject constructor(
     override suspend fun saveEducation(educations: Educations): UserResponse = apiService.saveEducation(educations)
     override suspend fun getAllExperiences(id: Int, pageNumber: Int): GenericResponse<Experience> =
         apiService.getAllExperiences(id, pageNumber)
+    override suspend fun getCompanyInvitations(id: Int, pageNumber: Int): GenericResponse<InvitationModel> =
+        apiService.getCompanyInvitations(id, pageNumber)
     override suspend fun getAllExp(id: Int): List<Experience> = apiService.getAllExp(id)
     override suspend fun getAllEduc(id: Int): List<Educations> = apiService.getAllEduc(id)
     override suspend fun getAllEducations(id: Int, pageNumber: Int): GenericResponse<Educations> = apiService.getAllEducations(id, pageNumber)
     override suspend fun searchCandidates(word: String): List<User> = apiService.searchCandidate(word)
+    override suspend fun searchUsers(criteria: CriteriaModel): List<User> = apiService.searchUsers(criteria)
     override suspend fun getFavorites(id: Int, pageNumber: Int): GenericResponse<User> = apiService.getFavorites(id, pageNumber)
     override suspend fun getInvitations(id: Int, pageNumber: Int): GenericResponse<InvitationModel> = apiService.getInvitations(id, pageNumber)
     override suspend fun getAllUser(pageNumber: Int): GenericResponse<User> = apiService.getAllUser(pageNumber = pageNumber)

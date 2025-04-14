@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myjob.R
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.feature.navigation.Screen
 
 @Composable
@@ -69,6 +70,7 @@ fun SplashScreen(
                 ) {
 
                     val isFinished = splashViewModel.isOnBoardingFinished()
+                    GlobalEntries.isFromLogin = true
 
                     val token = splashViewModel.getToken()
                     Log.i("token", "SplashScreen: $token")

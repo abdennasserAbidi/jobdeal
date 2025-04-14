@@ -19,10 +19,12 @@ import androidx.compose.foundation.border
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.InsertInvitation
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.InsertInvitation
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
@@ -31,6 +33,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
@@ -75,6 +79,7 @@ import com.example.myjob.feature.home.HomeCandidate
 import com.example.myjob.feature.home.HomeChoice
 import com.example.myjob.feature.home.HomeCompany
 import com.example.myjob.feature.home.InvitationScreen
+import com.example.myjob.feature.invitation.InvitationCompanyScreen
 import com.example.myjob.feature.login.LoginScreen
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
@@ -279,13 +284,21 @@ class MainActivity : ComponentActivity() {
                 selectedIcon = Icons.Filled.Home,
                 unselectedIcon = Icons.Outlined.Home
             )
+
             val alertsTab = TabBarItem(
+                title = stringResource(id = R.string.item2),
+                tag = "company_invitation_screen",
+                selectedIcon = Icons.Filled.InsertInvitation,
+                unselectedIcon = Icons.Outlined.InsertInvitation
+            )
+
+            /*val alertsTab = TabBarItem(
                 title = stringResource(id = R.string.item2),
                 tag = "detail_screen",
                 selectedIcon = Icons.Filled.Notifications,
                 unselectedIcon = Icons.Outlined.Notifications,
                 badgeAmount = 7
-            )
+            )*/
             val settingsTab = TabBarItem(
                 title = stringResource(id = R.string.item3),
                 tag = "favorites_screen",
@@ -466,6 +479,11 @@ class MainActivity : ComponentActivity() {
                         })
                     }
 
+                    composable(route = Screen.InvitationCompanyScreen.route) {
+                        isVisibleNav = true
+                        InvitationCompanyScreen(navController)
+                    }
+
                     composable(route = Screen.FilterScreen.route) {
                         isVisibleNav = false
                         FilterScreen(
@@ -479,8 +497,11 @@ class MainActivity : ComponentActivity() {
 
                     composable(route = Screen.HomeScreen.route) {
                         if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") {
-                            isVisibleNav = true
-                            HomeChoice(navController)
+                            HomeCompany(navController = navController, onResumed = { index ->
+                                selectedTabIndex = index
+                            }, hideNavigation = { isHidden ->
+                                isVisibleNav = isHidden
+                            })
                         } else HomeCandidate(navController)
                     }
 
@@ -492,8 +513,9 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                         HomeCompany(navController = navController, onResumed = { index ->
-                            isVisibleNav = true
                             selectedTabIndex = index
+                        }, hideNavigation = { isHidden ->
+                            isVisibleNav = isHidden
                         })
                     }
 
@@ -572,6 +594,12 @@ fun TabView(
         tabBarItems.forEachIndexed { index, tabBarItem ->
             NavigationBarItem(
                 selected = defaultIndex == index,
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color.Black,
+                    unselectedIconColor = Color.Black,
+                    selectedTextColor = Color.Black,
+                    indicatorColor = colorResource(id = R.color.lighter_gray)
+                ),
                 onClick = {
                     //selectedTabIndex = index
                     changeIndex(index)

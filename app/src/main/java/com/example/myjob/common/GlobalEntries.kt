@@ -36,6 +36,7 @@ object GlobalEntries {
     var userForCompany = User()
     var language = "Français"
     var role = ""
+    var isFromLogin = false
     var isVisibleNav = MutableStateFlow(true)
     var langState = MutableStateFlow("Français")
     var languageShared = MutableSharedFlow<String>()
