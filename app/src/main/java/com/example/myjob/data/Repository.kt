@@ -11,6 +11,7 @@ import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.FavoriteModel
 import com.example.myjob.domain.entities.InvitationModel
 import com.example.myjob.domain.entities.InvitationParams
+import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
@@ -28,6 +29,8 @@ interface Repository {
     suspend fun changeBaseExchangesRate(base: String): Flow<Resource<ExchangeRates>>
     suspend fun saveUser(user: User): Flow<Resource<LoginResponse>>
     suspend fun saveExperience(experience: Experience): Flow<Resource<UserResponse>>
+    suspend fun getAllSearch(id: Int): Flow<Resource<PagingData<SearchHistory>>>
+    suspend fun searchCandidate(word: String, id: Int): Flow<Resource<PagingData<SearchHistory>>>
     suspend fun getAllExperiences(id: Int): Flow<Resource<PagingData<Experience>>>
     suspend fun getCompanyInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>>
     suspend fun forgotPassword(email: String): Flow<Resource<UserResponse>>
@@ -36,13 +39,15 @@ interface Repository {
     suspend fun verifyEmail(email: String): Flow<Resource<LoginResponse>>
     suspend fun sendInvitation(@Body invitationParams: InvitationParams): Flow<Resource<UserResponse>>
     suspend fun saveEducation(educations: Educations): Flow<Resource<UserResponse>>
+    suspend fun saveSearchHistory(
+        idUserConnected: Int, searchHistory: SearchHistory
+    ): Flow<Resource<UserResponse>>
     suspend fun getAllEducations(id: Int): Flow<Resource<PagingData<Educations>>>
     suspend fun getFavorites(id: Int): Flow<Resource<PagingData<User>>>
     suspend fun getInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>>
     suspend fun verifyExisting(fileName: String): Flow<Resource<FileExistingResponse>>
     suspend fun getAllExp(id: Int): Flow<Resource<List<Experience>>>
     suspend fun getAllEduc(id: Int): Flow<Resource<List<Educations>>>
-    suspend fun searchCandidate(word: String): Flow<Resource<List<User>>>
     suspend fun searchUsers(criteria: CriteriaModel): Flow<Resource<List<User>>>
     suspend fun getAllUser(): Flow<Resource<PagingData<User>>>
     //suspend fun getAllUser(currentPage: Int): Flow<Resource<PagingData<User>>>

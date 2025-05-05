@@ -2,21 +2,20 @@ package com.example.myjob.remote.source
 
 import com.example.myjob.base.GenericResponse
 import com.example.myjob.common.network.ApiResult
-import com.example.myjob.domain.entities.Candidate
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
-import com.example.myjob.domain.entities.FavoriteModel
 import com.example.myjob.domain.entities.InvitationModel
 import com.example.myjob.domain.entities.InvitationParams
+import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.remote.api.ApiService
 import okhttp3.MultipartBody
-import retrofit2.http.Body
+import retrofit2.http.Query
 import javax.inject.Inject
 
 /**
@@ -40,12 +39,14 @@ class RemoteDataSourceImp @Inject constructor(
     override suspend fun getAllExp(id: Int): List<Experience> = apiService.getAllExp(id)
     override suspend fun getAllEduc(id: Int): List<Educations> = apiService.getAllEduc(id)
     override suspend fun getAllEducations(id: Int, pageNumber: Int): GenericResponse<Educations> = apiService.getAllEducations(id, pageNumber)
-    override suspend fun searchCandidates(word: String): List<User> = apiService.searchCandidate(word)
+    override suspend fun searchCandidates(word: String, id: Int, pageNumber: Int): GenericResponse<SearchHistory> = apiService.searchCandidate(word, id, pageNumber)
     override suspend fun searchUsers(criteria: CriteriaModel): List<User> = apiService.searchUsers(criteria)
     override suspend fun getFavorites(id: Int, pageNumber: Int): GenericResponse<User> = apiService.getFavorites(id, pageNumber)
     override suspend fun getInvitations(id: Int, pageNumber: Int): GenericResponse<InvitationModel> = apiService.getInvitations(id, pageNumber)
+    override suspend fun getAllSearch(id: Int, pageNumber: Int): GenericResponse<SearchHistory> = apiService.getAllSearch(id, pageNumber)
     override suspend fun getAllUser(pageNumber: Int): GenericResponse<User> = apiService.getAllUser(pageNumber = pageNumber)
-    override suspend fun sendInvitation(@Body invitationParams: InvitationParams): UserResponse = apiService.sendInvitation(invitationParams)
+    override suspend fun sendInvitation(invitationParams: InvitationParams): UserResponse = apiService.sendInvitation(invitationParams)
+    override suspend fun saveSearchHistory(idUserConnected: Int, searchHistory: SearchHistory): UserResponse = apiService.saveSearchHistory(idUserConnected, searchHistory)
     override suspend fun savePersonalInfo(user: User): UserResponse = apiService.savePersonalInfo(user)
     override suspend fun saveCompanyInfo(user: User): UserResponse = apiService.saveCompanyInfo(user)
     override suspend fun removeExperience(id: Int, experienceId: Int): UserResponse = apiService.removeExperience(id, experienceId)

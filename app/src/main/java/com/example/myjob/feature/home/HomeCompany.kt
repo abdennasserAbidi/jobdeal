@@ -659,7 +659,7 @@ fun HomeCompany(
             }
         }
 
-        val query by homeViewModel.query.collectAsState()
+        /*val query by homeViewModel.query.collectAsState()
         val user by homeViewModel.words.collectAsState()
 
         AnimatedVisibility(
@@ -792,7 +792,7 @@ fun HomeCompany(
 
                 }
             }
-        }
+        }*/
 
 
     }

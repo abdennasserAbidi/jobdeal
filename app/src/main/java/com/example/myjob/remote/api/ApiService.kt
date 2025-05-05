@@ -2,13 +2,13 @@ package com.example.myjob.remote.api
 
 import com.example.myjob.base.GenericResponse
 import com.example.myjob.common.network.ApiResult
-import com.example.myjob.domain.entities.Candidate
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.InvitationModel
 import com.example.myjob.domain.entities.InvitationParams
+import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
@@ -84,8 +84,11 @@ interface ApiService {
 
     @GET("auth/searchCandidate")
     suspend fun searchCandidate(
-        @Query("word") word: String
-    ): List<User>
+        @Query("word") word: String,
+        @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<SearchHistory>
 
     @POST("auth/getByCriteria")
     suspend fun searchUsers(
@@ -111,6 +114,20 @@ interface ApiService {
     @POST("auth/sendInvitation")
     suspend fun sendInvitation(@Body invitationParams: InvitationParams): UserResponse
 
+    @POST("auth/saveSearchHistory")
+    suspend fun saveSearchHistory(
+        @Query("idUserConnected") idUserConnected: Int,
+        @Body searchHistory: SearchHistory
+    ): UserResponse
+
+    @GET("auth/getAllSearchHistory")
+    suspend fun getAllSearch(
+        @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<SearchHistory>
+
+
     @POST("auth/updateuser")
     suspend fun savePersonalInfo(@Body user: User): UserResponse
 
@@ -122,6 +139,7 @@ interface ApiService {
         @Query("id") id: Int,
         @Query("experienceId") experienceId: Int
     ): UserResponse
+
     @POST("auth/updatefavorite")
     suspend fun saveToFavorite(
         @Query("idUserConnected") idUserConnected: Int,

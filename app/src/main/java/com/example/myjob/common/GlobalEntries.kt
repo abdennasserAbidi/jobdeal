@@ -17,6 +17,7 @@ import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.InvitationModel
+import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

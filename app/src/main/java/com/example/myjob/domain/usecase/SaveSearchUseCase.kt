@@ -1,23 +1,23 @@
-package com.example.myjob.domain.usecase.home
+package com.example.myjob.domain.usecase
 
-import androidx.paging.PagingData
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.usecase.FlowBaseUseCase
 import com.example.myjob.data.Repository
 import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.qualifiers.IoDispatcher
+import com.example.myjob.domain.response.UserResponse
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class SearchCandidateUseCase @Inject constructor(
+class SaveSearchUseCase @Inject constructor(
     private val repository: Repository,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
-) : FlowBaseUseCase<PagingData<SearchHistory>, Pair<String, Int>>() {
+) : FlowBaseUseCase<UserResponse, Pair<Int, SearchHistory>>() {
 
-    override suspend fun buildRequest(params: Pair<String, Int>?): Flow<Resource<PagingData<SearchHistory>>> {
-        return repository.searchCandidate(params?.first ?: "", params?.second ?: -1)
+    override suspend fun buildRequest(params: Pair<Int, SearchHistory>?): Flow<Resource<UserResponse>> {
+        return repository.saveSearchHistory(params?.first ?: -1, params?.second ?: SearchHistory())
             .flowOn(dispatcher)
     }
 }

@@ -1,4 +1,4 @@
-package com.example.myjob.domain.usecase.home
+package com.example.myjob.domain.usecase
 
 import androidx.paging.PagingData
 import com.example.myjob.base.reources.Resource
@@ -11,13 +11,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class SearchCandidateUseCase @Inject constructor(
+class GetAllSearchUseCase @Inject constructor(
     private val repository: Repository,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
-) : FlowBaseUseCase<PagingData<SearchHistory>, Pair<String, Int>>() {
+) : FlowBaseUseCase<PagingData<SearchHistory>, Int>() {
 
-    override suspend fun buildRequest(params: Pair<String, Int>?): Flow<Resource<PagingData<SearchHistory>>> {
-        return repository.searchCandidate(params?.first ?: "", params?.second ?: -1)
-            .flowOn(dispatcher)
+    override suspend fun buildRequest(params: Int?): Flow<Resource<PagingData<SearchHistory>>> {
+        return repository.getAllSearch(params ?: 0).flowOn(dispatcher)
     }
 }

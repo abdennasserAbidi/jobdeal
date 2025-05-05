@@ -2,20 +2,18 @@ package com.example.myjob.remote.source
 
 import com.example.myjob.base.GenericResponse
 import com.example.myjob.common.network.ApiResult
-import com.example.myjob.domain.entities.Candidate
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
-import com.example.myjob.domain.entities.FavoriteModel
 import com.example.myjob.domain.entities.InvitationModel
 import com.example.myjob.domain.entities.InvitationParams
+import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
 import okhttp3.MultipartBody
-import retrofit2.http.Body
 
 /**
  * Methods of Remote Data Source
@@ -32,12 +30,14 @@ interface RemoteDataSource {
     suspend fun getAllExp(id: Int): List<Experience>
     suspend fun getAllEduc(id: Int): List<Educations>
     suspend fun getAllEducations(id: Int, pageNumber: Int): GenericResponse<Educations>
-    suspend fun searchCandidates(word: String): List<User>
+    suspend fun searchCandidates(word: String, id: Int, pageNumber: Int): GenericResponse<SearchHistory>
     suspend fun searchUsers(criteria: CriteriaModel): List<User>
     suspend fun getFavorites(id: Int, pageNumber: Int): GenericResponse<User>
     suspend fun getInvitations(id: Int, pageNumber: Int): GenericResponse<InvitationModel>
+    suspend fun getAllSearch(id: Int, pageNumber: Int): GenericResponse<SearchHistory>
     suspend fun getAllUser(pageNumber: Int): GenericResponse<User>
-    suspend fun sendInvitation(@Body invitationParams: InvitationParams): UserResponse
+    suspend fun sendInvitation(invitationParams: InvitationParams): UserResponse
+    suspend fun saveSearchHistory(idUserConnected: Int, searchHistory: SearchHistory): UserResponse
     suspend fun forgotPassword(email: String): UserResponse
     suspend fun resetPassword(token: String, newPassword: String): UserResponse
     suspend fun authenticate(user: User): ApiResult<LoginResponse>

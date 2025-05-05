@@ -214,15 +214,7 @@ class HomeViewModel @Inject constructor(
         lang = sharedPreference.getString("lang", "") ?: ""
         langState.update { lang }
         getAllUser(1)
-        viewModelScope.launch {
-            _query
-                .debounce(300) // Attendre 300ms après la dernière saisie
-                .distinctUntilChanged() // Éviter les requêtes inutiles si même texte
-                .filter { it.isNotEmpty() } // Ne pas lancer de requête si vide
-                .flatMapLatest { searchCandidateUseCase.execute(it) } // Appel API
-                .catch { e -> println("Error: ${e.message}") }
-                .collect { _words.value = it.data ?: emptyList() } // Mise à jour de l’UI
-        }
+
     }
 
     fun updateQuery(newQuery: String) {

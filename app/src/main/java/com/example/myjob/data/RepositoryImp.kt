@@ -6,19 +6,17 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.example.myapplication.local.source.LocalDataSource
-import com.example.myjob.base.GenericResponse
 import com.example.myjob.base.GenericSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.network.ApiResult
-import com.example.myjob.domain.entities.Candidate
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
-import com.example.myjob.domain.entities.FavoriteModel
 import com.example.myjob.domain.entities.InvitationModel
 import com.example.myjob.domain.entities.InvitationParams
+import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
@@ -34,7 +32,6 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import okhttp3.MultipartBody
-import retrofit2.http.Body
 import javax.inject.Inject
 
 /**
@@ -149,7 +146,21 @@ class RepositoryImp @Inject constructor(
             }
         }
 
-    override suspend fun sendInvitation(@Body invitationParams: InvitationParams): Flow<Resource<UserResponse>> = flow {
+    override suspend fun saveSearchHistory(
+        idUserConnected: Int, searchHistory: SearchHistory
+    ): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.saveSearchHistory(idUserConnected, searchHistory)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun sendInvitation(invitationParams: InvitationParams): Flow<Resource<UserResponse>> = flow {
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.sendInvitation(invitationParams)
@@ -269,6 +280,55 @@ class RepositoryImp @Inject constructor(
     }.catch { ex ->
         emit(Resource(ResourceState.ERROR, null, ex.message))
     }
+    override suspend fun getAllSearch(id: Int): Flow<Resource<PagingData<SearchHistory>>> = flow {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            pagingSourceFactory = {
+                GenericSource { currentPage ->
+                    val educations =
+                        remoteDataSource.getAllSearch(id = id, pageNumber = currentPage)
+
+                    val json = Gson().toJson(educations.content)
+                    sharedPreference.putString("jsonSearch", json)
+
+                    educations
+                }
+            }
+        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+        emitAll(
+            pager.map { pagingData ->
+                Resource(ResourceState.SUCCESS, pagingData, null)
+            }
+        )
+    }.catch { ex ->
+        emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
+
+    override suspend fun searchCandidate(word: String, id: Int): Flow<Resource<PagingData<SearchHistory>>> = flow {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            pagingSourceFactory = {
+                GenericSource { currentPage ->
+                    // Get data from RemoteDataSource
+                    val educations = remoteDataSource.searchCandidates(word = word, id = id, pageNumber = currentPage)
+
+                    val json = Gson().toJson(educations.content)
+                    sharedPreference.putString("jsonSearchCandidate", json)
+
+                    educations
+                }
+            }
+        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+        emitAll(
+            pager.map { pagingData ->
+                Resource(ResourceState.SUCCESS, pagingData, null)
+            }
+        )
+    }.catch { ex ->
+        emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
 
     override suspend fun getAllExperiences(id: Int): Flow<Resource<PagingData<Experience>>> = flow {
         val pager = Pager(
@@ -348,18 +408,6 @@ class RepositoryImp @Inject constructor(
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.getAllEduc(id)
-            // Emit data
-            emit(Resource(ResourceState.SUCCESS, data, null))
-        } catch (ex: Exception) {
-            // Emit error
-            emit(Resource(ResourceState.ERROR, null, ex.message))
-        }
-    }
-
-    override suspend fun searchCandidate(word: String): Flow<Resource<List<User>>> = flow {
-        try {
-            // Get data from RemoteDataSource
-            val data = remoteDataSource.searchCandidates(word)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {
