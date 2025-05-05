@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.derivedStateOf
 import androidx.lifecycle.asFlow
 import androidx.work.Constraints
 import androidx.work.Data
@@ -12,8 +13,10 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.example.myjob.base.workmanager.FileDownloadWorker
+import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
+import com.example.myjob.domain.entities.InvitationModel
 import com.example.myjob.domain.entities.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,8 +39,12 @@ object GlobalEntries {
     var userForCompany = User()
     var language = "Français"
     var role = ""
+    var criteriaModel = CriteriaModel()
+    var invitationModel = InvitationModel()
+    var matchInvitation: () -> Unit = {}
     var isFromLogin = false
     var isVisibleNav = MutableStateFlow(true)
+    var isHidden = derivedStateOf { !isVisibleNav.value }
     var langState = MutableStateFlow("Français")
     var languageShared = MutableSharedFlow<String>()
 

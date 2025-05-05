@@ -181,5 +181,25 @@
     <string name="share_text">Partager</string>
     <string name="exported_text">Exporter</string>
 
+    <!--Contract-->
+    <string name="full_time_text">Full-time</string>
+    <string name="part_time_text">Part-time</string>
+    <string name="self_employed_text">Self-employed</string>
+    <string name="internship_text">Internship</string>
+    <string name="apprenticeship_text">Apprenticeship</string>
+    <string name="seasonal_text">Seasonal</string>
+
+    <!--exp-->
+    <string name="intern_text">Stagiare/Alternant</string>
+    <string name="first_employemnt_text">Premier emploi</string>
+    <string name="confirmed_text">Confirmé</string>
+    <string name="lead_text">Cadre</string>
+    <string name="manager_text">Directeur</string>
+    <string name="superior_text">Cadre supérieur</string>
+
+    <string name="institution_text">Institution</string>
+
+    <string name="show_all_text">Tout afficher</string>
+    <string name="delete_all_text">Tout supprimer</string>
 
 </resources>

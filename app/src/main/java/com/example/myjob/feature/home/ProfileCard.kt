@@ -9,6 +9,9 @@ fun ProfileCard(
     modifier: Modifier,
     matchProfile: User,
     lang: String,
+    onSave: () -> Unit,
+    onSkip: () -> Unit,
+    onMatch: () -> Unit,
     openProfile: (profile: User) -> Unit
 ) {
     JobSwipeCard(
@@ -17,6 +20,9 @@ fun ProfileCard(
             openProfile(it)
         },
         lang = lang,
-        modifier = modifier
+        modifier = modifier,
+        onSave = { onSave() },
+        onSkip = { onSkip() },
+        onMatch = { onMatch() },
     )
 }

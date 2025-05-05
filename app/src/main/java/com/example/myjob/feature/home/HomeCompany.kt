@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,7 +54,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,6 +63,8 @@ import androidx.navigation.NavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.matchInvitation
+import com.example.myjob.common.ImageCarousel
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.navigation.Screen
@@ -76,7 +78,6 @@ import kotlinx.coroutines.launch
 fun HomeCompany(
     navController: NavController,
     onResumed: (index: Int) -> Unit,
-    hideNavigation: (isHidden: Boolean) -> Unit,
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
 
@@ -113,6 +114,7 @@ fun HomeCompany(
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_START) {
             onResumed(0)
+            //onVisible(true)
         }
     }
 
@@ -120,801 +122,674 @@ fun HomeCompany(
         GlobalEntries.isVisibleNav.update { !openFormInvitation }
     }
 
-    var isHomeShowed by remember { mutableStateOf(false) }
-
-    LaunchedEffect(GlobalEntries.isFromLogin) {
-        if (GlobalEntries.isFromLogin) {
-            hideNavigation(false)
-            delay(2000L)
-            isHomeShowed = true
-            GlobalEntries.isFromLogin = false
-        } else {
-            isHomeShowed = true
-            hideNavigation(true)
-        }
-    }
-
     Box(modifier = Modifier.fillMaxSize()) {
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        val shape = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
 
-            Column(modifier = Modifier.fillMaxSize()) {
-
-                val shape = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
-
-                val animatedPadding by animateDpAsState(
-                    if (isHomeShowed) 75.dp else 580.dp,
-                    animationSpec = tween(durationMillis = 300),
-                    label = "padding"
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.25f)
+                .background(
+                    color = colorResource(id = R.color.whatsapp),
+                    shape = shape
                 )
+        )
 
-                val animatedUp by animateDpAsState(
-                    if (isHomeShowed) {
-                        200.dp
-                    } else {
-                        800.dp
-                    },
-                    animationSpec = tween(durationMillis = 300),
-                    label = "padding"
-                )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .align(Alignment.Center),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-                val animatedDeep by animateDpAsState(
-                    if (isHomeShowed) {
-                        100.dp
-                    } else {
-                        600.dp
-                    },
-                    animationSpec = tween(durationMillis = 300),
-                    label = "padding"
-                )
-
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                backgroundColor = Color.Transparent,
+                modifier = Modifier.fillMaxWidth().background(Color.Transparent),
+                elevation = 0.dp
+            ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(animatedUp)
+                        .padding(vertical = 15.dp, horizontal = 15.dp)
                 ) {
+
+                    Icon(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .align(Alignment.CenterStart)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                //search = true
+                                navController.navigate(Screen.SearchWordScreen.route)
+                            },
+                        imageVector = Icons.Filled.Search,
+                        tint = Color.White,
+                        contentDescription = ""
+                    )
+
+                    Spacer(modifier = Modifier.width(50.dp))
+
+                    Text(
+                        modifier = Modifier.align(Alignment.Center),
+                        text = "Find your candidate",
+                        color = Color.White,
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            fontFamily = FontFamily(
+                                Font(
+                                    R.font.rubik_medium,
+                                    weight = FontWeight.Medium
+                                )
+                            )
+                        )
+                    )
 
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(animatedDeep)
+                            .align(Alignment.CenterEnd)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                navController.navigate(Screen.FilterScreen.route)
+                            }
                             .background(
-                                color = colorResource(id = R.color.whatsapp),
-                                shape = shape
+                                color = Color.LightGray,
+                                shape = RoundedCornerShape(10.dp)
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (!isHomeShowed) {
-                            Text(
-                                text = "Welcome To Job deal",
-                                color = Color.White,
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
 
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Card(
-                            shape = RoundedCornerShape(20.dp),
+                        Icon(
                             modifier = Modifier
-                                .fillMaxWidth(0.8f)
-                                .padding(top = animatedPadding)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    search = true
-                                },
-                            elevation = 5.dp
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 15.dp, horizontal = 15.dp)
-                            ) {
+                                .size(30.dp)
+                                .padding(10.dp),
+                            imageVector = Icons.Filled.Menu,
+                            contentDescription = ""
+                        )
 
-                                if (isHomeShowed) {
-                                    Icon(
-                                        modifier = Modifier
-                                            .size(20.dp)
-                                            .align(Alignment.CenterStart),
-                                        imageVector = Icons.Filled.Search,
-                                        contentDescription = ""
-                                    )
-
-                                    Spacer(modifier = Modifier.width(50.dp))
-
-                                    Text(
-                                        modifier = Modifier.align(Alignment.Center),
-                                        text = "Find your candidate",
-                                        color = Color.Black,
-                                        style = TextStyle(
-                                            fontSize = 16.sp,
-                                            fontFamily = FontFamily(
-                                                Font(
-                                                    R.font.rubik_medium,
-                                                    weight = FontWeight.Medium
-                                                )
-                                            )
-                                        )
-                                    )
-
-                                    Box(
-                                        modifier = Modifier
-                                            .align(Alignment.CenterEnd)
-                                            .clickable(
-                                                interactionSource = interactionSource,
-                                                indication = null
-                                            ) {
-                                                navController.navigate(Screen.FilterScreen.route)
-                                            }
-                                            .background(
-                                                color = Color.LightGray,
-                                                shape = RoundedCornerShape(10.dp)
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-
-                                        Icon(
-                                            modifier = Modifier
-                                                .size(30.dp)
-                                                .padding(10.dp),
-                                            imageVector = Icons.Filled.Menu,
-                                            contentDescription = ""
-                                        )
-
-                                    }
-                                } else {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = "Yellow IT",
-                                            color = Color.Black,
-                                            style = TextStyle(
-                                                fontSize = 16.sp,
-                                                fontFamily = FontFamily(
-                                                    Font(
-                                                        R.font.rubik_medium,
-                                                        weight = FontWeight.Medium
-                                                    )
-                                                )
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-                        }
                     }
-
-                    /*if (isHomeShowed) {
-                        Row(modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-
-                            Box(
-                                modifier = Modifier
-                                    .padding(vertical = 15.dp)
-                                    .padding(start = 10.dp)
-                                    .border(
-                                        width = 1.dp,
-                                        color = colorResource(id = R.color.whatsapp),
-                                        shape = RoundedCornerShape(40.dp)
-                                    )
-                                    .background(colorResource(id = R.color.whatsapp), shape = RoundedCornerShape(40.dp))
-                                    .clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null
-                                    ) {
-
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Contract",
-                                    color = Color.White,
-                                    modifier = Modifier.padding(10.dp)
-                                )
-                            }
-
-                            Box(
-                                modifier = Modifier
-                                    .padding(vertical = 15.dp)
-                                    .padding(start = 10.dp)
-                                    .border(
-                                        width = 1.dp,
-                                        color = colorResource(id = R.color.whatsapp),
-                                        shape = RoundedCornerShape(40.dp)
-                                    )
-                                    .background(colorResource(id = R.color.whatsapp), shape = RoundedCornerShape(40.dp))
-                                    .clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null
-                                    ) {
-
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Freelance",
-                                    color = Color.White,
-                                    modifier = Modifier.padding(10.dp)
-                                )
-                            }
-
-                        }
-                    }*/
                 }
-
-                if (!isHomeShowed) {
-                    Text(
-                        text = "Job deal",
-                        modifier = Modifier
-                            .padding(top = 10.dp)
-                            .background(Color.Red),
-                        color = colorResource(id = R.color.whatsapp),
-                        fontSize = 24.sp,
-                        fontStyle = FontStyle.Italic,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-
-                if (users.isNotEmpty()) {
-                    Log.i("visibleUser", "usersProfiles: ${users[0]}")
-
-                    val userState = users.reversed().map { it to rememberSwipeableCardState() }
-                    visibleUser = users[0]
-                    Log.i("visibleUser", "HomeCompany: ${userState.size}")
-
-                    us = userState
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxWidth(0.6f)
-                    ) {
-
-                        userState.forEach { (user, state) ->
-
-                            homeViewModel.getResume(user)
-                            if (state.swipedDirection == null) {
-                                ProfileCard(
-                                    modifier = Modifier
-                                        .fillMaxWidth(0.9f)
-                                        .fillMaxWidth(0.6f)
-                                        .align(Alignment.TopCenter)
-                                        .swipableCard(
-                                            state = state,
-                                            blockedDirections = listOf(Direction.Down),
-                                            onSwiped = {
-                                                homeViewModel.removeFromGlobal(user.id ?: 0)
-                                                if (it == Direction.Left)
-                                                    homeViewModel.skipCurrentProfile(user)
-                                                else homeViewModel.matchCurrentProfile(
-                                                    visibleUser.id ?: 0
-                                                )
-                                            },
-                                            onSwipeCancel = {
-                                                Log.d("Swipeable-Card", "Cancelled swipe")
-                                                //hint = "You canceled the swipe"
-                                            }
-                                        )
-                                        .background(
-                                            color = Color.White,
-                                            shape = RoundedCornerShape(20.dp)
-                                        ),
-                                    openProfile = {
-                                        val gson = Gson()
-                                        val userJson = gson.toJson(user, User::class.java)
-                                        GlobalEntries.userForCompany = user
-                                        navController.navigate(Screen.DetailScreen.route)
-                                        //navController.navigate("${Screen.DetailScreen.route}/$userJson")
-                                    },
-                                    lang = resume,
-                                    matchProfile = user
-                                )
-                            }
-                            LaunchedEffect(user, state.swipedDirection) {
-                                if (state.swipedDirection != null) {
-                                    //hint = "You swiped ${stringFrom(state.swipedDirection!!)}"
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-                    ActionButtons(
-                        onSave = {
-                            homeViewModel.saveToFavorites(
-                                GlobalEntries.user.id ?: -1,
-                                visibleUser.id ?: 0
-                            )
-                        },
-                        onSkip = {
-                            scope.launch {
-                                val last = userState.reversed()
-                                    .firstOrNull {
-                                        it.second.offset.value == Offset(0f, 0f)
-                                    }?.second
-                                last?.swipe(Direction.Left)
-                            }
-
-                            homeViewModel.updateCurrentPage()
-
-                            homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
-                            homeViewModel.skipCurrentProfile(visibleUser)
-
-                        },
-                        onMatch = {
-
-                            openFormInvitation = true
-
-
-                        },
-                    )
-
-                } else Text("No more profiles!")
             }
 
-            AnimatedVisibility(
-                visible = openFormInvitation,
-                enter = slideInVertically(
-                    initialOffsetY = { it }, // Slide from below the screen
-                    animationSpec = tween(durationMillis = 600) // Set animation duration
-                ),
-                exit = slideOutVertically(
-                    targetOffsetY = { it }, // Slide out upwards
-                    animationSpec = tween(durationMillis = 600) // Set animation duration
-                ),
-                modifier = Modifier.align(Alignment.BottomCenter)
-            ) {
-                val shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+            if (users.isNotEmpty()) {
+                Log.i("visibleUser", "usersProfiles: ${users[0]}")
 
-                Card(
-                    shape = shape,
+                val userState = users.reversed().map { it to rememberSwipeableCardState() }
+                visibleUser = users[0]
+                Log.i("visibleUser", "HomeCompany: ${userState.size}")
+
+                us = userState
+
+                /*ImageCarousel(
+                    users,
                     modifier = Modifier
+                        .padding(top = 20.dp)
+                )*/
+
+                Box(
+                    modifier = Modifier
+                        .padding(top = 10.dp)
                         .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                        .align(Alignment.BottomCenter)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null
-                        ) {
-                            navController.navigate(Screen.FilterScreen.route)
-                        },
-                    elevation = 15.dp
                 ) {
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 10.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                    userState.forEach { (user, state) ->
 
-                        HorizontalDivider(
-                            thickness = 2.dp,
-                            modifier = Modifier.width(20.dp),
-                            color = Color.Gray
-                        )
-
-                        Text(
-                            text = "Send Invitation",
-                            modifier = Modifier.padding(top = 20.dp),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 22.sp
-                        )
-
-                        Column(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            val invitationParam by homeViewModel.invitationParam.collectAsState()
-                            var postName by remember { mutableStateOf("Dveloppeur Android") }
-
-                            Text(
-                                text = "Post name",
-                                modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                                style = TextStyle(
-                                    color = colorResource(id = R.color.whatsapp),
-                                    fontFamily = FontFamily.Default,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-
-                            TextField(
+                        homeViewModel.getResume(user)
+                        if (state.swipedDirection == null) {
+                            ProfileCard(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 20.dp)
-                                    .padding(top = 10.dp)
-                                    .border(
-                                        width = 1.dp,
-                                        color = colorResource(id = R.color.whatsapp),
-                                        shape = RoundedCornerShape(30.dp)
-                                    )
-                                    .clip(shape = RoundedCornerShape(30.dp)),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent
-                                ),
-                                value = postName,
-                                onValueChange = {
-                                    postName = it
-                                    homeViewModel.changePostName(it)
-                                },
-                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                            )
-
-                            var descriptions by remember { mutableStateOf("Creer une application pour connecter les entreprises avec les candidats facilement.") }
-
-                            Text(
-                                text = "Description",
-                                modifier = Modifier.padding(top = 10.dp, start = 20.dp),
-                                style = TextStyle(
-                                    color = colorResource(id = R.color.whatsapp),
-                                    fontFamily = FontFamily.Default,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-
-                            TextField(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 20.dp)
-                                    .padding(top = 10.dp)
-                                    .border(
-                                        width = 1.dp,
-                                        color = colorResource(id = R.color.whatsapp),
-                                        shape = RoundedCornerShape(30.dp)
-                                    )
-                                    .clip(shape = RoundedCornerShape(30.dp)),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent
-                                ),
-                                value = descriptions,
-                                onValueChange = {
-                                    descriptions = it
-                                    homeViewModel.changeDescriptions(it)
-                                },
-                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                            )
-
-                            var type by remember { mutableStateOf("CDI") }
-
-                            Text(
-                                text = "Type de contrat",
-                                modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                                style = TextStyle(
-                                    color = colorResource(id = R.color.whatsapp),
-                                    fontFamily = FontFamily.Default,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-
-                            TextField(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 20.dp)
-                                    .padding(top = 10.dp)
-                                    .border(
-                                        width = 1.dp,
-                                        color = colorResource(id = R.color.whatsapp),
-                                        shape = RoundedCornerShape(30.dp)
-                                    )
-                                    .clip(shape = RoundedCornerShape(30.dp)),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent
-                                ),
-                                value = type,
-                                onValueChange = {
-                                    type = it
-                                    homeViewModel.changeTypeContract(it)
-                                },
-                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                            )
-
-                            var disponibility by remember { mutableStateOf("Immidiat") }
-
-                            Text(
-                                text = "Disponibilité",
-                                modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                                style = TextStyle(
-                                    color = colorResource(id = R.color.whatsapp),
-                                    fontFamily = FontFamily.Default,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-
-                            TextField(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 20.dp)
-                                    .padding(top = 10.dp)
-                                    .border(
-                                        width = 1.dp,
-                                        color = colorResource(id = R.color.whatsapp),
-                                        shape = RoundedCornerShape(30.dp)
-                                    )
-                                    .clip(shape = RoundedCornerShape(30.dp)),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent
-                                ),
-                                value = disponibility,
-                                onValueChange = {
-                                    disponibility = it
-                                    homeViewModel.changeDisponibility(it)
-                                },
-                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                            )
-
-                            var salary by remember { mutableStateOf("1000") }
-
-                            Text(
-                                text = "TGM",
-                                modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                                style = TextStyle(
-                                    color = colorResource(id = R.color.whatsapp),
-                                    fontFamily = FontFamily.Default,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-
-                            TextField(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 20.dp)
-                                    .padding(top = 10.dp)
-                                    .border(
-                                        width = 1.dp,
-                                        color = colorResource(id = R.color.whatsapp),
-                                        shape = RoundedCornerShape(30.dp)
-                                    )
-                                    .clip(shape = RoundedCornerShape(30.dp)),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent
-                                ),
-                                value = salary,
-                                onValueChange = {
-                                    salary = it
-                                    homeViewModel.changeSalary(it)
-                                },
-                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 10.dp)
-                                .padding(top = 20.dp),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-
-                            Box(
-                                modifier = Modifier
-                                    .weight(0.45f)
-                                    .clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null
-                                    ) {
-
-                                        scope.launch {
-                                            val last = us
-                                                .reversed()
-                                                .firstOrNull {
-                                                    it.second.offset.value == Offset(0f, 0f)
-                                                }?.second
-
-                                            last?.swipe(Direction.Right)
+                                    .fillMaxWidth(0.9f)
+                                    .fillMaxHeight(0.85f)
+                                    .align(Alignment.TopCenter)
+                                    /*.swipableCard(
+                                        state = state,
+                                        blockedDirections = listOf(Direction.Down),
+                                        onSwiped = {
+                                            homeViewModel.removeFromGlobal(user.id ?: 0)
+                                            if (it == Direction.Left)
+                                                homeViewModel.skipCurrentProfile(user)
+                                            else homeViewModel.matchCurrentProfile(
+                                                visibleUser.id ?: 0
+                                            )
+                                        },
+                                        onSwipeCancel = {
+                                            Log.d("Swipeable-Card", "Cancelled swipe")
+                                            //hint = "You canceled the swipe"
                                         }
+                                    )*/
+                                    .background(
+                                        color = Color.White,
+                                        shape = RoundedCornerShape(20.dp)
+                                    ),
+                                openProfile = {
+                                    val gson = Gson()
+                                    val userJson = gson.toJson(user, User::class.java)
+                                    GlobalEntries.userForCompany = user
+                                    navController.navigate(Screen.DetailScreen.route)
+                                    //navController.navigate("${Screen.DetailScreen.route}/$userJson")
+                                },
+                                lang = resume,
+                                matchProfile = user,
+                                onSave = {
+                                    homeViewModel.saveToFavorites(
+                                        GlobalEntries.user.id ?: -1,
+                                        visibleUser.id ?: 0
+                                    )
+                                },
+                                onSkip = {
+                                    scope.launch {
+                                        val last = userState.reversed()
+                                            .firstOrNull {
+                                                it.second.offset.value == Offset(0f, 0f)
+                                            }?.second
+                                        last?.swipe(Direction.Left)
+                                    }
+
+                                    homeViewModel.updateCurrentPage()
+
+                                    homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
+                                    homeViewModel.skipCurrentProfile(visibleUser)
+
+                                },
+                                onMatch = {
+                                    scope.launch {
+                                        val last = us
+                                            .reversed()
+                                            .firstOrNull {
+                                                it.second.offset.value == Offset(0f, 0f)
+                                            }?.second
+
+                                        last?.swipe(Direction.Right)
+                                    }
+
+                                    homeViewModel.updateCurrentPage()
+                                    homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
+                                    homeViewModel.matchCurrentProfile(visibleUser.id ?: 0)
+
+                                    matchInvitation = {
+
+
+                                        Log.i("fnelkajgjrkzl", "HomeCompany: ${visibleUser.id}")
 
                                         homeViewModel.updateCurrentPage()
                                         homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
                                         homeViewModel.matchCurrentProfile(visibleUser.id ?: 0)
-                                        openFormInvitation = false
                                     }
-                                    .background(
-                                        color = colorResource(id = R.color.whatsapp),
-                                        shape = RoundedCornerShape(30.dp)
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Send",
-                                    modifier = Modifier.padding(
-                                        vertical = 20.dp,
-                                        horizontal = 20.dp
-                                    ),
-                                    style = TextStyle(
-                                        color = Color.White,
-                                        fontFamily = FontFamily.Default,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
-                            }
+                                    //navController.navigate(Screen.SendInvitationScreen.route)
+                                    openFormInvitation = true
 
-
-                            Box(
-                                modifier = Modifier
-                                    .weight(0.45f)
-                                    .clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null
-                                    ) {
-                                        openFormInvitation = false
-                                    }
-                                    .background(
-                                        color = Color.Gray,
-                                        shape = RoundedCornerShape(30.dp)
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Cancel",
-                                    modifier = Modifier.padding(
-                                        vertical = 20.dp,
-                                        horizontal = 20.dp
-                                    ),
-                                    style = TextStyle(
-                                        color = Color.White,
-                                        fontFamily = FontFamily.Default,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
+                                }
+                            )
+                        }
+                        LaunchedEffect(user, state.swipedDirection) {
+                            if (state.swipedDirection != null) {
+                                //hint = "You swiped ${stringFrom(state.swipedDirection!!)}"
                             }
                         }
+                    }
+
+
+                }
+
+            } else Text("No more profiles!")
+
+        }
+
+
+        AnimatedVisibility(
+            visible = openFormInvitation,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp)
+                        .padding(top = 20.dp)
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                               openFormInvitation = false
+                            },
+                        contentDescription = ""
+                    )
+
+                    Text(
+                        text = "Send Invitation",
+                        modifier = Modifier.align(Alignment.Center),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp
+                    )
+                }
+
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val invitationParam by homeViewModel.invitationParam.collectAsState()
+                    var postName by remember { mutableStateOf("Dveloppeur Android") }
+
+                    Text(
+                        text = "Post name",
+                        modifier = Modifier.padding(top = 20.dp, start = 20.dp),
+                        style = TextStyle(
+                            color = colorResource(id = R.color.whatsapp),
+                            fontFamily = FontFamily.Default,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 10.dp)
+                            .border(
+                                width = 1.dp,
+                                color = colorResource(id = R.color.whatsapp),
+                                shape = RoundedCornerShape(30.dp)
+                            )
+                            .clip(shape = RoundedCornerShape(30.dp)),
+                        colors = TextFieldDefaults.textFieldColors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        value = postName,
+                        onValueChange = {
+                            postName = it
+                            homeViewModel.changePostName(it)
+                        },
+                        textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                    )
+
+                    var descriptions by remember { mutableStateOf("Creer une application pour connecter les entreprises avec les candidats facilement.") }
+
+                    Text(
+                        text = "Description",
+                        modifier = Modifier.padding(top = 10.dp, start = 20.dp),
+                        style = TextStyle(
+                            color = colorResource(id = R.color.whatsapp),
+                            fontFamily = FontFamily.Default,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 10.dp)
+                            .border(
+                                width = 1.dp,
+                                color = colorResource(id = R.color.whatsapp),
+                                shape = RoundedCornerShape(30.dp)
+                            )
+                            .clip(shape = RoundedCornerShape(30.dp)),
+                        colors = TextFieldDefaults.textFieldColors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        value = descriptions,
+                        onValueChange = {
+                            descriptions = it
+                            homeViewModel.changeDescriptions(it)
+                        },
+                        textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                    )
+
+                    var type by remember { mutableStateOf("CDI") }
+
+                    Text(
+                        text = "Type de contrat",
+                        modifier = Modifier.padding(top = 20.dp, start = 20.dp),
+                        style = TextStyle(
+                            color = colorResource(id = R.color.whatsapp),
+                            fontFamily = FontFamily.Default,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 10.dp)
+                            .border(
+                                width = 1.dp,
+                                color = colorResource(id = R.color.whatsapp),
+                                shape = RoundedCornerShape(30.dp)
+                            )
+                            .clip(shape = RoundedCornerShape(30.dp)),
+                        colors = TextFieldDefaults.textFieldColors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        value = type,
+                        onValueChange = {
+                            type = it
+                            homeViewModel.changeTypeContract(it)
+                        },
+                        textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                    )
+
+                    var disponibility by remember { mutableStateOf("Immidiat") }
+
+                    Text(
+                        text = "Disponibilité",
+                        modifier = Modifier.padding(top = 20.dp, start = 20.dp),
+                        style = TextStyle(
+                            color = colorResource(id = R.color.whatsapp),
+                            fontFamily = FontFamily.Default,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 10.dp)
+                            .border(
+                                width = 1.dp,
+                                color = colorResource(id = R.color.whatsapp),
+                                shape = RoundedCornerShape(30.dp)
+                            )
+                            .clip(shape = RoundedCornerShape(30.dp)),
+                        colors = TextFieldDefaults.textFieldColors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        value = disponibility,
+                        onValueChange = {
+                            disponibility = it
+                            homeViewModel.changeDisponibility(it)
+                        },
+                        textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                    )
+
+                    var salary by remember { mutableStateOf("1000") }
+
+                    Text(
+                        text = "TGM",
+                        modifier = Modifier.padding(top = 20.dp, start = 20.dp),
+                        style = TextStyle(
+                            color = colorResource(id = R.color.whatsapp),
+                            fontFamily = FontFamily.Default,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 10.dp)
+                            .border(
+                                width = 1.dp,
+                                color = colorResource(id = R.color.whatsapp),
+                                shape = RoundedCornerShape(30.dp)
+                            )
+                            .clip(shape = RoundedCornerShape(30.dp)),
+                        colors = TextFieldDefaults.textFieldColors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        value = salary,
+                        onValueChange = {
+                            salary = it
+                            homeViewModel.changeSalary(it)
+                        },
+                        textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                    )
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp)
+                        .padding(top = 20.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+
+                    Box(
+                        modifier = Modifier
+                            .weight(0.45f)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+
+                                scope.launch {
+                                    val last = us
+                                        .reversed()
+                                        .firstOrNull {
+                                            it.second.offset.value == Offset(0f, 0f)
+                                        }?.second
+
+                                    last?.swipe(Direction.Right)
+                                }
+
+                                homeViewModel.updateCurrentPage()
+                                homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
+                                homeViewModel.matchCurrentProfile(visibleUser.id ?: 0)
+                                openFormInvitation = false
+
+                            }
+                            .background(
+                                color = colorResource(id = R.color.whatsapp),
+                                shape = RoundedCornerShape(30.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Send",
+                            modifier = Modifier.padding(
+                                vertical = 20.dp,
+                                horizontal = 20.dp
+                            ),
+                            style = TextStyle(
+                                color = Color.White,
+                                fontFamily = FontFamily.Default,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
+
+
+                    Box(
+                        modifier = Modifier
+                            .weight(0.45f)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                openFormInvitation = false
+                            }
+                            .background(
+                                color = Color.Gray,
+                                shape = RoundedCornerShape(30.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            modifier = Modifier.padding(
+                                vertical = 20.dp,
+                                horizontal = 20.dp
+                            ),
+                            style = TextStyle(
+                                color = Color.White,
+                                fontFamily = FontFamily.Default,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
                     }
                 }
             }
+        }
 
-            val query by homeViewModel.query.collectAsState()
-            val user by homeViewModel.words.collectAsState()
+        val query by homeViewModel.query.collectAsState()
+        val user by homeViewModel.words.collectAsState()
 
-            AnimatedVisibility(
-                visible = search,
-                enter = slideInVertically(
-                    initialOffsetY = { it }, // Slide from below the screen
-                    animationSpec = tween(durationMillis = 600) // Set animation duration
-                ),
-                exit = slideOutVertically(
-                    targetOffsetY = { it }, // Slide out upwards
-                    animationSpec = tween(durationMillis = 600) // Set animation duration
-                )
+        AnimatedVisibility(
+            visible = search,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
             ) {
-                Column(
+
+                Row(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.White)
+                        .fillMaxWidth()
+                        .padding(top = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
 
-                    Row(
+                    Icon(
+                        imageVector = Icons.Default.Close,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                            .padding(start = 15.dp)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                search = false
+                            },
+                        contentDescription = ""
+                    )
 
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            modifier = Modifier
-                                .padding(start = 15.dp)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    search = false
-                                },
-                            contentDescription = ""
+                    Card(
+                        shape = RoundedCornerShape(20.dp),
+                        modifier = Modifier
+                            .padding(start = 20.dp)
+                            .fillMaxWidth(0.8f)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                            },
+                        elevation = 5.dp
+                    ) {
+                        TextField(
+                            value = query,
+                            colors = TextFieldDefaults.textFieldColors(
+                                disabledTextColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent
+                            ),
+                            onValueChange = { homeViewModel.updateQuery(it) }, // Met à jour la requête
+                            label = { Text("Rechercher un mot") },
+                            modifier = Modifier.fillMaxWidth()
                         )
+                    }
+                }
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp)
+                ) {
+                    items(items = user) { user ->
 
                         Card(
-                            shape = RoundedCornerShape(20.dp),
                             modifier = Modifier
-                                .padding(start = 20.dp)
-                                .fillMaxWidth(0.8f)
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp)
                                 .clickable(
                                     interactionSource = interactionSource,
                                     indication = null
                                 ) {
+                                    GlobalEntries.userForCompany = user
+                                    navController.navigate(Screen.DetailScreen.route)
                                 },
+                            shape = RectangleShape,
                             elevation = 5.dp
                         ) {
-                            TextField(
-                                value = query,
-                                colors = TextFieldDefaults.textFieldColors(
-                                    disabledTextColor = Color.Transparent,
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                    disabledIndicatorColor = Color.Transparent
-                                ),
-                                onValueChange = { homeViewModel.updateQuery(it) }, // Met à jour la requête
-                                label = { Text("Rechercher un mot") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 20.dp)
-                    ) {
-                        items(items = user) { user ->
-
-                            Card(
-                                modifier = Modifier
+                            val experiences = user.experience
+                            Column(
+                                Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 10.dp)
-                                    .clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null
-                                    ) {
-                                        GlobalEntries.userForCompany = user
-                                        navController.navigate(Screen.DetailScreen.route)
-                                    },
-                                shape = RectangleShape,
-                                elevation = 5.dp
+                                    .padding(vertical = 10.dp)
                             ) {
-                                val experiences = user.experience
-                                Column(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 10.dp)
-                                ) {
 
+                                Text(
+                                    text = user.fullName ?: "",
+                                    modifier = Modifier
+                                        .padding(top = 10.dp)
+                                        .padding(horizontal = 10.dp)
+                                )
+                                Text(
+                                    text = user.availability ?: "",
+                                    modifier = Modifier
+                                        .padding(top = 10.dp)
+                                        .padding(horizontal = 10.dp)
+                                )
+                                Text(
+                                    text = user.email ?: "",
+                                    modifier = Modifier
+                                        .padding(top = 10.dp)
+                                        .padding(horizontal = 10.dp)
+                                )
+                                if (experiences?.isNotEmpty() == true) {
+                                    val nameCompany =
+                                        experiences[experiences.lastIndex].companyName
                                     Text(
-                                        text = user.fullName ?: "",
+                                        text = nameCompany ?: "",
                                         modifier = Modifier
                                             .padding(top = 10.dp)
                                             .padding(horizontal = 10.dp)
                                     )
-                                    Text(
-                                        text = user.availability ?: "",
-                                        modifier = Modifier
-                                            .padding(top = 10.dp)
-                                            .padding(horizontal = 10.dp)
-                                    )
-                                    Text(
-                                        text = user.email ?: "",
-                                        modifier = Modifier
-                                            .padding(top = 10.dp)
-                                            .padding(horizontal = 10.dp)
-                                    )
-                                    if (experiences?.isNotEmpty() == true) {
-                                        val nameCompany =
-                                            experiences[experiences.lastIndex].companyName
-                                        Text(
-                                            text = nameCompany ?: "",
-                                            modifier = Modifier
-                                                .padding(top = 10.dp)
-                                                .padding(horizontal = 10.dp)
-                                        )
-                                    }
                                 }
-
                             }
 
-                            Spacer(modifier = Modifier.height(14.dp))
-
                         }
 
+                        Spacer(modifier = Modifier.height(14.dp))
+
                     }
+
                 }
             }
         }

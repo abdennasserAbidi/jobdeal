@@ -20,12 +20,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.InsertInvitation
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.InsertInvitation
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -37,6 +35,8 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,6 +59,8 @@ import androidx.navigation.navDeepLink
 import com.example.myjob.base.MyApp
 import com.example.myjob.common.FileReader
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.isHidden
+import com.example.myjob.common.GlobalEntries.isVisibleNav
 import com.example.myjob.common.GlobalEntries.langState
 import com.example.myjob.common.VoiceToTextParser
 import com.example.myjob.common.default
@@ -75,11 +77,14 @@ import com.example.myjob.feature.favorites.CompanyFavorites
 import com.example.myjob.feature.forgotpassword.ForgotPasswordScreen
 import com.example.myjob.feature.home.DetailsScreen
 import com.example.myjob.feature.home.FilterScreen
+import com.example.myjob.feature.home.filter.FilteredHome
 import com.example.myjob.feature.home.HomeCandidate
-import com.example.myjob.feature.home.HomeChoice
 import com.example.myjob.feature.home.HomeCompany
 import com.example.myjob.feature.home.InvitationScreen
+import com.example.myjob.feature.home.filter.FilterScreenUpdated
+import com.example.myjob.feature.home.filter.SearchScreen
 import com.example.myjob.feature.invitation.InvitationCompanyScreen
+import com.example.myjob.feature.invitation.SendInvitationScreen
 import com.example.myjob.feature.login.LoginScreen
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
@@ -276,7 +281,9 @@ class MainActivity : ComponentActivity() {
             // creating our navController
             val navController = rememberNavController()
 
+            var test by remember { mutableStateOf(true) }
             var isVisibleNav by remember { mutableStateOf(true) }
+            val navTest by remember { isHidden }
 
             val homeTab = TabBarItem(
                 title = stringResource(id = R.string.item1),
@@ -486,7 +493,7 @@ class MainActivity : ComponentActivity() {
 
                     composable(route = Screen.FilterScreen.route) {
                         isVisibleNav = false
-                        FilterScreen(
+                        FilterScreenUpdated(
                             navController,
                             allSubjects = allSubjects,
                             listSchools = listSchools,
@@ -495,27 +502,41 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
+                    composable(route = Screen.SendInvitationScreen.route) {
+                        isVisibleNav = false
+                        SendInvitationScreen(navController)
+                    }
+
                     composable(route = Screen.HomeScreen.route) {
+
                         if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") {
+                            isVisibleNav = true
                             HomeCompany(navController = navController, onResumed = { index ->
                                 selectedTabIndex = index
-                            }, hideNavigation = { isHidden ->
-                                isVisibleNav = isHidden
                             })
                         } else HomeCandidate(navController)
                     }
 
+                    composable(route = Screen.FilteredHome.route) {
+                        isVisibleNav = false
+                        FilteredHome(navController)
+                    }
+
+                    composable(route = Screen.SearchWordScreen.route) {
+                        isVisibleNav = false
+                        SearchScreen(navController)
+                    }
+
                     composable(route = Screen.HomeCompanyScreen.route) {
-                        CoroutineScope(Dispatchers.Main).launch {
+                        /*CoroutineScope(Dispatchers.Main).launch {
                             GlobalEntries.isVisibleNav.collect {
                                 isVisibleNav = if (role == "Candidate" || role == "Candidat") false
                                 else it
                             }
-                        }
+                        }*/
+
                         HomeCompany(navController = navController, onResumed = { index ->
                             selectedTabIndex = index
-                        }, hideNavigation = { isHidden ->
-                            isVisibleNav = isHidden
                         })
                     }
 

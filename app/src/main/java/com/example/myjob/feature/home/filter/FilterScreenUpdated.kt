@@ -1,4 +1,4 @@
-package com.example.myjob.feature.home
+package com.example.myjob.feature.home.filter
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -62,12 +62,19 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.GenericMultipleSearch
+import com.example.myjob.domain.entities.Availabilities
+import com.example.myjob.domain.entities.Choices
+import com.example.myjob.domain.entities.ContractTypeChoices
+import com.example.myjob.domain.entities.ExperienceChoices
+import com.example.myjob.domain.entities.SexChoices
+import com.example.myjob.domain.entities.SituationChoices
 import com.example.myjob.domain.entities.Subject
+import com.example.myjob.feature.home.FilterViewModel
 import com.example.myjob.feature.navigation.Screen
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun FilterScreen(
+fun FilterScreenUpdated(
     navController: NavController,
     homeViewModel: FilterViewModel = hiltViewModel(),
     allSubjects: MutableList<Subject>,
@@ -165,22 +172,6 @@ fun FilterScreen(
                                     .fillMaxWidth()
                                     .padding(vertical = 15.dp, horizontal = 15.dp)
                             ) {
-
-                                /*Icon(
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                        .align(Alignment.CenterStart)
-                                        .clickable(
-                                            interactionSource = interactionSource,
-                                            indication = null
-                                        ) {
-                                            navController.popBackStack()
-                                        },
-                                    imageVector = Icons.Filled.ArrowBack,
-                                    contentDescription = ""
-                                )
-
-                                Spacer(modifier = Modifier.width(50.dp))*/
 
                                 Text(
                                     modifier = Modifier.align(Alignment.Center),
@@ -300,356 +291,78 @@ fun FilterScreen(
             }
 
             ItemFilter(stringResource(id = R.string.experience_text), 20.dp) {
-                experienceView = !experienceView
+                //clear all exp
+                homeViewModel.clearSelectionExp()
             }
 
-            if (experienceView) {
+            val experiences by homeViewModel.selectedExperience.collectAsState()
+            val selectedExp by homeViewModel.selectedExp.collectAsState()
 
-                val experiences by homeViewModel.selectedExperience.collectAsState()
-                val selectedExp by homeViewModel.selectedExp.collectAsState()
-
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                        .background(colorResource(id = R.color.lighter_gray))
-                ) {
-                    experiences.mapIndexed { index, exp ->
-
-                        val iconCheck =
-                            if (selectedExp[index]) Icons.Filled.Check else Icons.Filled.Add
-
-                        val textColor = if (selectedExp[index]) White else Black
-
-                        val title = stringResource(id = exp.title)
-
-                        val color = colorResource(id = if (selectedExp[index]) R.color.whatsapp else R.color.lighter_gray)
-
-                        Row(
-                            modifier = Modifier
-                                .padding(vertical = 8.dp)
-                                .padding(start = 10.dp)
-                                .border(
-                                    width = 1.dp,
-                                    color = colorResource(id = R.color.whatsapp),
-                                    shape = RoundedCornerShape(40.dp)
-                                )
-                                .background(
-                                    colorResource(id = R.color.whatsapp),
-                                    shape = RoundedCornerShape(40.dp)
-                                )
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    homeViewModel.changeSelectionExp(
-                                        index,
-                                        title,
-                                        !selectedExp[index]
-                                    )
-                                },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(id = exp.title),
-                                color = White,
-                                modifier = Modifier.padding(10.dp)
-                            )
-
-                            Icon(
-                                imageVector = iconCheck,
-                                tint = White,
-                                modifier = Modifier
-                                    .padding(vertical = 5.dp)
-                                    .padding(end = 10.dp),
-                                contentDescription = ""
-                            )
-                        }
-                    }
-                }
+            flowHandling(experiences, selectedExp) { index, title, isSelected ->
+                homeViewModel.changeSelectionExp(index, title, isSelected)
             }
+
 
             ItemFilter(stringResource(id = R.string.disponibility_text), 40.dp) {
-                disponibilityView = !disponibilityView
+                homeViewModel.clearSelectionAvailability()
             }
 
-            if (disponibilityView) {
+            val availabilities by homeViewModel.availabilities.collectAsState()
+            val selectedAvailability by homeViewModel.selectedAvailability.collectAsState()
 
-                val availabilities by homeViewModel.availabilities.collectAsState()
-                val selectedAvailability by homeViewModel.selectedAvailability.collectAsState()
-
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                        .background(colorResource(id = R.color.lighter_gray))
-                ) {
-                    availabilities.mapIndexed { index, availabilities ->
-
-                        val iconCheck =
-                            if (selectedAvailability[index]) Icons.Filled.Check else Icons.Filled.Add
-
-                        val title = stringResource(id = availabilities.title)
-
-                        Row(
-                            modifier = Modifier
-                                .padding(vertical = 15.dp)
-                                .padding(start = 10.dp)
-                                .border(
-                                    width = 1.dp,
-                                    color = colorResource(id = R.color.whatsapp),
-                                    shape = RoundedCornerShape(40.dp)
-                                )
-                                .background(
-                                    colorResource(id = R.color.whatsapp),
-                                    shape = RoundedCornerShape(40.dp)
-                                )
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    homeViewModel.changeSelectionAvailability(
-                                        index,
-                                        title,
-                                        !selectedAvailability[index]
-                                    )
-                                },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(id = availabilities.title),
-                                color = White,
-                                modifier = Modifier.padding(10.dp)
-                            )
-
-                            Icon(
-                                imageVector = iconCheck,
-                                tint = White,
-                                modifier = Modifier
-                                    .padding(vertical = 5.dp)
-                                    .padding(end = 10.dp),
-                                contentDescription = ""
-                            )
-                        }
-                    }
-                }
+            flowHandling(availabilities, selectedAvailability) { index, title, isSelected ->
+                homeViewModel.changeSelectionAvailability(index, title, isSelected)
             }
 
             ItemFilter(stringResource(id = R.string.employment_type_text), 40.dp) {
-                typeContractView = !typeContractView
+                homeViewModel.clearSelectionContract()
             }
 
-            if (typeContractView) {
+            val typeContract by homeViewModel.selectedTypeContract.collectAsState()
+            val selectedType by homeViewModel.selectedType.collectAsState()
 
-                val typeContract by homeViewModel.selectedTypeContract.collectAsState()
-                val selectedType by homeViewModel.selectedType.collectAsState()
-
-
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                        .background(colorResource(id = R.color.lighter_gray))
-                ) {
-                    typeContract.mapIndexed { index, type ->
-
-                        val iconCheck =
-                            if (selectedType[index]) Icons.Filled.Check else Icons.Filled.Add
-
-                        val title = stringResource(id = type.title)
-
-                        Row(
-                            modifier = Modifier
-                                .padding(vertical = 15.dp)
-                                .padding(start = 10.dp)
-                                .border(
-                                    width = 1.dp,
-                                    color = colorResource(id = R.color.whatsapp),
-                                    shape = RoundedCornerShape(40.dp)
-                                )
-                                .background(
-                                    colorResource(id = R.color.whatsapp),
-                                    shape = RoundedCornerShape(40.dp)
-                                )
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    homeViewModel.changeSelectionContract(
-                                        index,
-                                        title,
-                                        !selectedType[index]
-                                    )
-                                },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(id = type.title),
-                                color = White,
-                                modifier = Modifier.padding(10.dp)
-                            )
-
-                            Icon(
-                                imageVector = iconCheck,
-                                tint = White,
-                                modifier = Modifier
-                                    .padding(vertical = 5.dp)
-                                    .padding(end = 10.dp),
-                                contentDescription = ""
-                            )
-                        }
-                    }
-                }
+            flowHandling(typeContract, selectedType) { index, title, isSelected ->
+                homeViewModel.changeSelectionContract(index, title, isSelected)
             }
 
             ItemFilter(stringResource(id = R.string.situation_text), 40.dp) {
-                situationView = !situationView
+                homeViewModel.clearSelectionSituation()
             }
 
-            if (situationView) {
+            val situations by homeViewModel.situations.collectAsState()
+            val selectedSituation by homeViewModel.selectedSituation.collectAsState()
 
-                val situations by homeViewModel.situations.collectAsState()
-                val selectedSituation by homeViewModel.selectedSituation.collectAsState()
-
-
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                        .background(colorResource(id = R.color.lighter_gray))
-                ) {
-                    situations.mapIndexed { index, type ->
-
-                        val iconCheck =
-                            if (selectedSituation[index]) Icons.Filled.Check else Icons.Filled.Add
-
-                        val title = stringResource(id = type.title)
-
-                        Row(
-                            modifier = Modifier
-                                .padding(vertical = 15.dp)
-                                .padding(start = 10.dp)
-                                .border(
-                                    width = 1.dp,
-                                    color = colorResource(id = R.color.whatsapp),
-                                    shape = RoundedCornerShape(40.dp)
-                                )
-                                .background(
-                                    colorResource(id = R.color.whatsapp),
-                                    shape = RoundedCornerShape(40.dp)
-                                )
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    homeViewModel.changeSelectionSituation(
-                                        index,
-                                        title,
-                                        !selectedSituation[index]
-                                    )
-                                },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(id = type.title),
-                                color = White,
-                                modifier = Modifier.padding(10.dp)
-                            )
-
-                            Icon(
-                                imageVector = iconCheck,
-                                tint = White,
-                                modifier = Modifier
-                                    .padding(vertical = 5.dp)
-                                    .padding(end = 10.dp),
-                                contentDescription = ""
-                            )
-                        }
-                    }
-                }
+            flowHandling(situations, selectedSituation) { index, title, isSelected ->
+                homeViewModel.changeSelectionSituation(index, title, isSelected)
             }
 
             ItemFilter(stringResource(id = R.string.sexe_text), 40.dp) {
-                sexView = !sexView
+                homeViewModel.clearSelectionSex()
             }
 
-            if (sexView) {
-                val sexChoices by homeViewModel.sexChoices.collectAsState()
-                val selectedSex by homeViewModel.selectedSex.collectAsState()
+            val sexChoices by homeViewModel.sexChoices.collectAsState()
+            val selectedSex by homeViewModel.selectedSex.collectAsState()
 
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                        .background(colorResource(id = R.color.lighter_gray))
-                ) {
-                    sexChoices.mapIndexed { index, type ->
-
-                        val iconCheck =
-                            if (selectedSex[index]) Icons.Filled.Check else Icons.Filled.Add
-
-                        val title = stringResource(id = type.title)
-
-                        Row(
-                            modifier = Modifier
-                                .padding(vertical = 15.dp)
-                                .padding(start = 10.dp)
-                                .border(
-                                    width = 1.dp,
-                                    color = colorResource(id = R.color.whatsapp),
-                                    shape = RoundedCornerShape(40.dp)
-                                )
-                                .background(
-                                    colorResource(id = R.color.whatsapp),
-                                    shape = RoundedCornerShape(40.dp)
-                                )
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    homeViewModel.changeSelectionSex(
-                                        index,
-                                        title,
-                                        !selectedSex[index]
-                                    )
-                                },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(id = type.title),
-                                color = White,
-                                modifier = Modifier.padding(10.dp)
-                            )
-
-                            Icon(
-                                imageVector = iconCheck,
-                                tint = White,
-                                modifier = Modifier
-                                    .padding(vertical = 5.dp)
-                                    .padding(end = 10.dp),
-                                contentDescription = ""
-                            )
-                        }
-                    }
-                }
+            flowHandling(sexChoices, selectedSex) { index, title, isSelected ->
+                homeViewModel.changeSelectionSex(index, title, isSelected)
             }
 
-            ItemFilter(stringResource(id = R.string.activity_text), 40.dp) {
+            ItemFilterScreen(stringResource(id = R.string.activity_text), 40.dp) {
                 bottomView = false
                 showActivitySectorView = true
             }
 
-            ItemFilter(stringResource(id = R.string.institution_text), 40.dp) {
+            ItemFilterScreen(stringResource(id = R.string.institution_text), 40.dp) {
                 bottomView = false
                 showInstitutionView = true
             }
 
-            ItemFilter(stringResource(id = R.string.location_text), 40.dp) {
+            ItemFilterScreen(stringResource(id = R.string.location_text), 40.dp) {
                 bottomView = false
                 showLocationView = true
             }
 
-            ItemFilter(stringResource(id = R.string.company_name_text), 40.dp) {
+            ItemFilterScreen(stringResource(id = R.string.company_name_text), 40.dp) {
                 bottomView = false
                 showCompanyView = true
             }
@@ -818,26 +531,6 @@ fun FilterScreen(
                     },
                     title = stringResource(id = R.string.activity_text)
                 )
-
-
-
-
-
-
-
-                /*GenericSearch(
-                    mListOfJobs = listCountries,
-                    onDismissRequest = {
-                        showLocationView = false
-                        bottomView = true
-                    },
-                    onSelectedBank = { item, index ->
-                        showLocationView = false
-                        bottomView = true
-                        homeViewModel.addToFlow(item)
-                    },
-                    title = stringResource(id = R.string.activity_text)
-                )*/
             }
         }
 
@@ -871,22 +564,6 @@ fun FilterScreen(
                     },
                     title = stringResource(id = R.string.activity_text)
                 )
-
-
-
-                /*GenericSearch(
-                    mListOfJobs = listCompany,
-                    onDismissRequest = {
-                        showCompanyView = false
-                        bottomView = true
-                    },
-                    onSelectedBank = { item, index ->
-                        showCompanyView = false
-                        bottomView = true
-                        homeViewModel.addToFlow(item)
-                    },
-                    title = stringResource(id = R.string.activity_text)
-                )*/
             }
         }
 
@@ -894,9 +571,122 @@ fun FilterScreen(
 
 }
 
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun flowHandling(
+    list: List<Choices>,
+    selectedItems: List<Boolean>,
+    onSelectChange: (
+        index: Int,
+        title: String,
+        isSelected: Boolean
+    ) -> Unit
+) {
+
+    val interactionSource = remember { MutableInteractionSource() }
+
+    FlowRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp)
+    ) {
+        list.mapIndexed { index, exp ->
+
+            val titleItem = when (exp) {
+                is ExperienceChoices -> exp.title
+                is Availabilities -> exp.title
+                is ContractTypeChoices -> exp.title
+                is SituationChoices -> exp.title
+                is SexChoices -> exp.title
+                else -> R.string.experience_text
+            }
+            val title = stringResource(id = titleItem)
+            val textColor = if (selectedItems[index]) White else Black
+            val color =
+                colorResource(id = if (selectedItems[index]) R.color.whatsapp else R.color.lighter_gray)
+
+            Row(
+                modifier = Modifier
+                    .padding(vertical = 8.dp)
+                    .padding(start = 10.dp)
+                    .border(
+                        width = 1.dp,
+                        color = color,
+                        shape = RoundedCornerShape(5.dp)
+                    )
+                    .background(
+                        color = color,
+                        shape = RoundedCornerShape(5.dp)
+                    )
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
+                        onSelectChange(index, title, !selectedItems[index])
+                    },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = titleItem),
+                    color = textColor,
+                    modifier = Modifier.padding(10.dp)
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
-fun ItemFilter(itemText: String, padding: Dp = 10.dp, onClick: () -> Unit = {}) {
+fun ItemFilter(itemText: String, padding: Dp = 10.dp, onClear: () -> Unit = {}) {
+    val interactionSource = remember { MutableInteractionSource() }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = padding)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp)
+        ) {
+            Text(
+                text = itemText,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .align(Alignment.CenterStart),
+                textAlign = TextAlign.Start,
+                color = colorResource(id = R.color.whatsapp),
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    fontFamily = FontFamily(
+                        Font(
+                            R.font.rubikbold,
+                            weight = FontWeight.Bold
+                        )
+                    )
+                )
+            )
+
+            Text(
+                text = "Clear all",
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
+                        onClear()
+                    }
+            )
+        }
+    }
+
+}
+
+@Composable
+fun ItemFilterScreen(itemText: String, padding: Dp = 10.dp, onClick: () -> Unit = {}) {
     val interactionSource = remember { MutableInteractionSource() }
     Column(
         modifier = Modifier
