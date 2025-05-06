@@ -24,7 +24,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
@@ -118,10 +120,6 @@ fun HomeCompany(
         }
     }
 
-    LaunchedEffect(openFormInvitation) {
-        GlobalEntries.isVisibleNav.update { !openFormInvitation }
-    }
-
     Box(modifier = Modifier.fillMaxSize()) {
 
         val shape = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
@@ -146,7 +144,9 @@ fun HomeCompany(
             Card(
                 shape = RoundedCornerShape(20.dp),
                 backgroundColor = Color.Transparent,
-                modifier = Modifier.fillMaxWidth().background(Color.Transparent),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Transparent),
                 elevation = 0.dp
             ) {
                 Box(
@@ -163,7 +163,6 @@ fun HomeCompany(
                                 interactionSource = interactionSource,
                                 indication = null
                             ) {
-                                //search = true
                                 navController.navigate(Screen.SearchWordScreen.route)
                             },
                         imageVector = Icons.Filled.Search,
@@ -217,19 +216,12 @@ fun HomeCompany(
             }
 
             if (users.isNotEmpty()) {
-                Log.i("visibleUser", "usersProfiles: ${users[0]}")
 
                 val userState = users.reversed().map { it to rememberSwipeableCardState() }
                 visibleUser = users[0]
-                Log.i("visibleUser", "HomeCompany: ${userState.size}")
 
                 us = userState
 
-                /*ImageCarousel(
-                    users,
-                    modifier = Modifier
-                        .padding(top = 20.dp)
-                )*/
 
                 Box(
                     modifier = Modifier
@@ -246,22 +238,6 @@ fun HomeCompany(
                                     .fillMaxWidth(0.9f)
                                     .fillMaxHeight(0.85f)
                                     .align(Alignment.TopCenter)
-                                    /*.swipableCard(
-                                        state = state,
-                                        blockedDirections = listOf(Direction.Down),
-                                        onSwiped = {
-                                            homeViewModel.removeFromGlobal(user.id ?: 0)
-                                            if (it == Direction.Left)
-                                                homeViewModel.skipCurrentProfile(user)
-                                            else homeViewModel.matchCurrentProfile(
-                                                visibleUser.id ?: 0
-                                            )
-                                        },
-                                        onSwipeCancel = {
-                                            Log.d("Swipeable-Card", "Cancelled swipe")
-                                            //hint = "You canceled the swipe"
-                                        }
-                                    )*/
                                     .background(
                                         color = Color.White,
                                         shape = RoundedCornerShape(20.dp)
@@ -297,32 +273,7 @@ fun HomeCompany(
 
                                 },
                                 onMatch = {
-                                    scope.launch {
-                                        val last = us
-                                            .reversed()
-                                            .firstOrNull {
-                                                it.second.offset.value == Offset(0f, 0f)
-                                            }?.second
-
-                                        last?.swipe(Direction.Right)
-                                    }
-
-                                    homeViewModel.updateCurrentPage()
-                                    homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
-                                    homeViewModel.matchCurrentProfile(visibleUser.id ?: 0)
-
-                                    matchInvitation = {
-
-
-                                        Log.i("fnelkajgjrkzl", "HomeCompany: ${visibleUser.id}")
-
-                                        homeViewModel.updateCurrentPage()
-                                        homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
-                                        homeViewModel.matchCurrentProfile(visibleUser.id ?: 0)
-                                    }
-                                    //navController.navigate(Screen.SendInvitationScreen.route)
                                     openFormInvitation = true
-
                                 }
                             )
                         }
@@ -337,7 +288,6 @@ fun HomeCompany(
                 }
 
             } else Text("No more profiles!")
-
         }
 
 
@@ -355,6 +305,7 @@ fun HomeCompany(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
                     .background(Color.White),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -374,7 +325,8 @@ fun HomeCompany(
                                 interactionSource = interactionSource,
                                 indication = null
                             ) {
-                               openFormInvitation = false
+                                Log.i("alrkznflrn", "HomeCompany: klfehalgfefhaelf")
+                                openFormInvitation = false
                             },
                         contentDescription = ""
                     )
@@ -572,229 +524,54 @@ fun HomeCompany(
                     )
                 }
 
-                Row(
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                        .padding(top = 20.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                        .fillMaxWidth(0.4f)
+                        .padding(top = 20.dp)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+
+                            scope.launch {
+                                val last = us
+                                    .reversed()
+                                    .firstOrNull {
+                                        it.second.offset.value == Offset(0f, 0f)
+                                    }?.second
+
+                                last?.swipe(Direction.Right)
+                            }
+
+                            Log.i("alrkznflrn", "HomeCompany: klfehalgfefhaelf")
+                            homeViewModel.updateCurrentPage()
+                            homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
+                            homeViewModel.matchCurrentProfile(visibleUser.id ?: 0)
+                            openFormInvitation = false
+
+                        }
+                        .background(
+                            color = colorResource(id = R.color.whatsapp),
+                            shape = RoundedCornerShape(30.dp)
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-
-                    Box(
-                        modifier = Modifier
-                            .weight(0.45f)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-
-                                scope.launch {
-                                    val last = us
-                                        .reversed()
-                                        .firstOrNull {
-                                            it.second.offset.value == Offset(0f, 0f)
-                                        }?.second
-
-                                    last?.swipe(Direction.Right)
-                                }
-
-                                homeViewModel.updateCurrentPage()
-                                homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
-                                homeViewModel.matchCurrentProfile(visibleUser.id ?: 0)
-                                openFormInvitation = false
-
-                            }
-                            .background(
-                                color = colorResource(id = R.color.whatsapp),
-                                shape = RoundedCornerShape(30.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Send",
-                            modifier = Modifier.padding(
-                                vertical = 20.dp,
-                                horizontal = 20.dp
-                            ),
-                            style = TextStyle(
-                                color = Color.White,
-                                fontFamily = FontFamily.Default,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                    Text(
+                        text = "Send",
+                        modifier = Modifier.padding(
+                            vertical = 20.dp,
+                            horizontal = 20.dp
+                        ),
+                        style = TextStyle(
+                            color = Color.White,
+                            fontFamily = FontFamily.Default,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
                         )
-                    }
-
-
-                    Box(
-                        modifier = Modifier
-                            .weight(0.45f)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                openFormInvitation = false
-                            }
-                            .background(
-                                color = Color.Gray,
-                                shape = RoundedCornerShape(30.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Cancel",
-                            modifier = Modifier.padding(
-                                vertical = 20.dp,
-                                horizontal = 20.dp
-                            ),
-                            style = TextStyle(
-                                color = Color.White,
-                                fontFamily = FontFamily.Default,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                    }
+                    )
                 }
             }
         }
-
-        /*val query by homeViewModel.query.collectAsState()
-        val user by homeViewModel.words.collectAsState()
-
-        AnimatedVisibility(
-            visible = search,
-            enter = slideInVertically(
-                initialOffsetY = { it }, // Slide from below the screen
-                animationSpec = tween(durationMillis = 600) // Set animation duration
-            ),
-            exit = slideOutVertically(
-                targetOffsetY = { it }, // Slide out upwards
-                animationSpec = tween(durationMillis = 600) // Set animation duration
-            )
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.White)
-            ) {
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        modifier = Modifier
-                            .padding(start = 15.dp)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                search = false
-                            },
-                        contentDescription = ""
-                    )
-
-                    Card(
-                        shape = RoundedCornerShape(20.dp),
-                        modifier = Modifier
-                            .padding(start = 20.dp)
-                            .fillMaxWidth(0.8f)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                            },
-                        elevation = 5.dp
-                    ) {
-                        TextField(
-                            value = query,
-                            colors = TextFieldDefaults.textFieldColors(
-                                disabledTextColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent
-                            ),
-                            onValueChange = { homeViewModel.updateQuery(it) }, // Met à jour la requête
-                            label = { Text("Rechercher un mot") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 20.dp)
-                ) {
-                    items(items = user) { user ->
-
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 10.dp)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    GlobalEntries.userForCompany = user
-                                    navController.navigate(Screen.DetailScreen.route)
-                                },
-                            shape = RectangleShape,
-                            elevation = 5.dp
-                        ) {
-                            val experiences = user.experience
-                            Column(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 10.dp)
-                            ) {
-
-                                Text(
-                                    text = user.fullName ?: "",
-                                    modifier = Modifier
-                                        .padding(top = 10.dp)
-                                        .padding(horizontal = 10.dp)
-                                )
-                                Text(
-                                    text = user.availability ?: "",
-                                    modifier = Modifier
-                                        .padding(top = 10.dp)
-                                        .padding(horizontal = 10.dp)
-                                )
-                                Text(
-                                    text = user.email ?: "",
-                                    modifier = Modifier
-                                        .padding(top = 10.dp)
-                                        .padding(horizontal = 10.dp)
-                                )
-                                if (experiences?.isNotEmpty() == true) {
-                                    val nameCompany =
-                                        experiences[experiences.lastIndex].companyName
-                                    Text(
-                                        text = nameCompany ?: "",
-                                        modifier = Modifier
-                                            .padding(top = 10.dp)
-                                            .padding(horizontal = 10.dp)
-                                    )
-                                }
-                            }
-
-                        }
-
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                    }
-
-                }
-            }
-        }*/
-
-
     }
 
 

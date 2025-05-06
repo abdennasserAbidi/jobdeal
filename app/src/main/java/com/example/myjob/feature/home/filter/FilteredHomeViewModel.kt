@@ -1,42 +1,88 @@
 package com.example.myjob.feature.home.filter
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myjob.base.reources.ResourceState
+import androidx.paging.PagingData
 import com.example.myjob.domain.entities.CriteriaModel
+import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.usecase.home.GetAllUserUseCase
 import com.example.myjob.domain.usecase.home.SearchUserUseCase
 import com.example.myjob.local.database.SharedPreference
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
 class FilteredHomeViewModel @Inject constructor(
     private val sharedPreference: SharedPreference,
+    private val getAllUserUseCase: GetAllUserUseCase,
     private val searchUserUseCase: SearchUserUseCase
-): ViewModel() {
+) : ViewModel() {
 
     val filteredUser = MutableStateFlow(emptyList<User>())
+
+    private val _filteringUsers: MutableStateFlow<PagingData<User>> =
+        MutableStateFlow(value = PagingData.empty())
+    val filteringUsers: MutableStateFlow<PagingData<User>> get() = _filteringUsers
+
+
     fun validateFilter(criteria: CriteriaModel) {
         viewModelScope.launch {
-            Log.i("fffffffffffffffffffff", "validateFilter: $criteria")
-            searchUserUseCase.execute(criteria).collect { res ->
-                when(res.status) {
-                    ResourceState.SUCCESS -> {
-                        filteredUser.update { res.data ?: emptyList() }
-                        Log.i("fffffffffffffffffffff", "treethehethe: ${res.data ?: emptyList()}")
+            if (!criteria.checkEmpty()) {
+                getAllUserUseCase.execute().collect { res ->
+                    val json = sharedPreference.getString("jsonFilter", "") ?: ""
+                    if (json.isNotEmpty()) {
+                        val objectList = Gson().fromJson(json, Array<User>::class.java).asList()
 
+                        filteredUser.update { objectList }
                     }
-                    else -> {
 
+                    _filteringUsers.update {
+                        res.data ?: PagingData.empty()
+                    }
+                }
+            } else {
+                searchUserUseCase.execute(criteria).collect { res ->
+                    val json = sharedPreference.getString("jsonFilter", "") ?: ""
+                    if (json.isNotEmpty()) {
+                        val objectList = Gson().fromJson(json, Array<User>::class.java).asList()
+
+                        filteredUser.update { objectList }
+                    }
+
+                    _filteringUsers.update {
+                        res.data ?: PagingData.empty()
                     }
                 }
             }
         }
+    }
+
+    fun extractExp(experience: MutableList<Experience>): String {
+        var res = "new"
+        if (experience.isNotEmpty()) {
+            val exp = experience[0]
+            val date = exp.dateStart ?: ""
+            if (date.contains(",")) {
+                val dates = date.split(", ")
+                if (dates.isNotEmpty()) {
+                    val year = dates[2].toInt()
+
+                    val calendar: Calendar = Calendar.getInstance()
+                    val currentYear: Int = calendar.get(Calendar.YEAR)
+
+                    val diff = currentYear - year
+
+                    if (diff > 0) res = "$diff years experiences"
+                }
+            }
+        }
+        return res
     }
 
 

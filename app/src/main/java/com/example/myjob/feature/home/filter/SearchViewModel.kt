@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.SearchHistory
-import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.GetAllSearchUseCase
+import com.example.myjob.domain.usecase.RemoveSearchHistoryUseCase
 import com.example.myjob.domain.usecase.SaveSearchUseCase
 import com.example.myjob.domain.usecase.home.SearchCandidateUseCase
 import com.example.myjob.local.database.SharedPreference
@@ -29,7 +29,8 @@ class SearchViewModel @Inject constructor(
     private val sharedPreference: SharedPreference,
     private val searchCandidateUseCase: SearchCandidateUseCase,
     private val saveSearchUseCase: SaveSearchUseCase,
-    private val getAllSearchUseCase: GetAllSearchUseCase
+    private val getAllSearchUseCase: GetAllSearchUseCase,
+    private val removeSearchHistoryUseCase: RemoveSearchHistoryUseCase
 ) : ViewModel() {
 
     private val _query = MutableStateFlow("")
@@ -60,7 +61,10 @@ class SearchViewModel @Inject constructor(
                     }
                 }
         }
+    }
 
+    fun getAllSearch() {
+        val idUserConnected = sharedPreference.getInt("idUser", -1)
         viewModelScope.launch {
             getAllSearchUseCase.execute(idUserConnected).collect { res ->
 
@@ -91,6 +95,19 @@ class SearchViewModel @Inject constructor(
                     }
                     else -> {}
                 }
+            }
+        }
+    }
+
+    val removeHistoryState = MutableStateFlow("")
+
+    fun removeSearchHistory(idUser: Int) {
+        val idUserConnected = sharedPreference.getInt("idUser", -1)
+        viewModelScope.launch {
+            val pair = Pair(idUserConnected, idUser)
+            removeSearchHistoryUseCase.execute(pair).collect { res ->
+                removeHistoryState.update { res.data?.message ?: "" }
+                if (res.data?.message == "removed successfully") getAllSearch()
             }
         }
     }

@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
@@ -31,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +55,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -62,6 +65,7 @@ import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.navigation.Screen
@@ -75,12 +79,24 @@ fun SearchScreen(
 
     val interactionSource = remember { MutableInteractionSource() }
 
+    val removeHistoryState by homeViewModel.removeHistoryState.collectAsState()
+
     val query by homeViewModel.query.collectAsState()
 
     val user: LazyPagingItems<SearchHistory> =
         homeViewModel.words.collectAsLazyPagingItems()
 
     var isSearching by remember { mutableStateOf(false) }
+
+    //always false
+    val lifecycle = rememberLifecycleEvent()
+    LaunchedEffect(lifecycle) {
+        if (lifecycle == Lifecycle.Event.ON_RESUME) {
+            isSearching = false
+            homeViewModel.getAllSearch()
+        }
+
+    }
 
     val searchHistory: LazyPagingItems<SearchHistory> =
         homeViewModel.searchHistories.collectAsLazyPagingItems()
@@ -117,7 +133,7 @@ fun SearchScreen(
                     .fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.Close,
+                    imageVector = Icons.Default.ArrowBack,
                     modifier = Modifier
                         .padding(start = 15.dp)
                         .align(Alignment.CenterStart)
@@ -129,6 +145,21 @@ fun SearchScreen(
                         },
                     tint = Color.White,
                     contentDescription = ""
+                )
+
+                Text(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = "Find your candidate",
+                    color = Color.White,
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        fontFamily = FontFamily(
+                            Font(
+                                R.font.rubik_medium,
+                                weight = FontWeight.Medium
+                            )
+                        )
+                    )
                 )
             }
 
@@ -322,7 +353,17 @@ fun SearchScreen(
                                         imageVector = Icons.Default.Close,
                                         modifier = Modifier
                                             .size(40.dp)
-                                            .padding(start = 20.dp),
+                                            .padding(start = 20.dp)
+                                            .clickable(
+                                                interactionSource = interactionSource,
+                                                indication = null
+                                            ) {
+                                                //delete user from history
+                                                userHistory.idUser?.let {
+                                                    homeViewModel.removeSearchHistory(it)
+                                                }
+
+                                            },
                                         contentDescription = ""
                                     )
 

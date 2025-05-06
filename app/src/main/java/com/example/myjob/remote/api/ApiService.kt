@@ -92,8 +92,10 @@ interface ApiService {
 
     @POST("auth/getByCriteria")
     suspend fun searchUsers(
-        @Body criteria: CriteriaModel
-    ): List<User>
+        @Body criteria: CriteriaModel,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<User>
 
     @POST("auth/addEducation")
     suspend fun saveEducation(@Body educations: Educations): UserResponse
@@ -138,6 +140,12 @@ interface ApiService {
     suspend fun removeExperience(
         @Query("id") id: Int,
         @Query("experienceId") experienceId: Int
+    ): UserResponse
+
+    @POST("auth/removeSearchHistory")
+    suspend fun removeSearchHistory(
+        @Query("idUserConnected") idUserConnected: Int,
+        @Query("idUserToDelete") idUserToDelete: Int
     ): UserResponse
 
     @POST("auth/updatefavorite")

@@ -1,5 +1,6 @@
 package com.example.myjob.domain.usecase.home
 
+import androidx.paging.PagingData
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.usecase.FlowBaseUseCase
 import com.example.myjob.data.Repository
@@ -14,9 +15,9 @@ import javax.inject.Inject
 class SearchUserUseCase @Inject constructor(
     private val repository: Repository,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
-) : FlowBaseUseCase<List<User>, CriteriaModel>() {
+) : FlowBaseUseCase<PagingData<User>, CriteriaModel>() {
 
-    override suspend fun buildRequest(params: CriteriaModel?): Flow<Resource<List<User>>> {
+    override suspend fun buildRequest(params: CriteriaModel?): Flow<Resource<PagingData<User>>> {
         return repository.searchUsers(params ?: CriteriaModel()).flowOn(dispatcher)
     }
 }

@@ -48,12 +48,16 @@ interface Repository {
     suspend fun verifyExisting(fileName: String): Flow<Resource<FileExistingResponse>>
     suspend fun getAllExp(id: Int): Flow<Resource<List<Experience>>>
     suspend fun getAllEduc(id: Int): Flow<Resource<List<Educations>>>
-    suspend fun searchUsers(criteria: CriteriaModel): Flow<Resource<List<User>>>
+    suspend fun searchUsers(criteria: CriteriaModel): Flow<Resource<PagingData<User>>>
     suspend fun getAllUser(): Flow<Resource<PagingData<User>>>
     //suspend fun getAllUser(currentPage: Int): Flow<Resource<PagingData<User>>>
 
     suspend fun savePersonalInfo(user: User): Flow<Resource<UserResponse>>
     suspend fun saveCompanyInfo(user: User): Flow<Resource<UserResponse>>
+    suspend fun removeSearchHistory(
+        idUserConnected: Int,
+        idUserToDelete: Int
+    ): Flow<Resource<UserResponse>>
     suspend fun removeExperience(id: Int, experienceId: Int): Flow<Resource<UserResponse>>
     suspend fun removeEducation(id: Int, educationId: Int): Flow<Resource<UserResponse>>
     suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): Flow<Resource<UserResponse>>

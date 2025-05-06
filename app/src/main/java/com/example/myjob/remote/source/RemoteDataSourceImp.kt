@@ -40,7 +40,7 @@ class RemoteDataSourceImp @Inject constructor(
     override suspend fun getAllEduc(id: Int): List<Educations> = apiService.getAllEduc(id)
     override suspend fun getAllEducations(id: Int, pageNumber: Int): GenericResponse<Educations> = apiService.getAllEducations(id, pageNumber)
     override suspend fun searchCandidates(word: String, id: Int, pageNumber: Int): GenericResponse<SearchHistory> = apiService.searchCandidate(word, id, pageNumber)
-    override suspend fun searchUsers(criteria: CriteriaModel): List<User> = apiService.searchUsers(criteria)
+    override suspend fun searchUsers(criteria: CriteriaModel, pageNumber: Int): GenericResponse<User> = apiService.searchUsers(criteria, pageNumber)
     override suspend fun getFavorites(id: Int, pageNumber: Int): GenericResponse<User> = apiService.getFavorites(id, pageNumber)
     override suspend fun getInvitations(id: Int, pageNumber: Int): GenericResponse<InvitationModel> = apiService.getInvitations(id, pageNumber)
     override suspend fun getAllSearch(id: Int, pageNumber: Int): GenericResponse<SearchHistory> = apiService.getAllSearch(id, pageNumber)
@@ -49,6 +49,10 @@ class RemoteDataSourceImp @Inject constructor(
     override suspend fun saveSearchHistory(idUserConnected: Int, searchHistory: SearchHistory): UserResponse = apiService.saveSearchHistory(idUserConnected, searchHistory)
     override suspend fun savePersonalInfo(user: User): UserResponse = apiService.savePersonalInfo(user)
     override suspend fun saveCompanyInfo(user: User): UserResponse = apiService.saveCompanyInfo(user)
+    override suspend fun removeSearchHistory(
+        idUserConnected: Int,
+        idUserToDelete: Int
+    ): UserResponse = apiService.removeSearchHistory(idUserConnected, idUserToDelete)
     override suspend fun removeExperience(id: Int, experienceId: Int): UserResponse = apiService.removeExperience(id, experienceId)
     override suspend fun removeEducation(id: Int, educationId: Int): UserResponse = apiService.removeEducation(id, educationId)
     override suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): UserResponse = apiService.saveToFavorite(idUserConnected, candidateId)

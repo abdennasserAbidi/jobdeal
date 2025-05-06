@@ -6,6 +6,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.example.myapplication.local.source.LocalDataSource
+import com.example.myjob.base.GenericResponse
 import com.example.myjob.base.GenericSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
@@ -280,6 +281,32 @@ class RepositoryImp @Inject constructor(
     }.catch { ex ->
         emit(Resource(ResourceState.ERROR, null, ex.message))
     }
+
+    override suspend fun searchUsers(criteria: CriteriaModel): Flow<Resource<PagingData<User>>> = flow {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            pagingSourceFactory = {
+                GenericSource { currentPage ->
+                    val educations =
+                        remoteDataSource.searchUsers(criteria = criteria, pageNumber = currentPage)
+
+                    val json = Gson().toJson(educations.content)
+                    sharedPreference.putString("jsonFilter", json)
+
+                    educations
+                }
+            }
+        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+        emitAll(
+            pager.map { pagingData ->
+                Resource(ResourceState.SUCCESS, pagingData, null)
+            }
+        )
+    }.catch { ex ->
+        emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
+
     override suspend fun getAllSearch(id: Int): Flow<Resource<PagingData<SearchHistory>>> = flow {
         val pager = Pager(
             config = PagingConfig(pageSize = 10, prefetchDistance = 2),
@@ -416,18 +443,6 @@ class RepositoryImp @Inject constructor(
         }
     }
 
-    override suspend fun searchUsers(criteria: CriteriaModel): Flow<Resource<List<User>>> = flow {
-        try {
-            // Get data from RemoteDataSource
-            val data = remoteDataSource.searchUsers(criteria)
-            // Emit data
-            emit(Resource(ResourceState.SUCCESS, data, null))
-        } catch (ex: Exception) {
-            // Emit error
-            emit(Resource(ResourceState.ERROR, null, ex.message))
-        }
-    }
-
     override suspend fun savePersonalInfo(user: User): Flow<Resource<UserResponse>> = flow {
         try {
             // Get data from RemoteDataSource
@@ -458,6 +473,20 @@ class RepositoryImp @Inject constructor(
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.removeExperience(id, experienceId)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+    override suspend fun removeSearchHistory(
+        idUserConnected: Int,
+        idUserToDelete: Int
+    ): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.removeSearchHistory(idUserConnected, idUserToDelete)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {

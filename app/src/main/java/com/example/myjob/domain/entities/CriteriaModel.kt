@@ -13,4 +13,10 @@ data class CriteriaModel(
     var institutions: MutableList<String> = mutableListOf(),
     var preferredActivitySector: MutableList<String> = mutableListOf(),
     var companies: MutableList<String> = mutableListOf()
-)
+) {
+    fun checkEmpty(): Boolean = disponibility.isNotEmpty() && situation.isNotEmpty()
+            && sex.isNotEmpty() && experiences.isNotEmpty()
+            && location.isNotEmpty() && typeContract.isNotEmpty()
+            && institutions.isNotEmpty() && preferredActivitySector.isNotEmpty()
+            && companies.isNotEmpty()
+}

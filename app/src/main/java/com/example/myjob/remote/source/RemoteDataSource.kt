@@ -31,7 +31,7 @@ interface RemoteDataSource {
     suspend fun getAllEduc(id: Int): List<Educations>
     suspend fun getAllEducations(id: Int, pageNumber: Int): GenericResponse<Educations>
     suspend fun searchCandidates(word: String, id: Int, pageNumber: Int): GenericResponse<SearchHistory>
-    suspend fun searchUsers(criteria: CriteriaModel): List<User>
+    suspend fun searchUsers(criteria: CriteriaModel, pageNumber: Int): GenericResponse<User>
     suspend fun getFavorites(id: Int, pageNumber: Int): GenericResponse<User>
     suspend fun getInvitations(id: Int, pageNumber: Int): GenericResponse<InvitationModel>
     suspend fun getAllSearch(id: Int, pageNumber: Int): GenericResponse<SearchHistory>
@@ -44,6 +44,10 @@ interface RemoteDataSource {
     suspend fun verifyEmail(email: String): LoginResponse
     suspend fun savePersonalInfo(user: User): UserResponse
     suspend fun saveCompanyInfo(user: User): UserResponse
+    suspend fun removeSearchHistory(
+        idUserConnected: Int,
+        idUserToDelete: Int
+    ): UserResponse
     suspend fun removeExperience(id: Int, experienceId: Int): UserResponse
     suspend fun removeEducation(id: Int, educationId: Int): UserResponse
     suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): UserResponse
