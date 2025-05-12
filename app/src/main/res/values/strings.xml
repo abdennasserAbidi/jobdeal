@@ -60,11 +60,19 @@
     <string name="tab7">Resume</string>
     <string name="tab8">Next role</string>
 
+    <string name="hello">Hello</string>
+
+    <!--invitation status-->
+    <string name="holding">Holding</string>
+    <string name="Accepted">Accepted</string>
+    <string name="Rejected">Rejected</string>
+
     <!--Bottom bar-->
     <string name="item1">Home</string>
     <string name="item2">Invitations</string>
     <string name="item6">Notifications</string>
-    <string name="item3">favorites</string>
+    <string name="item3">Search</string>
+    <string name="item5">favorites</string>
     <string name="item4">Setting</string>
 
     <string name="about_role_text">About your next role</string>
@@ -123,6 +131,8 @@
 
     <string name="skipp_text">Skipp</string>
     <string name="next_text">Next</string>
+
+    <string name="categories_text">Categories</string>
 
     <!--career form-->
     <string name="experience_text">Experience</string>

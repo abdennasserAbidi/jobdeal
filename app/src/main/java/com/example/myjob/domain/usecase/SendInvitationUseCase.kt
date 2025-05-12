@@ -3,8 +3,7 @@ package com.example.myjob.domain.usecase
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.usecase.FlowBaseUseCase
 import com.example.myjob.data.Repository
-import com.example.myjob.domain.entities.Educations
-import com.example.myjob.domain.entities.InvitationParams
+import com.example.myjob.domain.entities.invitation.InvitationParams
 import com.example.myjob.domain.qualifiers.IoDispatcher
 import com.example.myjob.domain.response.UserResponse
 import kotlinx.coroutines.CoroutineDispatcher

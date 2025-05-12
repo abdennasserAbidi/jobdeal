@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.example.myjob.base.reources.ResourceState
-import com.example.myjob.domain.entities.InvitationModel
+import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.usecase.home.GetAllInvitationsUseCase
 import com.example.myjob.local.database.SharedPreference
 import com.google.gson.Gson

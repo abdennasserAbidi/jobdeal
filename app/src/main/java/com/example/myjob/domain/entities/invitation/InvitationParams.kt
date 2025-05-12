@@ -1,4 +1,4 @@
-package com.example.myjob.domain.entities
+package com.example.myjob.domain.entities.invitation
 
 import android.view.View
 
@@ -10,6 +10,10 @@ data class InvitationParams(
 data class InvitationModel(
     var idInvitation: Int = View.generateViewId(),
     var idTo: Int = 0,
+    var date: String? = "",
+    var status: String? = "Holding",
+    var fullName: String? = "",
+    var gender: String? = "",
     var idCompany: Int = 0,
     var description: String = "Creer une application pour connecter les entreprises avec les candidats facilement.",
     var companyName: String = "",

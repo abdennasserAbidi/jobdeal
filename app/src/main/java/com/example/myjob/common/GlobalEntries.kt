@@ -16,8 +16,7 @@ import com.example.myjob.base.workmanager.FileDownloadWorker
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
-import com.example.myjob.domain.entities.InvitationModel
-import com.example.myjob.domain.entities.SearchHistory
+import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +40,7 @@ object GlobalEntries {
     var language = "Français"
     var role = ""
     var criteriaModel = CriteriaModel()
+    var isFromFilter = false
     var invitationModel = InvitationModel()
     var matchInvitation: () -> Unit = {}
     var isFromLogin = false

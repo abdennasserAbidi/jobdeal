@@ -1,18 +1,17 @@
 package com.example.myjob.data
 
 import androidx.paging.PagingData
-import com.example.myjob.base.GenericResponse
 import com.example.myjob.base.reources.Resource
-import com.example.myjob.domain.entities.Candidate
+import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
-import com.example.myjob.domain.entities.FavoriteModel
-import com.example.myjob.domain.entities.InvitationModel
-import com.example.myjob.domain.entities.InvitationParams
+import com.example.myjob.domain.entities.invitation.InvitationModel
+import com.example.myjob.domain.entities.invitation.InvitationParams
 import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
@@ -42,6 +41,21 @@ interface Repository {
     suspend fun saveSearchHistory(
         idUserConnected: Int, searchHistory: SearchHistory
     ): Flow<Resource<UserResponse>>
+
+    ///////////////////////////////////////////////////////////////////////////
+    // ANNOUNCEMENT
+    ///////////////////////////////////////////////////////////////////////////
+    suspend fun makeAnnouncement(
+        idUserConnected: Int,
+        announcementModel: AnnouncementModel
+    ): Flow<Resource<UserResponse>>
+
+    suspend fun getCompanyAnnouncements(
+        id: Int,
+    ): Flow<Resource<PagingData<AnnouncementModel>>>
+
+    suspend fun getCompanyNotifications(id: Int, ): Flow<Resource<PagingData<NotificationModel>>>
+
     suspend fun getAllEducations(id: Int): Flow<Resource<PagingData<Educations>>>
     suspend fun getFavorites(id: Int): Flow<Resource<PagingData<User>>>
     suspend fun getInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>>

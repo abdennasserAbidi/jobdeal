@@ -22,21 +22,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,10 +55,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.GenericMultipleSearch
+import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.Availabilities
+import com.example.myjob.domain.entities.CategoryChoices
 import com.example.myjob.domain.entities.Choices
 import com.example.myjob.domain.entities.ContractTypeChoices
 import com.example.myjob.domain.entities.ExperienceChoices
@@ -96,6 +96,14 @@ fun FilterScreenUpdated(
     var showInstitutionView by remember { mutableStateOf(false) }
     var showLocationView by remember { mutableStateOf(false) }
     var showCompanyView by remember { mutableStateOf(false) }
+
+    val lifecycleEvent = rememberLifecycleEvent()
+    LaunchedEffect(lifecycleEvent) {
+        if (lifecycleEvent == Lifecycle.Event.ON_START) {
+            GlobalEntries.isFromFilter = true
+        }
+    }
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -290,6 +298,17 @@ fun FilterScreenUpdated(
 
             }
 
+            ItemFilter(stringResource(id = R.string.categories_text), 20.dp) {
+                homeViewModel.clearSelectionCategories()
+            }
+
+            val categories by homeViewModel.selectedCategory.collectAsState()
+            val selectedCat by homeViewModel.selectedCat.collectAsState()
+
+            flowHandling(categories, selectedCat) { index, title, isSelected ->
+                homeViewModel.changeSelectionCategory(index, title, isSelected)
+            }
+
             ItemFilter(stringResource(id = R.string.experience_text), 20.dp) {
                 //clear all exp
                 homeViewModel.clearSelectionExp()
@@ -399,7 +418,7 @@ fun FilterScreenUpdated(
                             indication = null
                         ) {
                             homeViewModel.validateFilter()
-                            navController.navigate(Screen.FilteredHome.route)
+                            navController.navigate(Screen.HomeScreen.route)
                         }
                         .background(
                             color = colorResource(id = R.color.whatsapp),
@@ -598,6 +617,7 @@ fun flowHandling(
                 is ContractTypeChoices -> exp.title
                 is SituationChoices -> exp.title
                 is SexChoices -> exp.title
+                is CategoryChoices -> exp.title
                 else -> R.string.experience_text
             }
             val title = stringResource(id = titleItem)

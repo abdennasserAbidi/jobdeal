@@ -19,6 +19,13 @@ data class ExperienceChoices(
     var isSelected: Boolean = false
 ): Choices()
 
+data class CategoryChoices(
+    val id: Int? = View.generateViewId(),
+    var title: Int = R.string.type1_text,
+    var titleString: String = "",
+    var isSelected: Boolean = false
+): Choices()
+
 data class ContractTypeChoices(
     val id: Int? = View.generateViewId(),
     var title: Int = R.string.disponibility1_text,

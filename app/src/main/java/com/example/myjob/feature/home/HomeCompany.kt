@@ -1,16 +1,20 @@
 package com.example.myjob.feature.home
 
 import android.util.Log
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.with
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,13 +22,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
@@ -34,7 +37,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -51,8 +53,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -62,20 +66,23 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
+import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GlobalEntries
-import com.example.myjob.common.GlobalEntries.matchInvitation
-import com.example.myjob.common.ImageCarousel
+import com.example.myjob.common.GlobalEntries.isFromFilter
+import com.example.myjob.common.LoadingNextPageItem
+import com.example.myjob.common.PageLoader
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.navigation.Screen
 import com.google.gson.Gson
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalSwipeableCardApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalSwipeableCardApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalAnimationApi::class
+)
 @Composable
 fun HomeCompany(
     navController: NavController,
@@ -84,31 +91,18 @@ fun HomeCompany(
 ) {
 
     var visibleUser by remember { mutableStateOf(User()) }
-    var selected by remember { mutableStateOf(0) }
+    var isListed by remember { mutableStateOf(false) }
     var openFormInvitation by remember { mutableStateOf(false) }
     var us by remember { mutableStateOf<List<Pair<User, SwipeableCardState>>>(emptyList()) }
 
-    val interactionSource = remember {
-        MutableInteractionSource()
-    }
+    val interactionSource = remember { MutableInteractionSource() }
 
     var search by remember { mutableStateOf(false) }
 
-    val currentPage by homeViewModel.currentPage.collectAsState()
-    val allUser by homeViewModel.users.collectAsState()
-    val updateFavoriteState by homeViewModel.updateFavoriteState.collectAsState()
-    val qs by homeViewModel.qs.collectAsState()
     val resume by homeViewModel.resume.collectAsState()
+
     val lazyPagingItems = homeViewModel.user.collectAsLazyPagingItems()
-
-    lazyPagingItems.itemSnapshotList.items.map {
-        Log.i("fkngkrzlglzrz", "HomeCandidate: $it")
-    }
-
     val users = lazyPagingItems.itemSnapshotList.items
-    val usersProfiles by homeViewModel.users.collectAsState()
-
-    val filteredItems by homeViewModel.filterdUser.collectAsState()
 
     val scope = rememberCoroutineScope()
 
@@ -116,20 +110,26 @@ fun HomeCompany(
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_START) {
             onResumed(0)
-            //onVisible(true)
+            if(isFromFilter) {
+                homeViewModel.validateFilter(GlobalEntries.criteriaModel)
+                isFromFilter = false
+            } else {
+                homeViewModel.getAllUser()
+            }
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
 
         val shape = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
+        val c = if (isListed) White else colorResource(id = R.color.whatsapp)
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.25f)
                 .background(
-                    color = colorResource(id = R.color.whatsapp),
+                    color = c,
                     shape = shape
                 )
         )
@@ -141,77 +141,72 @@ fun HomeCompany(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                backgroundColor = Color.Transparent,
+            val colorCard = if (isListed) White else Color.Transparent
+            val colorText = if (!isListed) White else colorResource(id = R.color.whatsapp)
+            val elevation = if (isListed) 5.dp else 0.dp
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Transparent),
-                elevation = 0.dp
+                    .padding(vertical = 15.dp, horizontal = 15.dp)
             ) {
+
+                /*Icon(
+                    modifier = Modifier
+                        .size(20.dp)
+                        .align(Alignment.CenterStart)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            navController.navigate(Screen.SearchWordScreen.route)
+                        },
+                    imageVector = Icons.Filled.Search,
+                    tint = White,
+                    contentDescription = ""
+                )*/
+
+                Spacer(modifier = Modifier.width(50.dp))
+
+                Text(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = "${stringResource(id = R.string.hello)}, ${GlobalEntries.user.companyName}",
+                    color = colorText,
+                    style = TextStyle(
+                        fontSize = 22.sp,
+                        fontFamily = FontFamily(
+                            Font(
+                                R.font.rubikbold,
+                                weight = FontWeight.Bold
+                            )
+                        )
+                    )
+                )
+
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 15.dp, horizontal = 15.dp)
+                        .align(Alignment.CenterEnd)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            isListed = !isListed
+                        }
+                        .background(
+                            color = Color.LightGray,
+                            shape = RoundedCornerShape(10.dp)
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
 
                     Icon(
                         modifier = Modifier
-                            .size(20.dp)
-                            .align(Alignment.CenterStart)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                navController.navigate(Screen.SearchWordScreen.route)
-                            },
-                        imageVector = Icons.Filled.Search,
-                        tint = Color.White,
+                            .size(30.dp)
+                            .padding(10.dp),
+                        imageVector = Icons.Filled.Menu,
                         contentDescription = ""
                     )
 
-                    Spacer(modifier = Modifier.width(50.dp))
-
-                    Text(
-                        modifier = Modifier.align(Alignment.Center),
-                        text = "Find your candidate",
-                        color = Color.White,
-                        style = TextStyle(
-                            fontSize = 16.sp,
-                            fontFamily = FontFamily(
-                                Font(
-                                    R.font.rubik_medium,
-                                    weight = FontWeight.Medium
-                                )
-                            )
-                        )
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                navController.navigate(Screen.FilterScreen.route)
-                            }
-                            .background(
-                                color = Color.LightGray,
-                                shape = RoundedCornerShape(10.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-
-                        Icon(
-                            modifier = Modifier
-                                .size(30.dp)
-                                .padding(10.dp),
-                            imageVector = Icons.Filled.Menu,
-                            contentDescription = ""
-                        )
-
-                    }
                 }
             }
 
@@ -222,70 +217,212 @@ fun HomeCompany(
 
                 us = userState
 
+                AnimatedContent(
+                    targetState = isListed,
+                    transitionSpec = {
+                        fadeIn(tween(300)) with fadeOut(tween(300))
+                    },
+                    label = "ListToBoxTransition"
+                ) { isList ->
 
-                Box(
-                    modifier = Modifier
-                        .padding(top = 10.dp)
-                        .fillMaxWidth()
-                ) {
+                    if (isList) {
+                        LazyColumn(modifier = Modifier
+                            .padding(top = 10.dp)
+                            .fillMaxSize()) {
 
-                    userState.forEach { (user, state) ->
+                            items(lazyPagingItems.itemCount) { index ->
+                                val user = lazyPagingItems[index] ?: User()
 
-                        homeViewModel.getResume(user)
-                        if (state.swipedDirection == null) {
-                            ProfileCard(
-                                modifier = Modifier
-                                    .fillMaxWidth(0.9f)
-                                    .fillMaxHeight(0.85f)
-                                    .align(Alignment.TopCenter)
-                                    .background(
-                                        color = Color.White,
-                                        shape = RoundedCornerShape(20.dp)
-                                    ),
-                                openProfile = {
-                                    val gson = Gson()
-                                    val userJson = gson.toJson(user, User::class.java)
-                                    GlobalEntries.userForCompany = user
-                                    navController.navigate(Screen.DetailScreen.route)
-                                    //navController.navigate("${Screen.DetailScreen.route}/$userJson")
-                                },
-                                lang = resume,
-                                matchProfile = user,
-                                onSave = {
-                                    homeViewModel.saveToFavorites(
-                                        GlobalEntries.user.id ?: -1,
-                                        visibleUser.id ?: 0
-                                    )
-                                },
-                                onSkip = {
-                                    scope.launch {
-                                        val last = userState.reversed()
-                                            .firstOrNull {
-                                                it.second.offset.value == Offset(0f, 0f)
-                                            }?.second
-                                        last?.swipe(Direction.Left)
+                                Card(
+                                    elevation = 10.dp,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 10.dp, horizontal = 10.dp),
+                                    shape = RoundedCornerShape(30.dp)
+                                ) {
+
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(10.dp)
+                                            .clickable(
+                                                interactionSource = interactionSource,
+                                                indication = null
+                                            ) {
+                                                GlobalEntries.userForCompany = user
+                                                navController.navigate(Screen.DetailScreen.route)
+                                            }
+                                    ) {
+
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 10.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+
+                                            val gender =
+                                                if (user.sexe == "Homme" || user.sexe == "Male") R.drawable.menavatar
+                                                else R.drawable.femaleavatar
+
+                                            val color =
+                                                if (user.sexe == "Homme" || user.sexe == "Male") Color.Cyan
+                                                else Color(0xFFFF8C00)
+
+                                            Box(
+                                                modifier = Modifier
+                                                    .background(
+                                                        color = color,
+                                                        shape = CircleShape
+                                                    ),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Image(
+                                                    painter = painterResource(id = gender),
+                                                    modifier = Modifier
+                                                        .size(70.dp)
+                                                        .padding(10.dp),
+                                                    contentDescription = ""
+                                                )
+                                            }
+
+                                            Column(
+                                                modifier = Modifier
+                                                    .fillMaxHeight()
+                                                    .weight(0.4f)
+                                                    .padding(start = 20.dp)
+                                                    .padding(horizontal = 10.dp)
+                                            ) {
+
+                                                Text(
+                                                    text = user.fullName ?: "",
+                                                    style = TextStyle(
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = 16.sp
+                                                    )
+                                                )
+                                                val exp = user.experience?.let {
+                                                    homeViewModel.extractExp(it)
+                                                } ?: "new"
+
+                                                Text(
+                                                    text = exp,
+                                                    style = TextStyle(
+                                                        fontWeight = FontWeight.Normal,
+                                                        fontSize = 14.sp
+                                                    ),
+                                                    color = Color.LightGray,
+                                                    modifier = Modifier.padding(top = 5.dp)
+                                                )
+
+                                            }
+
+                                        }
                                     }
 
-                                    homeViewModel.updateCurrentPage()
-
-                                    homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
-                                    homeViewModel.skipCurrentProfile(visibleUser)
-
-                                },
-                                onMatch = {
-                                    openFormInvitation = true
                                 }
-                            )
-                        }
-                        LaunchedEffect(user, state.swipedDirection) {
-                            if (state.swipedDirection != null) {
-                                //hint = "You swiped ${stringFrom(state.swipedDirection!!)}"
                             }
+                            lazyPagingItems.apply {
+                                when {
+                                    loadState.refresh is LoadState.Loading -> {
+                                        item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
+                                    }
+
+                                    loadState.refresh is LoadState.Error -> {
+                                        val error = lazyPagingItems.loadState.refresh as LoadState.Error
+                                        item {
+                                            ErrorMessage(
+                                                modifier = Modifier.fillParentMaxSize(),
+                                                message = error.error.localizedMessage ?: "",
+                                                onClickRetry = { retry() })
+                                        }
+                                    }
+
+                                    loadState.append is LoadState.Loading -> {
+                                        item { LoadingNextPageItem(modifier = Modifier) }
+                                    }
+
+                                    loadState.append is LoadState.Error -> {
+                                        val error = lazyPagingItems.loadState.append as LoadState.Error
+                                        /*item {
+                                            ErrorMessage(
+                                                modifier = Modifier,
+                                                message = error.error.localizedMessage!!,
+                                                onClickRetry = { retry() })
+                                        }*/
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 20.dp)
+                                .fillMaxWidth()
+                        ) {
+
+                            userState.forEach { (user, state) ->
+
+                                homeViewModel.getResume(user)
+                                if (state.swipedDirection == null) {
+                                    ProfileCard(
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.9f)
+                                            .fillMaxHeight(0.85f)
+                                            .align(Alignment.TopCenter)
+                                            .background(
+                                                color = White,
+                                                shape = RoundedCornerShape(20.dp)
+                                            ),
+                                        openProfile = {
+                                            val gson = Gson()
+                                            val userJson = gson.toJson(user, User::class.java)
+                                            GlobalEntries.userForCompany = user
+                                            navController.navigate(Screen.DetailScreen.route)
+                                            //navController.navigate("${Screen.DetailScreen.route}/$userJson")
+                                        },
+                                        lang = resume,
+                                        matchProfile = user,
+                                        onSave = {
+                                            homeViewModel.saveToFavorites(
+                                                GlobalEntries.user.id ?: -1,
+                                                visibleUser.id ?: 0
+                                            )
+                                        },
+                                        onSkip = {
+                                            scope.launch {
+                                                val last = userState.reversed()
+                                                    .firstOrNull {
+                                                        it.second.offset.value == Offset(0f, 0f)
+                                                    }?.second
+                                                last?.swipe(Direction.Left)
+                                            }
+
+                                            homeViewModel.updateCurrentPage()
+
+                                            homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
+                                            homeViewModel.skipCurrentProfile(visibleUser)
+
+                                        },
+                                        onMatch = {
+                                            openFormInvitation = true
+                                        }
+                                    )
+                                }
+                                LaunchedEffect(user, state.swipedDirection) {
+                                    if (state.swipedDirection != null) {
+                                        //hint = "You swiped ${stringFrom(state.swipedDirection!!)}"
+                                    }
+                                }
+                            }
+
+
                         }
                     }
 
-
                 }
+
+
 
             } else Text("No more profiles!")
         }
@@ -306,7 +443,7 @@ fun HomeCompany(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .background(Color.White),
+                    .background(White),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
@@ -325,7 +462,6 @@ fun HomeCompany(
                                 interactionSource = interactionSource,
                                 indication = null
                             ) {
-                                Log.i("alrkznflrn", "HomeCompany: klfehalgfefhaelf")
                                 openFormInvitation = false
                             },
                         contentDescription = ""
@@ -524,6 +660,8 @@ fun HomeCompany(
                     )
                 }
 
+                val statusInvitation = stringResource(id = R.string.holding)
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.4f)
@@ -543,10 +681,9 @@ fun HomeCompany(
                                 last?.swipe(Direction.Right)
                             }
 
-                            Log.i("alrkznflrn", "HomeCompany: klfehalgfefhaelf")
                             homeViewModel.updateCurrentPage()
                             homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
-                            homeViewModel.matchCurrentProfile(visibleUser.id ?: 0)
+                            homeViewModel.matchCurrentProfile(visibleUser, statusInvitation)
                             openFormInvitation = false
 
                         }
@@ -563,7 +700,7 @@ fun HomeCompany(
                             horizontal = 20.dp
                         ),
                         style = TextStyle(
-                            color = Color.White,
+                            color = White,
                             fontFamily = FontFamily.Default,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold

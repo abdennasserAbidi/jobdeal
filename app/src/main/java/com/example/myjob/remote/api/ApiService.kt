@@ -2,14 +2,16 @@ package com.example.myjob.remote.api
 
 import com.example.myjob.base.GenericResponse
 import com.example.myjob.common.network.ApiResult
+import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
-import com.example.myjob.domain.entities.InvitationModel
-import com.example.myjob.domain.entities.InvitationParams
+import com.example.myjob.domain.entities.invitation.InvitationModel
+import com.example.myjob.domain.entities.invitation.InvitationParams
 import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
@@ -65,13 +67,6 @@ interface ApiService {
         @Query("size") size: Int = 10
     ): GenericResponse<Experience>
 
-    @GET("auth/getCompanyInvitations")
-    suspend fun getCompanyInvitations(
-        @Query("id") id: Int,
-        @Query("page") pageNumber: Int,
-        @Query("size") size: Int = 10
-    ): GenericResponse<InvitationModel>
-
     @GET("auth/getAllExp")
     suspend fun getAllExp(
         @Query("id") id: Int
@@ -113,22 +108,25 @@ interface ApiService {
         @Query("size") size: Int = 10
     ): GenericResponse<User>
 
+    ///////////////////////////////////////////////////////////////////////////
+    // INVITATION
+    ///////////////////////////////////////////////////////////////////////////
     @POST("auth/sendInvitation")
     suspend fun sendInvitation(@Body invitationParams: InvitationParams): UserResponse
 
-    @POST("auth/saveSearchHistory")
-    suspend fun saveSearchHistory(
-        @Query("idUserConnected") idUserConnected: Int,
-        @Body searchHistory: SearchHistory
-    ): UserResponse
-
-    @GET("auth/getAllSearchHistory")
-    suspend fun getAllSearch(
+    @GET("auth/getInvitations")
+    suspend fun getInvitations(
         @Query("id") id: Int,
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
-    ): GenericResponse<SearchHistory>
+    ): GenericResponse<InvitationModel>
 
+    @GET("auth/getCompanyInvitations")
+    suspend fun getCompanyInvitations(
+        @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<InvitationModel>
 
     @POST("auth/updateuser")
     suspend fun savePersonalInfo(@Body user: User): UserResponse
@@ -168,13 +166,6 @@ interface ApiService {
         @Query("size") size: Int = 10
     ): GenericResponse<User>
 
-    @GET("auth/getInvitations")
-    suspend fun getInvitations(
-        @Query("id") id: Int,
-        @Query("page") pageNumber: Int,
-        @Query("size") size: Int = 10
-    ): GenericResponse<InvitationModel>
-
     @POST("auth/removeEducation")
     suspend fun removeEducation(
         @Query("id") id: Int,
@@ -196,4 +187,46 @@ interface ApiService {
 
     @GET("auth/isExisted")
     suspend fun verifyExisting(@Query("fileName") fileName: String): FileExistingResponse
+
+    ///////////////////////////////////////////////////////////////////////////
+    // SEARCH HISTORY
+    ///////////////////////////////////////////////////////////////////////////
+    @POST("auth/saveSearchHistory")
+    suspend fun saveSearchHistory(
+        @Query("idUserConnected") idUserConnected: Int,
+        @Body searchHistory: SearchHistory
+    ): UserResponse
+
+    @GET("auth/getAllSearchHistory")
+    suspend fun getAllSearch(
+        @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<SearchHistory>
+
+    ///////////////////////////////////////////////////////////////////////////
+    // ANNOUNCEMENT
+    ///////////////////////////////////////////////////////////////////////////
+    @POST("auth/makeAnnouncement")
+    suspend fun makeAnnouncement(
+        @Query("idUserConnected") idUserConnected: Int,
+        @Body announcementModel: AnnouncementModel
+    ): UserResponse
+
+    @GET("auth/getCompanyAnnouncements")
+    suspend fun getCompanyAnnouncements(
+        @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<AnnouncementModel>
+
+    ///////////////////////////////////////////////////////////////////////////
+    // NOTIFICATION
+    ///////////////////////////////////////////////////////////////////////////
+    @GET("auth/getCompanyNotifications")
+    suspend fun getCompanyNotifications(
+        @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<NotificationModel>
 }

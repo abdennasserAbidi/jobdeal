@@ -65,7 +65,8 @@
     <string name="item1">Acceuil</string>
     <string name="item2">Invitations</string>
     <string name="item6">Notifications</string>
-    <string name="item3">favoris</string>
+    <string name="item3">Rechercher</string>
+    <string name="item5">favoris</string>
     <string name="item4">Paramètre</string>
 
     <!--Tablayout-->
@@ -77,6 +78,12 @@
     <string name="tab6">Langue</string>
     <string name="tab7">CV</string>
     <string name="tab8">Prochain rôle</string>
+
+    <string name="hello">Bonjour</string>
+
+    <string name="holding">En attente</string>
+    <string name="Accepted">Accepté</string>
+    <string name="Rejected">Rejeté</string>
 
     <string name="loading_text">Chargement</string>
     <string name="personal_info_text">Info personnelle</string>
@@ -120,6 +127,8 @@
     <string name="next_text">Suivant</string>
     <string name="salary_range_text">Marge salariale:</string>
     <string name="phone_text">Téléphone</string>
+
+    <string name="categories_text">Categories</string>
 
     <!--career form-->
     <string name="experience_text">Experience</string>

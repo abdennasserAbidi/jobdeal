@@ -1,12 +1,10 @@
 package com.example.myjob.feature.home
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.myjob.R
-import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.Availabilities
+import com.example.myjob.domain.entities.CategoryChoices
 import com.example.myjob.domain.entities.ContractTypeChoices
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.DEFAULT_TYPE
@@ -15,13 +13,11 @@ import com.example.myjob.domain.entities.SexChoices
 import com.example.myjob.domain.entities.SituationChoices
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.domain.entities.USER_EXP
-import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.home.SearchUserUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -59,6 +55,7 @@ class FilterViewModel @Inject constructor(
             it
         }
     }
+
     fun changeSelectionAvailability(index: Int, title: String, isSelected: Boolean) {
         val availability = availabilities.value.toMutableList()
         availability[index].titleString = title
@@ -76,7 +73,9 @@ class FilterViewModel @Inject constructor(
         val listDisponibility = criteria.value.disponibility
 
         availability.map {
-            if (it.titleString.isNotEmpty() && !listDisponibility.contains(it.titleString)) listDisponibility.add(it.titleString)
+            if (it.titleString.isNotEmpty() && !listDisponibility.contains(it.titleString)) listDisponibility.add(
+                it.titleString
+            )
         }
 
         criteria.update {
@@ -110,6 +109,62 @@ class FilterViewModel @Inject constructor(
             it
         }
     }
+
+    val selectedCategory = MutableStateFlow(emptyList<CategoryChoices>())
+    val selectedCat = MutableStateFlow(listOf(false, false))
+
+    fun clearSelectionCategories() {
+        val availability = selectedCategory.value.toMutableList()
+        for (i in 0 until availability.size) {
+            availability[i].isSelected = false
+        }
+        selectedCategory.update {
+            availability
+        }
+
+        val selectedAvailabilities = selectedCat.value.toMutableList()
+        for (i in 0 until selectedAvailabilities.size) {
+            selectedAvailabilities[i] = false
+        }
+        selectedCat.update {
+            selectedAvailabilities
+        }
+
+        criteria.update {
+            it.categories = mutableListOf()
+            it
+        }
+    }
+
+    fun changeSelectionCategory(index: Int, title: String, isSelected: Boolean) {
+        val availability = selectedCategory.value.toMutableList()
+        availability[index].titleString = title
+        availability[index].isSelected = isSelected
+        selectedCategory.update {
+            availability
+        }
+
+        val selectedAvailabilities = selectedCat.value.toMutableList()
+        selectedAvailabilities[index] = isSelected
+        selectedCat.update {
+            selectedAvailabilities
+        }
+
+        val list = criteria.value.categories
+
+        availability.map {
+            if (it.titleString.isNotEmpty() && !list.contains(it.titleString))
+                list.add(it.titleString)
+        }
+
+        criteria.update {
+            it.categories = list
+            it
+        }
+
+    }
+
+
     fun changeSelectionExp(index: Int, title: String, isSelected: Boolean) {
         val availability = selectedExperience.value.toMutableList()
         availability[index].titleString = title
@@ -270,6 +325,7 @@ class FilterViewModel @Inject constructor(
             it
         }
     }
+
     fun changeSelectionSex(index: Int, title: String, isSelected: Boolean) {
         val availability = sexChoices.value.toMutableList()
         availability[index].titleString = title
@@ -362,29 +418,12 @@ class FilterViewModel @Inject constructor(
         }
 
         criteria.update {
-            it.institutions= listInstitution
+            it.institutions = listInstitution
             it
         }
     }
 
-    val filteredUser = MutableStateFlow(emptyList<User>())
     fun validateFilter() {
-        /*viewModelScope.launch {
-            Log.i("fffffffffffffffffffff", "validateFilter: ${criteria.value}")
-            searchUserUseCase.execute(criteria.value).collect { res ->
-                when(res.status) {
-                    ResourceState.SUCCESS -> {
-                        filteredUser.update { res.data ?: emptyList() }
-                        Log.i("fffffffffffffffffffff", "treethehethe: ${res.data ?: emptyList()}")
-
-                    }
-                    else -> {
-
-                    }
-                }
-            }
-        }*/
-
         GlobalEntries.criteriaModel = criteria.value
     }
 
@@ -444,6 +483,14 @@ class FilterViewModel @Inject constructor(
 
         sexChoices.update {
             listSex
+        }
+
+        val listCategories = listOf(
+            CategoryChoices(title = R.string.type1_text, isSelected = false),
+            CategoryChoices(title = R.string.type2_text, isSelected = false)
+        )
+        selectedCategory.update {
+            listCategories
         }
 
     }

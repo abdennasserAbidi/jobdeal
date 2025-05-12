@@ -11,14 +11,16 @@ import androidx.paging.filter
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.listIdToRemove
+import com.example.myjob.domain.entities.CriteriaModel
+import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.HOME_ENTITY
-import com.example.myjob.domain.entities.InvitationModel
-import com.example.myjob.domain.entities.InvitationParams
+import com.example.myjob.domain.entities.invitation.InvitationModel
+import com.example.myjob.domain.entities.invitation.InvitationParams
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.SaveToFavoriteUseCase
 import com.example.myjob.domain.usecase.SendInvitationUseCase
 import com.example.myjob.domain.usecase.home.GetAllUserUseCase
-import com.example.myjob.domain.usecase.home.SearchCandidateUseCase
+import com.example.myjob.domain.usecase.home.SearchUserUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,12 +28,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import javax.inject.Inject
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flatMapLatest
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -39,7 +40,7 @@ class HomeViewModel @Inject constructor(
     private val getAllUserUseCase: GetAllUserUseCase,
     private val sendInvitationUseCase: SendInvitationUseCase,
     private val saveToFavoriteUseCase: SaveToFavoriteUseCase,
-    private val searchCandidateUseCase: SearchCandidateUseCase
+    private val searchUserUseCase: SearchUserUseCase
 ) : ViewModel() {
 
     private val _query = MutableStateFlow("")
@@ -97,11 +98,19 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun matchCurrentProfile(id: Int) {
+    fun matchCurrentProfile(user: User, status: String) {
+        val currentDate = Date()
+        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val formattedDate = formatter.format(currentDate)
+
         invitationParam.update {
             it.idCompany = sharedPreference.getInt("idUser", -1)
             it.companyName = GlobalEntries.user.companyName ?: ""
-            it.idTo = id
+            it.idTo = user.id ?: -1
+            it.fullName = user.fullName
+            it.gender = user.sexe
+            it.date = formattedDate
+            it.status = status
             it
         }
         val invitationParams = InvitationParams(
@@ -160,13 +169,26 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun getAllUser(currentPage: Int) {
+    fun getAllUser() {
         viewModelScope.launch {
             getAllUserUseCase.execute().collectLatest { res ->
                 _user.update {
                     res.data ?: PagingData.empty()
                 }
             }
+        }
+    }
+
+    fun validateFilter(criteria: CriteriaModel) {
+        viewModelScope.launch {
+            if (!criteria.checkEmpty()) {
+                searchUserUseCase.execute(criteria).collect { res ->
+
+                    _user.update {
+                        res.data ?: PagingData.empty()
+                    }
+                }
+            } else getAllUser()
         }
     }
 
@@ -180,25 +202,27 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    /*private fun getAllUser() {
-        viewModelScope.launch {
-            getAllUserUseCase.execute().collectLatest { res ->
+    fun extractExp(experience: MutableList<Experience>): String {
+        var res = "new"
+        if (experience.isNotEmpty()) {
+            val exp = experience[0]
+            val date = exp.dateStart ?: ""
+            if (date.contains(",")) {
+                val dates = date.split(", ")
+                if (dates.isNotEmpty()) {
+                    val year = dates[2].toInt()
 
-                val json = sharedPreference.getString("jsonUser", "") ?: ""
-                if (json.isNotEmpty()) {
-                    val objectList = Gson().fromJson(json, Array<User>::class.java).asList()
+                    val calendar: Calendar = Calendar.getInstance()
+                    val currentYear: Int = calendar.get(Calendar.YEAR)
 
-                    users.update {
-                        objectList
-                    }
-                }
+                    val diff = currentYear - year
 
-                _user.update {
-                    res.data ?: PagingData.empty()
+                    if (diff > 0) res = "$diff years experiences"
                 }
             }
         }
-    }*/
+        return res
+    }
 
     val updateFavoriteState = MutableStateFlow(false)
 
@@ -213,7 +237,6 @@ class HomeViewModel @Inject constructor(
     init {
         lang = sharedPreference.getString("lang", "") ?: ""
         langState.update { lang }
-        getAllUser(1)
 
     }
 

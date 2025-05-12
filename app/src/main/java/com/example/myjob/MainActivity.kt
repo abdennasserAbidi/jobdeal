@@ -20,10 +20,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.InsertInvitation
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.InsertInvitation
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -88,6 +90,7 @@ import com.example.myjob.feature.invitation.SendInvitationScreen
 import com.example.myjob.feature.login.LoginScreen
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
+import com.example.myjob.feature.notification.NotificationScreen
 import com.example.myjob.feature.onboarding.OnBoardingScreen
 import com.example.myjob.feature.profile.AllCareer
 import com.example.myjob.feature.profile.AllEducation
@@ -308,9 +311,9 @@ class MainActivity : ComponentActivity() {
             )*/
             val settingsTab = TabBarItem(
                 title = stringResource(id = R.string.item3),
-                tag = "favorites_screen",
-                selectedIcon = Icons.Filled.Favorite,
-                unselectedIcon = Icons.Outlined.FavoriteBorder
+                tag = "search_screen",
+                selectedIcon = Icons.Filled.Search,
+                unselectedIcon = Icons.Outlined.Search
             )
             val moreTab = TabBarItem(
                 title = stringResource(id = R.string.item4),
@@ -489,6 +492,11 @@ class MainActivity : ComponentActivity() {
                     composable(route = Screen.InvitationCompanyScreen.route) {
                         isVisibleNav = true
                         InvitationCompanyScreen(navController)
+                    }
+
+                    composable(route = Screen.NotificationCompanyScreen.route) {
+                        isVisibleNav = true
+                        NotificationScreen(navController)
                     }
 
                     composable(route = Screen.FilterScreen.route) {

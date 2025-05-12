@@ -2,14 +2,16 @@ package com.example.myjob.remote.source
 
 import com.example.myjob.base.GenericResponse
 import com.example.myjob.common.network.ApiResult
+import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
-import com.example.myjob.domain.entities.InvitationModel
-import com.example.myjob.domain.entities.InvitationParams
+import com.example.myjob.domain.entities.invitation.InvitationModel
+import com.example.myjob.domain.entities.invitation.InvitationParams
 import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
@@ -30,7 +32,12 @@ interface RemoteDataSource {
     suspend fun getAllExp(id: Int): List<Experience>
     suspend fun getAllEduc(id: Int): List<Educations>
     suspend fun getAllEducations(id: Int, pageNumber: Int): GenericResponse<Educations>
-    suspend fun searchCandidates(word: String, id: Int, pageNumber: Int): GenericResponse<SearchHistory>
+    suspend fun searchCandidates(
+        word: String,
+        id: Int,
+        pageNumber: Int
+    ): GenericResponse<SearchHistory>
+
     suspend fun searchUsers(criteria: CriteriaModel, pageNumber: Int): GenericResponse<User>
     suspend fun getFavorites(id: Int, pageNumber: Int): GenericResponse<User>
     suspend fun getInvitations(id: Int, pageNumber: Int): GenericResponse<InvitationModel>
@@ -38,6 +45,28 @@ interface RemoteDataSource {
     suspend fun getAllUser(pageNumber: Int): GenericResponse<User>
     suspend fun sendInvitation(invitationParams: InvitationParams): UserResponse
     suspend fun saveSearchHistory(idUserConnected: Int, searchHistory: SearchHistory): UserResponse
+
+    ///////////////////////////////////////////////////////////////////////////
+    // ANNOUNCEMENT
+    ///////////////////////////////////////////////////////////////////////////
+    suspend fun makeAnnouncement(
+        idUserConnected: Int,
+        announcementModel: AnnouncementModel
+    ): UserResponse
+
+    suspend fun getCompanyAnnouncements(
+        id: Int,
+        pageNumber: Int
+    ): GenericResponse<AnnouncementModel>
+
+    ///////////////////////////////////////////////////////////////////////////
+    // NOTIFICATION
+    ///////////////////////////////////////////////////////////////////////////
+    suspend fun getCompanyNotifications(
+        id: Int,
+        pageNumber: Int
+    ): GenericResponse<NotificationModel>
+
     suspend fun forgotPassword(email: String): UserResponse
     suspend fun resetPassword(token: String, newPassword: String): UserResponse
     suspend fun authenticate(user: User): ApiResult<LoginResponse>
@@ -48,6 +77,7 @@ interface RemoteDataSource {
         idUserConnected: Int,
         idUserToDelete: Int
     ): UserResponse
+
     suspend fun removeExperience(id: Int, experienceId: Int): UserResponse
     suspend fun removeEducation(id: Int, educationId: Int): UserResponse
     suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): UserResponse

@@ -41,7 +41,7 @@ import com.example.myjob.R
 import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
-import com.example.myjob.domain.entities.InvitationModel
+import com.example.myjob.domain.entities.invitation.InvitationModel
 
 @Composable
 fun InvitationScreen(

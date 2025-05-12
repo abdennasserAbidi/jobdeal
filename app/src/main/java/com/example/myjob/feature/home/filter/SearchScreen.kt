@@ -31,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -206,11 +207,26 @@ fun SearchScreen(
                                 disabledIndicatorColor = Color.Transparent
                             ),
                             trailingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    tint = colorResource(id = R.color.whatsapp),
-                                    contentDescription = ""
-                                )
+
+                                Row() {
+
+                                    VerticalDivider(thickness = 1.dp, modifier = Modifier.height(30.dp))
+
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.filter),
+                                        tint = colorResource(id = R.color.whatsapp),
+                                        contentDescription = "",
+                                        modifier = Modifier
+                                            .size(30.dp)
+                                            .padding(start = 10.dp)
+                                            .clickable(
+                                                interactionSource = interactionSource,
+                                                indication = null
+                                            ) {
+                                                navController.navigate(Screen.FilterScreen.route)
+                                            }
+                                    )
+                                }
                             },
                             onValueChange = {
                                 isSearching = it.isNotEmpty()

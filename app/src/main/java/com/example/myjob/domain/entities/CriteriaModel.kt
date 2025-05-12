@@ -8,6 +8,7 @@ data class CriteriaModel(
     var situation: MutableList<String> = mutableListOf(),
     var sex: MutableList<String> = mutableListOf(),
     var experiences: MutableList<String> = mutableListOf(),
+    var categories: MutableList<String> = mutableListOf(),
     var location: MutableList<String> = mutableListOf(),
     var typeContract: MutableList<String> = mutableListOf(),
     var institutions: MutableList<String> = mutableListOf(),

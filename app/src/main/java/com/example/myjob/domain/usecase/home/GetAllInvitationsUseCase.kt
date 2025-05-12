@@ -4,7 +4,7 @@ import androidx.paging.PagingData
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.usecase.FlowBaseUseCase
 import com.example.myjob.data.Repository
-import com.example.myjob.domain.entities.InvitationModel
+import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.qualifiers.IoDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow

@@ -72,6 +72,7 @@ import com.example.myjob.common.tablayout.CustomTab
 import com.example.myjob.domain.entities.SettingsParams
 import com.example.myjob.feature.navigation.Screen
 import kotlinx.coroutines.flow.update
+import javax.annotation.meta.When
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -217,7 +218,8 @@ fun SettingScreen(
                     Surface(
                         elevation = 2.dp,
                         color = MaterialTheme.colors.surface,
-                        shape = RoundedCornerShape(40.dp)) {
+                        shape = RoundedCornerShape(40.dp)
+                    ) {
 
                         Card(
                             shape = RoundedCornerShape(40.dp),
@@ -289,7 +291,11 @@ fun SettingScreen(
                                             .verticalScroll(rememberScrollState())
                                     ) {
 
-                                        var companyName by remember { mutableStateOf(user.companyName ?: "") }
+                                        var companyName by remember {
+                                            mutableStateOf(
+                                                user.companyName ?: ""
+                                            )
+                                        }
 
                                         CustomTextField(
                                             text = "${stringResource(id = R.string.company_name_text)}*",
@@ -299,7 +305,11 @@ fun SettingScreen(
                                             settingViewModel.changeCompanyName(it)
                                         }
 
-                                        var companyActivitySector by remember { mutableStateOf(user.companyActivitySector ?: "") }
+                                        var companyActivitySector by remember {
+                                            mutableStateOf(
+                                                user.companyActivitySector ?: ""
+                                            )
+                                        }
                                         CustomTextField(
                                             text = "${stringResource(id = R.string.activity_text)}*",
                                             value = companyActivitySector,
@@ -308,7 +318,11 @@ fun SettingScreen(
                                             settingViewModel.changeCompanyActivitySector(it)
                                         }
 
-                                        var companyDescription by remember { mutableStateOf(user.companyDescription ?: "") }
+                                        var companyDescription by remember {
+                                            mutableStateOf(
+                                                user.companyDescription ?: ""
+                                            )
+                                        }
 
                                         CustomTextField(
                                             text = "Description*",
@@ -318,7 +332,11 @@ fun SettingScreen(
                                             settingViewModel.changeCompanyDescription(it)
                                         }
 
-                                        var companyPhone by remember { mutableStateOf(user.phoneCompany ?: "") }
+                                        var companyPhone by remember {
+                                            mutableStateOf(
+                                                user.phoneCompany ?: ""
+                                            )
+                                        }
 
                                         CustomTextField(
                                             text = "Phone*",
@@ -328,7 +346,11 @@ fun SettingScreen(
                                             settingViewModel.changeCompanyPhone(it)
                                         }
 
-                                        var secondPhone by remember { mutableStateOf(user.secondPhoneCompany ?: "") }
+                                        var secondPhone by remember {
+                                            mutableStateOf(
+                                                user.secondPhoneCompany ?: ""
+                                            )
+                                        }
 
                                         CustomTextField(
                                             text = "Extra phone",
@@ -338,7 +360,11 @@ fun SettingScreen(
                                             settingViewModel.changeCompanySecondPhone(it)
                                         }
 
-                                        var companyAddress by remember { mutableStateOf(user.companyAddress ?: "") }
+                                        var companyAddress by remember {
+                                            mutableStateOf(
+                                                user.companyAddress ?: ""
+                                            )
+                                        }
 
                                         CustomTextField(
                                             text = "Address*",
@@ -348,7 +374,11 @@ fun SettingScreen(
                                             settingViewModel.changeCompanyAddress(it)
                                         }
 
-                                        var secondAddress by remember { mutableStateOf(user.companySecondAddress ?: "") }
+                                        var secondAddress by remember {
+                                            mutableStateOf(
+                                                user.companySecondAddress ?: ""
+                                            )
+                                        }
 
                                         CustomTextField(
                                             text = "Extra address",
@@ -588,11 +618,16 @@ fun SettingScreen(
                                         interactionSource = interactionSource,
                                         indication = null
                                     ) {
+                                        when (index) {
+                                            0 -> navController.navigate(Screen.NotificationCompanyScreen.route)
 
-                                        if (role == "Candidate" || role == "Candidat")
-                                            navController.navigate(Screen.ProfileScreen.route)
-                                        else expanded = true
-                                        GlobalEntries.isVisibleNav.update { false }
+                                            4 -> {
+                                                if (role == "Candidate" || role == "Candidat")
+                                                    navController.navigate(Screen.ProfileScreen.route)
+                                                else expanded = true
+                                                GlobalEntries.isVisibleNav.update { false }
+                                            }
+                                        }
                                     }
                             ) {
 

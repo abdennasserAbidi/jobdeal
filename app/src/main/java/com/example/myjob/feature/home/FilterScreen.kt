@@ -1,5 +1,6 @@
 package com.example.myjob.feature.home
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -81,6 +82,8 @@ fun FilterScreen(
 
     var disponibilityView by remember { mutableStateOf(false) }
     var experienceView by remember { mutableStateOf(false) }
+    var categoryView by remember { mutableStateOf(false) }
+
     var typeContractView by remember { mutableStateOf(false) }
     var situationView by remember { mutableStateOf(false) }
     var sexView by remember { mutableStateOf(false) }
@@ -299,6 +302,76 @@ fun FilterScreen(
 
             }
 
+            ItemFilter(stringResource(id = R.string.categories_text), 20.dp) {
+                categoryView = !categoryView
+            }
+
+            val selectedCategory by homeViewModel.selectedCategory.collectAsState()
+            val selectedCat by homeViewModel.selectedCat.collectAsState()
+
+
+            if (categoryView) {
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp)
+                        .background(colorResource(id = R.color.lighter_gray))
+                ) {
+                    selectedCategory.mapIndexed { index, exp ->
+
+                        val iconCheck =
+                            if (selectedCat[index]) Icons.Filled.Check else Icons.Filled.Add
+
+                        val textColor = if (selectedCat[index]) White else Black
+
+                        val title = stringResource(id = exp.title)
+
+                        val color = colorResource(id = if (selectedCat[index]) R.color.whatsapp else R.color.lighter_gray)
+
+                        Row(
+                            modifier = Modifier
+                                .padding(vertical = 8.dp)
+                                .padding(start = 10.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = colorResource(id = R.color.whatsapp),
+                                    shape = RoundedCornerShape(40.dp)
+                                )
+                                .background(
+                                    colorResource(id = R.color.whatsapp),
+                                    shape = RoundedCornerShape(40.dp)
+                                )
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    homeViewModel.changeSelectionCategory(
+                                        index,
+                                        title,
+                                        !selectedCat[index]
+                                    )
+                                },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(id = exp.title),
+                                color = White,
+                                modifier = Modifier.padding(10.dp)
+                            )
+
+                            Icon(
+                                imageVector = iconCheck,
+                                tint = White,
+                                modifier = Modifier
+                                    .padding(vertical = 5.dp)
+                                    .padding(end = 10.dp),
+                                contentDescription = ""
+                            )
+                        }
+                    }
+                }
+            }
+
             ItemFilter(stringResource(id = R.string.experience_text), 20.dp) {
                 experienceView = !experienceView
             }
@@ -307,6 +380,7 @@ fun FilterScreen(
 
                 val experiences by homeViewModel.selectedExperience.collectAsState()
                 val selectedExp by homeViewModel.selectedExp.collectAsState()
+                Log.i("selectedCategory", "FilterScreen: $experiences")
 
                 FlowRow(
                     modifier = Modifier

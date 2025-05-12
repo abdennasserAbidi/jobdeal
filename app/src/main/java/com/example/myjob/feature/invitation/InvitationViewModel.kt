@@ -3,7 +3,12 @@ package com.example.myjob.feature.invitation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
-import com.example.myjob.domain.entities.InvitationModel
+import com.example.myjob.base.reources.ResourceState
+import com.example.myjob.domain.entities.announcement.AnnouncementModel
+import com.example.myjob.domain.entities.announcement.AnnouncementParams
+import com.example.myjob.domain.entities.invitation.InvitationModel
+import com.example.myjob.domain.usecase.announcement.GetAnnouncementUseCase
+import com.example.myjob.domain.usecase.announcement.SaveAnnouncementUseCase
 import com.example.myjob.domain.usecase.invitation.GetCompanyInvitationUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,6 +22,8 @@ import javax.inject.Inject
 class InvitationViewModel @Inject constructor(
     private val sharedPreference: SharedPreference,
     private val getCompanyInvitationUseCase: GetCompanyInvitationUseCase,
+    private val getAnnouncementUseCase: GetAnnouncementUseCase,
+    private val saveAnnouncementUseCase: SaveAnnouncementUseCase,
 ) : ViewModel() {
 
     val choiceList = MutableStateFlow(listOf("Mes Invitations", "Mes Annonces"))
@@ -36,9 +43,55 @@ class InvitationViewModel @Inject constructor(
         }
     }
 
+    private val _announcement: MutableStateFlow<PagingData<AnnouncementModel>> =
+        MutableStateFlow(value = PagingData.empty())
+    val announcement: MutableStateFlow<PagingData<AnnouncementModel>> get() = _announcement
+    private fun getCompanyAnnouncement(idUser: Int) {
+        viewModelScope.launch {
+            getAnnouncementUseCase.execute(idUser)
+                .collectLatest { res ->
+                    _announcement.update {
+                        res.data ?: PagingData.empty()
+                    }
+
+                }
+        }
+    }
+
+    val announcementModel = MutableStateFlow(AnnouncementModel())
+    fun changePostName(name: String) {
+        announcementModel.update {
+            it.title = name
+            it
+        }
+    }
+    fun changeDescriptions(name: String) {
+        announcementModel.update {
+            it.description = name
+            it
+        }
+    }
+
+    fun saveCompanyAnnouncement() {
+        val id = sharedPreference.getInt("idUser", 0)
+        val announcementParams = AnnouncementParams(
+            idUserConnected = id,
+            announcementModel = announcementModel.value
+        )
+        viewModelScope.launch {
+            saveAnnouncementUseCase.execute(announcementParams)
+                .collectLatest { res ->
+                    if (res.status == ResourceState.SUCCESS) {
+                        getCompanyAnnouncement(id)
+                    }
+                }
+        }
+    }
+
     init {
         val id = sharedPreference.getInt("idUser", 0)
         getCompanyInvitations(id)
+        getCompanyAnnouncement(id)
     }
 
 }
