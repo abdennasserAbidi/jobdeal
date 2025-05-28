@@ -5,13 +5,13 @@ import com.example.myjob.R
 data class HomeEntity(
     val title: String,
     val subTitle: String,
-    val img: Int,
+    val icon: Int?= null,
+    val withNotification: Boolean = true
 )
 
 val HOME_ENTITY = listOf(
-    HomeEntity("Mes invitations", "Voir vos invitations", R.drawable.cvtable),
-    HomeEntity("Freelances", "Voir vos invitations freelances", R.drawable.cvtable),
-    HomeEntity("Formations", "Voir vos formations", R.drawable.cvtable),
-    HomeEntity("Evenements", "Voir vos évennements", R.drawable.cvtable),
-    HomeEntity("Stages", "Voir vos invitations stages", R.drawable.cvtable)
+    HomeEntity("Mes invitations", "Voir vos invitations", icon = R.drawable.invitationproject),
+    HomeEntity("Carrière", "Booseter mon carrière", icon = R.drawable.invitationproject),
+    HomeEntity("Settings", "SELECT YOUR SETTINGS", icon = R.drawable.settings, withNotification = false),
+    HomeEntity("Profile", "EDIT YOUR PROFILE", icon = R.drawable.user, withNotification = false),
 )

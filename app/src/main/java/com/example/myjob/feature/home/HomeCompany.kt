@@ -1,16 +1,10 @@
 package com.example.myjob.feature.home
 
-import android.util.Log
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.with
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,25 +12,18 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -50,42 +37,42 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
-import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
-import com.example.myjob.common.ErrorMessage
+import com.example.myjob.common.GenericMultipleSearch
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.isFromFilter
-import com.example.myjob.common.LoadingNextPageItem
-import com.example.myjob.common.PageLoader
 import com.example.myjob.common.rememberLifecycleEvent
+import com.example.myjob.domain.entities.Subject
 import com.example.myjob.domain.entities.User
+import com.example.myjob.feature.home.filter.flowHandling
 import com.example.myjob.feature.navigation.Screen
-import com.google.gson.Gson
-import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalSwipeableCardApi::class, ExperimentalMaterial3Api::class,
+@OptIn(
+    ExperimentalSwipeableCardApi::class, ExperimentalMaterial3Api::class,
     ExperimentalAnimationApi::class
 )
 @Composable
 fun HomeCompany(
     navController: NavController,
+    allSubjects: MutableList<Subject>,
+    listSchools: MutableList<String>,
+    listCountries: MutableList<String>,
+    listCompany: MutableList<String>,
     onResumed: (index: Int) -> Unit,
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -106,11 +93,21 @@ fun HomeCompany(
 
     val scope = rememberCoroutineScope()
 
+    val density = LocalDensity.current
+    val screenHeight = with(density) {
+        LocalConfiguration.current.screenHeightDp.dp.toPx().toInt()
+    }
+
+    val screenWidth = with(density) {
+        LocalConfiguration.current.screenWidthDp.dp.toPx().toInt()
+    }
+    val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
+
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_START) {
             onResumed(0)
-            if(isFromFilter) {
+            if (isFromFilter) {
                 homeViewModel.validateFilter(GlobalEntries.criteriaModel)
                 isFromFilter = false
             } else {
@@ -119,7 +116,281 @@ fun HomeCompany(
         }
     }
 
+    var filterOpen by remember { mutableStateOf(false) }
+    var itemRes by remember { mutableStateOf(R.string.item1) }
+    val listChoiceParentSelect by homeViewModel.listChoiceParentSelect.collectAsState()
+    val listChoiceParentSelected by homeViewModel.listChoiceParentSelected.collectAsState()
+
+    val choiceParentSelect by homeViewModel.choiceParentSelect.collectAsState()
+    val categories by homeViewModel.parentChoices.collectAsState()
+    val selectedCat by homeViewModel.selectedParentChoices.collectAsState()
+
+    val criteria by homeViewModel.criteria.collectAsState()
+
     Box(modifier = Modifier.fillMaxSize()) {
+
+        val colorCard = if (isListed) White else Color.Transparent
+        val colorText = if (!isListed) White else colorResource(id = R.color.whatsapp)
+        val elevation = if (isListed) 5.dp else 0.dp
+
+        /*Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .padding(vertical = 15.dp, horizontal = 15.dp)
+        ) {
+
+            Spacer(modifier = Modifier.width(50.dp))
+
+            Text(
+                modifier = Modifier.align(Alignment.Center),
+                text = "${stringResource(id = R.string.hello)}, ${GlobalEntries.user.companyName}",
+                color = colorText,
+                style = TextStyle(
+                    fontSize = 22.sp,
+                    fontFamily = FontFamily(
+                        Font(
+                            R.font.rubikbold,
+                            weight = FontWeight.Bold
+                        )
+                    )
+                )
+            )
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
+                        isListed = !isListed
+                    }
+                    .background(
+                        color = Color.LightGray,
+                        shape = RoundedCornerShape(10.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+
+                Icon(
+                    modifier = Modifier
+                        .size(30.dp)
+                        .padding(10.dp),
+                    imageVector = Icons.Filled.Menu,
+                    contentDescription = ""
+                )
+
+            }
+        }*/
+
+        Column(modifier = Modifier.fillMaxWidth()) {
+
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 10.dp)
+                    .background(White)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
+                    },
+                elevation = 5.dp
+            ) {
+                TextField(
+                    value = "",
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = colorResource(id = R.color.lighter_gray),
+                        focusedLabelColor = colorResource(id = R.color.whatsapp),
+                        disabledTextColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    ),
+                    onValueChange = {
+                        //isSearching = it.isNotEmpty()
+                        homeViewModel.updateQuery(it)
+                    },
+                    placeholder = { Text("Rechercher un mot") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 20.dp, end = 10.dp, top = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                item {
+                    Icon(
+                        painter = painterResource(id = R.drawable.filter),
+                        tint = colorResource(id = R.color.whatsapp),
+                        contentDescription = "",
+                        modifier = Modifier
+                            .size(30.dp)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                navController.navigate(Screen.FilterScreen.route)
+                            }
+                    )
+                }
+
+                itemsIndexed(
+                    items = categories
+                ) { index, item ->
+
+                    val title = stringResource(id = item.title)
+
+                    val textColor = if (selectedCat[index]) White else Color.Black
+                    val color =
+                        colorResource(id = if (selectedCat[index]) R.color.whatsapp else R.color.lighter_gray)
+
+                    Row(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .padding(start = 10.dp)
+                            .border(
+                                width = 1.dp,
+                                color = color,
+                                shape = RoundedCornerShape(5.dp)
+                            )
+                            .background(
+                                color = color,
+                                shape = RoundedCornerShape(5.dp)
+                            )
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                filterOpen = true
+                                itemRes = item.title
+                                homeViewModel.changeOption(title, item.title)
+                                /*homeViewModel.changeSelectionParentChoices(
+                                    index,
+                                    item.title,
+                                    title,
+                                    !selectedCat[index]
+                                )*/
+                            },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = title,
+                            color = textColor,
+                            modifier = Modifier.padding(10.dp)
+                        )
+                    }
+
+                }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = filterOpen,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+
+            listChoiceParentSelect?.let {
+                val height = screenHeight/2
+                val heightDp = with(density) { height.toDp() }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(heightDp),
+                    shape = RoundedCornerShape(10.dp),
+                    elevation = 15.dp
+                ) {
+                    Column(modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = choiceParentSelect,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Black,
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(top = 30.dp, bottom = 20.dp)
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            thickness = 1.dp
+                        )
+
+                        flowHandling(it, listChoiceParentSelected) { index, title, isSelected ->
+                            homeViewModel.changeUnKnown(itemRes, index, title, isSelected)
+                        }
+                    }
+                }
+            } ?: run {
+
+                Box(modifier = Modifier.fillMaxSize()) {
+
+                    val list = allSubjects.map {
+                        it.libelly
+                    }
+
+                    val listFilter = when(itemRes) {
+                        R.string.institution_text -> listSchools
+                        R.string.location_text -> listCountries
+                        R.string.company_name_text -> listCompany
+                        R.string.activity_text -> list
+                        else -> emptyList()
+                    }
+
+                    val savedList = when(itemRes) {
+                        R.string.institution_text -> criteria.institutions
+                        R.string.location_text -> criteria.location
+                        R.string.company_name_text -> criteria.companies
+                        R.string.activity_text -> criteria.preferredActivitySector
+                        else -> emptyList()
+                    }
+
+
+                    GenericMultipleSearch(
+                        mListOfJobs = listFilter,
+                        savedList = savedList,
+                        onDismissRequest = {
+                            filterOpen = false
+                        },
+                        onSelectedBank = { list ->
+                            filterOpen = false
+
+                            when(itemRes) {
+                                R.string.institution_text -> homeViewModel.changeInstitutions(list)
+                                R.string.location_text -> homeViewModel.changeLocation(list)
+                                R.string.company_name_text -> homeViewModel.changeCompanies(list)
+                                R.string.activity_text -> homeViewModel.changeActivitySector(list)
+                            }
+                        },
+                        title = choiceParentSelect
+                    )
+                }
+            }
+
+
+
+        }
+
+
+    }
+
+    /*Box(modifier = Modifier.fillMaxSize()) {
 
         val shape = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
         val c = if (isListed) White else colorResource(id = R.color.whatsapp)
@@ -709,7 +980,5 @@ fun HomeCompany(
                 }
             }
         }
-    }
-
-
+    }*/
 }

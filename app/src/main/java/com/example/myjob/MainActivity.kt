@@ -519,9 +519,14 @@ class MainActivity : ComponentActivity() {
 
                         if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") {
                             isVisibleNav = true
-                            HomeCompany(navController = navController, onResumed = { index ->
-                                selectedTabIndex = index
-                            })
+                            HomeCompany(navController = navController,
+                                allSubjects = allSubjects,
+                                listSchools = listSchools,
+                                listCountries = listCountries,
+                                listCompany = listCompany,
+                                onResumed = { index ->
+                                    selectedTabIndex = index
+                                })
                         } else HomeCandidate(navController)
                     }
 
@@ -543,9 +548,14 @@ class MainActivity : ComponentActivity() {
                             }
                         }*/
 
-                        HomeCompany(navController = navController, onResumed = { index ->
-                            selectedTabIndex = index
-                        })
+                        HomeCompany(navController = navController,
+                            allSubjects = allSubjects,
+                            listSchools = listSchools,
+                            listCountries = listCountries,
+                            listCompany = listCompany,
+                            onResumed = { index ->
+                                selectedTabIndex = index
+                            })
                     }
 
                     composable(route = Screen.InvitationScreen.route) {

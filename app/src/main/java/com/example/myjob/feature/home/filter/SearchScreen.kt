@@ -208,7 +208,7 @@ fun SearchScreen(
                             ),
                             trailingIcon = {
 
-                                Row() {
+                                Row {
 
                                     VerticalDivider(thickness = 1.dp, modifier = Modifier.height(30.dp))
 

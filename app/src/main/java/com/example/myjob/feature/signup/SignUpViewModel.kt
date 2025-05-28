@@ -61,6 +61,8 @@ class SignUpViewModel @Inject constructor(
         isConfirmPasswordValid.update {
             password == input
         }
+        Log.i("isConfirmPasswordValid", "password: $password")
+        Log.i("isConfirmPasswordValid", "input: $input")
         return password == input
     }
     //it.role = "company"

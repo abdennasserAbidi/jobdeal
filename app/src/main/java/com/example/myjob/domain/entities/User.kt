@@ -12,7 +12,7 @@ data class User(
     var phone: String? = "",
     var country: String? = "",
     var newCountry: String? = "",
-    var role: String? = "Choose type of user",
+    var role: String? = "Company",
     var email: String? = "abidi.baha@gmail.com",
     var fullName: String? = "$firstName $lastName",
     var password: String? = "Aladin@123",

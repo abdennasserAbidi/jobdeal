@@ -61,11 +61,13 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.base.LanguageHelper
 import com.example.myjob.common.CustomDialog
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.common.tablayout.CustomTab
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
@@ -96,7 +98,12 @@ fun SignUpScreen(
 
     var selectedIndex by remember { mutableStateOf(0) }
 
-    var activatedCheck by remember { mutableStateOf(false) }
+    var activatedCheckCompanyName by remember { mutableStateOf(false) }
+    var activatedCheckEmail by remember { mutableStateOf(false) }
+    var activatedCheckPassword by remember { mutableStateOf(false) }
+    var activatedCheckFirstName by remember { mutableStateOf(false) }
+    var activatedCheckLastName by remember { mutableStateOf(false) }
+    var activatedCheckConfirmPassword by remember { mutableStateOf(false) }
 
     var userFirstName by remember { mutableStateOf(user.firstName ?: "") }
     val submitEnabled by remember { derivedStateOf { isFirstNameValid } }
@@ -118,7 +125,6 @@ fun SignUpScreen(
     val confirmPasswordVerified by remember { derivedStateOf { isConfirmPasswordValid } }
 
     var isProgressing by remember { mutableStateOf(false) }
-    var activatedCheckPassword by remember { mutableStateOf(false) }
 
     var showDialog by remember { mutableStateOf(false) }
 
@@ -195,6 +201,8 @@ fun SignUpScreen(
         }
     }
 
+    viewModel.changeRole(stringResource(id = R.string.choose_companies_text))
+
     Scaffold { padding ->
 
         Box(
@@ -242,6 +250,11 @@ fun SignUpScreen(
                         modifier = Modifier.padding(top = 10.dp)
                     )*/
 
+                    val listRole = listOf(
+                        stringResource(id = R.string.choose_companies_text),
+                        stringResource(id = R.string.choose_candidate_text)
+                    )
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -250,25 +263,14 @@ fun SignUpScreen(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         CustomTab(
-                            items = listOf(
-                                stringResource(id = R.string.choose_companies_text),
-                                stringResource(id = R.string.choose_candidate_text)
-                            ),
+                            items = listRole,
                             modifier = Modifier.padding(top = 10.dp, start = 10.dp),
                             selectedItemIndex = selectedIndex,
                             onClick = {
                                 selectedIndex = it
-                            }
-                        )
-                    }
-                }
+                                viewModel.changeRole(listRole[it])
 
-                if (activatedCheck) {
-                    if (selectedIndex == -1) {
-                        Text(
-                            modifier = Modifier.padding(top = 5.dp, start = 20.dp),
-                            text = stringResource(id = R.string.choose_type_warning),
-                            color = Red
+                            }
                         )
                     }
                 }
@@ -292,7 +294,7 @@ fun SignUpScreen(
                             .padding(top = 10.dp)
                             .border(
                                 width = 1.dp,
-                                color = if (activatedCheck && !submitEnabled) Red else colorResource(
+                                color = if (activatedCheckFirstName && !submitEnabled) Red else colorResource(
                                     id = R.color.whatsapp
                                 ),
                                 shape = RoundedCornerShape(30.dp)
@@ -305,13 +307,13 @@ fun SignUpScreen(
                         value = userFirstName,
                         onValueChange = {
                             userFirstName = it
-                            if (activatedCheck) viewModel.validateFirstName(it)
+                            if (activatedCheckFirstName) viewModel.validateFirstName(it)
                             viewModel.changeUserFirstName(it)
                         },
                         textStyle = TextStyle(Color.Black, fontSize = 14.sp)
                     )
 
-                    if (activatedCheck) {
+                    if (activatedCheckFirstName) {
                         if (userFirstName.isEmpty() || !submitEnabled) {
 
                             Text(
@@ -340,7 +342,7 @@ fun SignUpScreen(
                             .padding(top = 10.dp)
                             .border(
                                 width = 1.dp,
-                                color = if (activatedCheck && !lastNameVerified) Red else colorResource(
+                                color = if (activatedCheckLastName && !lastNameVerified) Red else colorResource(
                                     id = R.color.whatsapp
                                 ),
                                 shape = RoundedCornerShape(30.dp)
@@ -353,13 +355,13 @@ fun SignUpScreen(
                         value = userLastName,
                         onValueChange = {
                             userLastName = it
-                            if (activatedCheck) viewModel.validateLastName(it)
+                            if (activatedCheckLastName) viewModel.validateLastName(it)
                             viewModel.changeUserLastName(it)
                         },
                         textStyle = TextStyle(Color.Black, fontSize = 14.sp)
                     )
 
-                    if (activatedCheck) {
+                    if (activatedCheckLastName) {
                         if (userLastName.isEmpty() || !lastNameVerified) {
                             Log.i("submitEnabled", "SignUpScreen: $lastNameVerified")
 
@@ -390,7 +392,7 @@ fun SignUpScreen(
                             .padding(top = 10.dp)
                             .border(
                                 width = 1.dp,
-                                color = if (activatedCheck && !companyNameVerified) Red else colorResource(
+                                color = if (activatedCheckCompanyName && !companyNameVerified) Red else colorResource(
                                     id = R.color.whatsapp
                                 ),
                                 shape = RoundedCornerShape(30.dp)
@@ -403,13 +405,13 @@ fun SignUpScreen(
                         value = companyName,
                         onValueChange = {
                             companyName = it
-                            if (activatedCheck) viewModel.validateCompanyName(it)
+                            if (activatedCheckCompanyName) viewModel.validateCompanyName(it)
                             viewModel.changeCompanyName(it)
                         },
                         textStyle = TextStyle(Color.Black, fontSize = 14.sp)
                     )
 
-                    if (activatedCheck) {
+                    if (activatedCheckCompanyName) {
                         if (companyName.isEmpty() || !companyNameVerified) {
                             Log.i("submitEnabled", "SignUpScreen: $companyNameVerified")
 
@@ -440,7 +442,9 @@ fun SignUpScreen(
                         .padding(top = 10.dp)
                         .border(
                             width = 1.dp,
-                            color = if (activatedCheck && !emailVerified) Red else colorResource(id = R.color.whatsapp),
+                            color = if (activatedCheckEmail && !emailVerified) Red else colorResource(
+                                id = R.color.whatsapp
+                            ),
                             shape = RoundedCornerShape(30.dp)
                         )
                         .clip(shape = RoundedCornerShape(30.dp)),
@@ -451,13 +455,13 @@ fun SignUpScreen(
                     value = email,
                     onValueChange = {
                         email = it
-                        if (activatedCheck) viewModel.validateEmail(it)
+                        if (activatedCheckEmail) viewModel.validateEmail(it)
                         viewModel.changeUserEmail(it)
                     },
                     textStyle = TextStyle(Color.Black, fontSize = 14.sp)
                 )
 
-                if (activatedCheck) {
+                if (activatedCheckEmail) {
                     if (email.isEmpty() || !emailVerified) {
                         Log.i("submitEnabled", "SignUpScreen: $emailVerified")
 
@@ -481,7 +485,7 @@ fun SignUpScreen(
                 )
 
                 var showPassword by remember { mutableStateOf(false) }
-
+                Log.i("ehghrehgjrzlgz", "validatePassword: $activatedCheckPassword")
                 TextField(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -489,7 +493,7 @@ fun SignUpScreen(
                         .padding(top = 10.dp)
                         .border(
                             width = 1.dp,
-                            color = if (activatedCheck && !passwordVerified) Red else colorResource(
+                            color = if (activatedCheckPassword && !passwordVerified) Red else colorResource(
                                 id = R.color.whatsapp
                             ),
                             shape = RoundedCornerShape(30.dp)
@@ -502,7 +506,7 @@ fun SignUpScreen(
                     value = password,
                     onValueChange = {
                         password = it
-                        if (activatedCheck) viewModel.validatePassword(it)
+                        if (activatedCheckPassword) viewModel.validatePassword(it)
                         viewModel.changeUserPassword(it)
                     },
                     visualTransformation = if (showPassword) {
@@ -527,7 +531,7 @@ fun SignUpScreen(
                 )
                 Log.i("passwordVerified", "SignUpScreen: $passwordVerified")
 
-                if (activatedCheck) {
+                if (activatedCheckPassword) {
                     if (password.isEmpty() || !passwordVerified) {
 
                         Text(
@@ -557,7 +561,7 @@ fun SignUpScreen(
                         .padding(top = 10.dp)
                         .border(
                             width = 1.dp,
-                            color = if (activatedCheckPassword && !confirmPasswordVerified) Red else colorResource(
+                            color = if (activatedCheckConfirmPassword && !confirmPasswordVerified) Red else colorResource(
                                 id = R.color.whatsapp
                             ),
                             shape = RoundedCornerShape(30.dp)
@@ -571,6 +575,7 @@ fun SignUpScreen(
                     onValueChange = {
                         confirmPassword = it
                         viewModel.confirmPassword(it)
+                        if(activatedCheckConfirmPassword) viewModel.checkConfirmPassword(password, confirmPassword)
                     },
                     visualTransformation = if (showConfirmPassword) {
                         VisualTransformation.None
@@ -593,7 +598,7 @@ fun SignUpScreen(
                     textStyle = TextStyle(Color.Black, fontSize = 14.sp)
                 )
 
-                if (activatedCheckPassword) {
+                if (activatedCheckConfirmPassword) {
                     if (confirmPassword.isEmpty() || !confirmPasswordVerified) {
                         Log.i("confirmPasswordVerified", "SignUpScreen: $confirmPasswordVerified")
 
@@ -619,18 +624,22 @@ fun SignUpScreen(
                                 interactionSource = interactionSource,
                                 indication = null
                             ) {
+                                val checkAll = if (selectedIndex == 0) {
+                                    val companyNameValidator =
+                                        viewModel.validateCompanyName(companyName)
+                                    if (!companyNameValidator) activatedCheckCompanyName = true
+                                    companyNameValidator
+                                } else {
+                                    val firstNameValidator =
+                                        viewModel.validateFirstName(userFirstName)
+                                    val lastNameValidator =
+                                        viewModel.validateLastName(userLastName)
 
-                                val checkAll =
-                                    if (selectedIndex == 0) viewModel.validateCompanyName(
-                                        companyName
-                                    )
-                                    else {
-                                        val firstNameValidator =
-                                            viewModel.validateFirstName(userFirstName)
-                                        val lastNameValidator =
-                                            viewModel.validateLastName(userLastName)
-                                        firstNameValidator && lastNameValidator
-                                    }
+                                    if (!firstNameValidator) activatedCheckFirstName = true
+                                    if (!lastNameValidator) activatedCheckLastName = true
+
+                                    firstNameValidator && firstNameValidator
+                                }
 
                                 val emailValidator = viewModel.validateEmail(email)
                                 val passwordValidator = viewModel.validatePassword(password)
@@ -643,10 +652,11 @@ fun SignUpScreen(
                                     else -> true
                                 }
 
-                                if (localCheck && selectedIndex == -1) activatedCheck = true
-                                if (!confirmPasswordVerified) activatedCheckPassword = true
+                                if (!emailValidator) activatedCheckEmail = true
+                                if (!passwordValidator) activatedCheckPassword = true
+                                if (!confirmValidator) activatedCheckConfirmPassword = true
 
-                                if (selectedIndex != -1 && checkAll && emailValidator && passwordValidator && confirmValidator) {
+                                if (checkAll && emailValidator && passwordValidator && confirmValidator) {
                                     CoroutineScope(Dispatchers.Main).launch {
                                         isProgressing = true
                                         delay(1000L)
@@ -701,7 +711,8 @@ fun SignUpScreen(
 
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center) {
+                    contentAlignment = Alignment.Center
+                ) {
 
                     Card(
                         modifier = Modifier
