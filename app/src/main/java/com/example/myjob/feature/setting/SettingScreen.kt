@@ -72,7 +72,6 @@ import com.example.myjob.common.tablayout.CustomTab
 import com.example.myjob.domain.entities.SettingsParams
 import com.example.myjob.feature.navigation.Screen
 import kotlinx.coroutines.flow.update
-import javax.annotation.meta.When
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -401,7 +400,9 @@ fun SettingScreen(
             if (!expanded) {
                 Column(modifier = Modifier.fillMaxSize()) {
 
-                    var selected by remember { mutableStateOf(0) }
+                    var selected by remember(language) { mutableStateOf(
+                        if (language == "" || language == "English" || language == "Anglais") 0 else 1
+                    ) }
 
                     Text(
                         modifier = Modifier.padding(start = 10.dp, top = 10.dp),
@@ -436,6 +437,8 @@ fun SettingScreen(
 
                                 lc =
                                     if (allLanguages[it] == "English" || allLanguages[it] == "Anglais") "en" else "fr"
+
+                                Log.i("jkelaglhae", "SettingScreen: $lc")
 
                                 LanguageHelper.changeLanguage(context, lc)
 

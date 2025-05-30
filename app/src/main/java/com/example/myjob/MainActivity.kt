@@ -518,7 +518,14 @@ class MainActivity : ComponentActivity() {
                     composable(route = Screen.HomeScreen.route) {
 
                         if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") {
-                            isVisibleNav = true
+                            //isVisibleNav = true
+
+                            CoroutineScope(Dispatchers.Main).launch {
+                                GlobalEntries.isVisibleNav.collect {
+                                    isVisibleNav = it
+                                }
+                            }
+
                             HomeCompany(navController = navController,
                                 allSubjects = allSubjects,
                                 listSchools = listSchools,

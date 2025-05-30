@@ -203,10 +203,14 @@ class HomeViewModel @Inject constructor(
 
         val listDisponibility = criteria.value.disponibility
 
-        availability.map {
-            if (it.titleString.isNotEmpty() && !listDisponibility.contains(it.titleString)) listDisponibility.add(
-                it.titleString
-            )
+        if (isSelected) {
+            availability.map {
+                if (it.titleString.isNotEmpty() && !listDisponibility.contains(it.titleString)) listDisponibility.add(it.titleString)
+            }
+        } else {
+            availability.map {
+                if (it.titleString.isNotEmpty() && listDisponibility.contains(it.titleString)) listDisponibility.remove(it.titleString)
+            }
         }
 
         criteria.update {
@@ -283,9 +287,14 @@ class HomeViewModel @Inject constructor(
 
         val list = criteria.value.categories
 
-        availability.map {
-            if (it.titleString.isNotEmpty() && !list.contains(it.titleString))
-                list.add(it.titleString)
+        if (isSelected) {
+            availability.map {
+                if (it.titleString.isNotEmpty() && !list.contains(it.titleString)) list.add(it.titleString)
+            }
+        } else {
+            availability.map {
+                if (it.titleString.isNotEmpty() && list.contains(it.titleString)) list.remove(it.titleString)
+            }
         }
 
         criteria.update {
@@ -296,6 +305,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun changeSelectionExp(index: Int, title: String, isSelected: Boolean) {
+
         val availability = selectedExperience.value.toMutableList()
         availability[index].titleString = title
         availability[index].isSelected = isSelected
@@ -309,11 +319,16 @@ class HomeViewModel @Inject constructor(
             selectedAvailabilities
         }
 
-        val list = criteria.value.situation
+        val list = criteria.value.experiences
 
-        availability.map {
-            if (it.titleString.isNotEmpty() && !list.contains(it.titleString))
-                list.add(it.titleString)
+        if (isSelected) {
+            availability.map {
+                if (it.titleString.isNotEmpty() && !list.contains(it.titleString)) list.add(it.titleString)
+            }
+        } else {
+            availability.map {
+                if (it.titleString.isNotEmpty() && list.contains(it.titleString)) list.remove(it.titleString)
+            }
         }
 
         criteria.update {
@@ -365,9 +380,14 @@ class HomeViewModel @Inject constructor(
 
         val list = criteria.value.typeContract
 
-        availability.map {
-            if (it.titleString.isNotEmpty() && !list.contains(it.titleString))
-                list.add(it.titleString)
+        if (isSelected) {
+            availability.map {
+                if (it.titleString.isNotEmpty() && !list.contains(it.titleString)) list.add(it.titleString)
+            }
+        } else {
+            availability.map {
+                if (it.titleString.isNotEmpty() && list.contains(it.titleString)) list.remove(it.titleString)
+            }
         }
 
         criteria.update {
@@ -404,6 +424,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun changeSelectionSituation(index: Int, title: String, isSelected: Boolean) {
+
         val availability = situations.value.toMutableList()
         availability[index].titleString = title
         availability[index].isSelected = isSelected
@@ -419,9 +440,14 @@ class HomeViewModel @Inject constructor(
 
         val list = criteria.value.situation
 
-        availability.map {
-            if (it.titleString.isNotEmpty() && !list.contains(it.titleString))
-                list.add(it.titleString)
+        if (isSelected) {
+            availability.map {
+                if (it.titleString.isNotEmpty() && !list.contains(it.titleString)) list.add(it.titleString)
+            }
+        } else {
+            availability.map {
+                if (it.titleString.isNotEmpty() && list.contains(it.titleString)) list.remove(it.titleString)
+            }
         }
 
         criteria.update {
@@ -472,8 +498,14 @@ class HomeViewModel @Inject constructor(
 
         val list = criteria.value.sex
 
-        availability.map {
-            if (it.titleString.isNotEmpty() && !list.contains(it.titleString)) list.add(it.titleString)
+        if (isSelected) {
+            availability.map {
+                if (it.titleString.isNotEmpty() && !list.contains(it.titleString)) list.add(it.titleString)
+            }
+        } else {
+            availability.map {
+                if (it.titleString.isNotEmpty() && list.contains(it.titleString)) list.remove(it.titleString)
+            }
         }
 
         criteria.update {

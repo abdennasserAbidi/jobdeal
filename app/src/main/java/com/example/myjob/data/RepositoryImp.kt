@@ -166,7 +166,8 @@ class RepositoryImp @Inject constructor(
         }
     }
 
-    override suspend fun getCompanyAnnouncements(id: Int,
+    override suspend fun getCompanyAnnouncements(
+        id: Int,
     ): Flow<Resource<PagingData<AnnouncementModel>>> = flow {
         val pager = Pager(
             config = PagingConfig(pageSize = 10, prefetchDistance = 2),
@@ -195,7 +196,8 @@ class RepositoryImp @Inject constructor(
     ///////////////////////////////////////////////////////////////////////////
     // NOTIFICATION
     ///////////////////////////////////////////////////////////////////////////
-    override suspend fun getCompanyNotifications(id: Int,
+    override suspend fun getCompanyNotifications(
+        id: Int,
     ): Flow<Resource<PagingData<NotificationModel>>> = flow {
         val pager = Pager(
             config = PagingConfig(pageSize = 10, prefetchDistance = 2),
@@ -263,17 +265,18 @@ class RepositoryImp @Inject constructor(
         emit(Resource(ResourceState.ERROR, null, ex.message))
     }
 
-    override suspend fun sendInvitation(invitationParams: InvitationParams): Flow<Resource<UserResponse>> = flow {
-        try {
-            // Get data from RemoteDataSource
-            val data = remoteDataSource.sendInvitation(invitationParams)
-            // Emit data
-            emit(Resource(ResourceState.SUCCESS, data, null))
-        } catch (ex: Exception) {
-            // Emit error
-            emit(Resource(ResourceState.ERROR, null, ex.message))
+    override suspend fun sendInvitation(invitationParams: InvitationParams): Flow<Resource<UserResponse>> =
+        flow {
+            try {
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.sendInvitation(invitationParams)
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
         }
-    }
     /*override suspend fun getAllUser(currentPage: Int): Flow<Resource<PagingData<User>>> = flow {
 
         try {
@@ -293,6 +296,17 @@ class RepositoryImp @Inject constructor(
             pagingSourceFactory = {
                 GenericSource { currentPage ->
                     val users = remoteDataSource.getAllUser(pageNumber = currentPage)
+                    val lang = sharedPreference.getString("lang", "") ?: ""
+                    users.content.map {
+                        val gender = it.sexe ?: ""
+                        it.changeSex(gender, lang)
+
+                        val situation = it.situation ?: ""
+                        it.changeSituation(situation, lang)
+
+                        val availability = it.availability ?: ""
+                        it.changeAvailability(availability, lang)
+                    }
 
                     val json = Gson().toJson(users.content)
                     sharedPreference.putString("jsonUser", json)
@@ -335,6 +349,7 @@ class RepositoryImp @Inject constructor(
     }.catch { ex ->
         emit(Resource(ResourceState.ERROR, null, ex.message))
     }
+
     override suspend fun getFavorites(id: Int): Flow<Resource<PagingData<User>>> = flow {
         val pager = Pager(
             config = PagingConfig(pageSize = 10, prefetchDistance = 2),
@@ -359,63 +374,76 @@ class RepositoryImp @Inject constructor(
     }.catch { ex ->
         emit(Resource(ResourceState.ERROR, null, ex.message))
     }
-    override suspend fun getInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>> = flow {
-        val pager = Pager(
-            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
-            pagingSourceFactory = {
-                GenericSource { currentPage ->
-                    val educations =
-                        remoteDataSource.getInvitations(id = id, pageNumber = currentPage)
 
-                    val json = Gson().toJson(educations.content)
-                    sharedPreference.putString("jsonInvitations", json)
+    override suspend fun getInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>> =
+        flow {
+            val pager = Pager(
+                config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+                pagingSourceFactory = {
+                    GenericSource { currentPage ->
+                        val educations =
+                            remoteDataSource.getInvitations(id = id, pageNumber = currentPage)
 
-                    educations
+                        val json = Gson().toJson(educations.content)
+                        sharedPreference.putString("jsonInvitations", json)
+
+                        educations
+                    }
                 }
-            }
-        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+            ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
 
-        emitAll(
-            pager.map { pagingData ->
-                Resource(ResourceState.SUCCESS, pagingData, null)
-            }
-        )
-    }.catch { ex ->
-        emit(Resource(ResourceState.ERROR, null, ex.message))
-    }
-
-    override suspend fun searchUsers(criteria: CriteriaModel): Flow<Resource<PagingData<User>>> = flow {
-        val pager = Pager(
-            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
-            pagingSourceFactory = {
-                GenericSource { currentPage ->
-                    val educations =
-                        remoteDataSource.searchUsers(criteria = criteria, pageNumber = currentPage)
-
-                    val json = Gson().toJson(educations.content)
-                    sharedPreference.putString("jsonFilter", json)
-
-                    educations
+            emitAll(
+                pager.map { pagingData ->
+                    Resource(ResourceState.SUCCESS, pagingData, null)
                 }
-            }
-        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+            )
+        }.catch { ex ->
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
 
-        emitAll(
-            pager.map { pagingData ->
-                Resource(ResourceState.SUCCESS, pagingData, null)
-            }
-        )
-    }.catch { ex ->
-        emit(Resource(ResourceState.ERROR, null, ex.message))
-    }
+    override suspend fun searchUsers(criteria: CriteriaModel): Flow<Resource<PagingData<User>>> =
+        flow {
+            val pager = Pager(
+                config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+                pagingSourceFactory = {
+                    GenericSource { currentPage ->
+                        val educations =
+                            remoteDataSource.searchUsers(
+                                criteria = criteria,
+                                pageNumber = currentPage
+                            )
 
-    override suspend fun searchCandidate(word: String, id: Int): Flow<Resource<PagingData<SearchHistory>>> = flow {
+                        val json = Gson().toJson(educations.content)
+                        sharedPreference.putString("jsonFilter", json)
+
+                        educations
+                    }
+                }
+            ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+            emitAll(
+                pager.map { pagingData ->
+                    Resource(ResourceState.SUCCESS, pagingData, null)
+                }
+            )
+        }.catch { ex ->
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+
+    override suspend fun searchCandidate(
+        word: String,
+        id: Int
+    ): Flow<Resource<PagingData<SearchHistory>>> = flow {
         val pager = Pager(
             config = PagingConfig(pageSize = 10, prefetchDistance = 2),
             pagingSourceFactory = {
                 GenericSource { currentPage ->
                     // Get data from RemoteDataSource
-                    val educations = remoteDataSource.searchCandidates(word = word, id = id, pageNumber = currentPage)
+                    val educations = remoteDataSource.searchCandidates(
+                        word = word,
+                        id = id,
+                        pageNumber = currentPage
+                    )
 
                     val json = Gson().toJson(educations.content)
                     sharedPreference.putString("jsonSearchCandidate", json)
@@ -459,31 +487,36 @@ class RepositoryImp @Inject constructor(
     }.catch { ex ->
         emit(Resource(ResourceState.ERROR, null, ex.message))
     }
-    override suspend fun getCompanyInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>> = flow {
-        val pager = Pager(
-            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
-            pagingSourceFactory = {
-                GenericSource { currentPage ->
 
-                    val experiences =
-                        remoteDataSource.getCompanyInvitations(id = id, pageNumber = currentPage)
+    override suspend fun getCompanyInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>> =
+        flow {
+            val pager = Pager(
+                config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+                pagingSourceFactory = {
+                    GenericSource { currentPage ->
 
-                    val json = Gson().toJson(experiences.content)
-                    sharedPreference.putString("jsonInvitation", json)
+                        val experiences =
+                            remoteDataSource.getCompanyInvitations(
+                                id = id,
+                                pageNumber = currentPage
+                            )
 
-                    experiences
+                        val json = Gson().toJson(experiences.content)
+                        sharedPreference.putString("jsonInvitation", json)
+
+                        experiences
+                    }
                 }
-            }
-        ).flow.cachedIn(CoroutineScope(Dispatchers.Default))
+            ).flow.cachedIn(CoroutineScope(Dispatchers.Default))
 
-        emitAll(
-            pager.map { pagingData ->
-                Resource(ResourceState.SUCCESS, pagingData, null)
-            }
-        )
-    }.catch { ex ->
-        emit(Resource(ResourceState.ERROR, null, ex.message))
-    }
+            emitAll(
+                pager.map { pagingData ->
+                    Resource(ResourceState.SUCCESS, pagingData, null)
+                }
+            )
+        }.catch { ex ->
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
 
     override suspend fun getAllExp(id: Int): Flow<Resource<List<Experience>>> = flow {
         try {
@@ -496,17 +529,19 @@ class RepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
-    override suspend fun verifyExisting(fileName: String): Flow<Resource<FileExistingResponse>> = flow {
-        try {
-            // Get data from RemoteDataSource
-            val data = remoteDataSource.verifyExisting(fileName)
-            // Emit data
-            emit(Resource(ResourceState.SUCCESS, data, null))
-        } catch (ex: Exception) {
-            // Emit error
-            emit(Resource(ResourceState.ERROR, null, ex.message))
+
+    override suspend fun verifyExisting(fileName: String): Flow<Resource<FileExistingResponse>> =
+        flow {
+            try {
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.verifyExisting(fileName)
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
         }
-    }
 
     override suspend fun getAllEduc(id: Int): Flow<Resource<List<Educations>>> = flow {
         try {
@@ -531,6 +566,7 @@ class RepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
+
     override suspend fun saveCompanyInfo(user: User): Flow<Resource<UserResponse>> = flow {
         try {
             // Get data from RemoteDataSource
@@ -557,6 +593,7 @@ class RepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
+
     override suspend fun removeSearchHistory(
         idUserConnected: Int,
         idUserToDelete: Int
@@ -584,7 +621,11 @@ class RepositoryImp @Inject constructor(
                 emit(Resource(ResourceState.ERROR, null, ex.message))
             }
         }
-    override suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): Flow<Resource<UserResponse>> =
+
+    override suspend fun saveToFavorite(
+        idUserConnected: Int,
+        candidateId: Int
+    ): Flow<Resource<UserResponse>> =
         flow {
             try {
                 // Get data from RemoteDataSource
@@ -601,6 +642,19 @@ class RepositoryImp @Inject constructor(
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.getUser(id)
+
+            val lang = sharedPreference.getString("lang", "") ?: ""
+
+            val gender = data.sexe ?: ""
+            data.changeSex(gender, lang)
+
+            val situation = data.situation ?: ""
+            data.changeSituation(situation, lang)
+
+            val availability = data.availability ?: ""
+            data.changeAvailability(availability, lang)
+
+
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {
@@ -608,6 +662,7 @@ class RepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
+
     override suspend fun uploadFile(file: MultipartBody.Part): Flow<Resource<String>> = flow {
         try {
             // Get data from RemoteDataSource
@@ -619,6 +674,7 @@ class RepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
+
     override suspend fun validateProfile(email: String): Flow<Resource<String>> = flow {
         try {
             // Get data from RemoteDataSource

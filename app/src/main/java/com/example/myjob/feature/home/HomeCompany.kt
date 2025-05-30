@@ -1,10 +1,12 @@
 package com.example.myjob.feature.home
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,13 +14,17 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
@@ -39,28 +45,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
+import androidx.compose.ui.graphics.Color.Companion.LightGray
+import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
+import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GenericMultipleSearch
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.isFromFilter
+import com.example.myjob.common.GlobalEntries.isVisibleNav
+import com.example.myjob.common.LoadingNextPageItem
+import com.example.myjob.common.PageLoader
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.home.filter.flowHandling
 import com.example.myjob.feature.navigation.Screen
+import kotlinx.coroutines.flow.update
 
 @OptIn(
     ExperimentalSwipeableCardApi::class, ExperimentalMaterial3Api::class,
@@ -118,12 +133,23 @@ fun HomeCompany(
 
     var filterOpen by remember { mutableStateOf(false) }
     var itemRes by remember { mutableStateOf(R.string.item1) }
+    var indexParent by remember { mutableStateOf(-1) }
+    var titleParent by remember { mutableStateOf("") }
+    var isSelectedParent by remember { mutableStateOf(false) }
+
     val listChoiceParentSelect by homeViewModel.listChoiceParentSelect.collectAsState()
     val listChoiceParentSelected by homeViewModel.listChoiceParentSelected.collectAsState()
 
     val choiceParentSelect by homeViewModel.choiceParentSelect.collectAsState()
     val categories by homeViewModel.parentChoices.collectAsState()
     val selectedCat by homeViewModel.selectedParentChoices.collectAsState()
+
+    val selectedCategories by homeViewModel.selectedCat.collectAsState()
+    val selectedAvailability by homeViewModel.selectedAvailability.collectAsState()
+    val selectedExp by homeViewModel.selectedExp.collectAsState()
+    val selectedType by homeViewModel.selectedType.collectAsState()
+    val selectedSituation by homeViewModel.selectedSituation.collectAsState()
+    val selectedSex by homeViewModel.selectedSex.collectAsState()
 
     val criteria by homeViewModel.criteria.collectAsState()
 
@@ -247,7 +273,7 @@ fun HomeCompany(
 
                     val title = stringResource(id = item.title)
 
-                    val textColor = if (selectedCat[index]) White else Color.Black
+                    val textColor = if (selectedCat[index]) White else Black
                     val color =
                         colorResource(id = if (selectedCat[index]) R.color.whatsapp else R.color.lighter_gray)
 
@@ -269,7 +295,11 @@ fun HomeCompany(
                                 indication = null
                             ) {
                                 filterOpen = true
+                                isVisibleNav.update { false }
                                 itemRes = item.title
+                                indexParent = index
+                                titleParent = title
+                                isSelectedParent = !selectedCat[index]
                                 homeViewModel.changeOption(title, item.title)
                                 /*homeViewModel.changeSelectionParentChoices(
                                     index,
@@ -289,6 +319,136 @@ fun HomeCompany(
 
                 }
             }
+
+            LazyColumn(modifier = Modifier
+                .padding(top = 20.dp)
+                .fillMaxSize())
+            {
+
+                items(lazyPagingItems.itemCount) { index ->
+                    val user = lazyPagingItems[index] ?: User()
+
+                    Card(
+                        elevation = 10.dp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp, horizontal = 10.dp),
+                        shape = RoundedCornerShape(30.dp)
+                    ) {
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp)
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    GlobalEntries.userForCompany = user
+                                    navController.navigate(Screen.DetailScreen.route)
+                                }
+                        ) {
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+
+                                val gender =
+                                    if (user.sexe == "Homme" || user.sexe == "Male") R.drawable.menavatar
+                                    else R.drawable.femaleavatar
+
+                                val color =
+                                    if (user.sexe == "Homme" || user.sexe == "Male") Color.Cyan
+                                    else Color(0xFFFF8C00)
+
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            color = color,
+                                            shape = CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = gender),
+                                        modifier = Modifier
+                                            .size(70.dp)
+                                            .padding(10.dp),
+                                        contentDescription = ""
+                                    )
+                                }
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .weight(0.4f)
+                                        .padding(start = 20.dp)
+                                        .padding(horizontal = 10.dp)
+                                ) {
+
+                                    Text(
+                                        text = user.fullName ?: "",
+                                        style = TextStyle(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 16.sp
+                                        )
+                                    )
+                                    val exp = user.experience?.let {
+                                        homeViewModel.extractExp(it)
+                                    } ?: "new"
+
+                                    Text(
+                                        text = exp,
+                                        style = TextStyle(
+                                            fontWeight = FontWeight.Normal,
+                                            fontSize = 14.sp
+                                        ),
+                                        color = Color.LightGray,
+                                        modifier = Modifier.padding(top = 5.dp)
+                                    )
+
+                                }
+
+                            }
+                        }
+
+                    }
+                }
+                lazyPagingItems.apply {
+                    when {
+                        loadState.refresh is LoadState.Loading -> {
+                            item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
+                        }
+
+                        loadState.refresh is LoadState.Error -> {
+                            val error = lazyPagingItems.loadState.refresh as LoadState.Error
+                            item {
+                                ErrorMessage(
+                                    modifier = Modifier.fillParentMaxSize(),
+                                    message = error.error.localizedMessage ?: "",
+                                    onClickRetry = { retry() })
+                            }
+                        }
+
+                        loadState.append is LoadState.Loading -> {
+                            item { LoadingNextPageItem(modifier = Modifier) }
+                        }
+
+                        loadState.append is LoadState.Error -> {
+                            val error = lazyPagingItems.loadState.append as LoadState.Error
+                            /*item {
+                                ErrorMessage(
+                                    modifier = Modifier,
+                                    message = error.error.localizedMessage!!,
+                                    onClickRetry = { retry() })
+                            }*/
+                        }
+                    }
+                }
+            }
         }
 
         AnimatedVisibility(
@@ -305,7 +465,7 @@ fun HomeCompany(
         ) {
 
             listChoiceParentSelect?.let {
-                val height = screenHeight/2
+                val height = screenHeight / 2
                 val heightDp = with(density) { height.toDp() }
 
                 Card(
@@ -315,25 +475,80 @@ fun HomeCompany(
                     shape = RoundedCornerShape(10.dp),
                     elevation = 15.dp
                 ) {
-                    Column(modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = choiceParentSelect,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Black,
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(top = 30.dp, bottom = 20.dp)
-                        )
-
-                        HorizontalDivider(
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Column(
                             modifier = Modifier
-                                .fillMaxWidth(),
-                            thickness = 1.dp
-                        )
+                                .fillMaxWidth()
+                                .align(Alignment.TopCenter),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
 
-                        flowHandling(it, listChoiceParentSelected) { index, title, isSelected ->
-                            homeViewModel.changeUnKnown(itemRes, index, title, isSelected)
+                            Text(
+                                modifier = Modifier
+                                    .height(2.dp)
+                                    .width(70.dp)
+                                    .padding(top = 20.dp)
+                                    .background(Red, RoundedCornerShape(20.dp)),
+                                text = ""
+                            )
+
+                            Text(
+                                text = choiceParentSelect,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Black,
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(top = 30.dp, bottom = 20.dp)
+                            )
+
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                thickness = 1.dp
+                            )
+
+                            val l = when(itemRes) {
+                                R.string.categories_text -> selectedCategories
+                                R.string.experience_text -> selectedExp
+                                R.string.disponibility_text -> selectedAvailability
+                                R.string.employment_type_text -> selectedType
+                                R.string.situation_text -> selectedSituation
+                                R.string.sexe_text -> selectedSex
+                                else -> selectedAvailability
+                            }
+
+                            isSelectedParent = l.filter { it }.none()
+
+                            flowHandling(it, l) { index, title, isSelected ->
+                                homeViewModel.changeUnKnown(itemRes, index, title, isSelected)
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .padding(bottom = 20.dp)
+                                .fillMaxWidth(0.8f)
+                                .align(Alignment.BottomCenter)
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    filterOpen = false
+                                    isVisibleNav.update { true }
+                                    homeViewModel.validateFilter(criteria)
+                                    homeViewModel.changeSelectionParentChoices(indexParent, titleParent, !isSelectedParent)
+                                }
+                                .background(
+                                    color = colorResource(id = R.color.whatsapp),
+                                    RoundedCornerShape(30.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "See results",
+                                color = White,
+                                style = TextStyle(fontWeight = FontWeight.Bold),
+                                modifier = Modifier.padding(vertical = 20.dp)
+                            )
                         }
                     }
                 }
@@ -345,7 +560,7 @@ fun HomeCompany(
                         it.libelly
                     }
 
-                    val listFilter = when(itemRes) {
+                    val listFilter = when (itemRes) {
                         R.string.institution_text -> listSchools
                         R.string.location_text -> listCountries
                         R.string.company_name_text -> listCompany
@@ -353,7 +568,7 @@ fun HomeCompany(
                         else -> emptyList()
                     }
 
-                    val savedList = when(itemRes) {
+                    val savedList = when (itemRes) {
                         R.string.institution_text -> criteria.institutions
                         R.string.location_text -> criteria.location
                         R.string.company_name_text -> criteria.companies
@@ -371,7 +586,7 @@ fun HomeCompany(
                         onSelectedBank = { list ->
                             filterOpen = false
 
-                            when(itemRes) {
+                            when (itemRes) {
                                 R.string.institution_text -> homeViewModel.changeInstitutions(list)
                                 R.string.location_text -> homeViewModel.changeLocation(list)
                                 R.string.company_name_text -> homeViewModel.changeCompanies(list)
@@ -382,7 +597,6 @@ fun HomeCompany(
                     )
                 }
             }
-
 
 
         }

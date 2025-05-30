@@ -129,6 +129,28 @@ data class User(
         return traduction
     }
 
+    fun changeAvailability(name: String, lang: String): String {
+        availability = if (lang == "French" || lang == "Français") {
+            when(name) {
+                "Now" -> "Maintenant"
+                "Less than 3 months" -> "Avant 3 mois"
+                "In 3 months" -> "Dans 3 mois"
+                "More than 3 months" -> "Après 3 mois"
+                else -> name
+            }
+        } else {
+            when(name) {
+                "Maintenant" -> "Now"
+                "Avant 3 mois" -> "Less than 3 months"
+                "Dans 3 mois" -> "In 3 months"
+                "Après 3 mois" -> "More than 3 months"
+                else -> name
+            }
+        }
+
+        return availability ?: ""
+    }
+
     fun showUser(lang: String): Map<String, String> {
         val mapUser = hashMapOf<String, String> ()
 

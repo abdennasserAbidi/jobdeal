@@ -20,12 +20,19 @@ class SettingViewModel @Inject constructor(
     private val sharedPreferences: SharedPreference,
     private val validateAccountUseCase: ValidateAccountUseCase,
     private val saveCompanyInfoUseCase: SaveCompanyInfoUseCase,
-): ViewModel() {
+) : ViewModel() {
 
     val role = MutableStateFlow("")
     val username = MutableStateFlow("AA")
     val userFullName = MutableStateFlow("")
-    val allLanguages = MutableStateFlow(listOf("English", "French"))
+    val allLanguages = MutableStateFlow(
+        if (sharedPreferences.getString(
+                "lang",
+                "English"
+            ) == "English" || sharedPreferences.getString("lang", "English") == "Anglais"
+        ) listOf("English", "French")
+        else listOf("Anglais", "Français")
+    )
     val language = MutableStateFlow(sharedPreferences.getString("lang", "English"))
     val user = MutableStateFlow(GlobalEntries.user)
 
@@ -64,18 +71,21 @@ class SettingViewModel @Inject constructor(
             it
         }
     }
+
     fun changeCompanyActivitySector(name: String) {
         user.update {
             it.companyActivitySector = name
             it
         }
     }
+
     fun changeCompanyDescription(name: String) {
         user.update {
             it.companyDescription = name
             it
         }
     }
+
     fun changeCompanyAddress(name: String) {
         user.update {
             it.companyAddress = name
@@ -123,6 +133,7 @@ class SettingViewModel @Inject constructor(
             sharedPreferences.getString("role", "") ?: ""
         }
     }
+
     init {
         val fullName = sharedPreferences.getString("username", "") ?: ""
         userFullName.update { fullName }
@@ -162,16 +173,16 @@ class SettingViewModel @Inject constructor(
     var validationMessage = MutableStateFlow("")
 
     fun validateAccount() {
-        Log.i("lktrdgvtd", "validateAccount: ${GlobalEntries.user.email}")
         viewModelScope.launch {
             validateAccountUseCase.execute("abidi.abdennasser@gmail.com").collect { res ->
-                when(res.status) {
+                when (res.status) {
                     ResourceState.SUCCESS -> {
                         Log.i("lktrdgvtd", "uploadCV: ${res.data}")
                         validationMessage.update {
                             res.data ?: ""
                         }
                     }
+
                     else -> {
                         Log.i("lktrdgvtd", "error: ${res.message}")
                     }
