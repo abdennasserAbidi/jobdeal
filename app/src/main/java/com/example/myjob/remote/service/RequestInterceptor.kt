@@ -1,11 +1,13 @@
 package com.example.myjob.remote.service
 
-//import TestFlavor.apiKey
 import android.annotation.SuppressLint
+import com.example.myjob.local.database.SharedPreference
 import okhttp3.*
 import java.io.IOException
 
-class RequestInterceptor internal constructor() : Interceptor {
+class RequestInterceptor internal constructor(
+    var sharedPreference: SharedPreference
+) : Interceptor {
 
     @SuppressLint("LogConditional")
     @Throws(IOException::class)
@@ -14,7 +16,7 @@ class RequestInterceptor internal constructor() : Interceptor {
         val headers = provideHeaders()
         val httpUrl = request.url
             .newBuilder()
-            .addQueryParameter("access_key","apiKey")
+            .addQueryParameter("lang", sharedPreference.getString("lang", ""))
             .build()
         val newRequest = provideRequest(request, headers, httpUrl)
         return chain.proceed(newRequest)

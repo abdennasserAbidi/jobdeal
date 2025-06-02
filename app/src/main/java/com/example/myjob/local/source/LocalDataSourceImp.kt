@@ -1,4 +1,4 @@
-package com.example.myapplication.local.source
+package com.example.myjob.local.source
 
 import com.example.myjob.local.dao.PostDAO
 import javax.inject.Inject

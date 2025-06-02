@@ -1,7 +1,6 @@
 package com.example.myjob.base
 
 import android.content.Context
-import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.myjob.domain.entities.NewCountry
@@ -23,11 +22,6 @@ class JsonPagingSource(
             val pageSize = params.loadSize
             val start = currentPage * pageSize
             val end = (start + pageSize).coerceAtMost(items.size)
-
-            Log.i("efzfrzfrzgfrz", "currentPage: $currentPage")
-            Log.i("efzfrzfrzgfrz", "size: ${params.key}")
-            Log.i("efzfrzfrzgfrz", "start: $start")
-            Log.i("efzfrzfrzgfrz", "end: $end")
 
             val pageData = if (start < items.size) items.subList(start, end) else emptyList()
 

@@ -35,7 +35,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.phonekit.getFlagResource
-import com.example.myjob.feature.home.SearchView
+import com.example.myjob.common.SearchView
 
 @Composable
 fun CountryCodeScreen(

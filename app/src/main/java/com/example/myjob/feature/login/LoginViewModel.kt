@@ -1,7 +1,6 @@
 package com.example.myjob.feature.login
 
 import android.util.Log
-import androidx.compose.runtime.derivedStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myjob.base.reources.Resource
@@ -10,11 +9,11 @@ import com.example.myjob.common.DialogState
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.LoginResponse
-import com.example.myjob.domain.usecase.LoginUseCase
-import com.example.myjob.domain.usecase.SaveUserUseCase
-import com.example.myjob.domain.usecase.ValidateEmailUseCase
-import com.example.myjob.domain.usecase.ValidatePasswordUseCase
-import com.example.myjob.domain.usecase.VerificationEmailUseCase
+import com.example.myjob.domain.usecase.subscription.LoginUseCase
+import com.example.myjob.domain.usecase.subscription.SaveUserUseCase
+import com.example.myjob.domain.usecase.verification.ValidateEmailUseCase
+import com.example.myjob.domain.usecase.verification.ValidatePasswordUseCase
+import com.example.myjob.domain.usecase.subscription.VerificationEmailUseCase
 import com.example.myjob.feature.login.gmail.SignInResult
 import com.example.myjob.feature.login.gmail.SignInState
 import com.example.myjob.local.database.SharedPreference

@@ -6,10 +6,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.SearchHistory
-import com.example.myjob.domain.usecase.GetAllSearchUseCase
-import com.example.myjob.domain.usecase.RemoveSearchHistoryUseCase
-import com.example.myjob.domain.usecase.SaveSearchUseCase
-import com.example.myjob.domain.usecase.home.SearchCandidateUseCase
+import com.example.myjob.domain.usecase.search.GetAllSearchUseCase
+import com.example.myjob.domain.usecase.search.RemoveSearchHistoryUseCase
+import com.example.myjob.domain.usecase.search.SaveSearchUseCase
+import com.example.myjob.domain.usecase.search.SearchCandidateUseCase
 import com.example.myjob.local.database.SharedPreference
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel

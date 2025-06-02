@@ -61,13 +61,10 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.NavController
 import com.example.myjob.R
-import com.example.myjob.base.LanguageHelper
 import com.example.myjob.common.CustomDialog
-import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.common.tablayout.CustomTab
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen

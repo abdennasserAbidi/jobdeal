@@ -1,10 +1,8 @@
 package com.example.myjob.feature.setting
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateIntOffsetAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -33,7 +31,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -65,16 +62,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.base.CustomTextField
-import com.example.myjob.base.LanguageHelper
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.isFromSettings
+import com.example.myjob.common.LanguageHelper
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.common.tablayout.CustomTab
 import com.example.myjob.domain.entities.SettingsParams
 import com.example.myjob.feature.navigation.Screen
 import kotlinx.coroutines.flow.update
-import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingScreen(
     navController: NavController,
@@ -95,18 +91,7 @@ fun SettingScreen(
     var lc by remember { mutableStateOf(if (language == "English") "en" else "fr") }
 
     var expanded by remember { mutableStateOf(false) }
-    val animatedPadding by animateDpAsState(
-        if (expanded) {
-            10.dp
-        } else {
-            0.dp
-        },
-        label = "padding"
-    )
 
-    val pxToMove = with(LocalDensity.current) {
-        10.dp.toPx().roundToInt()
-    }
     val offset by animateIntOffsetAsState(
         targetValue = if (expanded) {
             IntOffset(0, 0)
@@ -118,7 +103,6 @@ fun SettingScreen(
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
-        Log.i("lifecycleExp", "login: $lifecycleEvent")
 
         if (lifecycleEvent == Lifecycle.Event.ON_START) {
             settingViewModel.getRole()
@@ -131,7 +115,6 @@ fun SettingScreen(
         LocalConfiguration.current.screenHeightDp.dp.toPx().toInt()
     }
     val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
-    Log.i("saveUserRes", "screenHeightDp: ${GlobalEntries.user}")
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -229,8 +212,7 @@ fun SettingScreen(
                                         easing = LinearOutSlowInEasing
                                     )
                                 )
-                                .fillMaxWidth(if (expanded) 0.85f else 0.5f)
-                                //.height(if (expanded) (screenHeightDp - 50.dp) else 50.dp)
+                                .fillMaxWidth(if (expanded) 0.85f else 0.65f)
                                 .wrapContentHeight()
                                 .shadow(
                                     elevation = 5.dp,
@@ -251,8 +233,24 @@ fun SettingScreen(
                                     .padding(vertical = 15.dp, horizontal = 15.dp)
                             ) {
                                 if (!expanded) {
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowBack,
+                                        tint = Color.Black,
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .align(Alignment.CenterStart)
+                                            .clickable(
+                                                interactionSource = interactionSource,
+                                                indication = null
+                                            ) {
+                                               navController.popBackStack()
+                                            },
+                                        contentDescription = ""
+                                    )
+
+
                                     Text(
-                                        modifier = Modifier.align(Alignment.CenterStart),
+                                        modifier = Modifier.align(Alignment.Center),
                                         text = userName ?: "",
                                         color = Color.Black,
                                         style = TextStyle(
@@ -438,10 +436,7 @@ fun SettingScreen(
                                 lc =
                                     if (allLanguages[it] == "English" || allLanguages[it] == "Anglais") "en" else "fr"
 
-                                Log.i("jkelaglhae", "SettingScreen: $lc")
-
                                 LanguageHelper.changeLanguage(context, lc)
-
                                 LanguageHelper.updateLanguage(context, lc)
                             }
                         )
@@ -462,149 +457,26 @@ fun SettingScreen(
                         )
                     )
 
-                    if (role == "Candidate" || role == "Candidat") {
-
-                        /*if (isExisting) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(150.dp)
-                                    .padding(top = 20.dp)
-                                    .padding(horizontal = 10.dp)
-                                    .border(
-                                        1.dp,
-                                        shape = RoundedCornerShape(3.dp),
-                                        color = colorResource(id = R.color.whatsapp)
-                                    )
-                                    .background(Color.Transparent),
-                                contentAlignment = Alignment.Center
-                            ) {
-
-                                Column(
-                                    modifier = Modifier.clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null
-                                    ) {
-                                        showPdf = true
-                                    },
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.pdf),
-                                        tint = Color.Red,
-                                        modifier = Modifier.size(30.dp),
-                                        contentDescription = ""
-                                    )
-                                    Log.i("pdfName", "SettingScreen: $uploadMessage")
-                                    //val s = uploadMessage.split(":")[1].trim()
-                                    Text(
-                                        text = uploadMessage,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.padding(top = 5.dp)
-                                    )
-                                }
-                            }
-
-                        }
-                        else {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(150.dp)
-                                    .padding(top = 20.dp)
-                                    .padding(horizontal = 10.dp)
-                                    .clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null
-                                    ) {
-                                        isUploaded = true
-                                        pdfPickerLauncher.launch(arrayOf("application/pdf"))
-                                    },
-                                elevation = 5.dp
-                            ) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-
-                                    Image(
-                                        painter = painterResource(id = R.drawable.cvtable),
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentScale = ContentScale.Crop,
-                                        contentDescription = ""
-                                    )
-
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(
-                                                Brush.horizontalGradient(
-                                                    colors = listOf(
-                                                        Color.White,       // Start color
-                                                        Color.White,      // Keep the first half white
-                                                        Color.White.copy(alpha = 0.8f),     // Keep the first half white
-                                                        Color.Transparent // End transparent
-                                                    ),
-                                                    startX = 0f,         // Start at the left
-                                                    endX = 1000f         // End at the right (adjust as needed)
-                                                )
-                                            )
-                                    ) {
-
-                                        Column(
-                                            modifier = Modifier
-                                                .align(Alignment.CenterStart)
-                                                .padding(start = 20.dp)
-                                        ) {
-
-                                            Text(
-                                                text = stringResource(id = R.string.my_resume_text),
-                                                color = colorResource(id = R.color.whatsapp),
-                                                modifier = Modifier.padding(top = 10.dp),
-                                                style = TextStyle(
-                                                    fontSize = 16.sp,
-                                                    fontFamily = FontFamily(
-                                                        Font(
-                                                            R.font.rubikbold,
-                                                            weight = FontWeight.Bold
-                                                        )
-                                                    )
-                                                )
-                                            )
-
-                                            Text(
-                                                text = stringResource(id = R.string.upload_resume_text),
-                                                color = Color.Gray,
-                                                modifier = Modifier.padding(top = 10.dp)
-                                            )
-                                        }
-
-                                    }
-                                }
-                            }
-                        }*/
-                    }
-
                     Spacer(modifier = Modifier.height(10.dp))
 
                     val list = mutableListOf(
                         SettingsParams(
                             icon = R.drawable.ic_settings_notifications,
-                            title = "Notifications"
+                            title = stringResource(id = R.string.notification_text)
                         ),
                         SettingsParams(
                             icon = R.drawable.ic_settings_privacy,
-                            title = "Valider votre profile"
+                            title = stringResource(id = R.string.validate_profile_text)
                         ),
                         SettingsParams(
                             icon = R.drawable.ic_settings_terms,
-                            title = "Terms & Conditions"
+                            title = stringResource(id = R.string.terms_text)
                         ),
                         SettingsParams(
                             icon = R.drawable.ic_settings_privacy,
-                            title = "Politique de Confidentialité"
+                            title = stringResource(id = R.string.confidentiality_text)
                         ),
-                        SettingsParams(icon = R.drawable.ic_settings_account, title = "Mon Compte")
+                        SettingsParams(icon = R.drawable.ic_settings_account, title = stringResource(id = R.string.my_account_text))
                     )
 
                     Column(
@@ -625,8 +497,10 @@ fun SettingScreen(
                                             0 -> navController.navigate(Screen.NotificationCompanyScreen.route)
 
                                             4 -> {
-                                                if (role == "Candidate" || role == "Candidat")
+                                                if (role == "Candidate" || role == "Candidat") {
+                                                    isFromSettings = true
                                                     navController.navigate(Screen.ProfileScreen.route)
+                                                }
                                                 else expanded = true
                                                 GlobalEntries.isVisibleNav.update { false }
                                             }

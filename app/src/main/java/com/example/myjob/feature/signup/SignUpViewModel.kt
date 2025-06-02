@@ -8,10 +8,10 @@ import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.LoginResponse
-import com.example.myjob.domain.usecase.SaveUserUseCase
-import com.example.myjob.domain.usecase.ValidateEmailUseCase
-import com.example.myjob.domain.usecase.ValidateNameUseCase
-import com.example.myjob.domain.usecase.ValidatePasswordUseCase
+import com.example.myjob.domain.usecase.subscription.SaveUserUseCase
+import com.example.myjob.domain.usecase.verification.ValidateEmailUseCase
+import com.example.myjob.domain.usecase.verification.ValidateNameUseCase
+import com.example.myjob.domain.usecase.verification.ValidatePasswordUseCase
 import com.example.myjob.feature.login.gmail.SignInResult
 import com.example.myjob.feature.login.gmail.SignInState
 import com.example.myjob.local.database.SharedPreference

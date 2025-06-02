@@ -44,6 +44,7 @@ object GlobalEntries {
     var invitationModel = InvitationModel()
     var matchInvitation: () -> Unit = {}
     var isFromLogin = false
+    var isFromSettings = false
     var isVisibleNav = MutableStateFlow(true)
     var isHidden = derivedStateOf { !isVisibleNav.value }
     var langState = MutableStateFlow("Français")

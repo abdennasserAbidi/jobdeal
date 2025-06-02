@@ -69,7 +69,6 @@ import com.example.myjob.domain.entities.ExperienceChoices
 import com.example.myjob.domain.entities.SexChoices
 import com.example.myjob.domain.entities.SituationChoices
 import com.example.myjob.domain.entities.Subject
-import com.example.myjob.feature.home.FilterViewModel
 import com.example.myjob.feature.navigation.Screen
 
 @OptIn(ExperimentalLayoutApi::class)

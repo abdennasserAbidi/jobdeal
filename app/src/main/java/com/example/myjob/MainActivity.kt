@@ -1,6 +1,5 @@
 package com.example.myjob
 
-import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -8,8 +7,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresExtension
 import androidx.compose.animation.AnimatedVisibility
@@ -17,19 +14,16 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.border
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.InsertInvitation
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.InsertInvitation
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -37,8 +31,6 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,10 +53,7 @@ import androidx.navigation.navDeepLink
 import com.example.myjob.base.MyApp
 import com.example.myjob.common.FileReader
 import com.example.myjob.common.GlobalEntries
-import com.example.myjob.common.GlobalEntries.isHidden
-import com.example.myjob.common.GlobalEntries.isVisibleNav
 import com.example.myjob.common.GlobalEntries.langState
-import com.example.myjob.common.VoiceToTextParser
 import com.example.myjob.common.default
 import com.example.myjob.common.loadJSONFromAsset
 import com.example.myjob.common.phonekit.toCountryList
@@ -77,13 +66,12 @@ import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.feature.favorites.CompanyFavorites
 import com.example.myjob.feature.forgotpassword.ForgotPasswordScreen
-import com.example.myjob.feature.home.DetailsScreen
-import com.example.myjob.feature.home.FilterScreen
-import com.example.myjob.feature.home.filter.FilteredHome
+import com.example.myjob.feature.home.detail.DetailsScreen
 import com.example.myjob.feature.home.HomeCandidate
 import com.example.myjob.feature.home.HomeCompany
-import com.example.myjob.feature.home.InvitationScreen
+import com.example.myjob.feature.invitation.InvitationScreen
 import com.example.myjob.feature.home.filter.FilterScreenUpdated
+import com.example.myjob.feature.home.filter.FilteredHome
 import com.example.myjob.feature.home.filter.SearchScreen
 import com.example.myjob.feature.invitation.InvitationCompanyScreen
 import com.example.myjob.feature.invitation.SendInvitationScreen
@@ -105,9 +93,6 @@ import com.example.myjob.feature.setting.SettingScreen
 import com.example.myjob.feature.signup.SignUpScreen
 import com.example.myjob.feature.splash.SplashScreen
 import com.example.myjob.local.database.SharedPreference
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.PermissionState
-import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
@@ -122,29 +107,14 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val voiceToTextParser by lazy {
-        VoiceToTextParser(application)
-    }
-
     @Inject
     lateinit var sharedPreference: SharedPreference
 
-    var studyField: MutableList<String> = mutableListOf()
-    var allSubjects: MutableList<Subject> = mutableListOf()
-    var listSchools: MutableList<String> = mutableListOf()
-    var listCompany: MutableList<String> = mutableListOf()
-    var listCountries: MutableList<String> = mutableListOf()
-
-    //text recognition
-    private var imageUri = mutableStateOf<Uri?>(null)
-    private var textChanged = mutableStateOf("Scanned text will appear here..")
-
-    val selectImage =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            imageUri.value = uri
-        }
-
-    lateinit var launcher: ActivityResultLauncher<Intent>
+    private var studyField: MutableList<String> = mutableListOf()
+    private var allSubjects: MutableList<Subject> = mutableListOf()
+    private var listSchools: MutableList<String> = mutableListOf()
+    private var listCompany: MutableList<String> = mutableListOf()
+    private var listCountries: MutableList<String> = mutableListOf()
 
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
@@ -168,15 +138,14 @@ class MainActivity : ComponentActivity() {
                     if (it == "English" || it == "Anglais") "studyfield.json" else "studyfieldfr.json"
 
                 try {
-
-                    val regions =
+                    val allFields =
                         Gson().fromJson(loadJSONFromAsset(nameJson), AllFields::class.java)
-                    val nameCities = regions.studyfields.map {
-                        it.libelly ?: ""
+                    val studyFields = allFields.studyfields.map { field ->
+                        field.libelly ?: ""
                     }
-                    studyField = nameCities.toMutableList()
+                    studyField = studyFields.toMutableList()
                 } catch (ex: java.lang.Exception) {
-                    Log.i("Alabaman", "Exception: ${ex.message}")
+                    Log.i("Error", "Exception: ${ex.message}")
                 }
             }
         }
@@ -186,31 +155,28 @@ class MainActivity : ComponentActivity() {
         try {
             val regions =
                 Gson().fromJson(loadJSONFromAsset("cities.json"), AllCities::class.java)
-            val nameCities = regions.regions.map {
-                it.name
-            }
+            val nameCities = regions.regions.map { it.name }
             listCountries = nameCities.toMutableList()
         } catch (ex: java.lang.Exception) {
-            Log.i("Alabaman", "Exception: ${ex.message}")
+            Log.i("Error", "Exception: ${ex.message}")
         }
     }
 
     private fun generateSchoolList() {
         CoroutineScope(Dispatchers.Default).launch {
             langState.collect {
-                Log.i("why", "generateStudyFieldList: $it")
                 val nameJson =
                     if (it == "English" || it == "Anglais") "schoolsen.json" else "schools.json"
 
                 try {
                     val school =
                         Gson().fromJson(loadJSONFromAsset(nameJson), AllSchools::class.java)
-                    val nameSchools = school.school.map {
-                        it.libelly ?: ""
+                    val nameSchools = school.school.map { schools ->
+                        schools.libelly ?: ""
                     }
                     listSchools = nameSchools.toMutableList()
                 } catch (ex: java.lang.Exception) {
-                    Log.i("Alabaman", "Exception: ${ex.message}")
+                    Log.i("Error", "Exception: ${ex.message}")
                 }
             }
         }
@@ -225,7 +191,7 @@ class MainActivity : ComponentActivity() {
             }
             listCompany = nameCompanies.toMutableList()
         } catch (ex: java.lang.Exception) {
-            Log.i("Alabaman", "Exception: ${ex.message}")
+            Log.i("Error", "Exception: ${ex.message}")
         }
     }
 
@@ -245,8 +211,6 @@ class MainActivity : ComponentActivity() {
         viewState.value = CountryPickerViewState(countries)
     }
 
-
-    @OptIn(ExperimentalPermissionsApi::class)
     @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -255,7 +219,6 @@ class MainActivity : ComponentActivity() {
         fetchData()
 
         allSubjects = (applicationContext as MyApp).allSubjectList
-        //listCountries = (applicationContext as MyApp).listNameCountries
 
         langState.update {
             sharedPreference.getString("lang", "") ?: ""
@@ -284,9 +247,7 @@ class MainActivity : ComponentActivity() {
             // creating our navController
             val navController = rememberNavController()
 
-            var test by remember { mutableStateOf(true) }
             var isVisibleNav by remember { mutableStateOf(true) }
-            val navTest by remember { isHidden }
 
             val homeTab = TabBarItem(
                 title = stringResource(id = R.string.item1),
@@ -302,13 +263,6 @@ class MainActivity : ComponentActivity() {
                 unselectedIcon = Icons.Outlined.InsertInvitation
             )
 
-            /*val alertsTab = TabBarItem(
-                title = stringResource(id = R.string.item2),
-                tag = "detail_screen",
-                selectedIcon = Icons.Filled.Notifications,
-                unselectedIcon = Icons.Outlined.Notifications,
-                badgeAmount = 7
-            )*/
             val settingsTab = TabBarItem(
                 title = stringResource(id = R.string.item3),
                 tag = "search_screen",
@@ -344,10 +298,6 @@ class MainActivity : ComponentActivity() {
             }) { padding ->
                 Log.i("", "onCreate: $padding")
 
-                val cameraPermissionState: PermissionState =
-                    rememberPermissionState(Manifest.permission.CAMERA)
-
-                //val role = sharedPreference.getString("role", "") ?: ""
                 val role = GlobalEntries.role
                 isVisibleNav = role == "Company" || role == "Entreprise"
 
@@ -440,11 +390,8 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    //TODO("numéro registre de commerce")
-
                     composable(route = Screen.ProfileScreen.route) {
                         isVisibleNav = false
-                        //ProfileScreen(navController)
                         if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") CompanyProfile(
                             navController
                         )
@@ -460,25 +407,6 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = true
                         ProfileScreen(navController)
                     }
-
-                    /*composable(route = Screen.galleryScreen.route) {
-                        isVisibleNav = true
-                        GalleryScreen(
-                            navController = navController,
-                            selectImage = selectImage,
-                            imageUri = imageUri,
-                            textChanged = textChanged
-                        )
-                    }*/
-
-                    /*composable(
-                        route = "${Screen.DetailScreen.route}/userJson",
-                        arguments = listOf(navArgument("userJson") { type = NavType.StringType })
-                    ) { backStackEntry ->
-                        val userJson = backStackEntry.arguments?.getString("userJson")
-                        val user = Gson().fromJson(userJson, User::class.java)
-                        DetailsScreen(navController, user)
-                    }*/
 
                     composable(
                         route = Screen.DetailScreen.route,
@@ -518,7 +446,6 @@ class MainActivity : ComponentActivity() {
                     composable(route = Screen.HomeScreen.route) {
 
                         if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") {
-                            //isVisibleNav = true
 
                             CoroutineScope(Dispatchers.Main).launch {
                                 GlobalEntries.isVisibleNav.collect {
@@ -534,7 +461,12 @@ class MainActivity : ComponentActivity() {
                                 onResumed = { index ->
                                     selectedTabIndex = index
                                 })
-                        } else HomeCandidate(navController)
+                        } else HomeCandidate(
+                            navController,
+                            clearData = {
+                                selectedTabIndex = 0
+                            }
+                        )
                     }
 
                     composable(route = Screen.FilteredHome.route) {
@@ -548,12 +480,6 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(route = Screen.HomeCompanyScreen.route) {
-                        /*CoroutineScope(Dispatchers.Main).launch {
-                            GlobalEntries.isVisibleNav.collect {
-                                isVisibleNav = if (role == "Candidate" || role == "Candidat") false
-                                else it
-                            }
-                        }*/
 
                         HomeCompany(navController = navController,
                             allSubjects = allSubjects,
@@ -621,16 +547,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// ----------------------------------------
-// This is a wrapper view that allows us to easily and cleanly
-// reuse this component in any future project
 @Composable
 fun TabView(
     tabBarItems: List<TabBarItem>, defaultIndex: Int = 0,
     changeIndex: (index: Int) -> Unit,
     navController: NavController
 ) {
-    //var selectedTabIndex by rememberSaveable { mutableStateOf(defaultIndex) }
 
     NavigationBar(
         modifier = Modifier.border(1.dp, Color.LightGray),
@@ -665,9 +587,6 @@ fun TabView(
     }
 }
 
-// This component helps to clean up the API call from our TabView above,
-// but could just as easily be added inside the TabView without creating this custom component
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TabBarIconView(
     isSelected: Boolean,
@@ -688,10 +607,7 @@ fun TabBarIconView(
     }
 }
 
-// This component helps to clean up the API call from our TabBarIconView above,
-// but could just as easily be added inside the TabBarIconView without creating this custom component
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 fun TabBarBadgeView(count: Int? = null) {
     if (count != null) {
         Badge {

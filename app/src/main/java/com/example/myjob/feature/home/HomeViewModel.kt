@@ -23,13 +23,13 @@ import com.example.myjob.domain.entities.HOME_ENTITY
 import com.example.myjob.domain.entities.ParentChoices
 import com.example.myjob.domain.entities.SexChoices
 import com.example.myjob.domain.entities.SituationChoices
+import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
-import com.example.myjob.domain.entities.User
-import com.example.myjob.domain.usecase.SaveToFavoriteUseCase
-import com.example.myjob.domain.usecase.SendInvitationUseCase
 import com.example.myjob.domain.usecase.home.GetAllUserUseCase
-import com.example.myjob.domain.usecase.home.SearchUserUseCase
+import com.example.myjob.domain.usecase.home.SaveToFavoriteUseCase
+import com.example.myjob.domain.usecase.invitation.SendInvitationUseCase
+import com.example.myjob.domain.usecase.search.SearchUserUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,10 +38,10 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import javax.inject.Inject
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -870,6 +870,10 @@ class HomeViewModel @Inject constructor(
             listCategories
         }
 
+    }
+
+    fun logout() {
+        sharedPreference.putString("token", "")
     }
 
     fun updateQuery(newQuery: String) {

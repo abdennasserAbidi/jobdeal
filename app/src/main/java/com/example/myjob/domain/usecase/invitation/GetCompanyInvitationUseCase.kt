@@ -3,7 +3,7 @@ package com.example.myjob.domain.usecase.invitation
 import androidx.paging.PagingData
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.usecase.FlowBaseUseCase
-import com.example.myjob.data.Repository
+import com.example.myjob.data.invitation.InvitationRepository
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.qualifiers.IoDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class GetCompanyInvitationUseCase @Inject constructor(
-    private val repository: Repository,
+    private val repository: InvitationRepository,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : FlowBaseUseCase<PagingData<InvitationModel>, Int>() {
 

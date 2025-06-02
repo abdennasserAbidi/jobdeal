@@ -1,5 +1,6 @@
 package com.example.myjob.remote.service
 
+import com.example.myjob.local.database.SharedPreference
 import com.example.myjob.remote.api.ApiService
 import okhttp3.OkHttpClient
 
@@ -8,7 +9,7 @@ object NetworkModuleFactory : BaseNetworkModuleFactory() {
     const val LOG_INTERCEPTOR = "LogInterceptor"
     const val REQUEST_INTERCEPTOR = "RequestInterceptor"
 
-    fun makeService(): ApiService = makeService(makeOkHttpClient())
+    fun makeService(sharedPreference: SharedPreference): ApiService = makeService(makeOkHttpClient(sharedPreference))
 
     private fun makeService(okHttpClient: OkHttpClient): ApiService {
         val retrofit = buildRetrofitObject(okHttpClient)

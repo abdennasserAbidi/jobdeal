@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.example.myjob.R
 import com.example.myjob.domain.entities.User
-import com.example.myjob.feature.home.SwipeableCardState
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState

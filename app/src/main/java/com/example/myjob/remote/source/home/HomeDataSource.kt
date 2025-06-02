@@ -1,0 +1,23 @@
+package com.example.myjob.remote.source.home
+
+import com.example.myjob.base.GenericResponse
+import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.entities.notification.NotificationModel
+import com.example.myjob.domain.response.FileExistingResponse
+import com.example.myjob.domain.response.UserResponse
+import okhttp3.MultipartBody
+
+interface HomeDataSource {
+    suspend fun getCompanyNotifications(
+        id: Int,
+        pageNumber: Int
+    ): GenericResponse<NotificationModel>
+
+    suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): UserResponse
+    suspend fun getUser(id: Int): User
+    suspend fun uploadFile(file: MultipartBody.Part): UserResponse
+    suspend fun validateProfile(email: String): UserResponse
+    suspend fun verifyExisting(fileName: String): FileExistingResponse
+    suspend fun getAllUser(pageNumber: Int): GenericResponse<User>
+    suspend fun getFavorites(id: Int, pageNumber: Int): GenericResponse<User>
+}

@@ -66,8 +66,8 @@ import com.example.myjob.common.SalaryRangeSeekBar
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.Subject
-import com.example.myjob.feature.home.CountryPicker
-import com.example.myjob.feature.home.CustomPhoneKit
+import com.example.myjob.common.CountryPicker
+import com.example.myjob.common.CustomPhoneKit
 import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.signup.CustomDropdownMenu
 

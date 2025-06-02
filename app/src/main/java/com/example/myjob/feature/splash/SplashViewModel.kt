@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.User
-import com.example.myjob.domain.usecase.GetUserUseCase
+import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

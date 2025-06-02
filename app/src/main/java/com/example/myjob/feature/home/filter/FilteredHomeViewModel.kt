@@ -7,7 +7,7 @@ import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.home.GetAllUserUseCase
-import com.example.myjob.domain.usecase.home.SearchUserUseCase
+import com.example.myjob.domain.usecase.search.SearchUserUseCase
 import com.example.myjob.local.database.SharedPreference
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel

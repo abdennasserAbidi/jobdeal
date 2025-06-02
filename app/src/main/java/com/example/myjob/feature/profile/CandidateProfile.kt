@@ -89,7 +89,6 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 
-@OptIn(ExperimentalFoundationApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CandidateProfile(
@@ -101,7 +100,6 @@ fun CandidateProfile(
 
     val interactionSource = remember { MutableInteractionSource() }
     val user by profileViewModel.user.collectAsState()
-    //val pageIndex by profileViewModel.pageIndex.collectAsState()
 
     var showPdf by remember { mutableStateOf(false) }
 
@@ -384,8 +382,6 @@ fun CandidateProfile(
             Spacer(modifier = Modifier.height(50.dp))
         }
 
-        val shapeInit =  RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -410,9 +406,7 @@ fun CandidateProfile(
                             indication = null
                         ) {
                             profileViewModel.isFromLogin(false)
-                            navController.popBackStack(
-                                Screen.SettingScreen.route, false
-                            )
+                            navController.popBackStack()
                         },
                     contentDescription = ""
                 )

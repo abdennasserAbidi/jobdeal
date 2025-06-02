@@ -1,6 +1,5 @@
 package com.example.myjob.feature.splash
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -60,7 +58,7 @@ fun SplashScreen(
             Image(
                 painter = painterResource(id = R.drawable.filtercandidates),
                 contentDescription = null,
-                contentScale = ContentScale.FillHeight, // Or ContentScale.Fit, depending on your need
+                contentScale = ContentScale.FillHeight,
                 modifier = Modifier.fillMaxSize()
             )
 
@@ -68,24 +66,6 @@ fun SplashScreen(
                 modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.6f))
             )
         }
-
-
-
-        /*Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.87f),
-            contentAlignment = Alignment.Center
-        ) {
-
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                modifier = Modifier
-                    .padding(start = 20.dp),
-                contentDescription = ""
-            )
-
-        }*/
 
         Box(
             modifier = Modifier.wrapContentSize()
@@ -99,7 +79,6 @@ fun SplashScreen(
                     GlobalEntries.isFromLogin = true
 
                     val token = splashViewModel.getToken()
-                    Log.i("token", "SplashScreen: $token")
 
                     if (isFinished) {
                         if (token.isNotEmpty()) navController.navigate(Screen.HomeScreen.route)

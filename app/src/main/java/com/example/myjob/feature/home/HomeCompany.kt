@@ -1,6 +1,5 @@
 package com.example.myjob.feature.home
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
@@ -45,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.Color.Companion.LightGray
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.platform.LocalConfiguration
@@ -64,12 +62,14 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.ErrorMessage
+import com.example.myjob.common.ExperimentalSwipeableCardApi
 import com.example.myjob.common.GenericMultipleSearch
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.isFromFilter
 import com.example.myjob.common.GlobalEntries.isVisibleNav
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
+import com.example.myjob.common.SwipeableCardState
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.domain.entities.User

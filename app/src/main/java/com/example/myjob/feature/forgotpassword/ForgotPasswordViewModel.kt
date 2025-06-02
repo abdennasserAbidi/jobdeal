@@ -3,10 +3,10 @@ package com.example.myjob.feature.forgotpassword
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myjob.domain.entities.ResetPasswordParam
-import com.example.myjob.domain.usecase.ForgotPasswordUseCase
-import com.example.myjob.domain.usecase.ResetPasswordUseCase
-import com.example.myjob.domain.usecase.ValidateEmailUseCase
-import com.example.myjob.domain.usecase.ValidatePasswordUseCase
+import com.example.myjob.domain.usecase.subscription.ForgotPasswordUseCase
+import com.example.myjob.domain.usecase.subscription.ResetPasswordUseCase
+import com.example.myjob.domain.usecase.verification.ValidateEmailUseCase
+import com.example.myjob.domain.usecase.verification.ValidatePasswordUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

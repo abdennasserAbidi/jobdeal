@@ -1,5 +1,6 @@
 package com.example.myjob.di
 
+import com.example.myjob.local.database.SharedPreference
 import com.example.myjob.remote.service.NetworkModuleFactory
 import com.example.myjob.remote.api.ApiService
 import dagger.Module
@@ -7,6 +8,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.ExperimentalSerializationApi
+import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
@@ -19,5 +21,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideServiceEndPoint(): ApiService = NetworkModuleFactory.makeService()
+    fun provideServiceEndPoint(
+         sharedPreference: SharedPreference
+    ): ApiService = NetworkModuleFactory.makeService(sharedPreference)
 }

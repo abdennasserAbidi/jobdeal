@@ -211,4 +211,19 @@
     <string name="show_all_text">Tout afficher</string>
     <string name="delete_all_text">Tout supprimer</string>
 
+    <string name="notification_text">Notifications</string>
+    <string name="validate_profile_text">Valider votre profile</string>
+    <string name="terms_text">Termes et conditions</string>
+    <string name="confidentiality_text">Politique de Confidentialité</string>
+    <string name="my_account_text">Mon Compte</string>
+
+    <string name="invitations_text">Mes invitations</string>
+    <string name="navigate_invitations_text">Voir vos invitations</string>
+    <string name="career_text">Carrière</string>
+    <string name="navigate_career_text">Booseter mon carrière</string>
+    <string name="setting_text">Settings</string>
+    <string name="navigate_settings_text">Sélectionnez vos paramètres</string>
+    <string name="profile_text">Profil</string>
+    <string name="navigate_profile_text">EDIT YOUR PROFILE</string>
+
 </resources>

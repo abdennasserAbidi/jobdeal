@@ -2,6 +2,7 @@ package com.example.myjob.remote.service
 
 //import TestFlavor.url
 import com.example.myjob.common.network.ApiResultCallAdapterFactory
+import com.example.myjob.local.database.SharedPreference
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -30,12 +31,12 @@ open class BaseNetworkModuleFactory {
     /**
      * Provides [OkHttpClient] instance
      */
-    fun makeOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
+    fun makeOkHttpClient(sharedPreference: SharedPreference): OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
         .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
         .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
         .addInterceptor(provideLogInterceptor())
-        .addInterceptor(provideRequestInterceptor())
+        .addInterceptor(provideRequestInterceptor(sharedPreference))
         .build()
 
     /**
@@ -49,7 +50,7 @@ open class BaseNetworkModuleFactory {
     }
 
     @Named(NetworkModuleFactory.REQUEST_INTERCEPTOR)
-    internal fun provideRequestInterceptor(): Interceptor = RequestInterceptor()
+    internal fun provideRequestInterceptor(sharedPreference: SharedPreference): Interceptor = RequestInterceptor(sharedPreference)
 
     /**
      * Provides [Retrofit] instance

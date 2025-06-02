@@ -16,9 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.myjob.R
 
 @Composable
@@ -32,11 +34,8 @@ fun MyTabItem(
     val interactionSource = remember { MutableInteractionSource() }
 
     val tabTextColor: Color by animateColorAsState(
-        targetValue = if (isSelected) {
-            colorResource(id = R.color.dark_blue)
-        } else {
-            colorResource(id = R.color.ligt_white)
-        },
+        targetValue = if (isSelected) colorResource(id = R.color.dark_blue)
+        else colorResource(id = R.color.ligt_white),
         animationSpec = tween(easing = LinearEasing), label = "",
     )
     Text(
@@ -56,5 +55,7 @@ fun MyTabItem(
         text = text,
         color = tabTextColor,
         textAlign = TextAlign.Center,
+        fontWeight = FontWeight.Bold,
+        fontSize = 16.sp
     )
 }

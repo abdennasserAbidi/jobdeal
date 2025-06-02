@@ -220,5 +220,19 @@
     <string name="show_all_text">Show all</string>
     <string name="delete_all_text">Delete all</string>
 
+    <string name="notification_text">Notifications</string>
+    <string name="validate_profile_text">Validate your profile</string>
+    <string name="terms_text">Terms and Conditions</string>
+    <string name="confidentiality_text">Privacy Policy</string>
+    <string name="my_account_text">My account</string>
 
+
+    <string name="invitations_text">My invitations</string>
+    <string name="navigate_invitations_text">View your invitations</string>
+    <string name="career_text">Career</string>
+    <string name="navigate_career_text">Boost my career</string>
+    <string name="setting_text">Settings</string>
+    <string name="navigate_settings_text">Select your settings</string>
+    <string name="profile_text">Profile</string>
+    <string name="navigate_profile_text">Modifiez votre profil</string>
 </resources>

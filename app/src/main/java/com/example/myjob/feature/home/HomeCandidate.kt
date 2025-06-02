@@ -6,9 +6,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,7 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.NotificationsNone
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,11 +34,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -53,18 +52,25 @@ import com.example.myjob.common.GlobalEntries.scheduleFileDownload
 import com.example.myjob.feature.navigation.Screen
 
 @Composable
-fun HomeCandidate(navController: NavController, homeViewModel: HomeViewModel = hiltViewModel()) {
+fun HomeCandidate(
+    navController: NavController,
+    clearData: () -> Unit = {},
+    homeViewModel: HomeViewModel = hiltViewModel()
+) {
 
     val interactionSource = remember { MutableInteractionSource() }
 
     scheduleFileDownload(LocalContext.current, homeViewModel.getPDFName())
 
-    HomeCandidatePreview(navController, interactionSource, homeViewModel)
+    HomeCandidatePreview(navController, clearData = {
+        clearData()
+    }, interactionSource, homeViewModel)
 }
 
 @Composable
 fun HomeCandidatePreview(
     navController: NavController,
+    clearData: () -> Unit = {},
     interactionSource: MutableInteractionSource,
     homeViewModel: HomeViewModel
 ) {
@@ -85,9 +91,6 @@ fun HomeCandidatePreview(
             val radius = size.width * 1.5f
             val arcSize = Size(radius - 200, radius)
 
-            val paddingRight = 120.dp.toPx() // adjust spacing as needed
-
-            // Offset it to top-right corner
             val topLeft = Offset(
                 x = size.width - radius,
                 y = -radius / 2f
@@ -115,8 +118,12 @@ fun HomeCandidatePreview(
                 .align(Alignment.CenterStart)
                 .fillMaxSize()
         ) {
-            Box(modifier = Modifier.fillMaxWidth().padding(top = 20.dp)
-                .padding(horizontal = 10.dp)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp)
+                    .padding(horizontal = 10.dp)
+            ) {
                 Text(
                     text = "Hello, ${GlobalEntries.user.fullName}",
                     modifier = Modifier.align(Alignment.CenterStart),
@@ -125,14 +132,16 @@ fun HomeCandidatePreview(
                     fontWeight = FontWeight.Bold
                 )
 
-                Icon(imageVector = Icons.Default.NotificationsNone,
+                Icon(
+                    imageVector = Icons.Default.NotificationsNone,
                     modifier = Modifier.align(Alignment.CenterEnd),
-                    contentDescription = "")
+                    contentDescription = ""
+                )
             }
 
             LazyVerticalGrid(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .padding(top = 70.dp),
                 columns = GridCells.Fixed(2)
             ) {
@@ -143,11 +152,14 @@ fun HomeCandidatePreview(
                     }
                 ) { index, item ->
 
+                    //if (index == listHomeEntity.lastIndex && index == listHomeEntity.lastIndex -1)
+
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(220.dp)
-                            .padding(top = 10.dp)
+                            .padding(vertical = 10.dp)
                             .padding(horizontal = 10.dp)
                             .clickable(
                                 interactionSource = interactionSource,
@@ -175,17 +187,16 @@ fun HomeCandidatePreview(
                                     .background(
                                         Brush.horizontalGradient(
                                             colors = listOf(
-                                                Color.White,       // Start color
-                                                Color.White,      // Keep the first half white
-                                                Color.White.copy(alpha = 0.8f),     // Keep the first half white
-                                                Color.Transparent // End transparent
+                                                Color.White,
+                                                Color.White,
+                                                Color.White.copy(alpha = 0.8f),
+                                                Color.Transparent
                                             ),
-                                            startX = 0f,         // Start at the left
-                                            endX = 1000f         // End at the right (adjust as needed)
+                                            startX = 0f,
+                                            endX = 1000f
                                         )
                                     )
                             ) {
-
                                 Column(
                                     modifier = Modifier
                                         .align(Alignment.CenterStart)
@@ -211,7 +222,7 @@ fun HomeCandidatePreview(
                                     }
 
                                     Text(
-                                        text = item.title,
+                                        text = stringResource(id = item.title),
                                         color = colorResource(id = R.color.whatsapp),
                                         modifier = Modifier.padding(top = 10.dp),
                                         style = TextStyle(
@@ -226,7 +237,7 @@ fun HomeCandidatePreview(
                                     )
 
                                     Text(
-                                        text = item.subTitle,
+                                        text = stringResource(id = item.subTitle).uppercase(),
                                         color = Color.Gray,
                                         modifier = Modifier.padding(top = 10.dp)
                                     )
@@ -237,8 +248,52 @@ fun HomeCandidatePreview(
                     }
                 }
             }
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp)
+                    .padding(horizontal = 30.dp)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
+                        homeViewModel.logout()
+                        clearData()
+                        navController.navigate(Screen.LoginScreen.route)
+                    },
+                shape = RoundedCornerShape(20.dp),
+                elevation = 5.dp
+            ) {
+                Row(
+                    modifier = Modifier.padding(vertical = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_settings_account),
+                        modifier = Modifier.size(30.dp),
+                        tint = colorResource(id = R.color.whatsapp),
+                        contentDescription = ""
+                    )
+
+                    Text(
+                        text = stringResource(id = R.string.logout_text),
+                        color = colorResource(id = R.color.whatsapp),
+                        modifier = Modifier.padding(start = 10.dp),
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            fontFamily = FontFamily(
+                                Font(
+                                    R.font.rubikbold,
+                                    weight = FontWeight.Bold
+                                )
+                            )
+                        )
+                    )
+                }
+            }
         }
-
-
     }
 }
