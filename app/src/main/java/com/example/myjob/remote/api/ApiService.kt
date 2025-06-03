@@ -2,15 +2,15 @@ package com.example.myjob.remote.api
 
 import com.example.myjob.base.GenericResponse
 import com.example.myjob.common.network.ApiResult
-import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
-import com.example.myjob.domain.entities.ExchangeRates
 import com.example.myjob.domain.entities.Experience
-import com.example.myjob.domain.entities.invitation.InvitationModel
-import com.example.myjob.domain.entities.invitation.InvitationParams
 import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.entities.announcement.AnnouncementModel
+import com.example.myjob.domain.entities.invitation.InvitationModel
+import com.example.myjob.domain.entities.invitation.InvitationParams
+import com.example.myjob.domain.entities.notification.NotificationMessage
 import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
@@ -31,11 +31,14 @@ import retrofit2.http.Query
  */
 interface ApiService {
 
-    @GET("latest")
-    suspend fun getExchangeRates(): ExchangeRates
+    @POST("auth/updatetoken")
+    suspend fun updateToken(
+        @Query("id") id: Int,
+        @Query("token") token: String
+    ): UserResponse
 
-    @GET("latest")
-    suspend fun changeBaseExchangeRates(@Query("base") base: String): ExchangeRates
+    @POST("auth/sendnotification")
+    suspend fun sendNotification(@Body base: NotificationMessage): UserResponse
 
     @POST("auth/signup")
     suspend fun saveUser(@Body user: User): ApiResult<LoginResponse>

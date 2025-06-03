@@ -69,12 +69,12 @@ import com.example.myjob.feature.forgotpassword.ForgotPasswordScreen
 import com.example.myjob.feature.home.detail.DetailsScreen
 import com.example.myjob.feature.home.HomeCandidate
 import com.example.myjob.feature.home.HomeCompany
-import com.example.myjob.feature.invitation.InvitationScreen
+import com.example.myjob.feature.invitation.candidat.InvitationScreen
 import com.example.myjob.feature.home.filter.FilterScreenUpdated
 import com.example.myjob.feature.home.filter.FilteredHome
 import com.example.myjob.feature.home.filter.SearchScreen
-import com.example.myjob.feature.invitation.InvitationCompanyScreen
-import com.example.myjob.feature.invitation.SendInvitationScreen
+import com.example.myjob.feature.invitation.company.InvitationCompanyScreen
+import com.example.myjob.feature.invitation.company.SendInvitationScreen
 import com.example.myjob.feature.login.LoginScreen
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
@@ -347,7 +347,7 @@ class MainActivity : ComponentActivity() {
                         route = Screen.ForgotPasswordScreen.route,
                         deepLinks = listOf(
                             navDeepLink {
-                                uriPattern = "http://10.0.2.2/{token}"
+                                uriPattern = "http://192.168.1.20/{token}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),

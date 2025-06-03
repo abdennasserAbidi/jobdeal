@@ -33,7 +33,7 @@
         <domain includeSubdomains="true">192.168.3.209</domain> <!-- Your server IP -->
         <domain includeSubdomains="true">192.168.116.209</domain> <!-- Your server IP -->
         <domain includeSubdomains="true">10.0.2.2</domain> <!-- Your server IP -->
-        <domain includeSubdomains="true">192.168.246.209</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">192.168.1.20</domain> <!-- Your server IP -->
 
     </domain-config>
 </network-security-config>

@@ -53,7 +53,7 @@ fun SplashScreen(
                 .fillMaxWidth()
                 .fillMaxHeight(0.8f)
                 .clip(RoundedCornerShape(bottomEnd = 70.dp))
-                .background(Color.Gray) // Just for visibility
+                .background(Color.Gray)
         ) {
             Image(
                 painter = painterResource(id = R.drawable.filtercandidates),

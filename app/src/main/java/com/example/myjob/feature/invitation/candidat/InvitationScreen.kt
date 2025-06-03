@@ -1,4 +1,4 @@
-package com.example.myjob.feature.invitation
+package com.example.myjob.feature.invitation.candidat
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -42,12 +42,11 @@ import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
 import com.example.myjob.domain.entities.invitation.InvitationModel
-import com.example.myjob.feature.invitation.InvitationViewModel
 
 @Composable
 fun InvitationScreen(
     navController: NavController,
-    invitationViewModel: InvitationViewModel = hiltViewModel()
+    invitationViewModel: InvitationCandidateViewModel = hiltViewModel()
 ) {
 
     val invitations = invitationViewModel.invitations.collectAsLazyPagingItems()
@@ -224,7 +223,7 @@ fun InvitationScreen(
             }
         }
 
-        val shapeInit =  RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
+        val shapeInit = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
 
         Box(
             modifier = Modifier

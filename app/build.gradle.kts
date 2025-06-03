@@ -140,6 +140,9 @@ dependencies {
     implementation ("com.google.firebase:firebase-auth-ktx:21.1.0")
     implementation ("com.google.android.gms:play-services-auth:20.4.1")
     implementation ("org.greenrobot:eventbus:3.1.1")
+    //notification
+    //implementation (platform("com.google.firebase:firebase-bom:33.14.0"))
+    implementation ("com.google.firebase:firebase-messaging:23.4.1")
 
     //// CAMERA STUFF ////
     implementation ("androidx.camera:camera-camera2:1.3.0-beta02")

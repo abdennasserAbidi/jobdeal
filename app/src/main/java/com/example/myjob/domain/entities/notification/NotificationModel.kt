@@ -13,3 +13,10 @@ data class NotificationModel(
     var title: String = "Dveloppeur Android",
     var isRead: Boolean = false
 )
+
+data class NotificationMessage(
+    var recipientToken: String? = "",
+    var body: String = "",
+    var title: String = "",
+    var data: Map<String, String> = mapOf()
+)

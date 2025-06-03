@@ -21,6 +21,7 @@ class SplashViewModel @Inject constructor(
 
     val role = MutableStateFlow("")
     val user = MutableStateFlow(User())
+
     init {
         role.update {
             sharedPreferences.getString("role", "") ?: ""
@@ -35,9 +36,9 @@ class SplashViewModel @Inject constructor(
     private fun getUser(id: Int) {
         viewModelScope.launch {
             getUserUseCase.execute(id).collect { res ->
-                when(res.status) {
+                when (res.status) {
                     ResourceState.SUCCESS -> {
-                        user.update { res.data?: User() }
+                        user.update { res.data ?: User() }
                         GlobalEntries.user = user.value
                     }
 
@@ -52,6 +53,6 @@ class SplashViewModel @Inject constructor(
     }
 
     fun isOnBoardingFinished(): Boolean {
-        return sharedPreferences.getBoolean("isFinished", false) ?: false
+        return sharedPreferences.getBoolean("isFinished", false)
     }
 }

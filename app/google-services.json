@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "591487668503",
-    "project_id": "myjob-199fb",
-    "storage_bucket": "myjob-199fb.appspot.com"
+    "project_number": "961199447674",
+    "project_id": "dealjob-96e71",
+    "storage_bucket": "dealjob-96e71.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:591487668503:android:7d451ad96206eaecafa752",
+        "mobilesdk_app_id": "1:961199447674:android:22ac9d639a02e63a0ea5c3",
         "android_client_info": {
           "package_name": "com.example.myjob"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAHO95DolXf-BKMWh_J9X8Ffyo1rMR8S-Y"
+          "current_key": "AIzaSyBWtersX00AQh0tIXeGbR_m2FT703_BYgs"
         }
       ],
       "services": {

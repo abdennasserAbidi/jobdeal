@@ -6,6 +6,8 @@ import com.example.myjob.data.home.HomeRepository
 import com.example.myjob.data.home.HomeRepositoryImp
 import com.example.myjob.data.invitation.InvitationRepository
 import com.example.myjob.data.invitation.InvitationRepositoryImp
+import com.example.myjob.data.notification.NotificationRepository
+import com.example.myjob.data.notification.NotificationRepositoryImp
 import com.example.myjob.data.profile.ProfileRepository
 import com.example.myjob.data.profile.ProfileRepositoryImp
 import com.example.myjob.data.search.SearchRepository
@@ -20,6 +22,8 @@ import com.example.myjob.remote.source.home.HomeDataSource
 import com.example.myjob.remote.source.home.HomeDataSourceImp
 import com.example.myjob.remote.source.invitation.InvitationDataSource
 import com.example.myjob.remote.source.invitation.InvitationDataSourceImp
+import com.example.myjob.remote.source.notification.NotificationDataSource
+import com.example.myjob.remote.source.notification.NotificationDataSourceImp
 import com.example.myjob.remote.source.profile.ProfileDataSource
 import com.example.myjob.remote.source.profile.ProfileDataSourceImp
 import com.example.myjob.remote.source.search.SearchDataSource
@@ -82,4 +86,11 @@ abstract class RepositoryModule {
     @Binds
     @ViewModelScoped
     abstract fun provideSubscriptionRepository(repository: SubscriptionRepositoryImp): SubscriptionRepository
+
+    @Binds
+    abstract fun provideNotificationDataSource(remoteDataSourceImp: NotificationDataSourceImp): NotificationDataSource
+
+    @Binds
+    @ViewModelScoped
+    abstract fun provideNotificationRepository(repository: NotificationRepositoryImp): NotificationRepository
 }

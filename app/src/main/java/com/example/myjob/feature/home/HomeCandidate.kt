@@ -1,5 +1,6 @@
 package com.example.myjob.feature.home
 
+import android.util.Log
 import android.view.View
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -25,9 +26,11 @@ import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -45,11 +48,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.scheduleFileDownload
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.feature.navigation.Screen
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.ktx.messaging
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 @Composable
 fun HomeCandidate(
@@ -75,6 +84,27 @@ fun HomeCandidatePreview(
     homeViewModel: HomeViewModel
 ) {
     val listHomeEntity by homeViewModel.listHomeEntity.collectAsState()
+    val fcmToken by homeViewModel.fcmToken.collectAsState()
+
+    val lifecycle = rememberLifecycleEvent()
+    LaunchedEffect(lifecycle) {
+        if (lifecycle == Lifecycle.Event.ON_RESUME) {
+            homeViewModel.getUserToken()
+        }
+    }
+
+    LaunchedEffect(fcmToken) {
+        if (fcmToken.isEmpty()) {
+            homeViewModel.updateToken()
+        }
+    }
+
+    /*val scope = rememberCoroutineScope()
+    scope.launch {
+        val localToken = Firebase.messaging.token.await()
+        Log.i("localToken", "HomeCandidatePreview: $fcmToken")
+        if (fcmToken.isEmpty()) homeViewModel.updateToken(localToken)
+    }*/
 
     Box(
         modifier = Modifier

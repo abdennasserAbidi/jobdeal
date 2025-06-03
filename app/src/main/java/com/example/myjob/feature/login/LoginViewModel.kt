@@ -174,6 +174,7 @@ class LoginViewModel @Inject constructor(
                     sharedPreferences.putString("role", res.data?.user?.role ?: "")
                     sharedPreferences.putInt("idUser", res.data?.user?.id ?: 0)
                     sharedPreferences.putString("username", res.data?.user?.fullName ?: "")
+                    sharedPreferences.putString("email", res.data?.user?.email ?: "")
                     GlobalEntries.role = res.data?.user?.role ?: ""
                     GlobalEntries.user = res.data?.user ?: User()
                     token.update { sharedPreferences.getString("token", "") ?: "" }

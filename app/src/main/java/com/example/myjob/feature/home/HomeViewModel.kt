@@ -26,17 +26,24 @@ import com.example.myjob.domain.entities.SituationChoices
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
+import com.example.myjob.domain.entities.notification.NotificationMessage
 import com.example.myjob.domain.usecase.home.GetAllUserUseCase
+import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.domain.usecase.home.SaveToFavoriteUseCase
 import com.example.myjob.domain.usecase.invitation.SendInvitationUseCase
+import com.example.myjob.domain.usecase.notification.SendNotificationsUseCase
+import com.example.myjob.domain.usecase.notification.UpdateTokenUseCase
 import com.example.myjob.domain.usecase.search.SearchUserUseCase
 import com.example.myjob.local.database.SharedPreference
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.ktx.messaging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -46,11 +53,63 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val sharedPreference: SharedPreference,
+    private val updateTokenUseCase: UpdateTokenUseCase,
+    private val sendNotificationsUseCase: SendNotificationsUseCase,
     private val getAllUserUseCase: GetAllUserUseCase,
     private val sendInvitationUseCase: SendInvitationUseCase,
     private val saveToFavoriteUseCase: SaveToFavoriteUseCase,
-    private val searchUserUseCase: SearchUserUseCase
+    private val searchUserUseCase: SearchUserUseCase,
+    private val getUserUseCase: GetUserUseCase
 ) : ViewModel() {
+
+    ///////////////////////////////////////////////////////////////////////////
+    // NOTIFICATION
+    ///////////////////////////////////////////////////////////////////////////
+
+    val invitationSent = MutableStateFlow(false)
+    val idUserTo = MutableStateFlow(-1)
+    val fcmToken = MutableStateFlow("")
+
+    fun updateToken() {
+        Log.i("", "updateToken: ")
+        if (fcmToken.value.isEmpty()) {
+            viewModelScope.launch {
+                val localToken = Firebase.messaging.token.await()
+                val email = GlobalEntries.user.id ?: -1
+                val pair = Pair(email, localToken)
+                updateTokenUseCase.execute(pair).collectLatest {
+
+                }
+            }
+        }
+    }
+
+    fun getUserToken() {
+        val id = idUserTo.value
+        val idConnected = sharedPreference.getInt("idUser", -1)
+        viewModelScope.launch {
+            getUserUseCase.execute(85).collect {
+                it.data?.let { u ->
+                    Log.i("fcmToken", "getUserToken: ${u.fcmToken}")
+                    fcmToken.update { u.fcmToken ?: "" }
+                }
+            }
+        }
+    }
+
+    fun sendNotification() {
+        viewModelScope.launch {
+            Log.i("lkalkfhzfrz", "sendNotification: ${fcmToken.value}")
+            val notificationMessage = NotificationMessage(
+                recipientToken = fcmToken.value,
+                title = "feklgrjhgghealgea",
+                body = "fejakhfeagffreeeeeeeeeeeeeeeeeeeeeee"
+            )
+            sendNotificationsUseCase.execute(notificationMessage).collect {
+
+            }
+        }
+    }
 
     val choiceParentSelect = MutableStateFlow("")
     val listChoiceParentSelect = MutableStateFlow<List<Choices>?>(null)
@@ -76,37 +135,42 @@ class HomeViewModel @Inject constructor(
     }
 
     fun changeUnKnown(titleRes: Int, index: Int, title: String, isSelected: Boolean) {
-         when (titleRes) {
+        when (titleRes) {
             R.string.categories_text -> {
                 changeSelectionCategory(index, title, isSelected)
                 listChoiceParentSelected.update {
                     selectedCat.value
                 }
             }
+
             R.string.experience_text -> {
                 changeSelectionExp(index, title, isSelected)
                 listChoiceParentSelected.update {
                     selectedExp.value
                 }
             }
+
             R.string.disponibility_text -> {
                 changeSelectionAvailability(index, title, isSelected)
                 listChoiceParentSelected.update {
                     selectedAvailability.value
                 }
             }
+
             R.string.employment_type_text -> {
                 changeSelectionContract(index, title, isSelected)
                 listChoiceParentSelected.update {
                     selectedType.value
                 }
             }
+
             R.string.situation_text -> {
                 changeSelectionSituation(index, title, isSelected)
                 listChoiceParentSelected.update {
                     selectedSituation.value
                 }
             }
+
             R.string.sexe_text -> {
                 changeSelectionSex(index, title, isSelected)
                 listChoiceParentSelected.update {
@@ -205,11 +269,15 @@ class HomeViewModel @Inject constructor(
 
         if (isSelected) {
             availability.map {
-                if (it.titleString.isNotEmpty() && !listDisponibility.contains(it.titleString)) listDisponibility.add(it.titleString)
+                if (it.titleString.isNotEmpty() && !listDisponibility.contains(it.titleString)) listDisponibility.add(
+                    it.titleString
+                )
             }
         } else {
             availability.map {
-                if (it.titleString.isNotEmpty() && listDisponibility.contains(it.titleString)) listDisponibility.remove(it.titleString)
+                if (it.titleString.isNotEmpty() && listDisponibility.contains(it.titleString)) listDisponibility.remove(
+                    it.titleString
+                )
             }
         }
 
@@ -569,19 +637,6 @@ class HomeViewModel @Inject constructor(
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query
 
@@ -661,7 +716,8 @@ class HomeViewModel @Inject constructor(
             sendInvitationUseCase.execute(invitationParams).collect { res ->
                 when (res.status) {
                     ResourceState.SUCCESS -> {
-                        Log.i("responseDataMessage", "matchCurrentProfile: ${res.data?.message}")
+                        invitationSent.update { true }
+                        idUserTo.update { user.id ?: -1 }
                     }
 
                     else -> {}

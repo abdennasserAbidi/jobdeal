@@ -11,6 +11,7 @@ data class User(
     var lastName: String? = "",
     var phone: String? = "",
     var country: String? = "",
+    var fcmToken: String? = "",
     var newCountry: String? = "",
     var role: String? = "Company",
     var email: String? = "abidi.baha@gmail.com",

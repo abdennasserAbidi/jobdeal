@@ -1,4 +1,4 @@
-package com.example.myjob.feature.invitation
+package com.example.myjob.feature.invitation.company
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility

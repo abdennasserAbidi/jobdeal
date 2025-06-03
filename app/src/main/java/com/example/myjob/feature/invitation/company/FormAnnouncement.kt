@@ -1,4 +1,4 @@
-package com.example.myjob.feature.invitation
+package com.example.myjob.feature.invitation.company
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
