@@ -435,6 +435,18 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    var userEmploymentTypeChoice = MutableStateFlow("")
+    fun changeEmploymentTypeChoice(name: String) {
+        val lang = sharedPreference.getString("lang", "") ?: ""
+        userEmploymentTypeChoice.update {
+            user.value.changeEmploymentType(name, lang)
+        }
+        user.update {
+            it.changeEmploymentType(name, lang)
+            it
+        }
+    }
+
     fun changeActivitySector(activity: String) {
         user.update {
             it.activitySector = activity

@@ -3,7 +3,9 @@ package com.example.myjob.domain.entities
 import android.util.Log
 import android.view.View
 import com.google.gson.annotations.SerializedName
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 data class User(
     var id: Int? = View.generateViewId(),
@@ -17,6 +19,7 @@ data class User(
     var email: String? = "abidi.baha@gmail.com",
     var fullName: String? = "$firstName $lastName",
     var password: String? = "Aladin@123",
+    var preferredEmploymentType: String? = "",
     var address: String? = "",
     var situation: String? = "",
     var sexe: String? = "",
@@ -44,14 +47,45 @@ data class User(
     var companySecondAddress: String? = "",
 ) {
 
-    fun changeUserExperience() {
-        experience?.apply {
-            userExperience = when(size) {
-                0-2 -> ""
-                2-5 -> ""
-                6-10 -> ""
-                else -> ""
+    private fun getMonthNumber(monthName: String): Int {
+        return try {
+            val date = SimpleDateFormat("MMMM", Locale.FRENCH).parse(monthName)
+            val calendar = Calendar.getInstance()
+            if (date != null) {
+                calendar.time = date
             }
+            calendar.get(Calendar.MONTH) + 1
+        } catch (e: Exception) {
+            -1
+        }
+    }
+
+    fun getYearsExp() {
+        experience?.apply {
+            if (isNotEmpty()) {
+                val firstExp = this[0].dateStart
+                firstExp?.let {
+                    val arr = it.split(", ")
+                    val year = arr[2].toInt()
+                    val month = arr[1].split(" ")[1]
+                    val monthNumber = getMonthNumber(month)
+
+                    val calendar: Calendar = Calendar.getInstance()
+                    val currentYear: Int = calendar.get(Calendar.YEAR)
+                    val currentMonth: Int = calendar.get(Calendar.MONTH) + 1
+
+                    val diffYear = currentYear - year
+                    if (diffYear > 0 && currentMonth >= monthNumber) {
+                        val diffMonth = currentMonth
+                    } else {
+
+                    }
+
+                    println("aekddekapo  2 $currentMonth   $monthNumber")
+
+                }
+            }
+
         }
 
     }
@@ -92,6 +126,45 @@ data class User(
         }
 
         situation = traduction
+        return traduction
+    }
+
+    fun getEmploymentType(lang: String): String {
+        return if (lang == "French" || lang == "Français") {
+            when(preferredEmploymentType) {
+                "Contract" -> "Contrat"
+                "Freelance" -> "Freelance"
+                "Both" -> "Les deux"
+                else -> preferredEmploymentType ?: ""
+            }
+        } else {
+            when(preferredEmploymentType) {
+                "Contrat" -> "Contract"
+                "Freelance" -> "Freelance"
+                "Les deux" -> "Both"
+                else -> preferredEmploymentType ?: ""
+            }
+        }
+    }
+
+    fun changeEmploymentType(name: String, lang: String): String {
+        val traduction = if (lang == "French" || lang == "Français") {
+            when(name) {
+                "Contract" -> "Contrat"
+                "Freelance" -> "Freelance"
+                "Both" -> "Les deux"
+                else -> name
+            }
+        } else {
+            when(name) {
+                "Contrat" -> "Contract"
+                "Freelance" -> "Freelance"
+                "Les deux" -> "Both"
+                else -> name
+            }
+        }
+
+        preferredEmploymentType = traduction
         return traduction
     }
 
@@ -169,6 +242,7 @@ data class User(
         val sexValid = !sexe.isNullOrEmpty()
         val situationValid = !situation.isNullOrEmpty()
         val preferredActivitySectorValid = !preferredActivitySector.isNullOrEmpty()
+        val preferredEmploymentTypeValid = !preferredEmploymentType.isNullOrEmpty()
 
         val listTag = if (lang == "French" || lang == "Français") {
             listOf(
@@ -183,6 +257,7 @@ data class User(
                 "Disponibilité",
                 "Marge salariale",
                 "Votre sécteur d'activité",
+                "Votre typle d'emploi",
                 "Téléphone",
                 "Pays",
                 "New Country"
@@ -200,6 +275,7 @@ data class User(
                 "Availability",
                 "Salary range",
                 "Your activity sector",
+                "Your employement type",
                 "Phone",
                 "Country",
                 "New Country"
@@ -219,9 +295,10 @@ data class User(
         if (availabilityValid) mapUser[listTag[8]] = availability ?: ""
         if (rangeSalaryValid) mapUser[listTag[9]] = rangeSalary ?: ""
         if (preferredActivitySectorValid) mapUser[listTag[10]] = preferredActivitySector ?: ""
-        if (phoneValid) mapUser[listTag[11]] = phone ?: ""
-        if (countryValid) mapUser[listTag[12]] = country ?: ""
-        if (newCountryValid) mapUser[listTag[13]] = newCountry ?: ""
+        if (preferredEmploymentTypeValid) mapUser[listTag[11]] = preferredEmploymentType ?: ""
+        if (phoneValid) mapUser[listTag[12]] = phone ?: ""
+        if (countryValid) mapUser[listTag[13]] = country ?: ""
+        if (newCountryValid) mapUser[listTag[14]] = newCountry ?: ""
 
         return mapUser
     }

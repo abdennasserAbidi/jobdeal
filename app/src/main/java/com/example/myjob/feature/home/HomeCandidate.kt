@@ -1,6 +1,5 @@
 package com.example.myjob.feature.home
 
-import android.util.Log
 import android.view.View
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -20,6 +19,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.NotificationsNone
@@ -30,7 +30,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -45,6 +44,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -55,10 +55,6 @@ import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.scheduleFileDownload
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.feature.navigation.Screen
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.messaging.ktx.messaging
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 @Composable
 fun HomeCandidate(
@@ -98,13 +94,6 @@ fun HomeCandidatePreview(
             homeViewModel.updateToken()
         }
     }
-
-    /*val scope = rememberCoroutineScope()
-    scope.launch {
-        val localToken = Firebase.messaging.token.await()
-        Log.i("localToken", "HomeCandidatePreview: $fcmToken")
-        if (fcmToken.isEmpty()) homeViewModel.updateToken(localToken)
-    }*/
 
     Box(
         modifier = Modifier
@@ -177,13 +166,10 @@ fun HomeCandidatePreview(
             ) {
                 itemsIndexed(
                     items = listHomeEntity,
-                    key = { i, _ ->
+                    key = { _, _ ->
                         View.generateViewId()
                     }
                 ) { index, item ->
-
-                    //if (index == listHomeEntity.lastIndex && index == listHomeEntity.lastIndex -1)
-
 
                     Card(
                         modifier = Modifier
@@ -229,8 +215,8 @@ fun HomeCandidatePreview(
                             ) {
                                 Column(
                                     modifier = Modifier
-                                        .align(Alignment.CenterStart)
-                                        .padding(start = 20.dp),
+                                        .fillMaxWidth()
+                                        .align(Alignment.CenterStart),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
 
@@ -269,7 +255,9 @@ fun HomeCandidatePreview(
                                     Text(
                                         text = stringResource(id = item.subTitle).uppercase(),
                                         color = Color.Gray,
-                                        modifier = Modifier.padding(top = 10.dp)
+                                        textAlign = TextAlign.Center,
+                                        fontSize = 14.sp,
+                                        modifier = Modifier.padding(top = 10.dp).padding(horizontal = 10.dp)
                                     )
                                 }
 

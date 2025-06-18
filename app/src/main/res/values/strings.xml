@@ -141,8 +141,10 @@
     <string name="company_name_text">Company name</string>
 
     <string name="employment_type_text">Employment type</string>
+    <string name="employment_type_choice_text">Want to work : </string>
     <string name="type1_text">Contract</string>
     <string name="type2_text">Freelance</string>
+    <string name="type3_text">Both</string>
     <string name="contract_type_text">Contract type</string>
 
 
@@ -234,5 +236,15 @@
     <string name="setting_text">Settings</string>
     <string name="navigate_settings_text">Select your settings</string>
     <string name="profile_text">Profile</string>
-    <string name="navigate_profile_text">Modifiez votre profil</string>
+    <string name="navigate_profile_text">Edit your profile</string>
+
+
+    <string name="send_invitation_text">Send invitation</string>
+    <string name="post_title_text">Post title</string>
+    <string name="post_description_text">Post description</string>
+    <string name="fee_text">Post details</string>
+    <string name="post_type_text">Post type</string>
+    <string name="send_text">Send</string>
+
+
 </resources>

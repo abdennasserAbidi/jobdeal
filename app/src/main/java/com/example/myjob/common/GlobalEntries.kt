@@ -13,6 +13,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.example.myjob.base.workmanager.FileDownloadWorker
+import com.example.myjob.domain.entities.Candidate
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
@@ -35,6 +36,8 @@ object GlobalEntries {
     var experience = Experience()
     var educations = Educations()
     var user = User()
+    var candidateUser = User()
+    var candidate = Candidate()
     var userCandidate = User()
     var userForCompany = User()
     var language = "Français"

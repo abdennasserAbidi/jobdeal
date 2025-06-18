@@ -318,6 +318,49 @@ fun PersonalForm(
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)
             )
 
+            val contractText = stringResource(id = R.string.type1_text)
+            val freelanceText = stringResource(id = R.string.type2_text)
+            val bothText = stringResource(id = R.string.type3_text)
+
+            val userEmploymentTypeChoice by profileViewModel.userEmploymentTypeChoice.collectAsState()
+
+            val employmentTypeOptions = listOf(contractText, freelanceText, bothText)
+            var selectedEmploymentType by remember {
+                mutableStateOf(userEmploymentTypeChoice.ifEmpty { employmentTypeOptions[0] })
+            }
+            profileViewModel.changeEmploymentTypeChoice(selectedEmploymentType)
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp)
+            ) {
+                Text(
+                    text = "${stringResource(id = R.string.employment_type_choice_text)}: ",
+                    modifier = Modifier.padding(start = 20.dp),
+                    style = TextStyle(
+                        color = colorResource(id = R.color.whatsapp),
+                        fontFamily = FontFamily.Default,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+
+                RadioOptions(
+                    listOptions = employmentTypeOptions,
+                    defaultSelection = selectedEmploymentType,
+                    modifier = Modifier.padding(start = 5.dp)
+                ) {
+                    selectedEmploymentType = it
+                }
+            }
+
+            HorizontalDivider(
+                thickness = 1.dp,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)
+            )
+
+
             val marriedText = stringResource(id = R.string.married_text)
             val singleText = stringResource(id = R.string.single_text)
             val engagedText = stringResource(id = R.string.engaged_text)

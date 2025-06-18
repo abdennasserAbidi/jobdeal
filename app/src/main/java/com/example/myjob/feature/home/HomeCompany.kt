@@ -1,8 +1,11 @@
 package com.example.myjob.feature.home
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
@@ -13,6 +16,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -29,8 +34,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
@@ -40,6 +47,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -47,9 +55,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
+import androidx.compose.ui.graphics.Color.Companion.Cyan
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.platform.LocalConfiguration
@@ -58,6 +68,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -68,9 +79,11 @@ import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
+import com.example.myjob.base.CustomTextField
+import com.example.myjob.common.CollapsibleThing
+import com.example.myjob.common.CollapsingAppBarNestedScrollConnection
 import com.example.myjob.common.Direction
 import com.example.myjob.common.ErrorMessage
-import com.example.myjob.common.ExperimentalSwipeableCardApi
 import com.example.myjob.common.GenericMultipleSearch
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.isFromFilter
@@ -86,10 +99,7 @@ import com.example.myjob.feature.navigation.Screen
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-@OptIn(
-    ExperimentalSwipeableCardApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalAnimationApi::class
-)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeCompany(
     navController: NavController,
@@ -115,12 +125,6 @@ fun HomeCompany(
     val invitationSent by homeViewModel.invitationSent.collectAsState()
     val fcmToken by homeViewModel.fcmToken.collectAsState()
 
-    /*LaunchedEffect(invitationSent) {
-        if (invitationSent) {
-            homeViewModel.getUserToken()
-        }
-    }*/
-
     LaunchedEffect(fcmToken) {
         if (fcmToken.isNotEmpty()) {
             homeViewModel.sendNotification()
@@ -142,9 +146,13 @@ fun HomeCompany(
     }
     val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
 
+    val contractText = stringResource(id = R.string.type1_text)
+    val freelanceText = stringResource(id = R.string.type2_text)
+
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_START) {
+            homeViewModel.addToList(contractText, freelanceText)
             onResumed(0)
             if (isFromFilter) {
                 homeViewModel.validateFilter(GlobalEntries.criteriaModel)
@@ -234,207 +242,292 @@ fun HomeCompany(
             }
         }*/
 
-        Column(modifier = Modifier.fillMaxWidth()) {
+        val connection = CollapsingAppBarNestedScrollConnection()
 
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .padding(top = 10.dp)
-                    .background(White)
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null
-                    ) {
-                    },
-                elevation = 5.dp
-            ) {
-                TextField(
-                    value = "",
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = colorResource(id = R.color.lighter_gray),
-                        focusedLabelColor = colorResource(id = R.color.whatsapp),
-                        disabledTextColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
-                    onValueChange = {
-                        //isSearching = it.isNotEmpty()
-                        homeViewModel.updateQuery(it)
-                    },
-                    placeholder = { Text("Rechercher un mot") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+        CollapsibleThing(
+            connection,
+            content = {
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                ) {
 
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 20.dp, end = 10.dp, top = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                item {
-                    Icon(
-                        painter = painterResource(id = R.drawable.filter),
-                        tint = colorResource(id = R.color.whatsapp),
-                        contentDescription = "",
+                    LazyColumn(
                         modifier = Modifier
-                            .size(30.dp)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                navController.navigate(Screen.FilterScreen.route)
-                            }
-                    )
-                }
-
-                itemsIndexed(
-                    items = categories
-                ) { index, item ->
-
-                    val title = stringResource(id = item.title)
-
-                    val textColor = if (selectedCat[index]) White else Black
-                    val color =
-                        colorResource(id = if (selectedCat[index]) R.color.whatsapp else R.color.lighter_gray)
-
-                    Row(
-                        modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .padding(start = 10.dp)
-                            .border(
-                                width = 1.dp,
-                                color = color,
-                                shape = RoundedCornerShape(5.dp)
-                            )
-                            .background(
-                                color = color,
-                                shape = RoundedCornerShape(5.dp)
-                            )
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                filterOpen = true
-                                isVisibleNav.update { false }
-                                itemRes = item.title
-                                indexParent = index
-                                titleParent = title
-                                isSelectedParent = !selectedCat[index]
-                                homeViewModel.changeOption(title, item.title)
-                                /*homeViewModel.changeSelectionParentChoices(
-                                    index,
-                                    item.title,
-                                    title,
-                                    !selectedCat[index]
-                                )*/
-                            },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = title,
-                            color = textColor,
-                            modifier = Modifier.padding(10.dp)
-                        )
-                    }
-
-                }
-            }
-
-            LazyColumn(modifier = Modifier
-                .padding(top = 20.dp)
-                .fillMaxSize())
-            {
-
-                items(lazyPagingItems.itemCount) { index ->
-                    val user = lazyPagingItems[index] ?: User()
-
-                    Card(
-                        elevation = 10.dp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 10.dp, horizontal = 10.dp),
-                        shape = RoundedCornerShape(30.dp)
+                            .padding(top = 20.dp)
+                            .fillMaxSize()
                     ) {
 
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    GlobalEntries.userForCompany = user
-                                    //navController.navigate(Screen.DetailScreen.route)
-                                    openFormInvitation = true
-                                }
-                        ) {
+                        items(lazyPagingItems.itemCount) { index ->
+                            val user = lazyPagingItems[index] ?: User()
 
-                            Row(
+                            Card(
+                                elevation = 10.dp,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                    .padding(vertical = 10.dp, horizontal = 10.dp),
+                                shape = RoundedCornerShape(30.dp)
                             ) {
-
-                                val gender =
-                                    if (user.sexe == "Homme" || user.sexe == "Male") R.drawable.menavatar
-                                    else R.drawable.femaleavatar
-
-                                val color =
-                                    if (user.sexe == "Homme" || user.sexe == "Male") Color.Cyan
-                                    else Color(0xFFFF8C00)
-
-                                Box(
-                                    modifier = Modifier
-                                        .background(
-                                            color = color,
-                                            shape = CircleShape
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = gender),
-                                        modifier = Modifier
-                                            .size(70.dp)
-                                            .padding(10.dp),
-                                        contentDescription = ""
-                                    )
-                                }
 
                                 Column(
                                     modifier = Modifier
-                                        .fillMaxHeight()
-                                        .weight(0.4f)
-                                        .padding(start = 20.dp)
-                                        .padding(horizontal = 10.dp)
+                                        .fillMaxWidth()
+                                        .padding(10.dp)
+                                        .clickable(
+                                            interactionSource = interactionSource,
+                                            indication = null
+                                        ) {
+                                            GlobalEntries.userForCompany = user
+                                            visibleUser = user
+                                            //navController.navigate(Screen.DetailScreen.route)
+                                            openFormInvitation = true
+                                        }
                                 ) {
 
-                                    Text(
-                                        text = user.fullName ?: "",
-                                        style = TextStyle(
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 16.sp
-                                        )
-                                    )
-                                    val exp = user.experience?.let {
-                                        homeViewModel.extractExp(it)
-                                    } ?: "new"
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
 
-                                    Text(
-                                        text = exp,
-                                        style = TextStyle(
-                                            fontWeight = FontWeight.Normal,
-                                            fontSize = 14.sp
+                                        val gender =
+                                            if (user.sexe == "Homme" || user.sexe == "Male") R.drawable.menavatar
+                                            else R.drawable.femaleavatar
+
+                                        val color =
+                                            if (user.sexe == "Homme" || user.sexe == "Male") Color.Cyan
+                                            else Color(0xFFFF8C00)
+
+                                        Box(
+                                            modifier = Modifier
+                                                .background(
+                                                    color = color,
+                                                    shape = CircleShape
+                                                ),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Image(
+                                                painter = painterResource(id = gender),
+                                                modifier = Modifier
+                                                    .size(70.dp)
+                                                    .padding(10.dp),
+                                                contentDescription = ""
+                                            )
+                                        }
+
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxHeight()
+                                                .weight(0.4f)
+                                                .padding(start = 20.dp)
+                                                .padding(horizontal = 10.dp)
+                                        ) {
+
+                                            Text(
+                                                text = user.fullName ?: "",
+                                                style = TextStyle(
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 16.sp
+                                                )
+                                            )
+                                            val exp = user.experience?.let {
+                                                homeViewModel.extractExp(it)
+                                            } ?: "new"
+
+                                            Text(
+                                                text = exp,
+                                                style = TextStyle(
+                                                    fontWeight = FontWeight.Normal,
+                                                    fontSize = 14.sp
+                                                ),
+                                                color = Color.LightGray,
+                                                modifier = Modifier.padding(top = 5.dp)
+                                            )
+
+                                        }
+
+                                    }
+                                }
+
+                            }
+                        }
+                        lazyPagingItems.apply {
+                            when {
+                                loadState.refresh is LoadState.Loading -> {
+                                    item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
+                                }
+
+                                loadState.refresh is LoadState.Error -> {
+                                    val error = lazyPagingItems.loadState.refresh as LoadState.Error
+                                    item {
+                                        ErrorMessage(
+                                            modifier = Modifier.fillParentMaxSize(),
+                                            message = error.error.localizedMessage ?: "",
+                                            onClickRetry = { retry() })
+                                    }
+                                }
+
+                                loadState.append is LoadState.Loading -> {
+                                    item { LoadingNextPageItem(modifier = Modifier) }
+                                }
+
+                                loadState.append is LoadState.Error -> {
+                                    val error = lazyPagingItems.loadState.append as LoadState.Error
+                                    item {
+                                        ErrorMessage(
+                                            modifier = Modifier,
+                                            message = error.error.localizedMessage!!,
+                                            onClickRetry = { retry() })
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }, headerContent = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                ) {
+
+                    val shapeInit = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp)
+                            .background(
+                                color = colorResource(id = R.color.whatsapp),
+                                shape = shapeInit
+                            )
+                    )
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 75.dp, bottom = 10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+
+                        Surface(
+                            elevation = 2.dp,
+                            color = MaterialTheme.colors.surface,
+                            shape = RoundedCornerShape(40.dp),
+                        ) {
+                            Card(
+                                shape = RoundedCornerShape(40.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth(0.85f)
+                                    .wrapContentHeight()
+                                    .shadow(
+                                        elevation = 5.dp,
+                                        shape = RoundedCornerShape(40.dp)
+                                    )
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) {
+                                    },
+                                elevation = 5.dp
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                ) {
+                                    TextField(
+                                        value = "",
+                                        colors = TextFieldDefaults.textFieldColors(
+                                            containerColor = Color.Transparent,
+                                            focusedLabelColor = colorResource(id = R.color.whatsapp),
+                                            disabledTextColor = Color.Transparent,
+                                            focusedIndicatorColor = Color.Transparent,
+                                            unfocusedIndicatorColor = Color.Transparent,
+                                            disabledIndicatorColor = Color.Transparent
                                         ),
-                                        color = Color.LightGray,
-                                        modifier = Modifier.padding(top = 5.dp)
+                                        onValueChange = {
+                                            homeViewModel.updateQuery(it)
+                                        },
+                                        placeholder = { Text("Search") },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(60.dp)
+                                            .background(White)
                                     )
+                                }
+                            }
+                        }
 
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(end = 10.dp, top = 20.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            /*item {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.filter),
+                                    tint = White,
+                                    contentDescription = "",
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .clickable(
+                                            interactionSource = interactionSource,
+                                            indication = null
+                                        ) {
+                                            navController.navigate(Screen.FilterScreen.route)
+                                        }
+                                )
+                            }*/
+
+                            itemsIndexed(
+                                items = categories
+                            ) { index, item ->
+
+                                val title = stringResource(id = item.title)
+
+                                val textColor = if (selectedCat[index]) White else Black
+                                val color =
+                                    colorResource(id = if (selectedCat[index]) R.color.whatsapp else R.color.lighter_gray)
+
+                                Row(
+                                    modifier = Modifier
+                                        .wrapContentHeight()
+                                        .padding(start = 10.dp)
+                                        .border(
+                                            width = 1.dp,
+                                            color = color,
+                                            shape = RoundedCornerShape(5.dp)
+                                        )
+                                        .background(
+                                            color = color,
+                                            shape = RoundedCornerShape(5.dp)
+                                        )
+                                        .clickable(
+                                            interactionSource = interactionSource,
+                                            indication = null
+                                        ) {
+                                            filterOpen = true
+                                            isVisibleNav.update { false }
+                                            itemRes = item.title
+                                            indexParent = index
+                                            titleParent = title
+                                            isSelectedParent = !selectedCat[index]
+                                            homeViewModel.changeOption(title, item.title)
+                                            /*homeViewModel.changeSelectionParentChoices(
+                                                index,
+                                                item.title,
+                                                title,
+                                                !selectedCat[index]
+                                            )*/
+                                        },
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = title,
+                                        color = textColor,
+                                        modifier = Modifier.padding(10.dp)
+                                    )
                                 }
 
                             }
@@ -442,39 +535,151 @@ fun HomeCompany(
 
                     }
                 }
-                lazyPagingItems.apply {
-                    when {
-                        loadState.refresh is LoadState.Loading -> {
-                            item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
-                        }
 
-                        loadState.refresh is LoadState.Error -> {
-                            val error = lazyPagingItems.loadState.refresh as LoadState.Error
-                            item {
-                                ErrorMessage(
-                                    modifier = Modifier.fillParentMaxSize(),
-                                    message = error.error.localizedMessage ?: "",
-                                    onClickRetry = { retry() })
+
+            }, filterBar = {
+
+                var alphaValue by remember { mutableFloatStateOf(0f) }
+                alphaValue = (3 * (1f - connection.progress)).coerceIn(0f, 1f)
+                val colorCard = if (alphaValue == 1f) White.copy(alpha = alphaValue)
+                else colorResource(id = R.color.whatsapp)
+
+                Column(
+                    modifier = Modifier.background(
+                        White.copy(alpha = alphaValue)
+                    ),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    Card(
+                        shape = RoundedCornerShape(40.dp),
+                        modifier = Modifier
+                            .fillMaxWidth(0.85f)
+                            .wrapContentHeight()
+                            .shadow(
+                                elevation = 5.dp,
+                                shape = RoundedCornerShape(40.dp)
+                            )
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
                             }
+                            .background(White.copy(alpha = alphaValue)),
+                        contentColor = White.copy(alpha = alphaValue),
+                        elevation = 5.dp
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth()
+                                .background(White.copy(alpha = alphaValue))
+                        ) {
+                            TextField(
+                                value = "",
+                                colors = TextFieldDefaults.textFieldColors(
+                                    containerColor = Color.Transparent,
+                                    focusedLabelColor = colorResource(id = R.color.whatsapp),
+                                    disabledTextColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent
+                                ),
+                                onValueChange = {
+                                    homeViewModel.updateQuery(it)
+                                },
+                                placeholder = { Text("Search") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp)
+                                    .background(White.copy(alpha = alphaValue))
+                            )
                         }
+                    }
 
-                        loadState.append is LoadState.Loading -> {
-                            item { LoadingNextPageItem(modifier = Modifier) }
-                        }
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(end = 10.dp, top = 10.dp)
+                            .background(White.copy(alpha = alphaValue)),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        itemsIndexed(
+                            items = categories
+                        ) { index, item ->
 
-                        loadState.append is LoadState.Error -> {
-                            val error = lazyPagingItems.loadState.append as LoadState.Error
-                            /*item {
-                                ErrorMessage(
-                                    modifier = Modifier,
-                                    message = error.error.localizedMessage!!,
-                                    onClickRetry = { retry() })
-                            }*/
+                            val title = stringResource(id = item.title)
+
+                            val textColor = if (selectedCat[index]) White else Black
+                            val color =
+                                colorResource(id = if (selectedCat[index]) R.color.whatsapp else R.color.lighter_gray)
+
+                            Row(
+                                modifier = Modifier
+                                    .padding(vertical = 8.dp)
+                                    .padding(start = 10.dp)
+                                    .border(
+                                        width = 1.dp,
+                                        color = color.copy(alpha = alphaValue),
+                                        shape = RoundedCornerShape(5.dp)
+                                    )
+                                    .background(
+                                        color = color.copy(alpha = alphaValue),
+                                        shape = RoundedCornerShape(5.dp)
+                                    )
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) {
+                                        filterOpen = true
+                                        isVisibleNav.update { false }
+                                        itemRes = item.title
+                                        indexParent = index
+                                        titleParent = title
+                                        isSelectedParent = !selectedCat[index]
+                                        homeViewModel.changeOption(title, item.title)
+                                        /*homeViewModel.changeSelectionParentChoices(
+                                        index,
+                                        item.title,
+                                        title,
+                                        !selectedCat[index]
+                                        )*/
+                                    },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = title,
+                                    color = textColor.copy(alpha = alphaValue),
+                                    modifier = Modifier.padding(10.dp)
+                                )
+                            }
+
                         }
                     }
                 }
+            })
+
+
+        /*Card(
+            shape = RoundedCornerShape(20.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp)
+                .padding(top = 70.dp)
+                .background(White)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null
+                ) {
+                },
+            elevation = 10.dp
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+
+
+
             }
-        }
+        }*/
+
+
 
         AnimatedVisibility(
             visible = filterOpen,
@@ -531,7 +736,7 @@ fun HomeCompany(
                                 thickness = 1.dp
                             )
 
-                            val l = when(itemRes) {
+                            val l = when (itemRes) {
                                 R.string.categories_text -> selectedCategories
                                 R.string.experience_text -> selectedExp
                                 R.string.disponibility_text -> selectedAvailability
@@ -626,10 +831,7 @@ fun HomeCompany(
                     )
                 }
             }
-
-
         }
-
 
         AnimatedVisibility(
             visible = openFormInvitation,
@@ -642,277 +844,30 @@ fun HomeCompany(
                 animationSpec = tween(durationMillis = 600) // Set animation duration
             )
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .background(White),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            val statusInvitation = stringResource(id = R.string.holding)
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                        .padding(top = 20.dp)
-                ) {
+            SendInvitation(homeViewModel, validate = {
 
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                openFormInvitation = false
-                            },
-                        contentDescription = ""
-                    )
+                scope.launch {
+                    val last = us
+                        .reversed()
+                        .firstOrNull {
+                            it.second.offset.value == Offset(0f, 0f)
+                        }?.second
 
-                    Text(
-                        text = "Send Invitation",
-                        modifier = Modifier.align(Alignment.Center),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp
-                    )
+                    last?.swipe(Direction.Right)
                 }
 
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    val invitationParam by homeViewModel.invitationParam.collectAsState()
-                    var postName by remember { mutableStateOf("Dveloppeur Android") }
+                homeViewModel.clearToken()
+                homeViewModel.getUserToken(visibleUser.id ?: -1)
+                /*homeViewModel.updateCurrentPage()
+                homeViewModel.removeFromGlobal(visibleUser.id ?: 0)*/
+                homeViewModel.matchCurrentProfile(visibleUser, statusInvitation)
+            },
+                openFormInvitation = {
+                    openFormInvitation = false
+                })
 
-                    Text(
-                        text = "Post name",
-                        modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                        style = TextStyle(
-                            color = colorResource(id = R.color.whatsapp),
-                            fontFamily = FontFamily.Default,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 10.dp)
-                            .border(
-                                width = 1.dp,
-                                color = colorResource(id = R.color.whatsapp),
-                                shape = RoundedCornerShape(30.dp)
-                            )
-                            .clip(shape = RoundedCornerShape(30.dp)),
-                        colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        value = postName,
-                        onValueChange = {
-                            postName = it
-                            homeViewModel.changePostName(it)
-                        },
-                        textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                    )
-
-                    var descriptions by remember { mutableStateOf("Creer une application pour connecter les entreprises avec les candidats facilement.") }
-
-                    Text(
-                        text = "Description",
-                        modifier = Modifier.padding(top = 10.dp, start = 20.dp),
-                        style = TextStyle(
-                            color = colorResource(id = R.color.whatsapp),
-                            fontFamily = FontFamily.Default,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 10.dp)
-                            .border(
-                                width = 1.dp,
-                                color = colorResource(id = R.color.whatsapp),
-                                shape = RoundedCornerShape(30.dp)
-                            )
-                            .clip(shape = RoundedCornerShape(30.dp)),
-                        colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        value = descriptions,
-                        onValueChange = {
-                            descriptions = it
-                            homeViewModel.changeDescriptions(it)
-                        },
-                        textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                    )
-
-                    var type by remember { mutableStateOf("CDI") }
-
-                    Text(
-                        text = "Type de contrat",
-                        modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                        style = TextStyle(
-                            color = colorResource(id = R.color.whatsapp),
-                            fontFamily = FontFamily.Default,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 10.dp)
-                            .border(
-                                width = 1.dp,
-                                color = colorResource(id = R.color.whatsapp),
-                                shape = RoundedCornerShape(30.dp)
-                            )
-                            .clip(shape = RoundedCornerShape(30.dp)),
-                        colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        value = type,
-                        onValueChange = {
-                            type = it
-                            homeViewModel.changeTypeContract(it)
-                        },
-                        textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                    )
-
-                    var disponibility by remember { mutableStateOf("Immidiat") }
-
-                    Text(
-                        text = "Disponibilité",
-                        modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                        style = TextStyle(
-                            color = colorResource(id = R.color.whatsapp),
-                            fontFamily = FontFamily.Default,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 10.dp)
-                            .border(
-                                width = 1.dp,
-                                color = colorResource(id = R.color.whatsapp),
-                                shape = RoundedCornerShape(30.dp)
-                            )
-                            .clip(shape = RoundedCornerShape(30.dp)),
-                        colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        value = disponibility,
-                        onValueChange = {
-                            disponibility = it
-                            homeViewModel.changeDisponibility(it)
-                        },
-                        textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                    )
-
-                    var salary by remember { mutableStateOf("1000") }
-
-                    Text(
-                        text = "TGM",
-                        modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                        style = TextStyle(
-                            color = colorResource(id = R.color.whatsapp),
-                            fontFamily = FontFamily.Default,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 10.dp)
-                            .border(
-                                width = 1.dp,
-                                color = colorResource(id = R.color.whatsapp),
-                                shape = RoundedCornerShape(30.dp)
-                            )
-                            .clip(shape = RoundedCornerShape(30.dp)),
-                        colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        value = salary,
-                        onValueChange = {
-                            salary = it
-                            homeViewModel.changeSalary(it)
-                        },
-                        textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                    )
-                }
-
-                val statusInvitation = stringResource(id = R.string.holding)
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.4f)
-                        .padding(top = 20.dp)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null
-                        ) {
-
-                            scope.launch {
-                                val last = us
-                                    .reversed()
-                                    .firstOrNull {
-                                        it.second.offset.value == Offset(0f, 0f)
-                                    }?.second
-
-                                last?.swipe(Direction.Right)
-                            }
-
-                            homeViewModel.getUserToken()
-
-                            //homeViewModel.updateCurrentPage()
-                            //homeViewModel.removeFromGlobal(visibleUser.id ?: 0)
-                            //homeViewModel.matchCurrentProfile(visibleUser, statusInvitation)
-                            openFormInvitation = false
-
-                        }
-                        .background(
-                            color = colorResource(id = R.color.whatsapp),
-                            shape = RoundedCornerShape(30.dp)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Send",
-                        modifier = Modifier.padding(
-                            vertical = 20.dp,
-                            horizontal = 20.dp
-                        ),
-                        style = TextStyle(
-                            color = White,
-                            fontFamily = FontFamily.Default,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
-            }
         }
     }
 

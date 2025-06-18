@@ -62,6 +62,16 @@ class HomeViewModel @Inject constructor(
     private val getUserUseCase: GetUserUseCase
 ) : ViewModel() {
 
+    val listTypeContract = MutableStateFlow(emptyList<String>())
+    fun addToList(itemOne: String, itemTwo: String) {
+        val list = listTypeContract.value.toMutableList()
+        list.add(itemOne)
+        list.add(itemTwo)
+        listTypeContract.update {
+            list
+        }
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // NOTIFICATION
     ///////////////////////////////////////////////////////////////////////////
@@ -71,7 +81,6 @@ class HomeViewModel @Inject constructor(
     val fcmToken = MutableStateFlow("")
 
     fun updateToken() {
-        Log.i("", "updateToken: ")
         if (fcmToken.value.isEmpty()) {
             viewModelScope.launch {
                 val localToken = Firebase.messaging.token.await()
@@ -84,26 +93,27 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun getUserToken() {
-        val id = idUserTo.value
-        val idConnected = sharedPreference.getInt("idUser", -1)
+    fun getUserToken(id: Int? = sharedPreference.getInt("idUser", -1)) {
         viewModelScope.launch {
-            getUserUseCase.execute(85).collect {
+            getUserUseCase.execute(id).collect {
                 it.data?.let { u ->
-                    Log.i("fcmToken", "getUserToken: ${u.fcmToken}")
                     fcmToken.update { u.fcmToken ?: "" }
                 }
             }
         }
     }
 
+    fun clearToken() {
+        fcmToken.update { "" }
+    }
+
     fun sendNotification() {
         viewModelScope.launch {
-            Log.i("lkalkfhzfrz", "sendNotification: ${fcmToken.value}")
             val notificationMessage = NotificationMessage(
                 recipientToken = fcmToken.value,
                 title = "feklgrjhgghealgea",
-                body = "fejakhfeagffreeeeeeeeeeeeeeeeeeeeeee"
+                body = "fejakhfeagffreeeeeeeeeeeeeeeeeeeeeee",
+                data = mapOf("idUser" to "85")
             )
             sendNotificationsUseCase.execute(notificationMessage).collect {
 
@@ -688,10 +698,24 @@ class HomeViewModel @Inject constructor(
 
     fun changeSalary(name: String) {
         invitationParam.update {
+            it.salary = name
+            it
+        }
+    }
+    fun changeTgm(name: String) {
+        invitationParam.update {
             it.tgm = name
             it
         }
     }
+    fun changeNbDays(name: String) {
+        invitationParam.update {
+            it.nbDaysPerWeek = name
+            it
+        }
+    }
+
+    val loadingState = MutableStateFlow(false)
 
     fun matchCurrentProfile(user: User, status: String) {
         val currentDate = Date()
@@ -715,9 +739,23 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             sendInvitationUseCase.execute(invitationParams).collect { res ->
                 when (res.status) {
+
+                    ResourceState.LOADING -> {
+                        loadingState.update { true }
+                    }
+
+                    ResourceState.ERROR -> {
+                        loadingState.update { false }
+                        invitationSent.update { false }
+                    }
+
                     ResourceState.SUCCESS -> {
+                        loadingState.update { false }
                         invitationSent.update { true }
                         idUserTo.update { user.id ?: -1 }
+                        /*_user.update {
+
+                        }*/
                     }
 
                     else -> {}

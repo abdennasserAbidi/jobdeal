@@ -21,5 +21,7 @@ data class InvitationModel(
     var typeContract: String = "",
     var disponibility: String = "",
     var tgm: String = "",
+    var nbDaysPerWeek: String = "",
+    var salary: String = "",
     var accepted: Boolean = false
 )
