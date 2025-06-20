@@ -547,8 +547,7 @@ fun PersonalForm(
                     .fillMaxWidth()
                     .padding(top = 10.dp)
             ) {
-
-                val title = user.newCountry ?: ""
+                val title = user.country ?: ""
 
                 if (title.isNotEmpty()) {
                     Column(
@@ -717,8 +716,6 @@ fun PersonalForm(
             val phone by profileViewModel.phone.collectAsState()
             val completePhone by profileViewModel.completePhone.collectAsState()
 
-            Log.i("hahidefault", "completePhone: $completePhone")
-
             CustomPhoneKit(
                 modifier = Modifier.padding(top = 10.dp, start = 20.dp),
                 selectedCountry = selectedCountry,
@@ -852,7 +849,6 @@ fun PersonalForm(
                 animationSpec = tween(durationMillis = 600) // Set animation duration
             )
         ) {
-            Log.i("jkgrehbgre", "PersonalForm: $listNames")
             Box(modifier = Modifier.fillMaxSize()) {
 
                 GenericSearch(
@@ -862,7 +858,7 @@ fun PersonalForm(
                     },
                     onSelectedBank = { item, index ->
                         profileViewModel.changeVisibilityCountry(false)
-                        profileViewModel.changeTitleGeneric(item)
+                        profileViewModel.changeCountryGeneric(item)
                         user.country = item
                     },
                     title = stringResource(id = R.string.country_text)

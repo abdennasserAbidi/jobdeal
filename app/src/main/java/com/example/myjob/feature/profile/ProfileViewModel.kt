@@ -288,6 +288,18 @@ class ProfileViewModel @Inject constructor(
 
     }
 
+    var countryGeneric = MutableStateFlow("")
+
+    fun changeCountryGeneric(item: String) {
+        countryGeneric.update { item }
+
+        user.update {
+            it.country = item
+            it
+        }
+
+    }
+
     var completePhone = MutableStateFlow("")
     var phone = MutableStateFlow("")
 

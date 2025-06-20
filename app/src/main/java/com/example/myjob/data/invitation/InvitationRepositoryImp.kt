@@ -40,6 +40,19 @@ class InvitationRepositoryImp @Inject constructor(
             }
         }
 
+    override suspend fun acceptRejectInvitation(invitationParams: InvitationParams): Flow<Resource<UserResponse>> =
+        flow {
+            try {
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.acceptRejectInvitation(invitationParams)
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
+        }
+
     override suspend fun getInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>> =
         flow {
             val pager = Pager(

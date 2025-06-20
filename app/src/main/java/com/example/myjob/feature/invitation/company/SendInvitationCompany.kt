@@ -26,17 +26,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries.candidateUser
-import com.example.myjob.domain.entities.Candidate
 import com.example.myjob.domain.entities.ContractType
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.home.HomeViewModel
+import com.example.myjob.ui.theme.WhatsAppGreenSurface
+import com.example.myjob.ui.theme.WhatsAppLightGreen
 import kotlinx.coroutines.delay
-
-// WhatsApp Green Theme Colors
-val WhatsAppDarkGreen = Color(0xFF128C7E)
-val WhatsAppLightGreen = Color(0xFFDCF8C6)
-val WhatsAppGreenSurface = Color(0xFFF0F9F0)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

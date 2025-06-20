@@ -29,7 +29,8 @@ import retrofit2.http.Query
 /**
  * The main services that handles all endpoint processes
  */
-interface ApiService {
+interface
+ApiService {
 
     @POST("auth/updatetoken")
     suspend fun updateToken(
@@ -131,6 +132,12 @@ interface ApiService {
         @Query("size") size: Int = 10
     ): GenericResponse<InvitationModel>
 
+    @POST("auth/acceptRejectInvitation")
+    suspend fun acceptRejectInvitation(@Body invitationParams: InvitationParams): UserResponse
+
+    ///////////////////////////////////////////////////////////////////////////
+    // USER
+    ///////////////////////////////////////////////////////////////////////////
     @POST("auth/updateuser")
     suspend fun savePersonalInfo(@Body user: User): UserResponse
 

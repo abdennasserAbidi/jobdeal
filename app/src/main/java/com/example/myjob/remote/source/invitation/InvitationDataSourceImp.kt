@@ -25,4 +25,7 @@ class InvitationDataSourceImp @Inject constructor(
 
     override suspend fun sendInvitation(invitationParams: InvitationParams): UserResponse =
         apiService.sendInvitation(invitationParams)
+
+    override suspend fun acceptRejectInvitation(invitationParams: InvitationParams): UserResponse =
+        apiService.acceptRejectInvitation(invitationParams)
 }

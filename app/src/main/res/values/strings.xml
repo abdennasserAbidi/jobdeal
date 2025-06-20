@@ -141,7 +141,7 @@
     <string name="company_name_text">Company name</string>
 
     <string name="employment_type_text">Employment type</string>
-    <string name="employment_type_choice_text">Want to work : </string>
+    <string name="employment_type_choice_text">Want to work</string>
     <string name="type1_text">Contract</string>
     <string name="type2_text">Freelance</string>
     <string name="type3_text">Both</string>
@@ -245,6 +245,14 @@
     <string name="fee_text">Post details</string>
     <string name="post_type_text">Post type</string>
     <string name="send_text">Send</string>
+
+
+    <string name="reject_text">Reject</string>
+    <string name="accept_text">Accept</string>
+    <string name="in_process_text">In process</string>
+    <string name="delete_invitation_text">Delete</string>
+    <string name="view_profile_text">View profile</string>
+    <string name="terminate_text">Terminate process</string>
 
 
 </resources>

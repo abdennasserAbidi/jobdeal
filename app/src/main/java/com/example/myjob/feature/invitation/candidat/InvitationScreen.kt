@@ -1,39 +1,52 @@
 package com.example.myjob.feature.invitation.candidat
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -41,8 +54,15 @@ import com.example.myjob.R
 import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
+import com.example.myjob.common.rememberLifecycleEvent
+import com.example.myjob.common.view.InvitationCard
+import com.example.myjob.domain.entities.FilterType
 import com.example.myjob.domain.entities.invitation.InvitationModel
+import com.example.myjob.domain.entities.invitation.InvitationStatus
+import com.example.myjob.ui.theme.WhatsAppDarkGreen
+import com.example.myjob.ui.theme.WhatsAppLightGreen
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InvitationScreen(
     navController: NavController,
@@ -52,178 +72,126 @@ fun InvitationScreen(
     val invitations = invitationViewModel.invitations.collectAsLazyPagingItems()
     val interactionSource = remember { MutableInteractionSource() }
 
+    var selectedFilter by remember { mutableStateOf(FilterType.ALL) }
+    var showFilterSheet by remember { mutableStateOf(false) }
+
+    val fcmToken by invitationViewModel.fcmToken.collectAsState()
+
+    LaunchedEffect(fcmToken) {
+        if (fcmToken.isNotEmpty()) {
+            invitationViewModel.sendNotification()
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 85.dp)
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
 
-            items(invitations.itemCount) { index ->
-                val item = invitations[index] ?: InvitationModel()
+            // Filter Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "5 candidates found",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp)
-                        .border(
-                            1.dp,
-                            colorResource(id = R.color.lighter_gray),
-                            RoundedCornerShape(20.dp)
-                        )
-                        .background(
-                            colorResource(id = R.color.lighter_gray),
-                            shape = RoundedCornerShape(20.dp)
-                        )
-                ) {
-
-                    Card(
-                        elevation = 5.dp,
-                        shape = RoundedCornerShape(20.dp),
-                        modifier = Modifier.padding(5.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(5.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 20.dp, top = 20.dp)
-                            ) {
-
-                                Text(
-                                    text = item.message,
-                                    modifier = Modifier.weight(0.7f),
-                                    style = TextStyle(
-                                        color = Color.Black,
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
-                            }
-
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 20.dp)
-                            )
-                            {
-
-                                Text(
-                                    modifier = Modifier.padding(top = 5.dp),
-                                    text = item.description,
-                                    color = Color.Black
-                                )
-
-                                val name = item.companyName
-                                val newName =
-                                    if (name.contains('(')) name.split('(')[1].dropLast(1)
-                                    else name
-
-                                Text(
-                                    modifier = Modifier.padding(top = 5.dp),
-                                    text = "$newName ",
-                                    color = Color.Black
-                                )
-
-                                Text(
-                                    text = item.typeContract,
-                                    modifier = Modifier.padding(top = 5.dp),
-                                    color = Color.Gray
-                                )
-
-                                Spacer(modifier = Modifier.height(20.dp))
-                            }
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 10.dp, start = 20.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                FilterChip(
+                    onClick = { showFilterSheet = true },
+                    label = {
                         Text(
-                            text = stringResource(id = R.string.update_text),
-                            modifier = Modifier.clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-
-                            },
-                            color = colorResource(id = R.color.whatsapp)
+                            text = when (selectedFilter) {
+                                FilterType.ALL -> "All"
+                                FilterType.AVAILABLE -> "Available"
+                                FilterType.INTERVIEWING -> "Interviewing"
+                                FilterType.HIRED -> "Hired"
+                                FilterType.NOT_INTERESTED -> "Not Interested"
+                            }
                         )
-
-                        Box(
-                            modifier = Modifier
-                                .height(30.dp)
-                                .width(90.dp)
-                                .padding(start = 20.dp)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-
-                                }
-                                .background(Color.Transparent, RoundedCornerShape(5.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .alpha(0.1f)
-                                    .background(Color.Red, RoundedCornerShape(5.dp))
-                            )
-
-                            Text(
-                                text = stringResource(id = R.string.delete_text),
-                                color = colorResource(id = R.color.dark_red)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
+                    },
+                    selected = selectedFilter != FilterType.ALL,
+                    trailingIcon = {
+                        Icon(
+                            Icons.Default.KeyboardArrowDown,
+                            contentDescription = "Filter",
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = WhatsAppLightGreen,
+                        selectedLabelColor = WhatsAppDarkGreen
+                    )
+                )
             }
 
-            invitations.apply {
-                when {
-                    loadState.refresh is LoadState.Loading -> {
-                        item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
-                    }
+            val statusInvitations by invitationViewModel.statusInvitations.collectAsState()
 
-                    loadState.refresh is LoadState.Error -> {
-                        val error = invitations.loadState.refresh as LoadState.Error
-                        item {
-                            ErrorMessage(
-                                modifier = Modifier.fillParentMaxSize(),
-                                message = error.error.localizedMessage ?: "",
-                                onClickRetry = { retry() })
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 20.dp)
+            ) {
+
+                items(invitations.itemCount) { index ->
+                    val item = invitations[index] ?: InvitationModel()
+
+                    InvitationCard(
+                        statusInvitations = statusInvitations,
+                        invitationModel = item,
+                        onClick = { /*TODO*/ },
+                        onAcceptInvitation = {
+                            item.status = InvitationStatus.IN_PROCESS.name
+                            invitationViewModel.acceptRejectInvitation(item)
+
+                            invitationViewModel.clearToken()
+                            invitationViewModel.getUserToken(item.idCompany)
+                        },
+                        onRejectInvitation = {
+                            item.status = InvitationStatus.NOT_INTERESTED.name
+                            invitationViewModel.acceptRejectInvitation(item)
+
+                            invitationViewModel.clearToken()
+                            invitationViewModel.getUserToken(item.idCompany)
                         }
-                    }
+                    )
+                }
 
-                    loadState.append is LoadState.Loading -> {
-                        item { LoadingNextPageItem(modifier = Modifier) }
-                    }
+                invitations.apply {
+                    when {
+                        loadState.refresh is LoadState.Loading -> {
+                            item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
+                        }
 
-                    loadState.append is LoadState.Error -> {
-                        val error = invitations.loadState.append as LoadState.Error
-                        item {
-                            ErrorMessage(
-                                modifier = Modifier,
-                                message = error.error.localizedMessage!!,
-                                onClickRetry = { retry() })
+                        loadState.refresh is LoadState.Error -> {
+                            val error = invitations.loadState.refresh as LoadState.Error
+                            item {
+                                ErrorMessage(
+                                    modifier = Modifier.fillParentMaxSize(),
+                                    message = error.error.localizedMessage ?: "",
+                                    onClickRetry = { retry() })
+                            }
+                        }
+
+                        loadState.append is LoadState.Loading -> {
+                            item { LoadingNextPageItem(modifier = Modifier) }
+                        }
+
+                        loadState.append is LoadState.Error -> {
+                            val error = invitations.loadState.append as LoadState.Error
+                            item {
+                                ErrorMessage(
+                                    modifier = Modifier,
+                                    message = error.error.localizedMessage!!,
+                                    onClickRetry = { retry() })
+                            }
                         }
                     }
                 }
             }
         }
-
-        val shapeInit = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
 
         Box(
             modifier = Modifier
@@ -266,4 +234,67 @@ fun InvitationScreen(
         }
     }
 
+    // Filter Bottom Sheet
+    if (showFilterSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showFilterSheet = false }
+        ) {
+            FilterBottomSheet(
+                selectedFilter = selectedFilter,
+                onFilterSelected = { filter ->
+                    selectedFilter = filter
+                    showFilterSheet = false
+                }
+            )
+        }
+    }
+
+}
+
+@Composable
+fun FilterBottomSheet(
+    selectedFilter: FilterType,
+    onFilterSelected: (FilterType) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Filter by Status",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        FilterType.values().forEach { filter ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onFilterSelected(filter) }
+                    .padding(vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = selectedFilter == filter,
+                    onClick = { onFilterSelected(filter) }
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = when (filter) {
+                        FilterType.ALL -> "All Candidates"
+                        FilterType.AVAILABLE -> "Available"
+                        FilterType.INTERVIEWING -> "Interviewing"
+                        FilterType.HIRED -> "Hired"
+                        FilterType.NOT_INTERESTED -> "Not Interested"
+                    },
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
 }

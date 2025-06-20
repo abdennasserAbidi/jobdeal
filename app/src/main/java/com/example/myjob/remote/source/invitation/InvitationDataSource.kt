@@ -9,4 +9,5 @@ interface InvitationDataSource {
     suspend fun getCompanyInvitations(id: Int, pageNumber: Int): GenericResponse<InvitationModel>
     suspend fun getInvitations(id: Int, pageNumber: Int): GenericResponse<InvitationModel>
     suspend fun sendInvitation(invitationParams: InvitationParams): UserResponse
+    suspend fun acceptRejectInvitation(invitationParams: InvitationParams): UserResponse
 }

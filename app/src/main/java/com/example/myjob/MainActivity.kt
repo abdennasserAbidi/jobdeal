@@ -2,7 +2,6 @@ package com.example.myjob
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -32,7 +31,6 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,8 +46,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.navigation.NavDeepLinkRequest
-import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -57,7 +53,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.example.myjob.base.MyApp
-import com.example.myjob.common.CandidateListScreen
+import com.example.myjob.feature.home.CandidateListScreen
 import com.example.myjob.common.FileReader
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.langState
@@ -82,7 +78,6 @@ import com.example.myjob.feature.home.filter.SearchScreen
 import com.example.myjob.feature.invitation.candidat.InvitationScreen
 import com.example.myjob.feature.invitation.company.InvitationCompanyScreen
 import com.example.myjob.feature.invitation.company.SendInvitationCompany
-import com.example.myjob.feature.invitation.company.SendInvitationScreen
 import com.example.myjob.feature.invitation.detail.DetailInvitationScreen
 import com.example.myjob.feature.login.LoginScreen
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
@@ -110,7 +105,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -351,7 +345,7 @@ class MainActivity : ComponentActivity() {
 
                 println("eajhfleugfaefae  $jobId")
                 jobId?.let {
-                    val route = when(it) {
+                    val route = when (it) {
                         "85" -> Screen.DetailInvitationScreen.route
                         "11" -> Screen.OnBoardingScreen.route
                         else -> Screen.LoginScreen.route
@@ -533,11 +527,13 @@ class MainActivity : ComponentActivity() {
                                     isVisibleNav = it
                                 }
                             }
-                            CandidateListScreen(navController = navController,
+                            CandidateListScreen(
+                                navController = navController,
                                 allSubjects = allSubjects,
                                 listSchools = listSchools,
                                 listCountries = listCountries,
-                                listCompany = listCompany,)
+                                listCompany = listCompany,
+                            )
 
                             /*HomeCompany(navController = navController,
                                 allSubjects = allSubjects,

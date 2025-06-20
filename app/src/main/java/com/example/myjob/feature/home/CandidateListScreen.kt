@@ -1,4 +1,4 @@
-package com.example.myjob.common
+package com.example.myjob.feature.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -20,7 +20,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -37,7 +36,15 @@ import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
+import com.example.myjob.common.view.CandidateCard
+import com.example.myjob.common.ErrorMessage
+import com.example.myjob.common.GenericMultipleSearch
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.candidateUser
+import com.example.myjob.common.LoadingNextPageItem
+import com.example.myjob.common.PageLoader
+import com.example.myjob.common.rememberLifecycleEvent
+import com.example.myjob.common.view.StatusBadge
 import com.example.myjob.domain.entities.Candidate
 import com.example.myjob.domain.entities.CandidateStatus
 import com.example.myjob.domain.entities.Experience
@@ -45,17 +52,9 @@ import com.example.myjob.domain.entities.FilterType
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.candidates
-import com.example.myjob.feature.home.HomeViewModel
-import com.example.myjob.feature.home.SendInvitation
 import com.example.myjob.feature.home.filter.flowHandling
 import com.example.myjob.feature.navigation.Screen
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-
-// WhatsApp Green Theme Colors
-val WhatsAppDarkGreen = Color(0xFF128C7E)
-val WhatsAppLightGreen = Color(0xFFDCF8C6)
-val WhatsAppGreenSurface = Color(0xFFF0F9F0)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,6 +70,21 @@ fun CandidateListScreen(
     var selectedFilter by remember { mutableStateOf(FilterType.ALL) }
     var showFilterSheet by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
+
+    val fcmToken by homeViewModel.fcmToken.collectAsState()
+
+    val lifecycle = rememberLifecycleEvent()
+    LaunchedEffect(lifecycle) {
+        if (lifecycle == Lifecycle.Event.ON_RESUME) {
+            homeViewModel.getUserToken()
+        }
+    }
+
+    LaunchedEffect(fcmToken) {
+        if (fcmToken.isEmpty()) {
+            homeViewModel.updateToken()
+        }
+    }
 
     // Filter candidates based on search and filter
     val filteredCandidates = candidates.filter { candidate ->
@@ -286,16 +300,6 @@ fun CandidateListScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-
-                /*Text(
-                                text = when (selectedFilter) {
-                                    FilterType.ALL -> "All"
-                                    FilterType.AVAILABLE -> "Available"
-                                    FilterType.INTERVIEWING -> "Interviewing"
-                                    FilterType.HIRED -> "Hired"
-                                    FilterType.NOT_INTERESTED -> "Not Interested"
-                                }
-                            )*/
             }
 
             val lazyPagingItems = homeViewModel.user.collectAsLazyPagingItems()
@@ -315,7 +319,7 @@ fun CandidateListScreen(
                     else Experience()
 
                     val candidate = Candidate(
-                        name = user.fullName ?: "",
+                        name = user.fullName?.trimStart() ?: "",
                         position = user.preferredActivitySector ?: "",
                         company = lastExperience.companyName ?: "",
                         experience = "5+ years",
@@ -638,581 +642,4 @@ fun CandidateListScreen(
     }
 
 
-}
-
-@Composable
-fun CandidateCard1(
-    candidate: Candidate,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            // Header Row - Name, Position and Status
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                // Name and Position
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = candidate.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = candidate.position,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-                // Status Badge
-                StatusBadge(status = candidate.status)
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Company and Experience
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Business,
-                        contentDescription = "Company",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = candidate.company,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Work,
-                        contentDescription = "Experience",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = candidate.experience,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Location and Salary
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        contentDescription = "Location",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = candidate.location,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Text(
-                    text = candidate.salary,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Skills
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(candidate.skills.take(3)) { skill ->
-                    SkillChip(skill = skill)
-                }
-                if (candidate.skills.size > 3) {
-                    item {
-                        Text(
-                            text = "+${candidate.skills.size - 3} more",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun CandidateCard3(
-    candidate: Candidate,
-    onClick: () -> Unit,
-    onSendInvitation: (Candidate) -> Unit = {}
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            // Header Row - Name, Position and Status
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                // Name and Position
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = candidate.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = candidate.position,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-                // Status Badge
-                StatusBadge(status = candidate.status)
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Company and Experience
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Business,
-                        contentDescription = "Company",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = candidate.company,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Work,
-                        contentDescription = "Experience",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = candidate.experience,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Location and Salary
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        contentDescription = "Location",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = candidate.location,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Text(
-                    text = candidate.salary,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Skills
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(candidate.skills.take(3)) { skill ->
-                    SkillChip(skill = skill)
-                }
-                if (candidate.skills.size > 3) {
-                    item {
-                        Text(
-                            text = "+${candidate.skills.size - 3} more",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Action Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(
-                    onClick = { /* Handle view profile */ },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Person,
-                        contentDescription = "View Profile",
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("View Profile")
-                }
-
-                Button(
-                    onClick = { onSendInvitation(candidate) },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Send,
-                        contentDescription = "Send Invitation",
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Invite")
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun CandidateCard(
-    candidate: Candidate,
-    onClick: () -> Unit,
-    onSendInvitation: (Candidate) -> Unit = {}
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            // Header Row - Name, Position and Status
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                // Name and Position
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = candidate.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = candidate.position,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-                // Status Badge
-                StatusBadge(status = candidate.status)
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Company and Experience
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Business,
-                        contentDescription = "Company",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = candidate.company,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Work,
-                        contentDescription = "Experience",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = candidate.experience,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Location and Salary
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        contentDescription = "Location",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = candidate.location,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Text(
-                    text = candidate.salary,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Skills
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(candidate.skills.take(3)) { skill ->
-                    SkillChip(skill = skill)
-                }
-                if (candidate.skills.size > 3) {
-                    item {
-                        Text(
-                            text = "+${candidate.skills.size - 3} more",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Action Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(
-                    onClick = { /* Handle view profile */ },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Person,
-                        contentDescription = "View Profile",
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("View Profile")
-                }
-
-                Button(
-                    onClick = { onSendInvitation(candidate) },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorResource(id = R.color.whatsapp),
-                        contentColor = Color.White
-                    )
-                ) {
-                    Icon(
-                        Icons.Default.Send,
-                        contentDescription = "Send Invitation",
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Invite")
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun StatusBadge(status: CandidateStatus) {
-    val (color, text) = when (status) {
-        CandidateStatus.AVAILABLE -> Color(0xFF4CAF50) to "Available"
-        CandidateStatus.INTERVIEWING -> Color(0xFFFF9800) to "Interviewing"
-        CandidateStatus.HIRED -> Color(0xFF2196F3) to "Hired"
-        CandidateStatus.NOT_INTERESTED -> Color(0xFF9E9E9E) to "Not Interested"
-    }
-
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = color.copy(alpha = 0.1f)
-    ) {
-        Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelSmall,
-            color = color,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-@Composable
-fun SkillChip(skill: String) {
-    Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant
-    ) {
-        Text(
-            text = skill,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-@Composable
-fun FilterBottomSheet(
-    selectedFilter: FilterType,
-    onFilterSelected: (FilterType) -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Filter by Status",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        FilterType.values().forEach { filter ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onFilterSelected(filter) }
-                    .padding(vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(
-                    selected = selectedFilter == filter,
-                    onClick = { onFilterSelected(filter) }
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = when (filter) {
-                        FilterType.ALL -> "All Candidates"
-                        FilterType.AVAILABLE -> "Available"
-                        FilterType.INTERVIEWING -> "Interviewing"
-                        FilterType.HIRED -> "Hired"
-                        FilterType.NOT_INTERESTED -> "Not Interested"
-                    },
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-    }
 }

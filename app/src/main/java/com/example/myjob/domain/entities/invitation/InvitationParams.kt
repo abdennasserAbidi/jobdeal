@@ -7,11 +7,15 @@ data class InvitationParams(
     var invitationModel: InvitationModel = InvitationModel()
 )
 
+enum class InvitationStatus {
+    ON_HOLD, IN_PROCESS, HIRED, NOT_INTERESTED
+}
+
 data class InvitationModel(
     var idInvitation: Int = View.generateViewId(),
     var idTo: Int = 0,
     var date: String? = "",
-    var status: String? = "Holding",
+    var status: String? = InvitationStatus.ON_HOLD.name,
     var fullName: String? = "",
     var gender: String? = "",
     var idCompany: Int = 0,
@@ -23,5 +27,16 @@ data class InvitationModel(
     var tgm: String = "",
     var nbDaysPerWeek: String = "",
     var salary: String = "",
-    var accepted: Boolean = false
-)
+    var accepted: Boolean = false,
+) {
+    fun changeToBadge(): InvitationStatus {
+        val statusBadge = when(status) {
+            InvitationStatus.ON_HOLD.name -> InvitationStatus.ON_HOLD
+            InvitationStatus.IN_PROCESS.name -> InvitationStatus.IN_PROCESS
+            InvitationStatus.HIRED.name -> InvitationStatus.HIRED
+            InvitationStatus.NOT_INTERESTED.name -> InvitationStatus.NOT_INTERESTED
+            else -> InvitationStatus.ON_HOLD
+        }
+        return statusBadge
+    }
+}

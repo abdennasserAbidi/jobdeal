@@ -1,14 +1,10 @@
 package com.example.myjob.feature.invitation.company
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.with
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,11 +12,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
@@ -30,9 +26,8 @@ import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Text
@@ -48,13 +43,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -67,8 +59,10 @@ import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
 import com.example.myjob.common.tablayout.CustomTab
+import com.example.myjob.common.view.CompanyInvitationCard
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.invitation.InvitationModel
+import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.feature.navigation.Screen
 
 @OptIn(
@@ -98,287 +92,99 @@ fun InvitationCompanyScreen(
 
     ) {
 
-        Column(
-            modifier = Modifier.fillMaxSize()
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 66.dp)
+                .padding(horizontal = 16.dp)
         ) {
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 20.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                CustomTab(
-                    items = choiceList,
-                    modifier = Modifier.padding(top = 10.dp, start = 10.dp),
-                    selectedItemIndex = selected,
-                    onClick = {
-                        selected = it
+            items(invitations.itemCount) { index ->
+                val item = invitations[index] ?: InvitationModel()
+
+                CompanyInvitationCard(
+                    invitationModel = item,
+                    onClick = { /*TODO*/ },
+                    onAcceptInvitation = {
+
+                    },
+                    onRejectInvitation = {
+
                     }
                 )
             }
 
-            AnimatedContent(
-                targetState = selected,
-                transitionSpec = {
-                    fadeIn(tween(300)) with fadeOut(tween(300))
-                },
-                label = "ListToBoxTransition"
-            ) { index ->
-                if (index == 0) {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = 20.dp)
-                    ) {
+            invitations.apply {
+                when {
+                    loadState.refresh is LoadState.Loading -> {
+                        item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
+                    }
 
-                        items(invitations.itemCount) { index ->
-                            val user = invitations[index] ?: InvitationModel()
-
-                            Card(
-                                elevation = 10.dp,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 10.dp, horizontal = 10.dp),
-                                shape = RectangleShape
-                            ) {
-
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(10.dp)
-                                        .clickable(
-                                            interactionSource = interactionSource,
-                                            indication = null
-                                        ) {
-                                            /*GlobalEntries.userForCompany = user
-                                            navController.navigate(Screen.DetailScreen.route)*/
-                                        }
-                                ) {
-
-                                    Box(modifier = Modifier.fillMaxWidth()) {
-                                        Text(
-                                            text = user.message,
-                                            modifier = Modifier.align(Alignment.CenterStart),
-                                            style = TextStyle(
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 18.sp
-                                            )
-                                        )
-
-                                        val color = when (user.status) {
-                                            stringResource(id = R.string.holding) -> Color.Gray
-                                            stringResource(id = R.string.Accepted) -> colorResource(
-                                                R.color.whatsapp
-                                            )
-
-                                            else -> Color.Red
-                                        }
-
-                                        user.status?.let {
-                                            Text(
-                                                text = it,
-                                                modifier = Modifier.align(Alignment.CenterEnd),
-                                                color = color,
-                                                style = TextStyle(
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontSize = 16.sp
-                                                )
-                                            )
-                                        }
-                                    }
-
-                                    Text(
-                                        text = "sended to ${user.fullName} - ${user.date}",
-                                        modifier = Modifier.padding(top = 5.dp),
-                                        style = TextStyle(
-                                            fontWeight = FontWeight.Light,
-                                            fontSize = 16.sp
-                                        )
-                                    )
-
-                                    Text(
-                                        text = user.description,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis,
-                                        style = TextStyle(
-                                            fontWeight = FontWeight.Normal,
-                                            fontSize = 14.sp
-                                        ),
-                                        color = Color.LightGray,
-                                        modifier = Modifier.padding(top = 5.dp)
-                                    )
-
-                                }
-
-                            }
-                        }
-
-                        invitations.apply {
-                            when {
-                                loadState.refresh is LoadState.Loading -> {
-                                    item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
-                                }
-
-                                loadState.refresh is LoadState.Error -> {
-                                    val error = invitations.loadState.refresh as LoadState.Error
-                                    item {
-                                        ErrorMessage(
-                                            modifier = Modifier.fillParentMaxSize(),
-                                            message = error.error.localizedMessage ?: "",
-                                            onClickRetry = { retry() })
-                                    }
-                                }
-
-                                loadState.append is LoadState.Loading -> {
-                                    item { LoadingNextPageItem(modifier = Modifier) }
-                                }
-
-                                loadState.append is LoadState.Error -> {
-                                    val error = invitations.loadState.append as LoadState.Error
-                                    item {
-                                        ErrorMessage(
-                                            modifier = Modifier,
-                                            message = error.error.localizedMessage!!,
-                                            onClickRetry = { retry() })
-                                    }
-                                }
-                            }
+                    loadState.refresh is LoadState.Error -> {
+                        val error = invitations.loadState.refresh as LoadState.Error
+                        item {
+                            ErrorMessage(
+                                modifier = Modifier.fillParentMaxSize(),
+                                message = error.error.localizedMessage ?: "",
+                                onClickRetry = { retry() })
                         }
                     }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = 20.dp)
-                    ) {
 
-                        items(announcement.itemCount) { index ->
-                            val user = announcement[index] ?: AnnouncementModel()
+                    loadState.append is LoadState.Loading -> {
+                        item { LoadingNextPageItem(modifier = Modifier) }
+                    }
 
-                            Card(
-                                elevation = 10.dp,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 10.dp, horizontal = 10.dp),
-                                shape = RectangleShape
-                            ) {
-
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(10.dp)
-                                        .clickable(
-                                            interactionSource = interactionSource,
-                                            indication = null
-                                        ) {
-                                            /*GlobalEntries.userForCompany = user
-                                            navController.navigate(Screen.DetailScreen.route)*/
-                                        }
-                                ) {
-
-                                    Box(modifier = Modifier.fillMaxWidth()) {
-                                        Text(
-                                            text = user.title,
-                                            modifier = Modifier.align(Alignment.CenterStart),
-                                            style = TextStyle(
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 18.sp
-                                            )
-                                        )
-                                        user.date?.let { date ->
-                                            Text(
-                                                text = date,
-                                                color = Color.LightGray,
-                                                modifier = Modifier.align(Alignment.CenterEnd),
-                                                style = TextStyle(
-                                                    fontWeight = FontWeight.Normal,
-                                                    fontSize = 16.sp
-                                                )
-                                            )
-                                        }
-                                    }
-
-                                    Text(
-                                        text = user.description,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis,
-                                        style = TextStyle(
-                                            fontWeight = FontWeight.Normal,
-                                            fontSize = 14.sp
-                                        ),
-                                        color = Color.LightGray,
-                                        modifier = Modifier.padding(top = 5.dp)
-                                    )
-
-                                    Box(modifier = Modifier.fillMaxWidth().padding(top = 10.dp)) {
-                                        Button(
-                                            modifier = Modifier.align(Alignment.CenterEnd),
-                                            shape = RoundedCornerShape(30.dp),
-                                            contentPadding = PaddingValues(14.dp),
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = colorResource(id = R.color.whatsapp),
-                                                contentColor = colorResource(id = R.color.whatsapp),
-                                                disabledContainerColor = colorResource(id = R.color.whatsapp),
-                                                disabledContentColor = colorResource(id = R.color.whatsapp)
-                                            ),
-                                            onClick = {
-                                                //apply
-                                            }) {
-
-                                            Text(
-                                                text = "Apply",
-                                                color = Color.White,
-                                                style = TextStyle(
-                                                    fontWeight = FontWeight.SemiBold,
-                                                    fontSize = 14.sp
-                                                )
-                                            )
-
-                                        }
-                                    }
-                                }
-
-                            }
-                        }
-
-                        invitations.apply {
-                            when {
-                                loadState.refresh is LoadState.Loading -> {
-                                    item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
-                                }
-
-                                loadState.refresh is LoadState.Error -> {
-                                    val error = invitations.loadState.refresh as LoadState.Error
-                                    item {
-                                        ErrorMessage(
-                                            modifier = Modifier.fillParentMaxSize(),
-                                            message = error.error.localizedMessage ?: "",
-                                            onClickRetry = { retry() })
-                                    }
-                                }
-
-                                loadState.append is LoadState.Loading -> {
-                                    item { LoadingNextPageItem(modifier = Modifier) }
-                                }
-
-                                loadState.append is LoadState.Error -> {
-                                    val error = invitations.loadState.append as LoadState.Error
-                                    item {
-                                        ErrorMessage(
-                                            modifier = Modifier,
-                                            message = error.error.localizedMessage!!,
-                                            onClickRetry = { retry() })
-                                    }
-                                }
-                            }
+                    loadState.append is LoadState.Error -> {
+                        val error = invitations.loadState.append as LoadState.Error
+                        item {
+                            ErrorMessage(
+                                modifier = Modifier,
+                                message = error.error.localizedMessage!!,
+                                onClickRetry = { retry() })
                         }
                     }
                 }
             }
+        }
 
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .background(color = colorResource(id = R.color.whatsapp)),
+            contentAlignment = Alignment.Center
+        ) {
 
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 15.dp, horizontal = 15.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack,
+                    tint = Color.White,
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            navController.popBackStack()
+                        },
+                    contentDescription = ""
+                )
+
+                Text(
+                    text = "My Invitations",
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.White,
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontFamily = FontFamily.Default,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+            }
         }
 
         FloatingActionButton(
