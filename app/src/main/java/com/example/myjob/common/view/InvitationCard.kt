@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
@@ -45,7 +46,7 @@ fun InvitationCard(
     onAcceptInvitation: (InvitationModel) -> Unit = {},
     onRejectInvitation: (InvitationModel) -> Unit = {}
 ) {
-
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -124,56 +125,118 @@ fun InvitationCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            if (statusInvitations == InvitationStatus.NOT_INTERESTED.name) {
-                Text(
-                    text = "You rejected this offer",
-                    color = Color.Red,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            } else if (statusInvitations == InvitationStatus.IN_PROCESS.name) {
-                OutlinedButton(
-                    onClick = {},
-                    enabled = false,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("${stringResource(id = R.string.in_process_text)}...")
+            when (statusInvitations) {
+                InvitationStatus.NOT_INTERESTED.name -> {
+                    Text(
+                        text = "You rejected this offer",
+                        color = Color.Red,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
-            } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                InvitationStatus.IN_PROCESS.name -> {
                     OutlinedButton(
-                        onClick = { onRejectInvitation(invitationModel) },
-                        modifier = Modifier.weight(1f),
+                        onClick = {},
+                        enabled = false,
+                        modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = "View Profile",
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(stringResource(id = R.string.reject_text))
+                        Text("${stringResource(id = R.string.in_process_text)}...")
                     }
+                }
+                InvitationStatus.HIRED.name -> {
+
+                    Text(
+                        text = stringResource(id = R.string.hire_text),
+                        color = colorResource(id = R.color.whatsapp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
                     Button(
-                        onClick = { onAcceptInvitation(invitationModel) },
-                        modifier = Modifier.weight(1f),
+                        onClick = { /*onDeleteInvitation(invitationModel)*/ },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(id = R.color.whatsapp),
+                            containerColor = Color.Red,
                             contentColor = Color.White
                         )
                     ) {
                         Icon(
-                            Icons.Default.Send,
-                            contentDescription = "Send Invitation",
+                            Icons.Default.Close,
+                            contentDescription = "Delete Invitation",
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(stringResource(id = R.string.accept_text))
+                        Text(stringResource(id = R.string.delete_invitation_text))
+                    }
+                }
+
+                InvitationStatus.REJECTED.name -> {
+
+                    Text(
+                        text = "${stringResource(id = R.string.refuse_text)} \n ${invitationModel.reason}",
+                        color = Color.Red,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Button(
+                        onClick = { /*onDeleteInvitation(invitationModel)*/ },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Red,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Delete Invitation",
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(stringResource(id = R.string.delete_invitation_text))
+                    }
+                }
+
+                else -> {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { onRejectInvitation(invitationModel) },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "View Profile",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(id = R.string.reject_text))
+                        }
+
+                        Button(
+                            onClick = { onAcceptInvitation(invitationModel) },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(id = R.color.whatsapp),
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Icon(
+                                Icons.Default.Send,
+                                contentDescription = "Send Invitation",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(id = R.string.accept_text))
+                        }
                     }
                 }
             }

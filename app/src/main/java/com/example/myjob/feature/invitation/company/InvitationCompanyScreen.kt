@@ -1,5 +1,6 @@
 package com.example.myjob.feature.invitation.company
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
@@ -9,10 +10,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -56,13 +55,13 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.ErrorMessage
+import com.example.myjob.common.GlobalEntries.userForCompany
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
-import com.example.myjob.common.tablayout.CustomTab
 import com.example.myjob.common.view.CompanyInvitationCard
+import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.invitation.InvitationModel
-import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.feature.navigation.Screen
 
 @OptIn(
@@ -75,6 +74,7 @@ fun InvitationCompanyScreen(
     invitationViewModel: InvitationViewModel = hiltViewModel()
 ) {
 
+
     val invitations: LazyPagingItems<InvitationModel> =
         invitationViewModel.invitations.collectAsLazyPagingItems()
 
@@ -83,9 +83,23 @@ fun InvitationCompanyScreen(
 
 
     var openAnnounceForm by remember { mutableStateOf(false) }
-    var selected by remember { mutableStateOf(0) }
+    var openFinishProcess by remember { mutableStateOf(false) }
+    var invitationModel by remember { mutableStateOf(InvitationModel()) }
+    val selected by remember { mutableStateOf(0) }
     val choiceList by invitationViewModel.choiceList.collectAsState()
+    val invitation by invitationViewModel.invitation.collectAsState()
     val interactionSource = remember { MutableInteractionSource() }
+
+    if (openFinishProcess) {
+        EnProcessForm(invitationModel,
+            onDismissRequest = {
+                openFinishProcess = false
+            },
+            onConfirmation = {
+                invitationViewModel.finishProcess(it)
+                openFinishProcess = false
+            })
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -100,15 +114,25 @@ fun InvitationCompanyScreen(
         ) {
 
             items(invitations.itemCount) { index ->
-                val item = invitations[index] ?: InvitationModel()
+                var item = invitations[index] ?: InvitationModel()
+                invitationModel = item
+
+                if (item.idInvitation == invitation.invitationModel.idInvitation)
+                    item = invitation.invitationModel
 
                 CompanyInvitationCard(
                     invitationModel = item,
-                    onClick = { /*TODO*/ },
-                    onAcceptInvitation = {
-
+                    onClick = { },
+                    viewProfile = {
+                        userForCompany = User()
+                        userForCompany.id = it.idTo
+                        userForCompany.fullName = it.fullName
+                        navController.navigate(Screen.DetailScreen.route)
                     },
-                    onRejectInvitation = {
+                    onTerminateInvitation = {
+                        openFinishProcess = true
+                    },
+                    onDeleteInvitation = {
 
                     }
                 )

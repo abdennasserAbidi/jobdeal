@@ -1,5 +1,6 @@
 package com.example.myjob.feature.home
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -11,7 +12,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -27,7 +27,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -36,7 +35,6 @@ import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
-import com.example.myjob.common.view.CandidateCard
 import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GenericMultipleSearch
 import com.example.myjob.common.GlobalEntries
@@ -44,7 +42,7 @@ import com.example.myjob.common.GlobalEntries.candidateUser
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
 import com.example.myjob.common.rememberLifecycleEvent
-import com.example.myjob.common.view.StatusBadge
+import com.example.myjob.common.view.CandidateCard
 import com.example.myjob.domain.entities.Candidate
 import com.example.myjob.domain.entities.CandidateStatus
 import com.example.myjob.domain.entities.Experience
@@ -67,7 +65,7 @@ fun CandidateListScreen(
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    var selectedFilter by remember { mutableStateOf(FilterType.ALL) }
+    val selectedFilter by remember { mutableStateOf(FilterType.ALL) }
     var showFilterSheet by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -77,6 +75,7 @@ fun CandidateListScreen(
     LaunchedEffect(lifecycle) {
         if (lifecycle == Lifecycle.Event.ON_RESUME) {
             homeViewModel.getUserToken()
+            Log.i("rlekrgkjg", "CandidateListScreen: $fcmToken")
         }
     }
 
@@ -157,6 +156,17 @@ fun CandidateListScreen(
         }
     }
 
+    LaunchedEffect(fcmToken) {
+        if (fcmToken.isNotEmpty()) {
+
+            GlobalEntries.user.companyName?.let {
+                val title = it
+                val message = "This company have sended you an invitaion "
+                homeViewModel.sendNotification(title, message)
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -198,7 +208,10 @@ fun CandidateListScreen(
                 // Search Bar
                 OutlinedTextField(
                     value = searchQuery,
-                    onValueChange = { searchQuery = it },
+                    onValueChange = {
+                        searchQuery = it
+                        homeViewModel.filterUser(it)
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("Search candidates...") },
                     leadingIcon = {
@@ -221,21 +234,6 @@ fun CandidateListScreen(
                         .padding(top = 20.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    /*item {
-                        Icon(
-                            painter = painterResource(id = R.drawable.filter),
-                            tint = White,
-                            contentDescription = "",
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    navController.navigate(Screen.FilterScreen.route)
-                                }
-                        )
-                    }*/
 
                     itemsIndexed(
                         items = categories
@@ -520,10 +518,12 @@ fun CandidateListScreen(
                         onDismissRequest = {
                             filterOpen = false
                             showFilterSheet = false
+                            GlobalEntries.isVisibleNav.update { true }
                         },
                         onSelectedBank = { list ->
                             filterOpen = false
                             showFilterSheet = false
+                            GlobalEntries.isVisibleNav.update { true }
 
                             when (itemRes) {
                                 R.string.institution_text -> homeViewModel.changeInstitutions(list)
@@ -546,7 +546,10 @@ fun CandidateListScreen(
 
         listChoiceParentSelect?.let {
             ModalBottomSheet(
-                onDismissRequest = { showFilterSheet = false }
+                onDismissRequest = {
+                    showFilterSheet = false
+                    GlobalEntries.isVisibleNav.update { true }
+                }
             ) {
                 val height = screenHeight / 2
                 val heightDp = with(density) { height.toDp() }
@@ -601,38 +604,37 @@ fun CandidateListScreen(
                         flowHandling(it, l) { index, title, isSelected ->
                             homeViewModel.changeUnKnown(itemRes, index, title, isSelected)
                         }
-                    }
 
-                    Box(
-                        modifier = Modifier
-                            .padding(bottom = 20.dp)
-                            .fillMaxWidth(0.8f)
-                            .align(Alignment.BottomCenter)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                filterOpen = false
-                                GlobalEntries.isVisibleNav.update { true }
-                                homeViewModel.validateFilter(criteria)
-                                homeViewModel.changeSelectionParentChoices(
-                                    indexParent,
-                                    titleParent,
-                                    !isSelectedParent
-                                )
-                            }
-                            .background(
-                                color = colorResource(id = R.color.whatsapp),
-                                RoundedCornerShape(30.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "See results",
-                            color = Color.White,
-                            style = TextStyle(fontWeight = FontWeight.Bold),
-                            modifier = Modifier.padding(vertical = 20.dp)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .padding(vertical = 20.dp)
+                                .fillMaxWidth(0.8f)
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    filterOpen = false
+                                    GlobalEntries.isVisibleNav.update { true }
+                                    homeViewModel.validateFilter(criteria)
+                                    homeViewModel.changeSelectionParentChoices(
+                                        indexParent,
+                                        titleParent,
+                                        !isSelectedParent
+                                    )
+                                }
+                                .background(
+                                    color = colorResource(id = R.color.whatsapp),
+                                    RoundedCornerShape(30.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.show_result_text),
+                                color = Color.White,
+                                style = TextStyle(fontWeight = FontWeight.Bold),
+                                modifier = Modifier.padding(vertical = 20.dp)
+                            )
+                        }
                     }
                 }
             }

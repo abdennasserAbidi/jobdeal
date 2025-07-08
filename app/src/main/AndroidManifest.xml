@@ -56,8 +56,9 @@
                 <action android:name="android.intent.action.VIEW" />
 
                 <data
-                    android:host="app"
-                    android:scheme="http" />
+                    android:host="notification"
+                    android:scheme="myApp"
+                    tools:ignore="AppLinkUrlError"/>
             </intent-filter>
 
             <!--

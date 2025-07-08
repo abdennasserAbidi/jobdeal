@@ -1,9 +1,9 @@
-package com.example.myjob.domain.usecase.home
+package com.example.myjob.domain.usecase.search
 
 import androidx.paging.PagingData
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.usecase.FlowBaseUseCase
-import com.example.myjob.data.home.HomeRepository
+import com.example.myjob.data.search.SearchRepository
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.qualifiers.IoDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
@@ -11,12 +11,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class GetAllUserUseCase @Inject constructor(
-    private val repository: HomeRepository,
+class GetFilteredUserUseCase @Inject constructor(
+    private val repository: SearchRepository,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
-) : FlowBaseUseCase<PagingData<User>, Int>() {
+) : FlowBaseUseCase<PagingData<User>, String>() {
 
-    override suspend fun buildRequest(params: Int?): Flow<Resource<PagingData<User>>> {
-        return repository.getAllUser(params ?: -1).flowOn(dispatcher)
+    override suspend fun buildRequest(params: String?): Flow<Resource<PagingData<User>>> {
+        return repository.getUserFiltered(params ?: "").flowOn(dispatcher)
     }
 }

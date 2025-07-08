@@ -253,6 +253,9 @@
     <string name="delete_invitation_text">Delete</string>
     <string name="view_profile_text">View profile</string>
     <string name="terminate_text">Terminate process</string>
+    <string name="hire_text">The company hired you</string>
+    <string name="show_result_text">See results</string>
+    <string name="refuse_text">the company rejected your candidature because :</string>
 
 
 </resources>

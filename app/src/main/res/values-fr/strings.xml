@@ -241,6 +241,9 @@
     <string name="delete_invitation_text">Supprimer</string>
     <string name="view_profile_text">Voir profil</string>
     <string name="terminate_text">Terminer le process</string>
+    <string name="show_result_text">Voir les resultats</string>
+    <string name="hire_text">L\'entreprise vous a embauché</string>
+    <string name="refuse_text">L\'entreprise a rejeté votre candidature car :</string>
 
 
 

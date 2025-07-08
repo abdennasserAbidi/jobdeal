@@ -8,6 +8,8 @@ import com.example.myjob.domain.response.UserResponse
 interface InvitationDataSource {
     suspend fun getCompanyInvitations(id: Int, pageNumber: Int): GenericResponse<InvitationModel>
     suspend fun getInvitations(id: Int, pageNumber: Int): GenericResponse<InvitationModel>
+    suspend fun getInvitationDetail(id: Int, idInvitation: Int): InvitationModel
     suspend fun sendInvitation(invitationParams: InvitationParams): UserResponse
+    suspend fun finishProcess(invitationParams: InvitationParams): InvitationParams
     suspend fun acceptRejectInvitation(invitationParams: InvitationParams): UserResponse
 }

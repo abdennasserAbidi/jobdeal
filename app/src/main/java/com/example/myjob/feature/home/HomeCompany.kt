@@ -127,7 +127,16 @@ fun HomeCompany(
 
     LaunchedEffect(fcmToken) {
         if (fcmToken.isNotEmpty()) {
-            homeViewModel.sendNotification()
+            GlobalEntries.user.companyName?.let {
+                val title = it
+                val message = "This company have sended you an invitaion "
+                homeViewModel.sendNotification(title, message)
+            } ?: run {
+                val title = GlobalEntries.user.fullName ?: ""
+                val message = "This company have sended you an invitaion "
+                homeViewModel.sendNotification(title, message)
+            }
+
         }
     }
 
@@ -862,7 +871,7 @@ fun HomeCompany(
                 homeViewModel.getUserToken(visibleUser.id ?: -1)
                 /*homeViewModel.updateCurrentPage()
                 homeViewModel.removeFromGlobal(visibleUser.id ?: 0)*/
-                homeViewModel.matchCurrentProfile(visibleUser, statusInvitation)
+                homeViewModel.matchCurrentProfile(visibleUser, statusInvitation, "")
             },
                 openFormInvitation = {
                     openFormInvitation = false

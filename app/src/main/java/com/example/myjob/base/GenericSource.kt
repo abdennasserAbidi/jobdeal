@@ -3,10 +3,14 @@ package com.example.myjob.base
 import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.example.myjob.common.GlobalEntries
+import com.google.gson.Gson
+import kotlinx.coroutines.flow.collectLatest
 import retrofit2.HttpException
 import java.io.IOException
 
 open class GenericSource<T: Any> constructor(
+    val paramsWS: Int = -1,
     val getData: suspend (currentPage: Int) -> GenericResponse<T>
 ): PagingSource<Int, T>() {
 
@@ -15,6 +19,15 @@ open class GenericSource<T: Any> constructor(
         return try {
 
             val data = getData(currentPage)
+            if (paramsWS != -1) {
+                // Collect messages from /topic/greetings
+                val request = mapOf("id" to paramsWS, "page" to currentPage, "size" to 10)
+                val jsonWS = Gson().toJson(request)
+
+                GlobalEntries.socket?.send(jsonWS)?.collectLatest { message ->
+                    println("Received message: $message")
+                }
+            }
 
             LoadResult.Page(
                  data = data.content,

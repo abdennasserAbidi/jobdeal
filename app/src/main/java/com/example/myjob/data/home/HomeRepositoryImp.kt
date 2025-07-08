@@ -56,12 +56,12 @@ class HomeRepositoryImp @Inject constructor(
         emit(Resource(ResourceState.ERROR, null, ex.message))
     }
 
-    override suspend fun getAllUser(): Flow<Resource<PagingData<User>>> = flow {
+    override suspend fun getAllUser(id: Int): Flow<Resource<PagingData<User>>> = flow {
         val pager = Pager(
             config = PagingConfig(pageSize = 10, prefetchDistance = 2),
             pagingSourceFactory = {
                 GenericSource { currentPage ->
-                    val users = remoteDataSource.getAllUser(pageNumber = currentPage)
+                    val users = remoteDataSource.getAllUser(id, pageNumber = currentPage)
                     val lang = sharedPreference.getString("lang", "") ?: ""
                     users.content.map {
                         val gender = it.sexe ?: ""

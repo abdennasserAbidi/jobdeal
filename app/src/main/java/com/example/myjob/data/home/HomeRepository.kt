@@ -10,9 +10,9 @@ import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 
 interface HomeRepository {
-    suspend fun getCompanyNotifications(id: Int, ): Flow<Resource<PagingData<NotificationModel>>>
+    suspend fun getCompanyNotifications(id: Int): Flow<Resource<PagingData<NotificationModel>>>
     suspend fun getFavorites(id: Int): Flow<Resource<PagingData<User>>>
-    suspend fun getAllUser(): Flow<Resource<PagingData<User>>>
+    suspend fun getAllUser(id: Int): Flow<Resource<PagingData<User>>>
     suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): Flow<Resource<UserResponse>>
     suspend fun getUser(id: Int): Flow<Resource<User>>
     suspend fun uploadFile(file: MultipartBody.Part): Flow<Resource<String>>

@@ -1,5 +1,6 @@
 package com.example.myjob.data.invitation
 
+import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -7,6 +8,8 @@ import androidx.paging.cachedIn
 import com.example.myjob.base.GenericSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
+import com.example.myjob.common.CoroutineWebSocketClient
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
 import com.example.myjob.domain.response.UserResponse
@@ -17,9 +20,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import ua.naiksoftware.stomp.dto.LifecycleEvent
 import javax.inject.Inject
 
 class InvitationRepositoryImp @Inject constructor(
@@ -32,6 +38,20 @@ class InvitationRepositoryImp @Inject constructor(
             try {
                 // Get data from RemoteDataSource
                 val data = remoteDataSource.sendInvitation(invitationParams)
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
+        }
+
+    override suspend fun finishProcess(invitationParams: InvitationParams): Flow<Resource<InvitationParams>> =
+        flow {
+            try {
+
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.finishProcess(invitationParams)
                 // Emit data
                 emit(Resource(ResourceState.SUCCESS, data, null))
             } catch (ex: Exception) {
@@ -53,8 +73,22 @@ class InvitationRepositoryImp @Inject constructor(
             }
         }
 
+    override suspend fun getInvitationDetail(id: Int, idInvitation: Int): Flow<Resource<InvitationModel>> =
+        flow {
+            try {
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.getInvitationDetail(id, idInvitation)
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
+        }
+
     override suspend fun getInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>> =
         flow {
+
             val pager = Pager(
                 config = PagingConfig(pageSize = 10, prefetchDistance = 2),
                 pagingSourceFactory = {
@@ -76,6 +110,7 @@ class InvitationRepositoryImp @Inject constructor(
                 }
             )
         }.catch { ex ->
+
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
 
@@ -84,7 +119,9 @@ class InvitationRepositoryImp @Inject constructor(
             val pager = Pager(
                 config = PagingConfig(pageSize = 10, prefetchDistance = 2),
                 pagingSourceFactory = {
-                    GenericSource { currentPage ->
+                    GenericSource(
+                        paramsWS = id
+                    ) { currentPage ->
 
                         val experiences =
                             remoteDataSource.getCompanyInvitations(

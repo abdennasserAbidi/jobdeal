@@ -1,5 +1,6 @@
 package com.example.myjob.feature.invitation.company
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -23,9 +24,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.candidateUser
+import com.example.myjob.common.GlobalEntries.notificationMessage
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.ContractType
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
@@ -49,12 +54,31 @@ fun SendInvitationCompany(
     var hourlyRate by remember { mutableStateOf("") }
     var projectFee by remember { mutableStateOf("") }
     var currency by remember { mutableStateOf("USD") }
-    var paymentTerms by remember { mutableStateOf("Net 30") }
+    var paymentTerms by remember(contractType) { mutableStateOf(
+        if (contractType == ContractType.FREELANCE) "Le contract sa sera per hour" else "Le contract sa sera en CDI"
+    ) }
     var location by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
+
+    val fcmToken by homeViewModel.fcmToken.collectAsState()
+
+    LaunchedEffect(fcmToken) {
+        if (fcmToken.isNotEmpty()) {
+
+            GlobalEntries.user.companyName?.let {
+                val title = it
+                val messages = "This company have sended you an invitaion"
+                notificationMessage.title = it
+                notificationMessage.body = "This company have sended you an invitaion"
+                //homeViewModel.sendNotification(title, messages)
+            }
+        }
+    }
+
+    Log.i("rlekrgkjg", "CandidateListScreen: $fcmToken")
 
     Column(
         modifier = Modifier
@@ -129,7 +153,7 @@ fun SendInvitationCompany(
                 onClick = {
                     homeViewModel.clearToken()
                     homeViewModel.getUserToken(user.id ?: -1)
-                    homeViewModel.matchCurrentProfile(user, statusInvitation)
+                    homeViewModel.matchCurrentProfile(user, statusInvitation, paymentTerms)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -418,73 +442,47 @@ fun InvitationFormSection(
                 }
 
                 // Fee Input Fields
-                if (contractType == ContractType.FREELANCE) {
-                    // Hourly Rate for Freelance
-                    Row(
+               /* if (contractType == ContractType.FREELANCE) {
+                    OutlinedTextField(
+                        value = projectFee,
+                        onValueChange = onProjectFeeChange,
+                        label = { Text(stringResource(id = R.string.salary_text)) },
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = hourlyRate,
-                            onValueChange = onHourlyRateChange,
-                            label = { Text("Hourly Rate") },
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(8.dp),
-                            leadingIcon = {
-                                Icon(Icons.Default.AttachMoney, contentDescription = "Rate")
-                            },
-                            placeholder = { Text("50") }
-                        )
-
-                        OutlinedTextField(
-                            value = currency,
-                            onValueChange = onCurrencyChange,
-                            label = { Text("Currency") },
-                            modifier = Modifier.weight(0.5f),
-                            shape = RoundedCornerShape(8.dp),
-                            placeholder = { Text("USD") }
-                        )
-                    }
+                        shape = RoundedCornerShape(8.dp),
+                        leadingIcon = {
+                            Text(text = "TND", fontWeight = FontWeight.Bold)
+                        },
+                        placeholder = { Text("5000") }
+                    )
                 } else {
-                    // Project Fee for Contract
-                    Row(
+                    OutlinedTextField(
+                        value = projectFee,
+                        onValueChange = onProjectFeeChange,
+                        label = { Text(stringResource(id = R.string.salary_text)) },
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = projectFee,
-                            onValueChange = onProjectFeeChange,
-                            label = { Text("Project Fee") },
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(8.dp),
-                            leadingIcon = {
-                                Icon(Icons.Default.AttachMoney, contentDescription = "Fee")
-                            },
-                            placeholder = { Text("5000") }
-                        )
+                        shape = RoundedCornerShape(8.dp),
+                        leadingIcon = {
+                            Text(text = "TND", fontWeight = FontWeight.Bold)
+                        },
+                        placeholder = { Text("5000") }
+                    )
 
-                        OutlinedTextField(
-                            value = currency,
-                            onValueChange = onCurrencyChange,
-                            label = { Text("Currency") },
-                            modifier = Modifier.weight(0.5f),
-                            shape = RoundedCornerShape(8.dp),
-                            placeholder = { Text("USD") }
-                        )
-                    }
-                }
+                }*/
+
+                val placeHolder = if (contractType == ContractType.FREELANCE) "Le contract sa sera per hour"
+                else "Le contract sa sera en CDI"
 
                 // Payment Terms
                 OutlinedTextField(
                     value = paymentTerms,
                     onValueChange = onPaymentTermsChange,
-                    label = { Text("Payment Terms") },
+                    label = { Text("Contract description") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
                     leadingIcon = {
-                        Icon(Icons.Default.Schedule, contentDescription = "Payment Terms")
+                        Icon(Icons.Default.Description, contentDescription = "Payment Terms")
                     },
-                    placeholder = { Text("Net 30, Weekly, etc.") }
+                    placeholder = { Text(placeHolder) }
                 )
             }
         }

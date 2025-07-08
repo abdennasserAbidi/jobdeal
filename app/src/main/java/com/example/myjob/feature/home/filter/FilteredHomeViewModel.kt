@@ -34,7 +34,9 @@ class FilteredHomeViewModel @Inject constructor(
     fun validateFilter(criteria: CriteriaModel) {
         viewModelScope.launch {
             if (!criteria.checkEmpty()) {
-                getAllUserUseCase.execute().collect { res ->
+                val id = sharedPreference.getInt("idUser", -1)
+
+                getAllUserUseCase.execute(id).collect { res ->
                     val json = sharedPreference.getString("jsonFilter", "") ?: ""
                     if (json.isNotEmpty()) {
                         val objectList = Gson().fromJson(json, Array<User>::class.java).asList()

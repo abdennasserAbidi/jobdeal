@@ -10,6 +10,7 @@ fun InvitationBadge(status: InvitationStatus) {
         InvitationStatus.ON_HOLD -> Color(0xFF9E9E9E) to "On hold"
         InvitationStatus.IN_PROCESS -> Color(0xFF2196F3) to "In process..."
         InvitationStatus.HIRED -> Color(0xFF4CAF50) to "Hired"
+        InvitationStatus.REJECTED -> Color.Red to "Rejected"
         InvitationStatus.NOT_INTERESTED -> Color.Red to "Not Interested"
     }
 

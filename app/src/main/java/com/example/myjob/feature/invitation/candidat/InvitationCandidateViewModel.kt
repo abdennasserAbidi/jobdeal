@@ -116,12 +116,12 @@ class InvitationCandidateViewModel @Inject constructor(
         }
     }
 
-    fun sendNotification() {
+    fun sendNotification(title: String, message: String) {
         viewModelScope.launch {
             val notificationMessage = NotificationMessage(
                 recipientToken = fcmToken.value,
-                title = "feklgrjhgghealgea",
-                body = "fejakhfeagffreeeeeeeeeeeeeeeeeeeeeee",
+                title = title,
+                body = message,
                 data = mapOf("idUser" to "85")
             )
             sendNotificationsUseCase.execute(notificationMessage).collect {

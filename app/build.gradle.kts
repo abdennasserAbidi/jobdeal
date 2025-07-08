@@ -176,4 +176,11 @@ dependencies {
     implementation ("androidx.work:work-runtime-ktx:2.8.0")
     implementation ("com.squareup.retrofit2:retrofit:2.9.0") // Retrofit
     implementation ("com.squareup.okhttp3:okhttp:4.10.0") // OkHttp for ResponseBody
+
+    implementation ("io.socket:socket.io-client:2.0.0") {
+        exclude(group = "org.json", module = "json")
+    }
+
+    implementation ("com.github.NaikSoftware:StompProtocolAndroid:1.6.6")
+
 }

@@ -23,4 +23,6 @@ interface SearchDataSource {
         idUserConnected: Int,
         idUserToDelete: Int
     ): UserResponse
+
+    suspend fun getUserFiltered(word: String, pageNumber: Int): GenericResponse<User>
 }

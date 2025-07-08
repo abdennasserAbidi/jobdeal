@@ -33,6 +33,7 @@ import com.example.myjob.domain.usecase.home.SaveToFavoriteUseCase
 import com.example.myjob.domain.usecase.invitation.SendInvitationUseCase
 import com.example.myjob.domain.usecase.notification.SendNotificationsUseCase
 import com.example.myjob.domain.usecase.notification.UpdateTokenUseCase
+import com.example.myjob.domain.usecase.search.GetFilteredUserUseCase
 import com.example.myjob.domain.usecase.search.SearchUserUseCase
 import com.example.myjob.local.database.SharedPreference
 import com.google.firebase.ktx.Firebase
@@ -59,7 +60,8 @@ class HomeViewModel @Inject constructor(
     private val sendInvitationUseCase: SendInvitationUseCase,
     private val saveToFavoriteUseCase: SaveToFavoriteUseCase,
     private val searchUserUseCase: SearchUserUseCase,
-    private val getUserUseCase: GetUserUseCase
+    private val getUserUseCase: GetUserUseCase,
+    private val getFilteredUserUseCase: GetFilteredUserUseCase
 ) : ViewModel() {
 
     val listTypeContract = MutableStateFlow(emptyList<String>())
@@ -107,13 +109,13 @@ class HomeViewModel @Inject constructor(
         fcmToken.update { "" }
     }
 
-    fun sendNotification() {
+    fun sendNotification(title: String, message: String) {
         viewModelScope.launch {
             val notificationMessage = NotificationMessage(
                 recipientToken = fcmToken.value,
-                title = "feklgrjhgghealgea",
-                body = "fejakhfeagffreeeeeeeeeeeeeeeeeeeeeee",
-                data = mapOf("idUser" to "85")
+                title = title,
+                body = message,
+                data = mapOf("idInvitation" to "85")
             )
             sendNotificationsUseCase.execute(notificationMessage).collect {
 
@@ -717,7 +719,7 @@ class HomeViewModel @Inject constructor(
 
     val loadingState = MutableStateFlow(false)
 
-    fun matchCurrentProfile(user: User, status: String) {
+    fun matchCurrentProfile(user: User, status: String, descriptionContract: String) {
         val currentDate = Date()
         val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         val formattedDate = formatter.format(currentDate)
@@ -730,6 +732,7 @@ class HomeViewModel @Inject constructor(
             it.gender = user.sexe
             it.date = formattedDate
             it.status = status
+            it.descriptionContract = descriptionContract
             it
         }
         val invitationParams = InvitationParams(
@@ -785,7 +788,21 @@ class HomeViewModel @Inject constructor(
 
     private val _user: MutableStateFlow<PagingData<User>> =
         MutableStateFlow(value = PagingData.empty())
+
     val user: MutableStateFlow<PagingData<User>> get() = _user
+
+    fun filterUser(query: String) {
+        if (query.isNotEmpty()) {
+            viewModelScope.launch {
+                getFilteredUserUseCase.execute(query).collectLatest { res ->
+                    _user.update {
+                        res.data ?: PagingData.empty()
+                    }
+                }
+            }
+
+        } else getAllUser()
+    }
 
     fun getPDFName(): String {
         val fullName = sharedPreference.getString("username", "") ?: ""
@@ -806,7 +823,8 @@ class HomeViewModel @Inject constructor(
 
     fun getAllUser() {
         viewModelScope.launch {
-            getAllUserUseCase.execute().collectLatest { res ->
+            val id = sharedPreference.getInt("idUser", -1)
+            getAllUserUseCase.execute(id).collectLatest { res ->
                 _user.update {
                     res.data ?: PagingData.empty()
                 }

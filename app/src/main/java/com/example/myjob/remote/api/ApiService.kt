@@ -15,6 +15,7 @@ import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
+import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.http.Body
@@ -108,6 +109,7 @@ ApiService {
 
     @GET("auth/getAllJobs")
     suspend fun getAllUser(
+        @Query("id") id: Int,
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
     ): GenericResponse<User>
@@ -118,12 +120,21 @@ ApiService {
     @POST("auth/sendInvitation")
     suspend fun sendInvitation(@Body invitationParams: InvitationParams): UserResponse
 
+    @POST("auth/finishProcess")
+    suspend fun finishProcess(@Body invitationParams: InvitationParams): InvitationParams
+
     @GET("auth/getInvitations")
     suspend fun getInvitations(
         @Query("id") id: Int,
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
     ): GenericResponse<InvitationModel>
+
+    @GET("auth/getInvitationDetail")
+    suspend fun getInvitationDetail(
+        @Query("id") id: Int,
+        @Query("idInvitation") idInvitation: Int
+    ): InvitationModel
 
     @GET("auth/getCompanyInvitations")
     suspend fun getCompanyInvitations(
@@ -201,6 +212,13 @@ ApiService {
     ///////////////////////////////////////////////////////////////////////////
     // SEARCH HISTORY
     ///////////////////////////////////////////////////////////////////////////
+    @GET("auth/getUserFiltered")
+    suspend fun getUserFiltered(
+        @Query("word") word: String,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<User>
+
     @POST("auth/saveSearchHistory")
     suspend fun saveSearchHistory(
         @Query("idUserConnected") idUserConnected: Int,

@@ -19,6 +19,7 @@ import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.entities.notification.NotificationMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -29,6 +30,7 @@ import java.time.ZonedDateTime
 
 object GlobalEntries {
     var isFiltering = false
+    var socket: CoroutineWebSocketClient? = null
     var idExp = 0
     var idStudy = 0
     var listIdToRemove = mutableListOf<Int>()
@@ -41,6 +43,7 @@ object GlobalEntries {
     var userCandidate = User()
     var userForCompany = User()
     var language = "Français"
+    var notificationMessage = NotificationMessage()
     var role = ""
     var criteriaModel = CriteriaModel()
     var isFromFilter = false

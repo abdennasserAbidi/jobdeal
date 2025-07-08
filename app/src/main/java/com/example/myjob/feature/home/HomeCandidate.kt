@@ -1,5 +1,6 @@
 package com.example.myjob.feature.home
 
+import android.util.Log
 import android.view.View
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -94,6 +95,8 @@ fun HomeCandidatePreview(
             homeViewModel.updateToken()
         }
     }
+
+    Log.i("rlekrgkjg", "CandidateListScreen: $fcmToken")
 
     Box(
         modifier = Modifier

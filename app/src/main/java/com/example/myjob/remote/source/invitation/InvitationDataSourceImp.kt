@@ -23,8 +23,16 @@ class InvitationDataSourceImp @Inject constructor(
         pageNumber: Int
     ): GenericResponse<InvitationModel> = apiService.getInvitations(id, pageNumber)
 
+    override suspend fun getInvitationDetail(
+        id: Int,
+        idInvitation: Int
+    ): InvitationModel = apiService.getInvitationDetail(id, idInvitation)
+
     override suspend fun sendInvitation(invitationParams: InvitationParams): UserResponse =
         apiService.sendInvitation(invitationParams)
+
+    override suspend fun finishProcess(invitationParams: InvitationParams): InvitationParams =
+        apiService.finishProcess(invitationParams)
 
     override suspend fun acceptRejectInvitation(invitationParams: InvitationParams): UserResponse =
         apiService.acceptRejectInvitation(invitationParams)

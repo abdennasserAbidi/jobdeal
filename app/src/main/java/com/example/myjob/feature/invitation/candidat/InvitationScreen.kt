@@ -1,5 +1,6 @@
 package com.example.myjob.feature.invitation.candidat
 
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -16,8 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -46,15 +45,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.ErrorMessage
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
-import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.common.view.InvitationCard
 import com.example.myjob.domain.entities.FilterType
 import com.example.myjob.domain.entities.invitation.InvitationModel
@@ -74,12 +72,15 @@ fun InvitationScreen(
 
     var selectedFilter by remember { mutableStateOf(FilterType.ALL) }
     var showFilterSheet by remember { mutableStateOf(false) }
+    var acceptRejectInvitation by remember { mutableStateOf("") }
 
     val fcmToken by invitationViewModel.fcmToken.collectAsState()
 
     LaunchedEffect(fcmToken) {
         if (fcmToken.isNotEmpty()) {
-            invitationViewModel.sendNotification()
+            val title = GlobalEntries.user.fullName ?: ""
+            val message = "This candidate has $acceptRejectInvitation your invitaion"
+            invitationViewModel.sendNotification(title, message)
         }
     }
 
@@ -137,9 +138,11 @@ fun InvitationScreen(
 
                 items(invitations.itemCount) { index ->
                     val item = invitations[index] ?: InvitationModel()
+                    val statusCandidate = if (item.status != InvitationStatus.ON_HOLD.name)
+                        item.status else statusInvitations
 
                     InvitationCard(
-                        statusInvitations = statusInvitations,
+                        statusInvitations = statusCandidate ?: "",
                         invitationModel = item,
                         onClick = { /*TODO*/ },
                         onAcceptInvitation = {
@@ -148,6 +151,7 @@ fun InvitationScreen(
 
                             invitationViewModel.clearToken()
                             invitationViewModel.getUserToken(item.idCompany)
+                            acceptRejectInvitation = "accept"
                         },
                         onRejectInvitation = {
                             item.status = InvitationStatus.NOT_INTERESTED.name
@@ -155,8 +159,12 @@ fun InvitationScreen(
 
                             invitationViewModel.clearToken()
                             invitationViewModel.getUserToken(item.idCompany)
+                            acceptRejectInvitation = "refuse"
                         }
                     )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
                 }
 
                 invitations.apply {
@@ -248,7 +256,6 @@ fun InvitationScreen(
             )
         }
     }
-
 }
 
 @Composable

@@ -225,38 +225,11 @@ class MainActivity : ComponentActivity() {
         viewState.value = CountryPickerViewState(countries)
     }
 
-    private val flow = MutableSharedFlow<Intent>(extraBufferCapacity = 1)
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        flow.tryEmit(intent)
-        val jobId = intent.data?.lastPathSegment
-        println("eajhfleugfaefae  ${intent.data}")
-        println("eajhfleugfaefae  $jobId")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        /*val jobId = intent.data?.lastPathSegment
-        println("eajhfleugfaefae  ${intent.data}")
-        println("eajhfleugfaefae  $jobId")*/
-    }
-
     @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestNotificationPermission()
-
-        /*val deepLink = intent?.data
-
-        Log.i("lkfngrzjggtrlkfsrr", "onCreate: $deepLink")*/
-
-        /*val destination = intent.getStringExtra("navigate_to")
-        val jobId = intent.getStringExtra("idUser")
-        Log.i("lkfngrzjggtrlkfsrr", "destination: $jobId")*/
-
-        val jobId = intent.data?.lastPathSegment
-        println("eajhfleugfaefae  ${intent.data}")
 
         fetchData()
 
@@ -343,18 +316,6 @@ class MainActivity : ComponentActivity() {
                 val role = GlobalEntries.role
                 isVisibleNav = role == "Company" || role == "Entreprise"
 
-                println("eajhfleugfaefae  $jobId")
-                jobId?.let {
-                    val route = when (it) {
-                        "85" -> Screen.DetailInvitationScreen.route
-                        "11" -> Screen.OnBoardingScreen.route
-                        else -> Screen.LoginScreen.route
-                    }
-                    navController = rememberNavController()
-                    navController.navigate(route)
-                }
-
-
                 NavHost(
                     navController = navController,
                     startDestination = Screen.SplashScreen.route
@@ -421,17 +382,16 @@ class MainActivity : ComponentActivity() {
                         route = Screen.DetailInvitationScreen.route,
                         deepLinks = listOf(
                             navDeepLink {
-                                uriPattern = "http://app/{idUser}"
+                                uriPattern = "myApp://notification/{idInvitation}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),
-                        arguments = listOf(navArgument("idUser") { type = NavType.StringType })
+                        arguments = listOf(navArgument("idInvitation") { type = NavType.StringType })
                     ) {
                         isVisibleNav = false
                         val arguments = it.arguments
-                        Log.i("fekalnfenajgagae", "onCreate: ${arguments?.getString("idUser")}")
-                        arguments?.getString("idUser")?.let { message ->
-                            DetailInvitationScreen(navController = navController, idUser = message)
+                        arguments?.getString("idInvitation")?.let { idInvitation ->
+                            DetailInvitationScreen(navController = navController, idInvitation = idInvitation)
                         }
                     }
 
