@@ -19,15 +19,16 @@ open class GenericSource<T: Any> constructor(
         return try {
 
             val data = getData(currentPage)
-            if (paramsWS != -1) {
-                // Collect messages from /topic/greetings
+            println("paramsWS: $paramsWS")
+
+            /*if (paramsWS != -1) {
                 val request = mapOf("id" to paramsWS, "page" to currentPage, "size" to 10)
                 val jsonWS = Gson().toJson(request)
 
                 GlobalEntries.socket?.send(jsonWS)?.collectLatest { message ->
                     println("Received message: $message")
                 }
-            }
+            }*/
 
             LoadResult.Page(
                  data = data.content,

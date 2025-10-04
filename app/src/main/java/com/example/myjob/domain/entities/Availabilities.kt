@@ -12,6 +12,13 @@ data class ParentChoices(
     var isSelected: Boolean = false
 ): Choices()
 
+data class InvitationChoices(
+    val id: Int? = View.generateViewId(),
+    var title: Int = R.string.disponibility1_text,
+    var titleString: String = "",
+    var isSelected: Boolean = false
+): Choices()
+
 data class Availabilities(
     val id: Int? = View.generateViewId(),
     var title: Int = R.string.disponibility1_text,

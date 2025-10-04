@@ -3,11 +3,16 @@ package com.example.myjob.feature.navigation
 sealed class Screen(val route:String) {
     object recordScreen : Screen("record_screen")
     object HomeScreen : Screen("home_screen")
+    object ValidateProfileCompanyScreen : Screen("validate_profile_company_screen")
+    object ValidateDocCandidateScreen : Screen("validate_doc_candidate_screen")
+    object ValidateProfileCandidateScreen : Screen("validate_profile_candidate_screen")
     object DetailInvitationScreen : Screen("detail_invitation_screen")
+    object NormalDetailInvitationScreen : Screen("normal_detail_invitation_screen")
     object FilteredHome : Screen("filtered_home_screen")
     object SearchWordScreen : Screen("search_screen")
     object HomeCompanyScreen : Screen("home_company_screen")
     object InvitationScreen : Screen("invitation_screen")
+    object InvitationBoostScreen : Screen("invitation_boost_screen")
     object SendInvitationScreen : Screen("send_invitation_screen")
     object InvitationCompanyScreen : Screen("company_invitation_screen")
     object NotificationCompanyScreen : Screen("company_notification_screen")
@@ -30,4 +35,5 @@ sealed class Screen(val route:String) {
     object SplashScreen : Screen("splash_screen")
     object OnBoardingScreen : Screen("onboarding_screen")
     object ForgotPasswordScreen : Screen("forgot_password_screen")
+    object ValidationInterviewScreen : Screen("validation_interview_screen")
 }

@@ -127,14 +127,14 @@ class InvitationViewModel @Inject constructor(
         getCompanyAnnouncement(id)
 
         // Collect messages from /topic/greetings
-        CoroutineScope(Dispatchers.Main).launch {
+        /*CoroutineScope(Dispatchers.Main).launch {
             GlobalEntries.socket?.topicFlow("/topic/invitations")?.collect { message ->
                 println("Received message in view models: $message")
 
-                /*val pagedInvitation = Gson().fromJson(message, PagedInvitation::class.java)
-                println("Received message in view models: ${pagedInvitation.content}")*/
+                val pagedInvitation = Gson().fromJson(message, PagedInvitation::class.java)
+                println("Received message in view models: ${pagedInvitation.content}")
             }
-        }
+        }*/
     }
 
 }

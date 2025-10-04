@@ -2,6 +2,7 @@ package com.example.myjob.feature.invitation.candidat
 
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +17,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -27,6 +32,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -59,6 +66,7 @@ import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.ui.theme.WhatsAppDarkGreen
 import com.example.myjob.ui.theme.WhatsAppLightGreen
+import kotlinx.coroutines.flow.update
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,13 +76,31 @@ fun InvitationScreen(
 ) {
 
     val invitations = invitationViewModel.invitations.collectAsLazyPagingItems()
+
+    val invitationChoices by invitationViewModel.invitationChoices.collectAsState()
+    val selectionChoices by invitationViewModel.selectionChoices.collectAsState()
+
     val interactionSource = remember { MutableInteractionSource() }
 
     var selectedFilter by remember { mutableStateOf(FilterType.ALL) }
     var showFilterSheet by remember { mutableStateOf(false) }
+    var isFilterContract by remember { mutableStateOf(false) }
+    var isFilterStatus by remember { mutableStateOf(false) }
     var acceptRejectInvitation by remember { mutableStateOf("") }
 
     val fcmToken by invitationViewModel.fcmToken.collectAsState()
+    val filter by invitationViewModel.filter.collectAsState()
+    val listFilter by invitationViewModel.listFilterSv.collectAsState()
+
+    LaunchedEffect(listFilter) {
+        isFilterContract = listFilter.isNotEmpty()
+        invitationViewModel.validateFilter(filter)
+    }
+
+    LaunchedEffect(filter.type) {
+        isFilterStatus = filter.type != "All Candidates"
+        invitationViewModel.validateFilter(filter)
+    }
 
     LaunchedEffect(fcmToken) {
         if (fcmToken.isNotEmpty()) {
@@ -86,16 +112,58 @@ fun InvitationScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .background(color = colorResource(id = R.color.whatsapp)),
+                contentAlignment = Alignment.Center
+            ) {
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 15.dp, horizontal = 15.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        tint = Color.White,
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                navController.popBackStack()
+                            },
+                        contentDescription = ""
+                    )
+
+                    Text(
+                        text = "My Invitations",
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color.White,
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            fontFamily = FontFamily.Default,
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                }
+            }
 
             // Filter Row
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "5 candidates found",
+                    text = "${invitations.itemCount} invitations found",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -106,14 +174,15 @@ fun InvitationScreen(
                         Text(
                             text = when (selectedFilter) {
                                 FilterType.ALL -> "All"
-                                FilterType.AVAILABLE -> "Available"
                                 FilterType.INTERVIEWING -> "Interviewing"
                                 FilterType.HIRED -> "Hired"
                                 FilterType.NOT_INTERESTED -> "Not Interested"
+                                FilterType.ON_HOLD -> "On hold"
+                                FilterType.REJECTED -> "Rejected"
                             }
                         )
                     },
-                    selected = selectedFilter != FilterType.ALL,
+                    selected = false,
                     trailingIcon = {
                         Icon(
                             Icons.Default.KeyboardArrowDown,
@@ -123,9 +192,65 @@ fun InvitationScreen(
                     },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = WhatsAppLightGreen,
-                        selectedLabelColor = WhatsAppDarkGreen
-                    )
+                        selectedLabelColor = WhatsAppDarkGreen,
+
+                        )
                 )
+            }
+
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp)
+                    .padding(horizontal = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                itemsIndexed(
+                    items = invitationChoices
+                ) { index, item ->
+                    val title = stringResource(id = item.title)
+
+                    val textColor = if (selectionChoices[index]) Color.White else Color.Black
+                    val color =
+                        colorResource(id = if (selectionChoices[index]) R.color.whatsapp else R.color.lighter_gray)
+
+                    val paddStart = if (index == 0) 0.dp else 10.dp
+
+                    Row(
+                        modifier = Modifier
+                            .wrapContentHeight()
+                            .padding(start = paddStart)
+                            .border(
+                                width = 1.dp,
+                                color = color,
+                                shape = RoundedCornerShape(5.dp)
+                            )
+                            .background(
+                                color = color,
+                                shape = RoundedCornerShape(5.dp)
+                            )
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                invitationViewModel.changeChoice(
+                                    index,
+                                    !selectionChoices[index],
+                                    title
+                                )
+                                GlobalEntries.isVisibleNav.update { false }
+                            },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = title,
+                            color = textColor,
+                            modifier = Modifier.padding(10.dp)
+                        )
+                    }
+
+                }
             }
 
             val statusInvitations by invitationViewModel.statusInvitations.collectAsState()
@@ -133,6 +258,7 @@ fun InvitationScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(horizontal = 16.dp)
                     .padding(top = 20.dp)
             ) {
 
@@ -200,46 +326,6 @@ fun InvitationScreen(
                 }
             }
         }
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(70.dp)
-                .background(color = colorResource(id = R.color.whatsapp)),
-            contentAlignment = Alignment.Center
-        ) {
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 15.dp, horizontal = 15.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowBack,
-                    tint = Color.White,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null
-                        ) {
-                            navController.popBackStack()
-                        },
-                    contentDescription = ""
-                )
-
-                Text(
-                    text = "My Invitations",
-                    modifier = Modifier.align(Alignment.Center),
-                    color = Color.White,
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        fontFamily = FontFamily.Default,
-                        fontWeight = FontWeight.Medium
-                    )
-                )
-            }
-        }
     }
 
     // Filter Bottom Sheet
@@ -249,8 +335,9 @@ fun InvitationScreen(
         ) {
             FilterBottomSheet(
                 selectedFilter = selectedFilter,
-                onFilterSelected = { filter ->
+                onFilterSelected = { filter, name ->
                     selectedFilter = filter
+                    invitationViewModel.changeTypeStatus(name)
                     showFilterSheet = false
                 }
             )
@@ -261,7 +348,7 @@ fun InvitationScreen(
 @Composable
 fun FilterBottomSheet(
     selectedFilter: FilterType,
-    onFilterSelected: (FilterType) -> Unit
+    onFilterSelected: (FilterType, String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -280,22 +367,47 @@ fun FilterBottomSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onFilterSelected(filter) }
-                    .padding(vertical = 12.dp),
+                    .clickable {
+                        val text = when (filter) {
+                            FilterType.ALL -> "All Candidates"
+                            FilterType.INTERVIEWING -> "In process..."
+                            FilterType.HIRED -> "Hired"
+                            FilterType.NOT_INTERESTED -> "Not Interested"
+                            FilterType.ON_HOLD -> "On hold"
+                            FilterType.REJECTED -> "Rejected"
+                        }
+                        onFilterSelected(filter, text)
+                    }
+                    .padding(vertical = 7.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 RadioButton(
                     selected = selectedFilter == filter,
-                    onClick = { onFilterSelected(filter) }
+                    onClick = {
+                        val text = when (filter) {
+                            FilterType.ALL -> "All Candidates"
+                            FilterType.INTERVIEWING -> "In process..."
+                            FilterType.HIRED -> "Hired"
+                            FilterType.NOT_INTERESTED -> "Not Interested"
+                            FilterType.ON_HOLD -> "On hold"
+                            FilterType.REJECTED -> "Rejected"
+                        }
+                        onFilterSelected(filter, text)
+                    },
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = colorResource(id = R.color.whatsapp),
+                        unselectedColor = colorResource(id = R.color.whatsapp)
+                    )
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = when (filter) {
                         FilterType.ALL -> "All Candidates"
-                        FilterType.AVAILABLE -> "Available"
-                        FilterType.INTERVIEWING -> "Interviewing"
+                        FilterType.INTERVIEWING -> "In process..."
                         FilterType.HIRED -> "Hired"
                         FilterType.NOT_INTERESTED -> "Not Interested"
+                        FilterType.ON_HOLD -> "On hold"
+                        FilterType.REJECTED -> "Rejected"
                     },
                     style = MaterialTheme.typography.bodyLarge
                 )

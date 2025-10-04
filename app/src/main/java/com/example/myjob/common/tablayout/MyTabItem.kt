@@ -8,6 +8,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -15,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -41,6 +43,45 @@ fun MyTabItem(
     Text(
         modifier = Modifier
             .clip(CircleShape)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) {
+                onClick()
+            }
+            .width(tabWidth)
+            .padding(
+                vertical = 8.dp,
+                horizontal = 12.dp,
+            ),
+        text = text,
+        color = tabTextColor,
+        textAlign = TextAlign.Center,
+        fontWeight = FontWeight.Bold,
+        fontSize = 16.sp
+    )
+}
+
+@Composable
+fun MyTabItemRect(
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    tabWidth: Dp,
+    text: String,
+) {
+
+    val interactionSource = remember { MutableInteractionSource() }
+
+    val tabTextColor: Color by animateColorAsState(
+        targetValue = if (isSelected) colorResource(id = R.color.dark_blue)
+        else colorResource(id = R.color.ligt_white),
+        animationSpec = tween(easing = LinearEasing), label = "",
+    )
+    Text(
+        modifier = Modifier
+            .clip(
+                RoundedCornerShape(12.dp)
+            )
             .clickable(
                 interactionSource = interactionSource,
                 indication = null

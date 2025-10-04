@@ -6,4 +6,6 @@ import com.example.myjob.domain.response.UserResponse
 interface NotificationDataSource {
     suspend fun updateToken(id: Int, token: String): UserResponse
     suspend fun sendNotification(base: NotificationMessage): UserResponse
+    suspend fun verifyAccountCompany(id: Int): UserResponse
+    suspend fun getCompaniesValidated(): List<String>
 }

@@ -1,5 +1,6 @@
 package com.example.myjob.data.home
 
+import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -161,11 +162,15 @@ class HomeRepositoryImp @Inject constructor(
             val availability = data.availability ?: ""
             data.changeAvailability(availability, lang)
 
+            Log.i("zlmezlmlezm", "SUCCESS: $data")
+
 
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {
             // Emit error
+            Log.i("zlmezlmlezm", "ERROR: ${ex.message}")
+
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }

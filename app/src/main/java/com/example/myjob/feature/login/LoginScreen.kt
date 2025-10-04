@@ -33,6 +33,8 @@ import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -75,6 +77,7 @@ import com.example.myjob.common.CustomDialog
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
+import com.example.myjob.feature.profile.test.FormTextField
 import com.example.myjob.feature.signup.AddPassword
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -245,51 +248,19 @@ fun LoginScreen(
                     )
                 }
 
-                Text(
-                    text = "Email",
-                    modifier = Modifier.padding(top = 40.dp, start = 20.dp),
-                    style = TextStyle(
-                        color = if (activatedCheck && !emailVerified) Color.Red else colorResource(
-                            id = R.color.whatsapp
-                        ),
-                        fontFamily = FontFamily.Default,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-
-                TextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 10.dp)
-                        .border(
-                            width = 1.dp,
-                            color = if (activatedCheck && !emailVerified) Color.Red else colorResource(
-                                id = R.color.whatsapp
-                            ),
-                            shape = RoundedCornerShape(30.dp)
-                        )
-                        .clip(shape = RoundedCornerShape(30.dp)),
-                    colors = TextFieldDefaults.textFieldColors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
+                FormTextField(
                     value = email,
                     onValueChange = {
                         email = it
                         if (activatedCheck) viewModel.validateEmail(it)
                         viewModel.changeUserEmail(it)
                     },
-                    textStyle = TextStyle(Color.Black, fontSize = 14.sp),
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Next
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-
-                        }
-                    )
+                    label = "Email",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 40.dp),
+                    isRequired = true
                 )
 
                 if (activatedCheck) {
@@ -304,73 +275,21 @@ fun LoginScreen(
                     }
                 }
 
-                Text(
-                    text = stringResource(id = R.string.password_text),
-                    modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                    style = TextStyle(
-                        color = if (activatedCheck && !passwordVerified) Color.Red else colorResource(
-                            id = R.color.whatsapp
-                        ),
-                        fontFamily = FontFamily.Default,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-
-                var showPassword by remember { mutableStateOf(false) }
-
-                TextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 10.dp)
-                        .border(
-                            width = 1.dp,
-                            color = if (activatedCheck && !passwordVerified) Color.Red else colorResource(
-                                id = R.color.whatsapp
-                            ),
-                            shape = RoundedCornerShape(30.dp)
-                        )
-                        .clip(shape = RoundedCornerShape(30.dp)),
-                    colors = TextFieldDefaults.textFieldColors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
+                FormTextField(
                     value = password,
                     onValueChange = {
                         password = it
                         if (activatedCheck) viewModel.validatePassword(it)
                         viewModel.changeUserPassword(it)
                     },
-                    visualTransformation = if (showPassword) {
-                        VisualTransformation.None
-                    } else {
-                        PasswordVisualTransformation()
-                    }, trailingIcon = {
-                        if (showPassword) {
-                            IconButton(onClick = { showPassword = false }) {
-                                Icon(imageVector = Icons.Filled.Visibility, contentDescription = "")
-                            }
-                        } else {
-                            IconButton(onClick = { showPassword = true }) {
-                                Icon(
-                                    imageVector = Icons.Filled.VisibilityOff,
-                                    contentDescription = ""
-                                )
-                            }
-                        }
-                    },
-                    textStyle = TextStyle(Color.Black, fontSize = 14.sp),
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Done
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-
-                        }
-                    )
+                    label = stringResource(id = R.string.password_text),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 20.dp),
+                    isRequired = true,
+                    isPassword = true
                 )
-                Log.i("passwordVerified", "SignUpScreen: $passwordVerified")
 
                 if (activatedCheck) {
                     if (password.isEmpty() || !passwordVerified) {
@@ -410,44 +329,34 @@ fun LoginScreen(
                         .padding(top = 20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Box(
+
+                    Button(
+                        onClick = {
+                            val s = viewModel.validateEmail(email)
+                            val p = viewModel.validatePassword(password)
+
+
+                            if (!emailVerified || !passwordVerified) activatedCheck = true
+
+                            if (s && p) {
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    isProgressing = true
+                                    delay(1000L)
+                                    viewModel.login(user)
+                                }
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth(0.9f)
-                            .padding(top = 10.dp)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                val s = viewModel.validateEmail(email)
-                                val p = viewModel.validatePassword(password)
-
-
-                                if (!emailVerified || !passwordVerified) activatedCheck = true
-
-                                if (s && p) {
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        isProgressing = true
-                                        delay(1000L)
-                                        viewModel.login(user)
-                                    }
-                                }
-
-                            }
-                            .background(
-                                color = colorResource(id = R.color.whatsapp),
-                                shape = RoundedCornerShape(30.dp)
-                            ),
-                        contentAlignment = Alignment.Center
+                            .padding(top = 20.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorResource(id = R.color.whatsapp)
+                        )
                     ) {
                         Text(
-                            text = stringResource(id = R.string.login_text),
-                            modifier = Modifier.padding(vertical = 20.dp),
-                            style = TextStyle(
-                                color = Color.White,
-                                fontFamily = FontFamily.Default,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            stringResource(id = R.string.login_text),
+                            modifier = Modifier.padding(vertical = 5.dp)
                         )
                     }
 
@@ -488,7 +397,7 @@ fun LoginScreen(
                             .border(
                                 1.dp,
                                 Color.LightGray,
-                                RoundedCornerShape(30.dp)
+                                RoundedCornerShape(8.dp)
                             )
                             .animateContentSize(
                                 animationSpec = tween(
@@ -513,7 +422,7 @@ fun LoginScreen(
                             }
                             .background(
                                 color = Color.Transparent,
-                                shape = RoundedCornerShape(30.dp)
+                                shape = RoundedCornerShape(8.dp)
                             ),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center

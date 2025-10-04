@@ -1,7 +1,9 @@
 package com.example.myjob.domain.entities
 
 import android.view.View
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Educations(
     var id: Int = View.generateViewId(),
     val title: String? = "",

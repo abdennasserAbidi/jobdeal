@@ -3,10 +3,12 @@ package com.example.myjob.domain.entities
 import android.util.Log
 import android.view.View
 import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
+@Serializable
 data class User(
     var id: Int? = View.generateViewId(),
     var firstName: String? = "",
@@ -17,19 +19,22 @@ data class User(
     var newCountry: String? = "",
     var role: String? = "Company",
     var email: String? = "abidi.baha@gmail.com",
+    var preferredWorkType: MutableList<String>? = mutableListOf(),
+    var workPreferences: MutableList<String>? = mutableListOf(),
     var fullName: String? = "$firstName $lastName",
     var password: String? = "Aladin@123",
     var preferredEmploymentType: String? = "",
-    var address: String? = "",
+    var address: String? = "Unspecified",
     var situation: String? = "",
+    var isVerified: Boolean? = false,
     var sexe: String? = "",
-    var nationality: String? = "",
+    var nationality: String? = "Unspecified",
     var birthDate: String? = "Choose Date",
     var activitySector: String? = "Choose activity sector",
-    var availability: String? = "",
-    var rangeSalary: String? = "",
-    var preferredActivitySector: String? = "",
-    var userExperience: String? = "",
+    var availability: String? = "Unspecified",
+    var rangeSalary: String? = "Unspecified",
+    var preferredActivitySector: String? = "Unspecified",
+    var userExperience: String? = "Unspecified",
     @SerializedName("experiences")
     var experience: MutableList<Experience>? = mutableListOf(),
     var education: MutableList<Educations>? = mutableListOf(),
@@ -37,6 +42,8 @@ data class User(
     val listNum: MutableList<String>? = mutableListOf(),
     var companyName: String? = "",
     var phoneCompany: String? = "",
+    var numSecuritySocial: String? = "",
+    var docs: List<String>? = mutableListOf(),
     var secondPhoneCompany: String? = "",
     var faxCompany: String? = "",
     var linkWebsite: String? = "",

@@ -8,5 +8,7 @@ import kotlinx.coroutines.flow.Flow
 interface NotificationRepository {
     suspend fun updateToken(id: Int, token: String): Flow<Resource<UserResponse>>
     suspend fun sendNotification(base: NotificationMessage): Flow<Resource<UserResponse>>
+    suspend fun verifyAccountCompany(id: Int): Flow<Resource<UserResponse>>
+    suspend fun getCompaniesValidated(): Flow<Resource<List<String>>>
 
 }

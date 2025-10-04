@@ -6,6 +6,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -133,11 +134,14 @@ fun GenericSearch(
                             fontSize = 20.sp,
                             color = Color.Black)
 
-                        if (index < filteredBanks.lastIndex)
+                        if (index < filteredBanks.lastIndex) {
                             HorizontalDivider(
                                 thickness = 1.dp,
                                 modifier = Modifier.padding(top = 10.dp)
                             )
+                        } else {
+                            Spacer(modifier = Modifier.height(50.dp).fillMaxWidth())
+                        }
                     }
                 }
 

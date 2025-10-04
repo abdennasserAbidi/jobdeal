@@ -14,12 +14,16 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -31,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myjob.R
+import com.example.myjob.base.MyApp
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.feature.navigation.Screen
 
@@ -40,6 +45,15 @@ fun SplashScreen(
     splashViewModel: SplashViewModel = hiltViewModel()
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val listCompanies by splashViewModel.listCompanies.collectAsState()
+
+    val context = LocalContext.current
+    val app = context.applicationContext as MyApp
+
+    LaunchedEffect(listCompanies) {
+        app.listCompanies.removeLast()
+        if (!app.listCompanies.containsAll(listCompanies)) app.listCompanies.addAll(listCompanies)
+    }
 
     Column(
         modifier = Modifier
@@ -63,12 +77,15 @@ fun SplashScreen(
             )
 
             Box(
-                modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.6f))
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.6f))
             )
         }
 
         Box(
-            modifier = Modifier.wrapContentSize()
+            modifier = Modifier
+                .wrapContentSize()
                 .padding(top = 20.dp, start = 20.dp)
                 .clickable(
                     interactionSource = interactionSource,

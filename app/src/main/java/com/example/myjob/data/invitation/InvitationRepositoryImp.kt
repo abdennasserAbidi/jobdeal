@@ -10,8 +10,10 @@ import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.CoroutineWebSocketClient
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.domain.entities.InvitationFilter
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
+import com.example.myjob.domain.entities.invitation.InvitationUser
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.local.database.SharedPreference
 import com.example.myjob.remote.source.invitation.InvitationDataSource
@@ -73,17 +75,76 @@ class InvitationRepositoryImp @Inject constructor(
             }
         }
 
-    override suspend fun getInvitationDetail(id: Int, idInvitation: Int): Flow<Resource<InvitationModel>> =
+    override suspend fun getInvitationDetail(id: Int, idInvitation: Int): Flow<Resource<InvitationUser>> =
         flow {
             try {
                 // Get data from RemoteDataSource
                 val data = remoteDataSource.getInvitationDetail(id, idInvitation)
                 // Emit data
+                Log.i("gktlengtenjgte", "SUCCESS: $data")
+
                 emit(Resource(ResourceState.SUCCESS, data, null))
             } catch (ex: Exception) {
                 // Emit error
+                Log.i("gktlengtenjgte", "ERROR: ${ex.message}")
+
                 emit(Resource(ResourceState.ERROR, null, ex.message))
             }
+        }
+
+    override suspend fun getFilteredInvitations(invitationFiltered: InvitationFilter): Flow<Resource<PagingData<InvitationModel>>> =
+        flow {
+            val pager = Pager(
+                config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+                pagingSourceFactory = {
+                    GenericSource { currentPage ->
+
+                        val educations =
+                            remoteDataSource.getFilteredInvitations(invitationFiltered, pageNumber = currentPage)
+
+                        val json = Gson().toJson(educations.content)
+                        sharedPreference.putString("jsonInvitationsFiltered", json)
+                        Log.i("jgnrtjkgjth", "educations: ${educations.content}")
+
+                        educations
+                    }
+                }
+            ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+            emitAll(
+                pager.map { pagingData ->
+                    Resource(ResourceState.SUCCESS, pagingData, null)
+                }
+            )
+        }.catch { ex ->
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+
+    override suspend fun getInvitationsByTag(id: Int): Flow<Resource<PagingData<InvitationModel>>> =
+        flow {
+
+            val pager = Pager(
+                config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+                pagingSourceFactory = {
+                    GenericSource { currentPage ->
+                        val educations =
+                            remoteDataSource.getInvitationsByTag(id = id, pageNumber = currentPage)
+
+                        val json = Gson().toJson(educations.content)
+                        sharedPreference.putString("jsonOtherInvitations", json)
+
+                        educations
+                    }
+                }
+            ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+            emitAll(
+                pager.map { pagingData ->
+                    Resource(ResourceState.SUCCESS, pagingData, null)
+                }
+            )
+        }.catch { ex ->
+            emit(Resource(ResourceState.ERROR, null, ex.message))
         }
 
     override suspend fun getInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>> =

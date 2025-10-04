@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.util.Log
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -396,6 +397,31 @@ class ProfileViewModel @Inject constructor(
         userAddress.update { name }
         user.update {
             it.address = name
+            it
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // EMAIL
+    ///////////////////////////////////////////////////////////////////////////
+    val isEmailValid = MutableStateFlow(false)
+    val userEmail = MutableStateFlow("")
+
+    fun validateEmail(text: String): Boolean {
+        var t = false
+        viewModelScope.launch {
+            isEmailValid.update {
+                Patterns.EMAIL_ADDRESS.matcher(text).matches()
+            }
+            t = Patterns.EMAIL_ADDRESS.matcher(text).matches()
+        }
+        return t
+    }
+
+    fun changeAddressMail(name: String) {
+        userEmail.update { name }
+        user.update {
+            it.email = name
             it
         }
     }

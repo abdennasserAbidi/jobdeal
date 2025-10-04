@@ -5,6 +5,7 @@ import com.example.myjob.base.usecase.FlowBaseUseCase
 import com.example.myjob.data.invitation.InvitationRepository
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
+import com.example.myjob.domain.entities.invitation.InvitationUser
 import com.example.myjob.domain.qualifiers.IoDispatcher
 import com.example.myjob.domain.response.UserResponse
 import kotlinx.coroutines.CoroutineDispatcher
@@ -15,9 +16,9 @@ import javax.inject.Inject
 class GetDetailInvitationUseCase @Inject constructor(
     private val repository: InvitationRepository,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
-) : FlowBaseUseCase<InvitationModel, Pair<Int, Int>>() {
+) : FlowBaseUseCase<InvitationUser, Pair<Int, Int>>() {
 
-    override suspend fun buildRequest(params: Pair<Int, Int>?): Flow<Resource<InvitationModel>> {
+    override suspend fun buildRequest(params: Pair<Int, Int>?): Flow<Resource<InvitationUser>> {
         return repository.getInvitationDetail(params?.first ?: -1, params?.second ?: -1).flowOn(dispatcher)
     }
 }

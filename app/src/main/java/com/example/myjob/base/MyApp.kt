@@ -19,6 +19,7 @@ import com.example.myjob.base.workmanager.MyWorkerFactory
 import com.example.myjob.common.CoroutineWebSocketClient
 import com.example.myjob.common.GlobalEntries.socket
 import com.example.myjob.common.loadJSONFromAsset
+import com.example.myjob.domain.entities.AllCompanies
 import com.example.myjob.domain.entities.AllSchools
 import com.example.myjob.domain.entities.AllSubject
 import com.example.myjob.domain.entities.School
@@ -27,6 +28,7 @@ import com.google.gson.Gson
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -40,6 +42,8 @@ class MyApp : Application(), Configuration.Provider {
     var allSubjectList: MutableList<Subject> = mutableListOf()
     var listNameCountries: MutableList<String> = mutableListOf()
     var listSchools: MutableList<School> = mutableListOf()
+    var listCompanies: MutableList<String> = mutableListOf()
+    var listCompaniesStateFlow = MutableStateFlow<List<String>>(emptyList())
 
     @Inject
     lateinit var workerFactory: MyWorkerFactory
@@ -103,6 +107,19 @@ class MyApp : Application(), Configuration.Provider {
             listSchools = school.school
         } catch (ex: java.lang.Exception) {
             Log.i("Alabaman", "Exception: ${ex.message}")
+        }
+    }
+
+    private fun generateCompanyList() {
+        try {
+            val companies =
+                Gson().fromJson(loadJSONFromAsset("companies.json"), AllCompanies::class.java)
+            val nameCompanies = companies.companies.map {
+                it.libelly ?: ""
+            }
+            listCompanies = nameCompanies.toMutableList()
+        } catch (ex: java.lang.Exception) {
+            Log.i("Error", "Exception: ${ex.message}")
         }
     }
 

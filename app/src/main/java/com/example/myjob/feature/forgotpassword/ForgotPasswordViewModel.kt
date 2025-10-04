@@ -20,7 +20,7 @@ class ForgotPasswordViewModel @Inject constructor(
     private val resetPasswordUseCase: ResetPasswordUseCase,
     private val validateEmailUseCase: ValidateEmailUseCase,
     private val validatePasswordUseCase: ValidatePasswordUseCase,
-    ) : ViewModel() {
+) : ViewModel() {
 
     val isEmailValid = MutableStateFlow(false)
 
@@ -28,7 +28,7 @@ class ForgotPasswordViewModel @Inject constructor(
         isEmailValid.update { false }
     }
 
-    fun validateEmail(text: String) : Boolean {
+    fun validateEmail(text: String): Boolean {
         var t = false
         viewModelScope.launch {
             isEmailValid.update {
@@ -42,7 +42,7 @@ class ForgotPasswordViewModel @Inject constructor(
     val isPasswordValid = MutableStateFlow(false)
     val isConfirmPasswordValid = MutableStateFlow(false)
 
-    fun validatePassword(text: String): Boolean  {
+    fun validatePassword(text: String): Boolean {
         var t = false
         viewModelScope.launch {
             isPasswordValid.update {

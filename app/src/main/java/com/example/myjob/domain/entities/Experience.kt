@@ -1,6 +1,7 @@
 package com.example.myjob.domain.entities
 
 import android.view.View
+import kotlinx.serialization.Serializable
 
 val USER_EXP = listOf(
     "Stagiare/Alternant",
@@ -10,9 +11,13 @@ val USER_EXP = listOf(
     "Directeur",
     "Cadre supérieur",
 )
+
+@Serializable
 data class Experience(
     var id: Int = View.generateViewId(),
     val title: String? = "",
+    val description: String? = "",
+    val listSkills: MutableList<String>? = mutableListOf(),
     val companyName: String? = "",
     val dateStart: String? = "",
     val dateEnd: String? = "",

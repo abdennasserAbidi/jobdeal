@@ -6,6 +6,10 @@ enum class ContractType {
     CONTRACT, FREELANCE
 }
 
+enum class ContractTypeRole {
+    TRAINER, INTERN, EVENT
+}
+
 data class Candidate(
     val id: Int = View.generateViewId(),
     val name: String = "",
@@ -77,5 +81,5 @@ enum class CandidateStatus {
 }
 
 enum class FilterType {
-    ALL, AVAILABLE, INTERVIEWING, HIRED, NOT_INTERESTED
+    ALL, ON_HOLD, INTERVIEWING, HIRED, NOT_INTERESTED, REJECTED
 }

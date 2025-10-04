@@ -2,11 +2,14 @@ package com.example.myjob
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresExtension
 import androidx.compose.animation.AnimatedVisibility
@@ -39,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -71,13 +75,16 @@ import com.example.myjob.feature.favorites.CompanyFavorites
 import com.example.myjob.feature.forgotpassword.ForgotPasswordScreen
 import com.example.myjob.feature.home.HomeCandidate
 import com.example.myjob.feature.home.HomeCompany
+import com.example.myjob.feature.home.detail.CandidateDetailScreen
 import com.example.myjob.feature.home.detail.DetailsScreen
+import com.example.myjob.feature.home.detail.sampleProfile
 import com.example.myjob.feature.home.filter.FilterScreenUpdated
 import com.example.myjob.feature.home.filter.FilteredHome
 import com.example.myjob.feature.home.filter.SearchScreen
 import com.example.myjob.feature.invitation.candidat.InvitationScreen
 import com.example.myjob.feature.invitation.company.InvitationCompanyScreen
 import com.example.myjob.feature.invitation.company.SendInvitationCompany
+import com.example.myjob.feature.invitation.detail.DetailInviScreen
 import com.example.myjob.feature.invitation.detail.DetailInvitationScreen
 import com.example.myjob.feature.login.LoginScreen
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
@@ -93,9 +100,16 @@ import com.example.myjob.feature.profile.CountryCodeScreen
 import com.example.myjob.feature.profile.EducationForm
 import com.example.myjob.feature.profile.PersonalForm
 import com.example.myjob.feature.profile.ProfileScreen
+import com.example.myjob.feature.home.detail.test.CandidateCompleteProfileApp
+import com.example.myjob.feature.invitation.candidat.InvitationCareerScreen
+import com.example.myjob.feature.profile.test.CandidateProfileFormExec
 import com.example.myjob.feature.setting.SettingScreen
 import com.example.myjob.feature.signup.SignUpScreen
 import com.example.myjob.feature.splash.SplashScreen
+import com.example.myjob.feature.validateprofile.InterviewValidationScreen
+import com.example.myjob.feature.validateprofile.ValidateDocScreen
+import com.example.myjob.feature.validateprofile.ValidateProfileCandidate
+import com.example.myjob.feature.validateprofile.ValidateProfileCompany
 import com.example.myjob.local.database.SharedPreference
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.gson.Gson
@@ -120,6 +134,25 @@ class MainActivity : ComponentActivity() {
     private var listSchools: MutableList<String> = mutableListOf()
     private var listCompany: MutableList<String> = mutableListOf()
     private var listCountries: MutableList<String> = mutableListOf()
+
+    //TODO("add delete button to document in verification of company")
+    //TODO("EVENNEMENT(céminaire, formation, foire) => annonces : forum(commentaire, like)")
+    //TODO("Annonce : emplacememnt dans la bottom bar instead of search")
+    //TODO("add address email to verification of company")
+    //TODO("Notification")
+    //TODO("FIxer le design partout")
+
+    //text recognition
+    private var imageUri = mutableStateOf<Uri?>(null)
+    private var textChanged = mutableStateOf("Scanned text will appear here..")
+
+    private val selectImage =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            imageUri.value = uri
+        }
+
+    lateinit var launcher: ActivityResultLauncher<Intent>
+
 
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
@@ -257,6 +290,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
+            val context = LocalContext.current
+            val app = context.applicationContext as MyApp
+
+            app.listCompanies.addAll(listCompany)
+
             var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
 
             // creating our navController
@@ -379,20 +417,32 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(
-                        route = Screen.DetailInvitationScreen.route,
+                        route = "${Screen.DetailInvitationScreen.route}/{idInvitation}",
                         deepLinks = listOf(
                             navDeepLink {
                                 uriPattern = "myApp://notification/{idInvitation}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),
-                        arguments = listOf(navArgument("idInvitation") { type = NavType.StringType })
+                        arguments = listOf(navArgument("idInvitation") {
+                            type = NavType.StringType
+                        })
                     ) {
                         isVisibleNav = false
                         val arguments = it.arguments
                         arguments?.getString("idInvitation")?.let { idInvitation ->
-                            DetailInvitationScreen(navController = navController, idInvitation = idInvitation)
+                            DetailInvitationScreen(
+                                navController = navController,
+                                idInvitation = idInvitation
+                            )
                         }
+                    }
+
+                    composable(
+                        route = Screen.NormalDetailInvitationScreen.route
+                    ) {
+                        isVisibleNav = false
+                        DetailInviScreen(navController = navController)
                     }
 
                     /*composable(route = Screen.textRecognitionScreen.route) {
@@ -437,6 +487,11 @@ class MainActivity : ComponentActivity() {
                         CompanyFavorites(navController)
                     }
 
+                    composable(route = Screen.ValidationInterviewScreen.route) {
+                        isVisibleNav = true
+                        InterviewValidationScreen(navController)
+                    }
+
                     composable(route = Screen.CompanyProfileScreen.route) {
                         isVisibleNav = true
                         ProfileScreen(navController)
@@ -446,19 +501,53 @@ class MainActivity : ComponentActivity() {
                         route = Screen.DetailScreen.route,
                     ) {
                         isVisibleNav = false
-                        DetailsScreen(navController, hideNavigation = {
+                        /*DetailsScreen(navController, hideNavigation = {
+                            isVisibleNav = false
+                        })*/
+
+                        CandidateDetailScreen(navController, sampleProfile, hideNavigation = {
                             isVisibleNav = false
                         })
                     }
 
                     composable(route = Screen.InvitationCompanyScreen.route) {
                         isVisibleNav = true
-                        InvitationCompanyScreen(navController)
+                        InvitationCompanyScreen(
+                            navController = navController,
+                            changeIndexTab = {
+                                selectedTabIndex = 0
+                            }
+                        )
                     }
 
                     composable(route = Screen.NotificationCompanyScreen.route) {
                         isVisibleNav = true
                         NotificationScreen(navController)
+                    }
+
+                    composable(route = Screen.ValidateProfileCompanyScreen.route) {
+                        isVisibleNav = false
+                        ValidateProfileCompany(
+                            navController,
+                            selectImage = selectImage,
+                            addCompanyToList = {
+                                listCompany.add("jobs")
+
+                            }
+                        )
+                    }
+
+                    composable(route = Screen.ValidateDocCandidateScreen.route) {
+                        isVisibleNav = false
+                        ValidateDocScreen(
+                            navController = navController,
+                            selectImage = selectImage
+                        )
+                    }
+
+                    composable(route = Screen.ValidateProfileCandidateScreen.route) {
+                        isVisibleNav = false
+                        ValidateProfileCandidate(navController)
                     }
 
                     composable(route = Screen.FilterScreen.route) {
@@ -468,7 +557,7 @@ class MainActivity : ComponentActivity() {
                             allSubjects = allSubjects,
                             listSchools = listSchools,
                             listCountries = listCountries,
-                            listCompany = listCompany
+                            listCompany = app.listCompanies
                         )
                     }
 
@@ -492,7 +581,10 @@ class MainActivity : ComponentActivity() {
                                 allSubjects = allSubjects,
                                 listSchools = listSchools,
                                 listCountries = listCountries,
-                                listCompany = listCompany,
+                                listCompany = app.listCompanies,
+                                changeIndexTab = {
+                                    selectedTabIndex = 0
+                                }
                             )
 
                             /*HomeCompany(navController = navController,
@@ -518,7 +610,13 @@ class MainActivity : ComponentActivity() {
 
                     composable(route = Screen.SearchWordScreen.route) {
                         isVisibleNav = false
-                        SearchScreen(navController)
+                        //SearchScreen(navController)
+                        //CandidateCompleteProfileApp()
+                        CandidateProfileFormExec(
+                            navController = navController,
+                            list = listCountry,
+                            allSubjects = allSubjects
+                        )
                     }
 
                     composable(route = Screen.HomeCompanyScreen.route) {
@@ -527,7 +625,7 @@ class MainActivity : ComponentActivity() {
                             allSubjects = allSubjects,
                             listSchools = listSchools,
                             listCountries = listCountries,
-                            listCompany = listCompany,
+                            listCompany = app.listCompanies,
                             onResumed = { index ->
                                 selectedTabIndex = index
                             })
@@ -538,6 +636,11 @@ class MainActivity : ComponentActivity() {
                         InvitationScreen(navController = navController)
                     }
 
+                    composable(route = Screen.InvitationBoostScreen.route) {
+                        if (role == "Candidate" || role == "Candidat") isVisibleNav = false
+                        InvitationCareerScreen(navController = navController)
+                    }
+
                     composable(route = Screen.CareerScreen.route) {
                         isVisibleNav = false
                         AllCareer(navController = navController)
@@ -545,11 +648,12 @@ class MainActivity : ComponentActivity() {
 
                     composable(route = Screen.CareerFormScreen.route) {
                         isVisibleNav = false
+                        Log.i("flzghrzjkl", "onCreate: ${app.listCompanies}")
                         CareerFormScreen(
                             navController = navController,
                             allSubjects = allSubjects,
                             listCountries = listCountries,
-                            listCompany = listCompany
+                            listCompany = app.listCompanies
                         )
                     }
 

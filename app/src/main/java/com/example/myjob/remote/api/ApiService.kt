@@ -5,17 +5,20 @@ import com.example.myjob.common.network.ApiResult
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
+import com.example.myjob.domain.entities.InvitationFilter
 import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
+import com.example.myjob.domain.entities.invitation.InvitationResponse
+import com.example.myjob.domain.entities.invitation.InvitationUser
 import com.example.myjob.domain.entities.notification.NotificationMessage
 import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
-import kotlinx.coroutines.flow.Flow
+import com.example.myjob.feature.validateprofile.ValidationProfileStatus
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.http.Body
@@ -33,11 +36,20 @@ import retrofit2.http.Query
 interface
 ApiService {
 
+    @POST("auth/verifyAccountCompany")
+    suspend fun verifyAccountCompany(
+        @Query("id") id: Int
+    ): UserResponse
+
+    @GET("auth/getCompaniesValidated")
+    suspend fun getCompaniesValidated(): List<String>
+
     @POST("auth/updatetoken")
     suspend fun updateToken(
         @Query("id") id: Int,
         @Query("token") token: String
     ): UserResponse
+
 
     @POST("auth/sendnotification")
     suspend fun sendNotification(@Body base: NotificationMessage): UserResponse
@@ -54,6 +66,15 @@ ApiService {
     @FormUrlEncoded
     @POST("/auth/forgot-password")
     suspend fun forgotPassword(@Field("email") email: String): UserResponse
+
+    @POST("/auth/validate-profile-candidate")
+    suspend fun validateCandidateProfile(@Body validationProfileStatus: ValidationProfileStatus): UserResponse
+
+    @GET("/auth/statusListCandidateValidation")
+    suspend fun statusListCandidateValidation(@Query("id") id: Int): List<ValidationProfileStatus>
+
+    @GET("/auth/statusCandidateValidation")
+    suspend fun statusCandidateValidation(@Query("id") id: Int): ValidationProfileStatus
 
     @FormUrlEncoded
     @POST("/auth/reset-password")
@@ -130,11 +151,25 @@ ApiService {
         @Query("size") size: Int = 10
     ): GenericResponse<InvitationModel>
 
+    @GET("auth/getInvitationsByTag")
+    suspend fun getInvitationsByTag(
+        @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<InvitationModel>
+
     @GET("auth/getInvitationDetail")
     suspend fun getInvitationDetail(
         @Query("id") id: Int,
         @Query("idInvitation") idInvitation: Int
-    ): InvitationModel
+    ): InvitationUser
+
+    @POST("auth/getFilteredInvitation")
+    suspend fun getFilteredInvitations(
+        @Body invitationFiltered: InvitationFilter,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<InvitationModel>
 
     @GET("auth/getCompanyInvitations")
     suspend fun getCompanyInvitations(

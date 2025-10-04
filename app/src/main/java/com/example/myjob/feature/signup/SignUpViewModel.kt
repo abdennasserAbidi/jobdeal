@@ -1,14 +1,18 @@
 package com.example.myjob.feature.signup
 
+import android.content.Context
 import android.util.Log
 import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myjob.R
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.domain.entities.CategoryChoices
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.usecase.subscription.SaveUserUseCase
+import com.example.myjob.domain.usecase.verification.GetVerifiedCompanyUseCase
 import com.example.myjob.domain.usecase.verification.ValidateEmailUseCase
 import com.example.myjob.domain.usecase.verification.ValidateNameUseCase
 import com.example.myjob.domain.usecase.verification.ValidatePasswordUseCase
@@ -27,6 +31,7 @@ class SignUpViewModel @Inject constructor(
     private val validateNameUseCase: ValidateNameUseCase,
     private val validateEmailUseCase: ValidateEmailUseCase,
     private val validatePasswordUseCase: ValidatePasswordUseCase,
+    private val getVerifiedCompanyUseCase: GetVerifiedCompanyUseCase,
     private val saveUserUseCase: SaveUserUseCase,
     private val sharedPreferences: SharedPreference
 ) : ViewModel() {
@@ -39,6 +44,80 @@ class SignUpViewModel @Inject constructor(
     val isPasswordValid = MutableStateFlow(false)
     val isConfirmPasswordValid = MutableStateFlow(false)
     val saveUserRes = MutableStateFlow(LoginResponse())
+
+    ///////////////////////////////////////////////////////////////////////////
+    // FIRST ROLE
+    ///////////////////////////////////////////////////////////////////////////
+    val selectedCategory = MutableStateFlow(emptyList<CategoryChoices>())
+    val selectedCat = MutableStateFlow(listOf(false, false))
+    val selectedWorkPref = MutableStateFlow("")
+
+    fun changeSelectionCategory(context: Context, index: Int, title: String, isSelected: Boolean) {
+        val availability = selectedCategory.value.toMutableList()
+        availability[index].titleString = title
+        availability[index].isSelected = isSelected
+        selectedCategory.update {
+            availability
+        }
+
+        val selectedAvailabilities = selectedCat.value.toMutableList()
+        selectedAvailabilities[index] = isSelected
+        selectedCat.update {
+            selectedAvailabilities
+        }
+
+        val list = availability.filter { it.isSelected }.map { context.getString(it.title) }.toMutableList()
+        val workPref = if (list.isNotEmpty() && list.size > 1) list.joinToString(" & ")
+        else if (list.size == 1) list[0]
+        else ""
+
+        selectedWorkPref.update {
+            workPref
+        }
+
+        user.update {
+            it.preferredWorkType = list
+            it
+        }
+
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // SECOND ROLE
+    ///////////////////////////////////////////////////////////////////////////
+    val selectedSecondRole = MutableStateFlow(emptyList<CategoryChoices>())
+    val selectedRole = MutableStateFlow(listOf(false, false, false))
+    val selectedSecondWorkPref = MutableStateFlow("")
+
+    fun changeSelectionSecondRole(context: Context, index: Int, title: String, isSelected: Boolean) {
+        val availability = selectedSecondRole.value.toMutableList()
+        availability[index].titleString = title
+        availability[index].isSelected = isSelected
+        selectedSecondRole.update {
+            availability
+        }
+
+        val selectedAvailabilities = selectedRole.value.toMutableList()
+        selectedAvailabilities[index] = isSelected
+        selectedRole.update {
+            selectedAvailabilities
+        }
+
+        val l = availability.filter { it.isSelected }.map { context.getString(it.title) }.toMutableList()
+        val workPref = if (l.isNotEmpty() && l.size > 1) l.joinToString(" & ")
+        else if (l.size == 1) l[0]
+        else ""
+
+        selectedSecondWorkPref.update {
+            workPref
+        }
+
+        user.update {
+            it.workPreferences = l
+            it
+        }
+
+    }
 
     //sign in with gmail
     private val _state = MutableStateFlow(SignInState())
@@ -61,8 +140,7 @@ class SignUpViewModel @Inject constructor(
         isConfirmPasswordValid.update {
             password == input
         }
-        Log.i("isConfirmPasswordValid", "password: $password")
-        Log.i("isConfirmPasswordValid", "input: $input")
+
         return password == input
     }
     //it.role = "company"
@@ -187,9 +265,32 @@ class SignUpViewModel @Inject constructor(
                     Log.i("saveUserRes", "saveUser: ${GlobalEntries.user}")
                     token.update { sharedPreferences.getString("token", "") ?: "" }
 
+                    getCompaniesValidated()
+
                     saveUserRes.update { res.data ?: LoginResponse() }
                 } else if (res.status == ResourceState.ERROR) {
                     saveUserRes.update { LoginResponse(messageError = res.message) }
+                }
+            }
+        }
+    }
+
+    val listCompanies = MutableStateFlow(emptyList<String>())
+
+    private fun getCompaniesValidated() {
+        viewModelScope.launch {
+            getVerifiedCompanyUseCase.execute().collect { res ->
+                when (res.status) {
+                    ResourceState.SUCCESS -> {
+                        val list = res.data ?: emptyList()
+                        val l = list.toMutableList()
+                        val language = sharedPreferences.getString("lang", "English")
+                        if (language == "English" || language == "Anglais") l.add("Other")
+                        else l.add("Autres")
+                        listCompanies.update { l }
+                    }
+
+                    else -> {}
                 }
             }
         }
@@ -201,5 +302,22 @@ class SignUpViewModel @Inject constructor(
 
     init {
         getToken()
+
+        val listCategories = listOf(
+            CategoryChoices(title = R.string.type1_text, isSelected = false),
+            CategoryChoices(title = R.string.type2_text, isSelected = false)
+        )
+        selectedCategory.update {
+            listCategories
+        }
+
+        val listSecondRole = listOf(
+            CategoryChoices(title = R.string.intern_user_text, isSelected = false),
+            CategoryChoices(title = R.string.trainer_user_text, isSelected = false),
+            CategoryChoices(title = R.string.event_user_text, isSelected = false)
+        )
+        selectedSecondRole.update {
+            listSecondRole
+        }
     }
 }

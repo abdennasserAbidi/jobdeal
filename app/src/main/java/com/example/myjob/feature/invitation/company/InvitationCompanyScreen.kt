@@ -1,6 +1,5 @@
 package com.example.myjob.feature.invitation.company
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
@@ -24,15 +23,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,15 +47,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.ErrorMessage
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.userForCompany
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.common.view.CompanyInvitationCard
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
@@ -71,9 +72,9 @@ import com.example.myjob.feature.navigation.Screen
 @Composable
 fun InvitationCompanyScreen(
     navController: NavController,
+    changeIndexTab: () -> Unit,
     invitationViewModel: InvitationViewModel = hiltViewModel()
 ) {
-
 
     val invitations: LazyPagingItems<InvitationModel> =
         invitationViewModel.invitations.collectAsLazyPagingItems()
@@ -89,6 +90,13 @@ fun InvitationCompanyScreen(
     val choiceList by invitationViewModel.choiceList.collectAsState()
     val invitation by invitationViewModel.invitation.collectAsState()
     val interactionSource = remember { MutableInteractionSource() }
+
+    val lifecycle = rememberLifecycleEvent()
+    LaunchedEffect(lifecycle) {
+        if (lifecycle == Lifecycle.Event.ON_RESUME) {
+            changeIndexTab()
+        }
+    }
 
     if (openFinishProcess) {
         EnProcessForm(invitationModel,
@@ -122,7 +130,11 @@ fun InvitationCompanyScreen(
 
                 CompanyInvitationCard(
                     invitationModel = item,
-                    onClick = { },
+                    onClick = {
+                        GlobalEntries.idInvitation = item.idInvitation
+                        navController.navigate(Screen.NormalDetailInvitationScreen.route)
+                        //navController.navigate("${Screen.DetailInvitationScreen.route}/${item.idInvitation}")
+                    },
                     viewProfile = {
                         userForCompany = User()
                         userForCompany.id = it.idTo
@@ -209,25 +221,6 @@ fun InvitationCompanyScreen(
                     )
                 )
             }
-        }
-
-        FloatingActionButton(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 90.dp),
-            onClick = {
-                if (selected == 0)
-                    navController.navigate(Screen.HomeScreen.route)
-                else openAnnounceForm = true
-            },
-            containerColor = colorResource(id = R.color.whatsapp),
-            contentColor = Color.White
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Add,
-                tint = Color.White,
-                contentDescription = "Small floating action button."
-            )
         }
 
         AnimatedVisibility(

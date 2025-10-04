@@ -20,6 +20,7 @@ import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.notification.NotificationMessage
+import com.example.myjob.feature.validateprofile.StepStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -33,6 +34,7 @@ object GlobalEntries {
     var socket: CoroutineWebSocketClient? = null
     var idExp = 0
     var idStudy = 0
+    var idInvitation = 0
     var listIdToRemove = mutableListOf<Int>()
     var listIdAccepted = mutableListOf<Int>()
     var experience = Experience()
@@ -43,6 +45,8 @@ object GlobalEntries {
     var userCandidate = User()
     var userForCompany = User()
     var language = "Français"
+    var preferredRole = "Holding"
+    var preferredRoles = mutableListOf<String>()
     var notificationMessage = NotificationMessage()
     var role = ""
     var criteriaModel = CriteriaModel()
@@ -55,6 +59,7 @@ object GlobalEntries {
     var isHidden = derivedStateOf { !isVisibleNav.value }
     var langState = MutableStateFlow("Français")
     var languageShared = MutableSharedFlow<String>()
+    var stepShared = -1
 
     @RequiresApi(Build.VERSION_CODES.O)
     var start: ZonedDateTime = ZonedDateTime.parse("2018-04-06T16:01:00.000+03:00")

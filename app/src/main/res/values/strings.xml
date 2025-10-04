@@ -11,6 +11,8 @@
     <string name="error_email">Invalid email</string>
     <string name="error_password">Must contain uppercase and number</string>
     <string name="password_text">Password</string>
+    <string name="add_document_text">Add document</string>
+    <string name="registration_number_text">Registration Number</string>
     <string name="confirm_password_text">Confirm password</string>
     <string name="forgot_password_text">Forgot password?</string>
     <string name="login_text">Login</string>
@@ -145,6 +147,9 @@
     <string name="type1_text">Contract</string>
     <string name="type2_text">Freelance</string>
     <string name="type3_text">Both</string>
+    <string name="type_intern_text">Intern</string>
+    <string name="type_formation_text">Formation</string>
+    <string name="type_event_text">Event</string>
     <string name="contract_type_text">Contract type</string>
 
 
@@ -165,6 +170,8 @@
 
 
     <string name="salary_text">Salary</string>
+    <string name="duration_text">Duration</string>
+
     <string name="work_still_text">I\'m still in this role</string>
 
     <string name="companies_text">Companies</string>
@@ -223,6 +230,7 @@
     <string name="delete_all_text">Delete all</string>
 
     <string name="notification_text">Notifications</string>
+    <string name="validate_text">Validation</string>
     <string name="validate_profile_text">Validate your profile</string>
     <string name="terms_text">Terms and Conditions</string>
     <string name="confidentiality_text">Privacy Policy</string>
@@ -247,6 +255,16 @@
     <string name="send_text">Send</string>
 
 
+    <string name="intern_user_text">Intern</string>
+    <string name="trainer_user_text">Trainer</string>
+    <string name="event_user_text">Event handler</string>
+    <string name="event_candidate_text">Event</string>
+    <string name="all_user_text">ALL</string>
+
+    <string name="other_text">Other</string>
+
+
+
     <string name="reject_text">Reject</string>
     <string name="accept_text">Accept</string>
     <string name="in_process_text">In process</string>
@@ -257,5 +275,7 @@
     <string name="show_result_text">See results</string>
     <string name="refuse_text">the company rejected your candidature because :</string>
 
+    <string name="interview_text">Interview</string>
+    <string name="interview_validation_text">Enter your email address to receive an email for an interview</string>
 
 </resources>

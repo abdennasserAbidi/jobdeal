@@ -39,6 +39,7 @@ import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GenericMultipleSearch
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.candidateUser
+import com.example.myjob.common.GlobalEntries.preferredRole
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
 import com.example.myjob.common.rememberLifecycleEvent
@@ -62,11 +63,13 @@ fun CandidateListScreen(
     listSchools: MutableList<String>,
     listCountries: MutableList<String>,
     listCompany: MutableList<String>,
+    changeIndexTab: () -> Unit,
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val selectedFilter by remember { mutableStateOf(FilterType.ALL) }
     var showFilterSheet by remember { mutableStateOf(false) }
+    var pickOption by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
 
     val fcmToken by homeViewModel.fcmToken.collectAsState()
@@ -74,8 +77,8 @@ fun CandidateListScreen(
     val lifecycle = rememberLifecycleEvent()
     LaunchedEffect(lifecycle) {
         if (lifecycle == Lifecycle.Event.ON_RESUME) {
+            changeIndexTab()
             homeViewModel.getUserToken()
-            Log.i("rlekrgkjg", "CandidateListScreen: $fcmToken")
         }
     }
 
@@ -85,7 +88,8 @@ fun CandidateListScreen(
         }
     }
 
-    // Filter candidates based on search and filter
+    //TODO("for v2 we add collaboration type invitation")
+
     val filteredCandidates = candidates.filter { candidate ->
         val matchesSearch = candidate.name.contains(searchQuery, ignoreCase = true) ||
                 candidate.position.contains(searchQuery, ignoreCase = true) ||
@@ -94,10 +98,10 @@ fun CandidateListScreen(
 
         val matchesFilter = when (selectedFilter) {
             FilterType.ALL -> true
-            FilterType.AVAILABLE -> candidate.status == CandidateStatus.AVAILABLE
             FilterType.INTERVIEWING -> candidate.status == CandidateStatus.INTERVIEWING
             FilterType.HIRED -> candidate.status == CandidateStatus.HIRED
             FilterType.NOT_INTERESTED -> candidate.status == CandidateStatus.NOT_INTERESTED
+            else -> candidate.status == CandidateStatus.NOT_INTERESTED
         }
 
         matchesSearch && matchesFilter
@@ -117,6 +121,7 @@ fun CandidateListScreen(
     val selectedCat by homeViewModel.selectedParentChoices.collectAsState()
 
     val selectedCategories by homeViewModel.selectedCat.collectAsState()
+    val selectedRole by homeViewModel.selectedCategory.collectAsState()
     val selectedAvailability by homeViewModel.selectedAvailability.collectAsState()
     val selectedExp by homeViewModel.selectedExp.collectAsState()
     val selectedType by homeViewModel.selectedType.collectAsState()
@@ -139,6 +144,9 @@ fun CandidateListScreen(
 
     val contractText = stringResource(id = R.string.type1_text)
     val freelanceText = stringResource(id = R.string.type2_text)
+
+    val parentChoices = selectedRole.findLast { it.isSelected }?.title ?: R.string.holding
+    preferredRole = stringResource(id = parentChoices)
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
@@ -293,11 +301,11 @@ fun CandidateListScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Text(
+                /*Text(
                     text = "${filteredCandidates.size} candidates found",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                )*/
             }
 
             val lazyPagingItems = homeViewModel.user.collectAsLazyPagingItems()
@@ -329,13 +337,22 @@ fun CandidateListScreen(
 
                     CandidateCard(
                         candidate = candidate,
-                        onClick = { },
+                        onClick = {
+                            GlobalEntries.userForCompany = user
+                            navController.navigate(Screen.DetailScreen.route)
+                        },
                         onSendInvitation = {
 
                             candidateUser = user
                             navController.navigate(Screen.SendInvitationScreen.route)
                         }
                     )
+
+                    if (index >= lazyPagingItems.itemCount) {
+                        Spacer(modifier = Modifier.height(50.dp).fillMaxWidth())
+                    }
+
+                    Spacer(modifier = Modifier.height(50.dp).fillMaxWidth())
                 }
                 lazyPagingItems.apply {
                     when {
@@ -344,13 +361,15 @@ fun CandidateListScreen(
                         }
 
                         loadState.refresh is LoadState.Error -> {
-                            val error = lazyPagingItems.loadState.refresh as LoadState.Error
-                            item {
+                            //val error = lazyPagingItems.loadState.refresh as LoadState.Error
+                            val error = (loadState.refresh as? LoadState.Error)?.error
+
+                            /*item {
                                 ErrorMessage(
                                     modifier = Modifier.fillParentMaxSize(),
-                                    message = error.error.localizedMessage ?: "",
+                                    message = error?.localizedMessage ?: "",
                                     onClickRetry = { retry() })
-                            }
+                            }*/
                         }
 
                         loadState.append is LoadState.Loading -> {
@@ -358,23 +377,18 @@ fun CandidateListScreen(
                         }
 
                         loadState.append is LoadState.Error -> {
-                            val error = lazyPagingItems.loadState.append as LoadState.Error
-                            item {
+                            //val error = lazyPagingItems.loadState.append as LoadState.Error
+                            val error = (loadState.append as? LoadState.Error)?.error
+
+                            /*item {
                                 ErrorMessage(
                                     modifier = Modifier,
-                                    message = error.error.localizedMessage!!,
+                                    message = error?.localizedMessage?:"",
                                     onClickRetry = { retry() })
-                            }
+                            }*/
                         }
                     }
                 }
-
-                /*items(filteredCandidates) { candidate ->
-                    CandidateCard(
-                        candidate = candidate,
-                        onClick = {  }
-                    )
-                }*/
 
                 item {
                     Spacer(modifier = Modifier.height(16.dp))
@@ -511,6 +525,14 @@ fun CandidateListScreen(
                         else -> emptyList()
                     }
 
+                    LaunchedEffect(pickOption) {
+                        if (pickOption) {
+                            Log.i("hahiwachbiki", "CandidateListScreen: $criteria")
+                            homeViewModel.validateFilter(criteria)
+                            pickOption = false
+                        }
+                    }
+
 
                     GenericMultipleSearch(
                         mListOfJobs = listFilter,
@@ -521,9 +543,11 @@ fun CandidateListScreen(
                             GlobalEntries.isVisibleNav.update { true }
                         },
                         onSelectedBank = { list ->
+                            pickOption = true
                             filterOpen = false
                             showFilterSheet = false
                             GlobalEntries.isVisibleNav.update { true }
+                            //
 
                             when (itemRes) {
                                 R.string.institution_text -> homeViewModel.changeInstitutions(list)

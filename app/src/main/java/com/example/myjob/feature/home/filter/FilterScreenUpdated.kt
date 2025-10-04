@@ -304,9 +304,9 @@ fun FilterScreenUpdated(
             val categories by homeViewModel.selectedCategory.collectAsState()
             val selectedCat by homeViewModel.selectedCat.collectAsState()
 
-            flowHandling(categories, selectedCat) { index, title, isSelected ->
+            /*flowHandling(categories, selectedCat) { index, title, isSelected ->
                 homeViewModel.changeSelectionCategory(index, title, isSelected)
-            }
+            }*/
 
             ItemFilter(stringResource(id = R.string.experience_text), 20.dp) {
                 //clear all exp

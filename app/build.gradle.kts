@@ -183,4 +183,6 @@ dependencies {
 
     implementation ("com.github.NaikSoftware:StompProtocolAndroid:1.6.6")
 
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22") // Match your Kotlin version
+
 }

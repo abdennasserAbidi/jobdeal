@@ -8,6 +8,7 @@ import com.example.myjob.common.network.ApiResult
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
+import com.example.myjob.feature.validateprofile.ValidationProfileStatus
 import com.example.myjob.local.database.SharedPreference
 import com.example.myjob.remote.source.subscription.SubscriptionDataSource
 import kotlinx.coroutines.flow.Flow
@@ -70,6 +71,40 @@ class SubscriptionRepositoryImp @Inject constructor(
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.forgotPassword(email)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+    override suspend fun validateCandidateProfile(validationProfileStatus: ValidationProfileStatus): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.validateCandidateProfile(validationProfileStatus)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun statusCandidateValidation(id: Int): Flow<Resource<ValidationProfileStatus>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.statusCandidateValidation(id)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+    override suspend fun statusListCandidateValidation(id: Int): Flow<Resource<List<ValidationProfileStatus>>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.statusListCandidateValidation(id)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {

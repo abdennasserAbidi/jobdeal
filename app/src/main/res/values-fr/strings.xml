@@ -11,6 +11,8 @@
     <string name="sub_title_welcome">Connectez-vous à votre compte existant</string>
     <string name="error_email">Email est invalid</string>
     <string name="password_text">Mot de passe</string>
+    <string name="add_document_text">Ajouter document</string>
+    <string name="registration_number_text">Numéro de Registration</string>
     <string name="confirm_password_text">Confirmer mot de passe</string>
     <string name="error_password">Doit contenir des majuscules et des chiffres</string>
     <string name="forgot_password_text">Mot de passe oublié?</string>
@@ -141,6 +143,9 @@
     <string name="type1_text">Contrat</string>
     <string name="type2_text">Freelance</string>
     <string name="type3_text">Les deux</string>
+    <string name="type_intern_text">Stagiaire</string>
+    <string name="type_formation_text">Formation</string>
+    <string name="type_event_text">Evénnement</string>
     <string name="contract_type_text">Type du contrat</string>
 
     <string name="to_text">au</string>
@@ -158,6 +163,8 @@
     <string name="nb_day_text">Jours par semaine</string>
 
     <string name="salary_text">Salaire</string>
+    <string name="duration_text">Durée</string>
+
     <string name="work_still_text">Je suis toujours dans ce rôle</string>
     <string name="companies_text">Entreprises</string>
 
@@ -214,6 +221,7 @@
     <string name="delete_all_text">Tout supprimer</string>
 
     <string name="notification_text">Notifications</string>
+    <string name="validate_text">Validation</string>
     <string name="validate_profile_text">Valider votre profile</string>
     <string name="terms_text">Termes et conditions</string>
     <string name="confidentiality_text">Politique de Confidentialité</string>
@@ -235,6 +243,13 @@
     <string name="post_type_text">Type du post</string>
     <string name="send_text">Envoyer</string>
 
+    <string name="intern_user_text">Stagiaire</string>
+    <string name="trainer_user_text">Formateur</string>
+    <string name="event_user_text">Organisateur</string>
+    <string name="event_candidate_text">Evènnement</string>
+    <string name="all_user_text">Tous</string>
+
+
     <string name="reject_text">Refuser</string>
     <string name="accept_text">Accepter</string>
     <string name="in_process_text">In process</string>
@@ -245,6 +260,8 @@
     <string name="hire_text">L\'entreprise vous a embauché</string>
     <string name="refuse_text">L\'entreprise a rejeté votre candidature car :</string>
 
-
+    <string name="other_text">Autres</string>
+    <string name="interview_text">Entretien</string>
+    <string name="interview_validation_text">Entrez votre adresse mail pour recevoir un email pour un entretien</string>
 
 </resources>

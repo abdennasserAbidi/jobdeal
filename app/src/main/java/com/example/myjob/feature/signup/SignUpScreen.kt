@@ -5,8 +5,11 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -19,21 +22,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -44,19 +48,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,13 +67,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.NavController
 import com.example.myjob.R
+import com.example.myjob.base.MyApp
 import com.example.myjob.common.CustomDialog
-import com.example.myjob.common.tablayout.CustomTab
+import com.example.myjob.feature.home.filter.flowHandling
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
+import com.example.myjob.feature.profile.test.CustomRectangleTab
+import com.example.myjob.feature.profile.test.FormTextField
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,6 +92,25 @@ fun SignUpScreen(
     val interactionSource = remember { MutableInteractionSource() }
 
     val context = LocalContext.current
+
+    val density = LocalDensity.current
+    val screenHeight = with(density) {
+        LocalConfiguration.current.screenHeightDp.dp.toPx().toInt()
+    }
+
+    var typeUserOpen by remember { mutableStateOf(false) }
+    var roleWorkOpen by remember { mutableStateOf(false) }
+    var secondRoleWorkOpen by remember { mutableStateOf(false) }
+
+    var preferenceWorkOpen by remember { mutableStateOf(false) }
+
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
+    val selectedCategories by viewModel.selectedCat.collectAsState()
+
+    val selectedSecondRole by viewModel.selectedSecondRole.collectAsState()
+    val selectedRole by viewModel.selectedRole.collectAsState()
+
+
     val isSamePassword by viewModel.confirmPassword.collectAsState()
     val isFirstNameValid by viewModel.isFirstNameValid.collectAsState()
     val isLastNameValid by viewModel.isLastNameValid.collectAsState()
@@ -94,6 +120,7 @@ fun SignUpScreen(
     val isCompanyNameValid by viewModel.isCompanyNameValid.collectAsState()
 
     var selectedIndex by remember { mutableStateOf(0) }
+    var selectedType by remember { mutableStateOf("") }
 
     var activatedCheckCompanyName by remember { mutableStateOf(false) }
     var activatedCheckEmail by remember { mutableStateOf(false) }
@@ -130,7 +157,16 @@ fun SignUpScreen(
 
     var error by remember { mutableStateOf("") }
 
-    Log.i("saveUserRes", "SignUpScreen: ${saveUserRes.token}")
+    var itemRes by remember { mutableStateOf("") }
+
+    val listCompanies by viewModel.listCompanies.collectAsState()
+
+    val app = context.applicationContext as MyApp
+    LaunchedEffect(listCompanies) {
+        app.listCompanies.removeLast()
+        if (!app.listCompanies.containsAll(listCompanies)) app.listCompanies.addAll(listCompanies)
+    }
+
     LaunchedEffect(saveUserRes.token?.isNotEmpty()) {
         isProgressing = false
         if (saveUserRes.token?.isNotEmpty() == true) navController.navigate(Screen.HomeScreen.route)
@@ -231,21 +267,7 @@ fun SignUpScreen(
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(50.dp))
-
-                    /*CustomDropdownMenu(
-                        list = listOf(
-                            stringResource(id = R.string.choose_companies_text),
-                            stringResource(id = R.string.choose_candidate_text)
-                        ),
-                        defaultSelected = user.role ?: "",
-                        color = if (activatedCheck && selectedIndex == -1) Red else colorResource(id = R.color.whatsapp),
-                        onSelected = {
-                            selectedIndex = it
-                            viewModel.changeRole(if (it == 0) "Company" else "Candidate")
-                        },
-                        modifier = Modifier.padding(top = 10.dp)
-                    )*/
+                    Spacer(modifier = Modifier.height(30.dp))
 
                     val listRole = listOf(
                         stringResource(id = R.string.choose_companies_text),
@@ -259,7 +281,7 @@ fun SignUpScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        CustomTab(
+                        CustomRectangleTab(
                             items = listRole,
                             modifier = Modifier.padding(top = 10.dp, start = 10.dp),
                             selectedItemIndex = selectedIndex,
@@ -273,41 +295,21 @@ fun SignUpScreen(
                 }
 
                 if (selectedIndex == 1) {
-                    Text(
-                        text = stringResource(id = R.string.first_name_text),
-                        modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                        style = TextStyle(
-                            color = colorResource(id = R.color.whatsapp),
-                            fontFamily = FontFamily.Default,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
 
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 10.dp)
-                            .border(
-                                width = 1.dp,
-                                color = if (activatedCheckFirstName && !submitEnabled) Red else colorResource(
-                                    id = R.color.whatsapp
-                                ),
-                                shape = RoundedCornerShape(30.dp)
-                            )
-                            .clip(shape = RoundedCornerShape(30.dp)),
-                        colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
+
+                    FormTextField(
                         value = userFirstName,
                         onValueChange = {
                             userFirstName = it
                             if (activatedCheckFirstName) viewModel.validateFirstName(it)
                             viewModel.changeUserFirstName(it)
                         },
-                        textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                        label = stringResource(id = R.string.first_name_text),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 20.dp),
+                        isRequired = true
                     )
 
                     if (activatedCheckFirstName) {
@@ -321,41 +323,19 @@ fun SignUpScreen(
                         }
                     }
 
-                    Text(
-                        text = stringResource(id = R.string.last_name_text),
-                        modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                        style = TextStyle(
-                            color = colorResource(id = R.color.whatsapp),
-                            fontFamily = FontFamily.Default,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 10.dp)
-                            .border(
-                                width = 1.dp,
-                                color = if (activatedCheckLastName && !lastNameVerified) Red else colorResource(
-                                    id = R.color.whatsapp
-                                ),
-                                shape = RoundedCornerShape(30.dp)
-                            )
-                            .clip(shape = RoundedCornerShape(30.dp)),
-                        colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
+                    FormTextField(
                         value = userLastName,
                         onValueChange = {
                             userLastName = it
                             if (activatedCheckLastName) viewModel.validateLastName(it)
                             viewModel.changeUserLastName(it)
                         },
-                        textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                        label = stringResource(id = R.string.last_name_text),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 20.dp),
+                        isRequired = true
                     )
 
                     if (activatedCheckLastName) {
@@ -369,49 +349,56 @@ fun SignUpScreen(
                             )
                         }
                     }
-                } else if (selectedIndex == 0) {
-                    //company
-                    Text(
-                        text = stringResource(id = R.string.company_name_text),
-                        modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                        style = TextStyle(
-                            color = colorResource(id = R.color.whatsapp),
-                            fontFamily = FontFamily.Default,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
 
-                    TextField(
+                    val selectedWorkPref by viewModel.selectedWorkPref.collectAsState()
+
+                    ExposedDropdownMenuBox(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 20.dp)
-                            .padding(top = 10.dp)
-                            .border(
-                                width = 1.dp,
-                                color = if (activatedCheckCompanyName && !companyNameVerified) Red else colorResource(
-                                    id = R.color.whatsapp
-                                ),
-                                shape = RoundedCornerShape(30.dp)
+                            .padding(top = 20.dp),
+                        expanded = roleWorkOpen,
+                        onExpandedChange = {
+                            roleWorkOpen = !roleWorkOpen
+                        }
+                    ) {
+
+                        OutlinedTextField(
+                            value = selectedWorkPref,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Select work preference") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = roleWorkOpen) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = colorResource(id = R.color.whatsapp),
+                                focusedLabelColor = colorResource(id = R.color.whatsapp)
                             )
-                            .clip(shape = RoundedCornerShape(30.dp)),
-                        colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
+                        )
+                    }
+
+                } else if (selectedIndex == 0) {
+                    //company
+                    FormTextField(
                         value = companyName,
                         onValueChange = {
                             companyName = it
                             if (activatedCheckCompanyName) viewModel.validateCompanyName(it)
                             viewModel.changeCompanyName(it)
                         },
-                        textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                        label = stringResource(id = R.string.company_name_text),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 20.dp),
+                        isRequired = true
                     )
 
                     if (activatedCheckCompanyName) {
                         if (companyName.isEmpty() || !companyNameVerified) {
-                            Log.i("submitEnabled", "SignUpScreen: $companyNameVerified")
-
                             Text(
                                 modifier = Modifier.padding(top = 5.dp, start = 20.dp),
                                 text = if (companyNameVerified) "" else stringResource(id = R.string.company_name_error),
@@ -421,41 +408,19 @@ fun SignUpScreen(
                     }
                 }
 
-                Text(
-                    text = "Email",
-                    modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                    style = TextStyle(
-                        color = colorResource(id = R.color.whatsapp),
-                        fontFamily = FontFamily.Default,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-
-                TextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 10.dp)
-                        .border(
-                            width = 1.dp,
-                            color = if (activatedCheckEmail && !emailVerified) Red else colorResource(
-                                id = R.color.whatsapp
-                            ),
-                            shape = RoundedCornerShape(30.dp)
-                        )
-                        .clip(shape = RoundedCornerShape(30.dp)),
-                    colors = TextFieldDefaults.textFieldColors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
+                FormTextField(
                     value = email,
                     onValueChange = {
                         email = it
                         if (activatedCheckEmail) viewModel.validateEmail(it)
                         viewModel.changeUserEmail(it)
                     },
-                    textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                    label = "Email",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 20.dp),
+                    isRequired = true
                 )
 
                 if (activatedCheckEmail) {
@@ -470,63 +435,21 @@ fun SignUpScreen(
                     }
                 }
 
-                Text(
-                    text = stringResource(id = R.string.password_text),
-                    modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                    style = TextStyle(
-                        color = colorResource(id = R.color.whatsapp),
-                        fontFamily = FontFamily.Default,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-
-                var showPassword by remember { mutableStateOf(false) }
-                Log.i("ehghrehgjrzlgz", "validatePassword: $activatedCheckPassword")
-                TextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 10.dp)
-                        .border(
-                            width = 1.dp,
-                            color = if (activatedCheckPassword && !passwordVerified) Red else colorResource(
-                                id = R.color.whatsapp
-                            ),
-                            shape = RoundedCornerShape(30.dp)
-                        )
-                        .clip(shape = RoundedCornerShape(30.dp)),
-                    colors = TextFieldDefaults.textFieldColors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
+                FormTextField(
                     value = password,
                     onValueChange = {
                         password = it
                         if (activatedCheckPassword) viewModel.validatePassword(it)
                         viewModel.changeUserPassword(it)
                     },
-                    visualTransformation = if (showPassword) {
-                        VisualTransformation.None
-                    } else {
-                        PasswordVisualTransformation()
-                    }, trailingIcon = {
-                        if (showPassword) {
-                            IconButton(onClick = { showPassword = false }) {
-                                Icon(imageVector = Icons.Filled.Visibility, contentDescription = "")
-                            }
-                        } else {
-                            IconButton(onClick = { showPassword = true }) {
-                                Icon(
-                                    imageVector = Icons.Filled.VisibilityOff,
-                                    contentDescription = ""
-                                )
-                            }
-                        }
-                    },
-                    textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                    label = stringResource(id = R.string.password_text),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 20.dp),
+                    isRequired = true,
+                    isPassword = true
                 )
-                Log.i("passwordVerified", "SignUpScreen: $passwordVerified")
 
                 if (activatedCheckPassword) {
                     if (password.isEmpty() || !passwordVerified) {
@@ -539,60 +462,23 @@ fun SignUpScreen(
                     }
                 }
 
-                Text(
-                    text = stringResource(id = R.string.confirm_password_text),
-                    modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                    style = TextStyle(
-                        color = colorResource(id = R.color.whatsapp),
-                        fontFamily = FontFamily.Default,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-                var showConfirmPassword by remember { mutableStateOf(false) }
-
-                TextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 10.dp)
-                        .border(
-                            width = 1.dp,
-                            color = if (activatedCheckConfirmPassword && !confirmPasswordVerified) Red else colorResource(
-                                id = R.color.whatsapp
-                            ),
-                            shape = RoundedCornerShape(30.dp)
-                        )
-                        .clip(shape = RoundedCornerShape(30.dp)),
-                    colors = TextFieldDefaults.textFieldColors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
+                FormTextField(
                     value = confirmPassword,
                     onValueChange = {
                         confirmPassword = it
                         viewModel.confirmPassword(it)
-                        if(activatedCheckConfirmPassword) viewModel.checkConfirmPassword(password, confirmPassword)
+                        if (activatedCheckConfirmPassword) viewModel.checkConfirmPassword(
+                            password,
+                            confirmPassword
+                        )
                     },
-                    visualTransformation = if (showConfirmPassword) {
-                        VisualTransformation.None
-                    } else {
-                        PasswordVisualTransformation()
-                    }, trailingIcon = {
-                        if (showConfirmPassword) {
-                            IconButton(onClick = { showConfirmPassword = false }) {
-                                Icon(imageVector = Icons.Filled.Visibility, contentDescription = "")
-                            }
-                        } else {
-                            IconButton(onClick = { showConfirmPassword = true }) {
-                                Icon(
-                                    imageVector = Icons.Filled.VisibilityOff,
-                                    contentDescription = ""
-                                )
-                            }
-                        }
-                    },
-                    textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                    label = stringResource(id = R.string.confirm_password_text),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 20.dp),
+                    isRequired = true,
+                    isPassword = true
                 )
 
                 if (activatedCheckConfirmPassword) {
@@ -613,69 +499,59 @@ fun SignUpScreen(
                         .padding(top = 20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                            .padding(top = 10.dp)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                val checkAll = if (selectedIndex == 0) {
-                                    val companyNameValidator =
-                                        viewModel.validateCompanyName(companyName)
-                                    if (!companyNameValidator) activatedCheckCompanyName = true
-                                    companyNameValidator
-                                } else {
-                                    val firstNameValidator =
-                                        viewModel.validateFirstName(userFirstName)
-                                    val lastNameValidator =
-                                        viewModel.validateLastName(userLastName)
+                    Button(
+                        onClick = {
+                            val checkAll = if (selectedIndex == 0) {
+                                val companyNameValidator =
+                                    viewModel.validateCompanyName(companyName)
+                                if (!companyNameValidator) activatedCheckCompanyName = true
+                                companyNameValidator
+                            } else {
+                                val firstNameValidator =
+                                    viewModel.validateFirstName(userFirstName)
+                                val lastNameValidator =
+                                    viewModel.validateLastName(userLastName)
 
-                                    if (!firstNameValidator) activatedCheckFirstName = true
-                                    if (!lastNameValidator) activatedCheckLastName = true
+                                if (!firstNameValidator) activatedCheckFirstName = true
+                                if (!lastNameValidator) activatedCheckLastName = true
 
-                                    firstNameValidator && firstNameValidator
-                                }
+                                firstNameValidator && lastNameValidator
+                            }
 
-                                val emailValidator = viewModel.validateEmail(email)
-                                val passwordValidator = viewModel.validatePassword(password)
-                                val confirmValidator =
-                                    viewModel.checkConfirmPassword(password, confirmPassword)
+                            val emailValidator = viewModel.validateEmail(email)
+                            val passwordValidator = viewModel.validatePassword(password)
+                            val confirmValidator =
+                                viewModel.checkConfirmPassword(password, confirmPassword)
 
-                                val localCheck = when (selectedIndex) {
-                                    1 -> !submitEnabled || !lastNameVerified || !emailVerified || !passwordVerified || !confirmPasswordVerified
-                                    0 -> !companyNameVerified || !emailVerified || !passwordVerified || !confirmPasswordVerified
-                                    else -> true
-                                }
+                            val localCheck = when (selectedIndex) {
+                                1 -> !submitEnabled || !lastNameVerified || !emailVerified || !passwordVerified || !confirmPasswordVerified
+                                0 -> !companyNameVerified || !emailVerified || !passwordVerified || !confirmPasswordVerified
+                                else -> true
+                            }
 
-                                if (!emailValidator) activatedCheckEmail = true
-                                if (!passwordValidator) activatedCheckPassword = true
-                                if (!confirmValidator) activatedCheckConfirmPassword = true
+                            if (!emailValidator) activatedCheckEmail = true
+                            if (!passwordValidator) activatedCheckPassword = true
+                            if (!confirmValidator) activatedCheckConfirmPassword = true
 
-                                if (checkAll && emailValidator && passwordValidator && confirmValidator) {
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        isProgressing = true
-                                        delay(1000L)
-                                        viewModel.saveUser(user)
-                                    }
+                            if (checkAll && emailValidator && passwordValidator && confirmValidator) {
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    isProgressing = true
+                                    delay(1000L)
+                                    viewModel.saveUser(user)
                                 }
                             }
-                            .background(
-                                color = colorResource(id = R.color.whatsapp),
-                                shape = RoundedCornerShape(30.dp)
-                            ),
-                        contentAlignment = Alignment.Center
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth(0.9f)
+                            .padding(top = 20.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorResource(id = R.color.whatsapp)
+                        )
                     ) {
                         Text(
-                            text = stringResource(id = R.string.create_new_account_text),
-                            modifier = Modifier.padding(vertical = 20.dp),
-                            style = TextStyle(
-                                color = Color.White,
-                                fontFamily = FontFamily.Default,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            stringResource(id = R.string.create_new_account_text),
+                            modifier = Modifier.padding(vertical = 10.dp)
                         )
                     }
 
@@ -732,6 +608,183 @@ fun SignUpScreen(
                                 strokeWidth = 8.dp,
                                 trackColor = Color.LightGray,
                                 strokeCap = StrokeCap.Round
+                            )
+                        }
+                    }
+                }
+            }
+
+            AnimatedVisibility(
+                visible = roleWorkOpen,
+                enter = slideInVertically(
+                    initialOffsetY = { it }, // Slide from below the screen
+                    animationSpec = tween(durationMillis = 600) // Set animation duration
+                ),
+                exit = slideOutVertically(
+                    targetOffsetY = { it }, // Slide out upwards
+                    animationSpec = tween(durationMillis = 600) // Set animation duration
+                ),
+                modifier = Modifier.align(Alignment.BottomCenter)
+            ) {
+
+                val height = screenHeight / 2
+                val heightDp = with(density) { height.toDp() }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(heightDp),
+                    shape = RoundedCornerShape(10.dp),
+                    elevation = 15.dp
+                ) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.TopCenter),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+
+                            Text(
+                                modifier = Modifier
+                                    .height(2.dp)
+                                    .width(70.dp)
+                                    .padding(top = 20.dp)
+                                    .background(Red, RoundedCornerShape(20.dp)),
+                                text = ""
+                            )
+
+                            Text(
+                                text = "Select work preference",
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(top = 30.dp, bottom = 20.dp)
+                            )
+
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                thickness = 1.dp
+                            )
+
+                            flowHandling(selectedCategory, selectedCategories) { index, title, isSelected ->
+                                viewModel.changeSelectionCategory(context, index, title, isSelected)
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .padding(bottom = 20.dp)
+                                .fillMaxWidth(0.8f)
+                                .align(Alignment.BottomCenter)
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    roleWorkOpen = false
+
+                                }
+                                .background(
+                                    color = colorResource(id = R.color.whatsapp),
+                                    RoundedCornerShape(30.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Validate",
+                                color = Color.White,
+                                style = TextStyle(fontWeight = FontWeight.Bold),
+                                modifier = Modifier.padding(vertical = 20.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+
+            AnimatedVisibility(
+                visible = secondRoleWorkOpen,
+                enter = slideInVertically(
+                    initialOffsetY = { it }, // Slide from below the screen
+                    animationSpec = tween(durationMillis = 600) // Set animation duration
+                ),
+                exit = slideOutVertically(
+                    targetOffsetY = { it }, // Slide out upwards
+                    animationSpec = tween(durationMillis = 600) // Set animation duration
+                ),
+                modifier = Modifier.align(Alignment.BottomCenter)
+            ) {
+
+                val height = screenHeight / 2
+                val heightDp = with(density) { height.toDp() }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(heightDp),
+                    shape = RoundedCornerShape(10.dp),
+                    elevation = 15.dp
+                ) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.TopCenter),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+
+                            Text(
+                                modifier = Modifier
+                                    .height(2.dp)
+                                    .width(70.dp)
+                                    .padding(top = 20.dp)
+                                    .background(Red, RoundedCornerShape(20.dp)),
+                                text = ""
+                            )
+
+                            Text(
+                                text = "Select work preference",
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(top = 30.dp, bottom = 20.dp)
+                            )
+
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                thickness = 1.dp
+                            )
+
+                            flowHandling(selectedSecondRole, selectedRole) { index, title, isSelected ->
+                                viewModel.changeSelectionSecondRole(context, index, title, isSelected)
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .padding(bottom = 20.dp)
+                                .fillMaxWidth(0.8f)
+                                .align(Alignment.BottomCenter)
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    secondRoleWorkOpen = false
+
+                                }
+                                .background(
+                                    color = colorResource(id = R.color.whatsapp),
+                                    RoundedCornerShape(30.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Validate",
+                                color = Color.White,
+                                style = TextStyle(fontWeight = FontWeight.Bold),
+                                modifier = Modifier.padding(vertical = 20.dp)
                             )
                         }
                     }

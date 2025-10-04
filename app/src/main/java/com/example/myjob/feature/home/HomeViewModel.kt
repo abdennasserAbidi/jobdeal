@@ -1,6 +1,5 @@
 package com.example.myjob.feature.home
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -30,6 +29,7 @@ import com.example.myjob.domain.entities.notification.NotificationMessage
 import com.example.myjob.domain.usecase.home.GetAllUserUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.domain.usecase.home.SaveToFavoriteUseCase
+import com.example.myjob.domain.usecase.invitation.GetAllInvitationsUseCase
 import com.example.myjob.domain.usecase.invitation.SendInvitationUseCase
 import com.example.myjob.domain.usecase.notification.SendNotificationsUseCase
 import com.example.myjob.domain.usecase.notification.UpdateTokenUseCase
@@ -38,6 +38,7 @@ import com.example.myjob.domain.usecase.search.SearchUserUseCase
 import com.example.myjob.local.database.SharedPreference
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -61,8 +62,32 @@ class HomeViewModel @Inject constructor(
     private val saveToFavoriteUseCase: SaveToFavoriteUseCase,
     private val searchUserUseCase: SearchUserUseCase,
     private val getUserUseCase: GetUserUseCase,
-    private val getFilteredUserUseCase: GetFilteredUserUseCase
+    private val getFilteredUserUseCase: GetFilteredUserUseCase,
+    private val getAllInvitationsUseCase: GetAllInvitationsUseCase,
 ) : ViewModel() {
+
+    private val _invitations: MutableStateFlow<PagingData<InvitationModel>> =
+        MutableStateFlow(value = PagingData.empty())
+    val invitations: MutableStateFlow<PagingData<InvitationModel>> get() = _invitations
+
+    private fun getInvitations() {
+        viewModelScope.launch {
+            val idUser = sharedPreference.getInt("idUser", -1)
+            getAllInvitationsUseCase.execute(idUser).collect { res ->
+                when (res.status) {
+                    ResourceState.SUCCESS -> {
+                        _invitations.update {
+                            res.data ?: PagingData.empty()
+                        }
+                    }
+                    else -> {
+
+                    }
+                }
+
+            }
+        }
+    }
 
     val listTypeContract = MutableStateFlow(emptyList<String>())
     fun addToList(itemOne: String, itemTwo: String) {
@@ -704,12 +729,14 @@ class HomeViewModel @Inject constructor(
             it
         }
     }
+
     fun changeTgm(name: String) {
         invitationParam.update {
             it.tgm = name
             it
         }
     }
+
     fun changeNbDays(name: String) {
         invitationParam.update {
             it.nbDaysPerWeek = name
@@ -718,6 +745,25 @@ class HomeViewModel @Inject constructor(
     }
 
     val loadingState = MutableStateFlow(false)
+
+    fun changeContractWork(name: String) {
+        invitationParam.update {
+            it.nameContract = name
+            it
+        }
+    }
+
+    fun changeSecondContractWork(name: String) {
+        invitationParam.update {
+            it.nameSecondContract = name
+            it
+        }
+    }
+
+    val durationMission = MutableStateFlow("")
+    fun changeDuration(duration: String) {
+        durationMission.update { duration }
+    }
 
     fun matchCurrentProfile(user: User, status: String, descriptionContract: String) {
         val currentDate = Date()
@@ -733,6 +779,11 @@ class HomeViewModel @Inject constructor(
             it.date = formattedDate
             it.status = status
             it.descriptionContract = descriptionContract
+
+            if (it.nameContract == "AUTRE") {
+                it.nameContract = it.nameSecondContract
+            }
+
             it
         }
         val invitationParams = InvitationParams(
@@ -893,10 +944,10 @@ class HomeViewModel @Inject constructor(
         langState.update { lang }
 
         val listParent = listOf(
+            ParentChoices(title = R.string.employment_type_text, isSelected = false),
             ParentChoices(title = R.string.categories_text, isSelected = false),
             ParentChoices(title = R.string.experience_text, isSelected = false),
             ParentChoices(title = R.string.disponibility_text, isSelected = false),
-            ParentChoices(title = R.string.employment_type_text, isSelected = false),
             ParentChoices(title = R.string.situation_text, isSelected = false),
             ParentChoices(title = R.string.sexe_text, isSelected = false),
             ParentChoices(title = R.string.activity_text, isSelected = false),
@@ -974,6 +1025,9 @@ class HomeViewModel @Inject constructor(
             listSex
         }
 
+        /*CategoryChoices(title = R.string.type_intern_text, isSelected = false),
+            CategoryChoices(title = R.string.type_formation_text, isSelected = false),
+            CategoryChoices(title = R.string.type_event_text, isSelected = false)*/
         val listCategories = listOf(
             CategoryChoices(title = R.string.type1_text, isSelected = false),
             CategoryChoices(title = R.string.type2_text, isSelected = false)
@@ -982,6 +1036,7 @@ class HomeViewModel @Inject constructor(
             listCategories
         }
 
+        getInvitations()
     }
 
     fun logout() {

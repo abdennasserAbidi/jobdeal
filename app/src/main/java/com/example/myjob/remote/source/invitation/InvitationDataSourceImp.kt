@@ -1,8 +1,11 @@
 package com.example.myjob.remote.source.invitation
 
 import com.example.myjob.base.GenericResponse
+import com.example.myjob.domain.entities.InvitationFilter
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
+import com.example.myjob.domain.entities.invitation.InvitationResponse
+import com.example.myjob.domain.entities.invitation.InvitationUser
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.remote.api.ApiService
 import javax.inject.Inject
@@ -23,10 +26,21 @@ class InvitationDataSourceImp @Inject constructor(
         pageNumber: Int
     ): GenericResponse<InvitationModel> = apiService.getInvitations(id, pageNumber)
 
+    override suspend fun getInvitationsByTag(
+        id: Int,
+        pageNumber: Int
+    ): GenericResponse<InvitationModel> = apiService.getInvitationsByTag(id, pageNumber)
+
     override suspend fun getInvitationDetail(
         id: Int,
         idInvitation: Int
-    ): InvitationModel = apiService.getInvitationDetail(id, idInvitation)
+    ): InvitationUser = apiService.getInvitationDetail(id, idInvitation)
+
+    override suspend fun getFilteredInvitations(
+        invitationFiltered: InvitationFilter,
+        pageNumber: Int
+    ): GenericResponse<InvitationModel> =
+        apiService.getFilteredInvitations(invitationFiltered, pageNumber)
 
     override suspend fun sendInvitation(invitationParams: InvitationParams): UserResponse =
         apiService.sendInvitation(invitationParams)

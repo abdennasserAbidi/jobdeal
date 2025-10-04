@@ -266,20 +266,22 @@ fun SettingScreen(
 
 
                                     val color = colorResource(id = R.color.whatsapp)
-                                    Box(
-                                        modifier = Modifier
-                                            .size(20.dp)
-                                            .align(Alignment.CenterEnd)
-                                            .background(color = color, shape = CircleShape),
-                                        contentAlignment = Alignment.Center
-                                    ) {
+                                    if (GlobalEntries.user.isVerified != null && GlobalEntries.user.isVerified == true) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(20.dp)
+                                                .align(Alignment.CenterEnd)
+                                                .background(color = color, shape = CircleShape),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            //TODO("add with label vérifié")
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_settings_privacy),
+                                                tint = Color.White,
+                                                contentDescription = ""
+                                            )
 
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.ic_settings_privacy),
-                                            tint = Color.White,
-                                            contentDescription = ""
-                                        )
-
+                                        }
                                     }
                                 } else {
                                     Column(
@@ -495,7 +497,13 @@ fun SettingScreen(
                                     ) {
                                         when (index) {
                                             0 -> navController.navigate(Screen.NotificationCompanyScreen.route)
+                                            1 -> {
 
+                                                if (role == "Candidate" || role == "Candidat")
+                                                    navController.navigate(Screen.ValidateProfileCandidateScreen.route)
+                                                else navController.navigate(Screen.ValidateProfileCompanyScreen.route)
+
+                                            }
                                             4 -> {
                                                 if (role == "Candidate" || role == "Candidat") {
                                                     isFromSettings = true

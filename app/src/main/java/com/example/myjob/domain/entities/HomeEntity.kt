@@ -15,10 +15,11 @@ val HOME_ENTITY = listOf(
         R.string.navigate_invitations_text,
         icon = R.drawable.invitationproject
     ),
+
     HomeEntity(
-        R.string.career_text,
-        R.string.navigate_career_text,
-        icon = R.drawable.invitationproject
+        R.string.validate_text,
+        R.string.validate_profile_text,
+        icon = R.drawable.ic_settings_privacy
     ),
     HomeEntity(
         R.string.setting_text,
