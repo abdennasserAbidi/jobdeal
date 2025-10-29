@@ -11,30 +11,37 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.example.myjob.R
 import com.example.myjob.base.JsonPagingSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.FileReader
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.domain.entities.CandidateSkills
 import com.example.myjob.domain.entities.DEFAULT_DEGREE
 import com.example.myjob.domain.entities.DEFAULT_ROLE
 import com.example.myjob.domain.entities.DEFAULT_TYPE
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.NewCountry
+import com.example.myjob.domain.entities.ProfessionalStatus
 import com.example.myjob.domain.entities.User
-import com.example.myjob.domain.usecase.profile.GetAllEducationUseCase
-import com.example.myjob.domain.usecase.profile.GetAllExperienceUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
+import com.example.myjob.domain.usecase.home.UploadCVUseCase
+import com.example.myjob.domain.usecase.home.VerifyExistingFileUseCase
+import com.example.myjob.domain.usecase.profile.GetAllEducUseCase
+import com.example.myjob.domain.usecase.profile.GetAllEducationUseCase
+import com.example.myjob.domain.usecase.profile.GetAllExpUseCase
+import com.example.myjob.domain.usecase.profile.GetAllExperienceUseCase
 import com.example.myjob.domain.usecase.profile.RemoveEducationUseCase
 import com.example.myjob.domain.usecase.profile.RemoveExperienceUseCase
 import com.example.myjob.domain.usecase.profile.SaveEducationUseCase
 import com.example.myjob.domain.usecase.profile.SaveExperienceUseCase
 import com.example.myjob.domain.usecase.profile.SavePersonalUseCase
-import com.example.myjob.domain.usecase.home.UploadCVUseCase
-import com.example.myjob.domain.usecase.home.VerifyExistingFileUseCase
-import com.example.myjob.domain.usecase.profile.GetAllEducUseCase
-import com.example.myjob.domain.usecase.profile.GetAllExpUseCase
+import com.example.myjob.domain.usecase.profile.SaveProfessionalInfoUseCase
+import com.example.myjob.domain.usecase.profile.SaveSkillsUseCase
+import com.example.myjob.domain.usecase.profile.UpdateCandidateCompleteUseCase
+import com.example.myjob.feature.profile.test.LanguageForm
 import com.example.myjob.local.database.SharedPreference
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -64,6 +71,9 @@ class ProfileViewModel @Inject constructor(
     private val saveEducationUseCase: SaveEducationUseCase,
     private val getAllEducationUseCase: GetAllEducationUseCase,
     private val savePersonalUseCase: SavePersonalUseCase,
+    private val saveProfessionalInfoUseCase: SaveProfessionalInfoUseCase,
+    private val saveSkillsUseCase: SaveSkillsUseCase,
+    private val updateCandidateCompleteUseCase: UpdateCandidateCompleteUseCase,
     private val getUserUseCase: GetUserUseCase,
     private val removeExperienceUseCase: RemoveExperienceUseCase,
     private val removeEducationUseCase: RemoveEducationUseCase,
@@ -113,8 +123,6 @@ class ProfileViewModel @Inject constructor(
             uploadCVUseCase.execute(multipartBody).collect { res ->
                 when (res.status) {
                     ResourceState.SUCCESS -> {
-                        Log.i("lktrdgvtd", "uploadCV: ${res.data}")
-
                         uploadMessage.update {
                             res.data ?: ""
                         }
@@ -249,7 +257,13 @@ class ProfileViewModel @Inject constructor(
 
     val roles = MutableStateFlow(DEFAULT_ROLE)
 
-    val user = MutableStateFlow(User(id = sharedPreference.getInt("idUser", 0)))
+    val user = MutableStateFlow(
+        User(
+            id = sharedPreference.getInt("idUser", 0),
+            professionalStatus = ProfessionalStatus(),
+            candidateSkills = CandidateSkills()
+        )
+    )
 
     var withPersonalDetail = MutableStateFlow(user.value.showUser(lang).isNotEmpty())
 
@@ -321,15 +335,15 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    var availability = MutableStateFlow("")
+    var bio = MutableStateFlow("")
 
-    fun changeAvailability(search: String) {
-        availability.update {
+    fun changeBio(search: String) {
+        bio.update {
             search
         }
 
         user.update {
-            it.availability = search
+            it.bio = search
             it
         }
     }
@@ -405,7 +419,7 @@ class ProfileViewModel @Inject constructor(
     // EMAIL
     ///////////////////////////////////////////////////////////////////////////
     val isEmailValid = MutableStateFlow(false)
-    val userEmail = MutableStateFlow("")
+    val userEmail = MutableStateFlow(user.value.email)
 
     fun validateEmail(text: String): Boolean {
         var t = false
@@ -426,7 +440,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    var birthDateUser = MutableStateFlow("")
+    var birthDateUser = MutableStateFlow(user.value.birthDate)
 
     fun changeBirthDate(name: String) {
         user.update {
@@ -438,7 +452,8 @@ class ProfileViewModel @Inject constructor(
 
     }
 
-    var userSex = MutableStateFlow("")
+    var userSex = MutableStateFlow(user.value.sexe)
+    var gendersOptions = MutableStateFlow(emptyList<Int>())
 
     fun getSex(): String {
         val lang = sharedPreference.getString("lang", "") ?: ""
@@ -461,7 +476,9 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    var userSituation = MutableStateFlow("")
+    var userSituation = MutableStateFlow(user.value.situation)
+    var situationsOptions = MutableStateFlow(emptyList<Int>())
+
     fun changeSituation(name: String) {
         val lang = sharedPreference.getString("lang", "") ?: ""
         userSituation.update {
@@ -473,7 +490,9 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    var userEmploymentTypeChoice = MutableStateFlow("")
+    var userEmploymentTypeChoice = MutableStateFlow(user.value.preferredEmploymentType)
+    var typesOptions = MutableStateFlow(emptyList<Int>())
+
     fun changeEmploymentTypeChoice(name: String) {
         val lang = sharedPreference.getString("lang", "") ?: ""
         userEmploymentTypeChoice.update {
@@ -493,7 +512,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun mapperPersonalInfo(user: User) {
-        availability.update { user.availability ?: "" }
+        availability.update { user.professionalStatus.availability ?: "" }
         rangeSalary.update { user.rangeSalary ?: "" }
 
         with(user) {
@@ -507,13 +526,247 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // PERSONAL
+    ///////////////////////////////////////////////////////////////////////////
+    val saveUserState = MutableStateFlow("")
     fun saveUserPersonalInfo() {
         viewModelScope.launch {
-            Log.i("userValue", "saveUserPersonalInfo: ${user.value}")
-            savePersonalUseCase.execute(user.value).collect {
-                if (it.data?.message == "saved successfully") {
+            savePersonalUseCase.execute(user.value).collect { res ->
+                saveUserState.update {
+                    res.data?.message ?: ""
+                }
+                if (res.data?.message == "saved successfully") {
                     getUser(lang, user.value.id ?: 0)
                 }
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // PROFESSIONAL
+    ///////////////////////////////////////////////////////////////////////////
+    var onSitePreference = MutableStateFlow(user.value.professionalStatus.onSitePreference)
+    fun changePreferenceSite(search: Boolean) {
+        onSitePreference.update { search }
+
+        user.update {
+            it.professionalStatus.onSitePreference = search
+            it
+        }
+    }
+
+    var hybridPreference = MutableStateFlow(user.value.professionalStatus.hybridPreference)
+    fun changePreferenceHybrid(search: Boolean) {
+        hybridPreference.update { search }
+
+        user.update {
+            it.professionalStatus.hybridPreference = search
+            it
+        }
+    }
+
+    var remotePreference = MutableStateFlow(user.value.professionalStatus.remotePreference)
+    fun changePreferenceRemote(search: Boolean) {
+        remotePreference.update { search }
+
+        user.update {
+            it.professionalStatus.remotePreference = search
+            it
+        }
+    }
+
+    var availability = MutableStateFlow(user.value.professionalStatus.availability)
+    var availabilityOptions = MutableStateFlow(emptyList<Int>())
+
+    fun changeAvailability(search: String) {
+        availability.update {
+            search
+        }
+
+        user.update {
+            it.professionalStatus.availability = search
+            it
+        }
+    }
+
+    var experienceLevel = MutableStateFlow(user.value.professionalStatus.userExperience)
+    var experienceOptions = MutableStateFlow(emptyList<Int>())
+
+    fun changeExperienceLevel(search: String) {
+        experienceLevel.update {
+            search
+        }
+
+        user.update {
+            it.professionalStatus.userExperience = search
+            it
+        }
+    }
+
+    var preferredSalary = MutableStateFlow(user.value.professionalStatus.preferredSalary)
+    fun changePreferredSalary(search: String) {
+        preferredSalary.update {
+            search
+        }
+
+        user.update {
+            it.professionalStatus.preferredSalary = search
+            it
+        }
+    }
+
+    var userGithub = MutableStateFlow(user.value.professionalStatus.userGithub)
+    fun changeGithub(name: String) {
+        userGithub.update { name }
+        user.update {
+            it.professionalStatus.userGithub = name
+            it
+        }
+    }
+
+    var userMedium = MutableStateFlow(user.value.professionalStatus.userMedium)
+    fun changeMedium(name: String) {
+        userMedium.update { name }
+        user.update {
+            it.professionalStatus.userMedium = name
+            it
+        }
+    }
+
+    var userPortFolio = MutableStateFlow(user.value.professionalStatus.userPortfolio)
+    fun changePortFolio(name: String) {
+        userPortFolio.update { name }
+        user.update {
+            it.professionalStatus.userPortfolio = name
+            it
+        }
+    }
+
+    val saveCandidateProfessionalState = MutableStateFlow("")
+    fun saveUserProfessionalInfo(professionalStatus: ProfessionalStatus) {
+        viewModelScope.launch {
+            val userId = sharedPreference.getInt("idUser", 0)
+            professionalStatus.id = userId
+
+            saveProfessionalInfoUseCase.execute(professionalStatus).collect { res ->
+                saveCandidateProfessionalState.update {
+                    res.data?.message ?: ""
+                }
+                if (res.data?.message == "saved successfully") {
+                    getUser(lang, user.value.id ?: 0)
+                }
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // SKILLS
+    ///////////////////////////////////////////////////////////////////////////
+    var skills = MutableStateFlow(emptyList<String>())
+    fun addSkills(newSkill: String) {
+        val skillsList = skills.value.toMutableList()
+        if (newSkill.isNotBlank() && !skillsList.contains(newSkill)) {
+            skillsList.add(newSkill)
+        }
+        skills.update {
+            skillsList
+        }
+
+        val candidateSkills = CandidateSkills()
+        candidateSkills.listSkills = skillsList
+
+        user.update {
+            it.candidateSkills = candidateSkills
+            it
+        }
+    }
+
+    fun removeSkills(skill: String) {
+        val skillsList = skills.value.toMutableList()
+        if (skill.isNotBlank() && skillsList.contains(skill)) {
+            skillsList.remove(skill)
+        }
+        skills.update { skillsList }
+
+        user.update {
+            it.candidateSkills.listSkills = skillsList
+            it
+        }
+    }
+
+    var certifications = MutableStateFlow(emptyList<String>())
+    fun addCertification(certification: String) {
+        val certificationsList = certifications.value.toMutableList()
+        if (certification.isNotBlank() && !certificationsList.contains(certification)) {
+            certificationsList.add(certification)
+        }
+        certifications.update {
+            certificationsList
+        }
+
+        user.update {
+            it.candidateSkills.listCertification = certificationsList
+            it
+        }
+    }
+
+    fun removeCertification(certification: String) {
+        val certificationsList = certifications.value.toMutableList()
+        if (certification.isNotBlank() && certificationsList.contains(certification)) {
+            certificationsList.remove(certification)
+        }
+        certifications.update {
+            certificationsList
+        }
+
+        user.update {
+            it.candidateSkills.listCertification = certificationsList
+            it
+        }
+    }
+
+    var languageSkills = MutableStateFlow(emptyList<LanguageForm>())
+    fun addLanguageSkills(newSkill: List<LanguageForm>) {
+        val skillsList = languageSkills.value.toMutableList()
+        skillsList.clear()
+        skillsList.addAll(newSkill)
+
+        languageSkills.update {
+            skillsList
+        }
+
+        user.update {
+            it.candidateSkills.listLanguages = skillsList
+            it
+        }
+    }
+
+    val saveCandidateSkillsState = MutableStateFlow("")
+    fun saveCandidateSkills() {
+        viewModelScope.launch {
+            val userId = sharedPreference.getInt("idUser", 0)
+            val candidateSkill = user.value.candidateSkills
+            candidateSkill.id = userId
+
+            saveSkillsUseCase.execute(candidateSkill).collect { res ->
+                saveCandidateSkillsState.update {
+                    res.data?.message ?: ""
+                }
+                if (res.data?.message == "saved successfully") {
+                    getUser(lang, user.value.id ?: 0)
+                }
+            }
+        }
+    }
+
+    val saveCompletedState = MutableStateFlow("")
+    fun saveIsCompletedProfileCandidate() {
+        viewModelScope.launch {
+            val userId = sharedPreference.getInt("idUser", 0)
+
+            updateCandidateCompleteUseCase.execute(userId).collect { res ->
+                saveCompletedState.update { res.data?.message ?: "" }
             }
         }
     }
@@ -956,6 +1209,47 @@ class ProfileViewModel @Inject constructor(
         lang = sharedPreference.getString("lang", "") ?: ""
         langState.update { lang }
 
+        val genderOptions = listOf(
+            R.string.male_text,
+            R.string.female_text
+        )
+
+        val situationOptions = listOf(
+            R.string.single_text,
+            R.string.engaged_text,
+            R.string.married_text,
+        )
+
+        val typeOptions = listOf(
+            R.string.type1_text,
+            R.string.type2_text,
+            R.string.type3_text
+        )
+
+        val experiencesOptions = listOf(
+            R.string.entry_level_text,
+            R.string.junior_text,
+            R.string.mid_level_text,
+            R.string.senior_text,
+            R.string.lead_team_text,
+            R.string.executive_text
+        )
+
+        val availabilitiesOptions = listOf(
+            R.string.immediately_text,
+            R.string.one_week_text,
+            R.string.two_week_text,
+            R.string.one_month_text,
+            R.string.two_months_text,
+            R.string.more_3_months_text
+        )
+
+        gendersOptions.update { genderOptions }
+        situationsOptions.update { situationOptions }
+        typesOptions.update { typeOptions }
+        availabilityOptions.update { availabilitiesOptions }
+        experienceOptions.update { experiencesOptions }
+
         //getInitialEducationDetail()
         getInitialExperienceDetail()
 
@@ -972,4 +1266,7 @@ class ProfileViewModel @Inject constructor(
         verifyFile()
     }
 
+    fun logout() {
+        sharedPreference.putString("token", "")
+    }
 }

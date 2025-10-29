@@ -118,7 +118,7 @@
     <string name="married_text">Married</string>
     <string name="single_text">Single</string>
     <string name="engaged_text">Engaged</string>
-    <string name="sexe_text">Sex</string>
+    <string name="sexe_text">Gender</string>
     <string name="male_text">Male</string>
     <string name="female_text">Female</string>
     <string name="salary_range_text">Salary Range:</string>
@@ -152,6 +152,25 @@
     <string name="type_event_text">Event</string>
     <string name="contract_type_text">Contract type</string>
 
+
+    <string name="entry_level_text">Entry Level (0–1 years)</string>
+    <string name="junior_text">Junior (1–3 years)</string>
+    <string name="mid_level_text">Mid–Level (3–5 years)</string>
+    <string name="senior_text">Senior (5–8 years)</string>
+    <string name="lead_team_text">Lead/Principal (8+ years)</string>
+    <string name="executive_text">Executive (10+ years)</string>
+
+    <string name="immediately_text">Available immediately</string>
+    <string name="one_week_text">Available in 1 week</string>
+    <string name="two_week_text">Available in 2 weeks</string>
+    <string name="one_month_text">Available in 1 month</string>
+    <string name="two_months_text">Available in 2 months</string>
+    <string name="more_3_months_text">Available in 3+ months</string>
+
+    <string name="professional_bio_text">Professional Bio</string>
+    <string name="tell_us_text">Tell us about your professional background, expertise, and career goals…</string>
+    <string name="experience_level_text">Experience Level</string>
+    <string name="preferred_salary_text">Preferred Salary</string>
 
     <string name="to_text">to</string>
 
@@ -277,5 +296,10 @@
 
     <string name="interview_text">Interview</string>
     <string name="interview_validation_text">Enter your email address to receive an email for an interview</string>
+
+    <string name="verification_done_text">Verified Account</string>
+    <string name="verification_info_text">Your account is in the verification process</string>
+    <string name="verification_rejected_info_text">Your account has been rejected</string>
+    <string name="verification_validate_info_text">Your account has been validated</string>
 
 </resources>

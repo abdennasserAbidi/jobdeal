@@ -61,6 +61,7 @@ import com.example.myjob.feature.home.CandidateListScreen
 import com.example.myjob.common.FileReader
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.langState
+import com.example.myjob.common.GlobalEntries.listImageUri
 import com.example.myjob.common.default
 import com.example.myjob.common.loadJSONFromAsset
 import com.example.myjob.common.phonekit.toCountryList
@@ -103,6 +104,7 @@ import com.example.myjob.feature.profile.ProfileScreen
 import com.example.myjob.feature.home.detail.test.CandidateCompleteProfileApp
 import com.example.myjob.feature.invitation.candidat.InvitationCareerScreen
 import com.example.myjob.feature.profile.test.CandidateProfileFormExec
+import com.example.myjob.feature.setting.ModernSettingScreen
 import com.example.myjob.feature.setting.SettingScreen
 import com.example.myjob.feature.signup.SignUpScreen
 import com.example.myjob.feature.splash.SplashScreen
@@ -135,10 +137,8 @@ class MainActivity : ComponentActivity() {
     private var listCompany: MutableList<String> = mutableListOf()
     private var listCountries: MutableList<String> = mutableListOf()
 
-    //TODO("add delete button to document in verification of company")
     //TODO("EVENNEMENT(céminaire, formation, foire) => annonces : forum(commentaire, like)")
     //TODO("Annonce : emplacememnt dans la bottom bar instead of search")
-    //TODO("add address email to verification of company")
     //TODO("Notification")
     //TODO("FIxer le design partout")
 
@@ -149,6 +149,8 @@ class MainActivity : ComponentActivity() {
     private val selectImage =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             imageUri.value = uri
+            val list = listImageUri.toMutableList()
+            list.add(uri)
         }
 
     lateinit var launcher: ActivityResultLauncher<Intent>
@@ -450,30 +452,6 @@ class MainActivity : ComponentActivity() {
                         else NoPermissionScreen(cameraPermissionState::launchPermissionRequest)
                     }*/
 
-
-
-
-                    composable(route = Screen.SettingScreen.route) {
-
-                        CoroutineScope(Dispatchers.Main).launch {
-                            GlobalEntries.isVisibleNav.collect {
-                                isVisibleNav = if (role == "Candidate" || role == "Candidat") false
-                                else it
-                            }
-                        }
-
-                        SettingScreen(
-                            navController = navController,
-                            clearData = {
-                                selectedTabIndex = 0
-                            },
-                            onResumed = { index ->
-                                if (role == "Candidate" || role == "Candidat") isVisibleNav = false
-                                selectedTabIndex = index
-                            }
-                        )
-                    }
-
                     composable(route = Screen.ProfileScreen.route) {
                         isVisibleNav = false
                         if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") CompanyProfile(
@@ -612,11 +590,47 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = false
                         //SearchScreen(navController)
                         //CandidateCompleteProfileApp()
+
                         CandidateProfileFormExec(
                             navController = navController,
                             list = listCountry,
-                            allSubjects = allSubjects
+                            allSubjects = allSubjects,
+                            clearData = {
+                                selectedTabIndex = 0
+                            },
                         )
+                    }
+
+                    composable(route = Screen.SettingScreen.route) {
+
+                        CoroutineScope(Dispatchers.Main).launch {
+                            GlobalEntries.isVisibleNav.collect {
+                                isVisibleNav = if (role == "Candidate" || role == "Candidat") false
+                                else it
+                            }
+                        }
+
+                        ModernSettingScreen(
+                            navController = navController,
+                            clearData = {
+                                selectedTabIndex = 0
+                            },
+                            onResumed = { index ->
+                                if (role == "Candidate" || role == "Candidat") isVisibleNav = false
+                                selectedTabIndex = index
+                            }
+                        )
+
+                        /*SettingScreen(
+                            navController = navController,
+                            clearData = {
+                                selectedTabIndex = 0
+                            },
+                            onResumed = { index ->
+                                if (role == "Candidate" || role == "Candidat") isVisibleNav = false
+                                selectedTabIndex = index
+                            }
+                        )*/
                     }
 
                     composable(route = Screen.HomeCompanyScreen.route) {
@@ -648,7 +662,6 @@ class MainActivity : ComponentActivity() {
 
                     composable(route = Screen.CareerFormScreen.route) {
                         isVisibleNav = false
-                        Log.i("flzghrzjkl", "onCreate: ${app.listCompanies}")
                         CareerFormScreen(
                             navController = navController,
                             allSubjects = allSubjects,

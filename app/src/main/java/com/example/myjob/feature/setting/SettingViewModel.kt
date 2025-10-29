@@ -7,6 +7,8 @@ import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.usecase.profile.SaveCompanyInfoUseCase
 import com.example.myjob.domain.usecase.home.ValidateAccountUseCase
+import com.example.myjob.domain.usecase.verification.GetVerifiedCandidateStatusUseCase
+import com.example.myjob.feature.validateprofile.ValidationProfileStatus
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +21,7 @@ class SettingViewModel @Inject constructor(
     private val sharedPreferences: SharedPreference,
     private val validateAccountUseCase: ValidateAccountUseCase,
     private val saveCompanyInfoUseCase: SaveCompanyInfoUseCase,
+    private val getVerifiedCandidateStatusUseCase: GetVerifiedCandidateStatusUseCase
 ) : ViewModel() {
 
     val role = MutableStateFlow("")
@@ -57,12 +60,29 @@ class SettingViewModel @Inject constructor(
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // COMPANY NAME
+    ///////////////////////////////////////////////////////////////////////////
+    val isCompanyNameValid = MutableStateFlow(false)
+
     fun changeCompanyName(name: String) {
         user.update {
             it.companyName = name
             it
         }
     }
+
+    /*fun validateCompanyName(text: String): Boolean {
+        var t = false
+        viewModelScope.launch {
+            isCompanyNameValid.update {
+                validateEmailUseCase.execute(text) ?: false
+            }
+            t = validateEmailUseCase.execute(text) ?: false
+        }
+
+        return t
+    }*/
 
     fun changeCompanyEmail(name: String) {
         user.update {
@@ -133,7 +153,22 @@ class SettingViewModel @Inject constructor(
         }
     }
 
+
+    val verificationSteps = MutableStateFlow(ValidationProfileStatus())
+
+    private fun getStatusValidation() {
+        viewModelScope.launch {
+            val idUser = sharedPreferences.getInt("idUser", -1)
+            getVerifiedCandidateStatusUseCase.execute(idUser).collect { res ->
+                verificationSteps.update {
+                    res.data ?: ValidationProfileStatus()
+                }
+            }
+        }
+    }
+
     init {
+        getStatusValidation()
         val fullName = sharedPreferences.getString("username", "") ?: ""
         userFullName.update { fullName }
         if (fullName.isNotEmpty() && fullName != " ") {

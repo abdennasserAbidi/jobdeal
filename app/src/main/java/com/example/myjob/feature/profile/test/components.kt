@@ -1012,7 +1012,7 @@ fun WorkTypeChip(
             .clickable { onSelectionChange(!isSelected) },
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) whatsAppGreen else MaterialTheme.colorScheme.surface
+            containerColor = if (isSelected) whatsAppGreen else Color.White
         ),
         border = BorderStroke(
             2.dp,
@@ -1026,14 +1026,14 @@ fun WorkTypeChip(
             Icon(
                 icon,
                 contentDescription = text,
-                tint = if (isSelected) whatsAppGreen else MaterialTheme.colorScheme.onSurface
+                tint = if (!isSelected) whatsAppGreen else Color.White
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = text,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                color = if (isSelected) whatsAppGreen else MaterialTheme.colorScheme.onSurface
+                color = if (!isSelected) whatsAppGreen else Color.White
             )
         }
     }

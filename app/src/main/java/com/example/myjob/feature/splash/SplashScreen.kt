@@ -50,9 +50,17 @@ fun SplashScreen(
     val context = LocalContext.current
     val app = context.applicationContext as MyApp
 
+    var isFirstTime = true
+
     LaunchedEffect(listCompanies) {
         app.listCompanies.removeLast()
         if (!app.listCompanies.containsAll(listCompanies)) app.listCompanies.addAll(listCompanies)
+    }
+
+    val user by splashViewModel.user.collectAsState()
+
+    LaunchedEffect(user.isFirstTime) {
+        isFirstTime = user.isFirstTime ?: true
     }
 
     Column(
@@ -98,8 +106,10 @@ fun SplashScreen(
                     val token = splashViewModel.getToken()
 
                     if (isFinished) {
-                        if (token.isNotEmpty()) navController.navigate(Screen.HomeScreen.route)
-                        else navController.navigate(Screen.LoginScreen.route)
+                        if (token.isNotEmpty()) {
+                            if (isFirstTime) navController.navigate(Screen.SearchWordScreen.route)
+                            else navController.navigate(Screen.HomeScreen.route)
+                        } else navController.navigate(Screen.LoginScreen.route)
 
                     } else navController.navigate(Screen.OnBoardingScreen.route)
                 }

@@ -2,10 +2,12 @@ package com.example.myjob.remote.api
 
 import com.example.myjob.base.GenericResponse
 import com.example.myjob.common.network.ApiResult
+import com.example.myjob.domain.entities.CandidateSkills
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.InvitationFilter
+import com.example.myjob.domain.entities.ProfessionalStatus
 import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
@@ -184,6 +186,14 @@ ApiService {
     ///////////////////////////////////////////////////////////////////////////
     // USER
     ///////////////////////////////////////////////////////////////////////////
+    @POST("auth/updateCandidateProfessional")
+    suspend fun updateCandidateProfessional(@Body user: ProfessionalStatus): UserResponse
+    @POST("auth/updateCandidateSkills")
+    suspend fun updateCandidateSkills(@Body user: CandidateSkills): UserResponse
+
+    @POST("auth/updateCandidateCompleted")
+    suspend fun updateCandidateCompleted(@Query("id") id: Int): UserResponse
+
     @POST("auth/updateuser")
     suspend fun savePersonalInfo(@Body user: User): UserResponse
 

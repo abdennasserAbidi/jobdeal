@@ -159,7 +159,7 @@ class SearchRepositoryImp @Inject constructor(
                         val situation = it.situation ?: ""
                         it.changeSituation(situation, lang)
 
-                        val availability = it.availability ?: ""
+                        val availability = it.professionalStatus.availability ?: ""
                         it.changeAvailability(availability, lang)
                     }
 

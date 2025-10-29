@@ -1,5 +1,11 @@
 package com.example.myjob.feature.profile.test
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -33,11 +39,16 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
+import com.example.myjob.common.CountryPicker
+import com.example.myjob.common.GenericSearch
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.feature.navigation.Screen
+import com.example.myjob.feature.profile.DateContainer
 import com.example.myjob.feature.profile.ProfileViewModel
+import kotlinx.serialization.Serializable
 
 data class CandidateFormData(
     // Basic Information
@@ -96,6 +107,7 @@ data class CandidateFormData(
     var address: String = ""
 )
 
+@Serializable
 data class LanguageForm(
     var name: String = "",
     var proficiency: String = ""
@@ -126,11 +138,13 @@ data class ProjectForm(
     var link: String = ""
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CandidateProfileFormScreen(
     initialData: CandidateFormData = CandidateFormData(),
     navController: NavController,
+    clearData: () -> Unit = {},
     list: List<NewCountry>,
     allSubjects: MutableList<Subject>,
     profileViewModel: ProfileViewModel = hiltViewModel(),
@@ -138,19 +152,35 @@ fun CandidateProfileFormScreen(
     onSaveProfile: (CandidateFormData) -> Unit = {},
     onSaveDraft: (CandidateFormData) -> Unit = {}
 ) {
+
+
+    val user by profileViewModel.user.collectAsState()
+    val allExp by profileViewModel.allExp.collectAsState()
+    profileViewModel.getAllExp(user.id ?: 0)
+
+    val allEduc by profileViewModel.allEduc.collectAsState()
+    profileViewModel.getAllEduc(user.id ?: 0)
+
+
     var formData by remember { mutableStateOf(initialData) }
     var selectedTab by remember { mutableStateOf(0) }
     var showSaveDialog by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
 
     val tabs =
-        listOf("Basic Info", "Professional", "Skills", "Experience", "Education", "Preferences")
+        listOf(
+            stringResource(id = R.string.personal_info_text),
+            "Professional",
+            "Skills",
+            "Experience",
+            "Education",
+            "Preferences"
+        )
     val scrollState = rememberScrollState()
 
     val whatsAppGreen = colorResource(id = R.color.whatsapp)
     val interactionSource = remember { MutableInteractionSource() }
     val context = LocalContext.current
-    val user by profileViewModel.user.collectAsState()
     var showCountryPicker by remember { mutableStateOf(false) }
     var selectedCountry by remember { mutableStateOf(NewCountry("tn", "Tunisia", 216)) }
     val isShowed by profileViewModel.isCountryShowed.collectAsState()
@@ -159,6 +189,7 @@ fun CandidateProfileFormScreen(
     val listNames by profileViewModel.listNames.collectAsState()
     val listFlagLazy = profileViewModel.listFlag.collectAsLazyPagingItems()
     val listFlag = listFlagLazy.itemSnapshotList.items
+    val isFirstTime = GlobalEntries.user.isFirstTime ?: true
 
 
     val lifecycleEvent = rememberLifecycleEvent()
@@ -171,110 +202,231 @@ fun CandidateProfileFormScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        TopAppBar(
-            title = {
-                Text(
-                    text = "Complete Profile",
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = onBackClick) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = colorResource(id = R.color.whatsapp),
-                titleContentColor = Color.White,
-                navigationIconContentColor = Color.White,
-                actionIconContentColor = Color.White
-            )
-        )
-
-        // Progress Indicator
-        LinearProgressIndicator(
-            progress = (selectedTab + 1) / tabs.size.toFloat(),
-            modifier = Modifier.fillMaxWidth(),
-            color = whatsAppGreen,
-            trackColor = whatsAppGreen
-        )
-
-        // Tab Row
-        ScrollableTabRow(
-            selectedTabIndex = selectedTab,
-            containerColor = Color.White,
-            contentColor = Color.White,
-            indicator = { tabPositions ->
-                TabRowDefaults.Indicator(
-                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                    color = whatsAppGreen
-                )
-            }
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTab == index,
-                    onClick = { selectedTab = index },
-                    text = {
+
+            if (isFirstTime) {
+                TopAppBar(
+                    title = {
                         Text(
-                            text = title,
-                            fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
-                            fontSize = 12.sp
+                            text = "Complete Profile",
+                            fontWeight = FontWeight.Bold
                         )
                     },
-                    selectedContentColor = whatsAppGreen,
-                    unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    actions = {
+                        IconButton(onClick = {
+                            profileViewModel.logout()
+                            clearData()
+                            navController.navigate(Screen.LoginScreen.route)
+                        }) {
+                            Icon(Icons.Default.Logout, contentDescription = "Logout")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = colorResource(id = R.color.whatsapp),
+                        titleContentColor = Color.White,
+                        navigationIconContentColor = Color.White,
+                        actionIconContentColor = Color.White
+                    )
+                )
+            } else {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Complete Profile",
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            navController.popBackStack()
+                        }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = colorResource(id = R.color.whatsapp),
+                        titleContentColor = Color.White,
+                        navigationIconContentColor = Color.White,
+                        actionIconContentColor = Color.White
+                    )
+                )
+            }
+
+            // Progress Indicator
+            LinearProgressIndicator(
+                progress = (selectedTab + 1) / tabs.size.toFloat(),
+                modifier = Modifier.fillMaxWidth(),
+                color = whatsAppGreen,
+                trackColor = whatsAppGreen
+            )
+
+            // Tab Row
+            ScrollableTabRow(
+                selectedTabIndex = selectedTab,
+                containerColor = Color.White,
+                contentColor = Color.White,
+                indicator = { tabPositions ->
+                    TabRowDefaults.Indicator(
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                        color = whatsAppGreen
+                    )
+                }
+            ) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTab == index,
+                        onClick = { selectedTab = index },
+                        text = {
+                            Text(
+                                text = title,
+                                fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
+                                fontSize = 12.sp
+                            )
+                        },
+                        selectedContentColor = whatsAppGreen,
+                        unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            // Form Content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                when (selectedTab) {
+                    0 -> BasicInfoForm(
+                        profileViewModel = profileViewModel,
+                        list = list,
+                        allSubjects = allSubjects,
+                        onSubmit = {
+                            selectedTab += 1
+                        },
+                    )
+
+                    1 -> ProfessionalForm(
+                        profileViewModel = profileViewModel,
+                        onDataChange = {
+                            selectedTab += 1
+                        }
+                    )
+
+                    2 -> SkillsForm(
+                        profileViewModel = profileViewModel,
+                        onDataChange = { selectedTab += 1 }
+                    )
+
+                    3 -> ExperienceForm(
+                        formData = formData,
+                        onDataChange = { formData = it }
+                    )
+
+                    4 -> EducationFormSection(
+                        formData = formData,
+                        onDataChange = { formData = it }
+                    )
+
+                    5 -> PreferencesForm(
+                        formData = formData,
+                        profileViewModel = profileViewModel,
+                        onDataChange = { formData = it },
+                        onNavigateToHome = {
+                            navController.navigate(Screen.HomeScreen.route)
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+
+        DateContainer(
+            isDateShowed = isDateShowed,
+            changeDate = {
+                profileViewModel.changeBirthDate(it)
+                user.birthDate = it
+            }, onDismiss = {
+                //isDateShowed = false
+                profileViewModel.changeVisibilityDate(false)
+            })
+
+        AnimatedVisibility(
+            visible = isSearch,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                val names = allSubjects.map {
+                    it.libelly
+                }
+                GenericSearch(
+                    mListOfJobs = names,
+                    onDismissRequest = {
+                        profileViewModel.changeVisibilitySearch(false)
+                    },
+                    onSelectedBank = { item, index ->
+                        profileViewModel.changeVisibilitySearch(false)
+                        profileViewModel.changeTitleGeneric(item)
+                        user.preferredActivitySector = item
+                    },
+                    title = stringResource(id = R.string.activity_text)
                 )
             }
         }
 
-        // Form Content
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        AnimatedVisibility(visible = showCountryPicker) {
+            CountryPicker(
+                listFlagLazy,
+                profileViewModel,
+                onClick = { newCountry ->
+                    selectedCountry = newCountry
+                    showCountryPicker = false
+                }
+            ) {
+                showCountryPicker = false
+            }
+        }
+
+        AnimatedVisibility(
+            visible = isShowed,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
         ) {
-            when (selectedTab) {
-                0 -> BasicInfoForm(
-                    formData = formData,
-                    profileViewModel = profileViewModel,
-                    onDataChange = { formData = it }
-                )
+            Box(modifier = Modifier.fillMaxSize()) {
 
-                1 -> ProfessionalForm(
-                    formData = formData,
-                    onDataChange = { formData = it }
-                )
-
-                2 -> SkillsForm(
-                    formData = formData,
-                    onDataChange = { formData = it }
-                )
-
-                3 -> ExperienceForm(
-                    formData = formData,
-                    onDataChange = { formData = it }
-                )
-
-                4 -> EducationFormSection(
-                    formData = formData,
-                    onDataChange = { formData = it }
-                )
-
-                5 -> PreferencesForm(
-                    formData = formData,
-                    onDataChange = { formData = it }
+                GenericSearch(
+                    mListOfJobs = listNames,
+                    onDismissRequest = {
+                        profileViewModel.changeVisibilityCountry(false)
+                    },
+                    onSelectedBank = { item, index ->
+                        profileViewModel.changeVisibilityCountry(false)
+                        profileViewModel.changeCountryGeneric(item)
+                        user.country = item
+                    },
+                    title = stringResource(id = R.string.country_text)
                 )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 

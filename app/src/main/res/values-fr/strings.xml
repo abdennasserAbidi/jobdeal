@@ -117,7 +117,7 @@
     <string name="married_text">Marrié</string>
     <string name="single_text">Célibataire</string>
     <string name="engaged_text">Engagé</string>
-    <string name="sexe_text">Sexe</string>
+    <string name="sexe_text">Genre</string>
     <string name="male_text">Homme</string>
     <string name="female_text">Femme</string>
     <string name="disponibility_text">Disponibilité</string>
@@ -147,6 +147,25 @@
     <string name="type_formation_text">Formation</string>
     <string name="type_event_text">Evénnement</string>
     <string name="contract_type_text">Type du contrat</string>
+
+    <string name="entry_level_text">Débutant (0–1 an)</string>
+    <string name="junior_text">Junior (1–3 ans)</string>
+    <string name="mid_level_text">Intermédiaire (3–5 ans)</string>
+    <string name="senior_text">Sénior (5–8 ans)</string>
+    <string name="lead_team_text">Chef d’équipe / Principal (8+ ans)</string>
+    <string name="executive_text">Cadre / Direction (10+ ans)</string>
+
+    <string name="immediately_text">Disponible immédiatement</string>
+    <string name="one_week_text">Disponible dans 1 semaine</string>
+    <string name="two_week_text">Disponible dans 2 semaines</string>
+    <string name="one_month_text">Disponible dans 1 mois</string>
+    <string name="two_months_text">Disponible dans 2 mois</string>
+    <string name="more_3_months_text">Disponible dans plus de 3 mois</string>
+
+    <string name="professional_bio_text">Biographie professionnelle</string>
+    <string name="tell_us_text">Parlez-nous de votre parcours professionnel, de vos compétences et de vos objectifs de carrière…</string>
+    <string name="experience_level_text">Niveau d’expérience</string>
+    <string name="preferred_salary_text">Salaire souhaité</string>
 
     <string name="to_text">au</string>
 
@@ -263,5 +282,11 @@
     <string name="other_text">Autres</string>
     <string name="interview_text">Entretien</string>
     <string name="interview_validation_text">Entrez votre adresse mail pour recevoir un email pour un entretien</string>
+
+    <string name="verification_done_text">Compte vérifié</string>
+    <string name="verification_info_text">Votre compte est en cours de vérification</string>
+    <string name="verification_rejected_info_text">Votre compte a été rejeté</string>
+    <string name="verification_validate_info_text">Votre compte a été valider</string>
+
 
 </resources>

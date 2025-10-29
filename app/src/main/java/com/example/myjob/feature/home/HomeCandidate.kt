@@ -22,9 +22,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.NotificationsNone
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -107,32 +106,6 @@ fun HomeCandidatePreview(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        /*Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(70.dp)
-                .background(colorResource(id = R.color.whatsapp))
-        ) {
-            Text(
-                text = "Hello, ${GlobalEntries.user.fullName}",
-                modifier = Modifier
-                    .padding(start = 10.dp)
-                    .align(Alignment.CenterStart),
-                fontSize = 20.sp,
-                color = Color.White,
-                fontWeight = FontWeight.Bold
-            )
-
-            Icon(
-                imageVector = Icons.Default.NotificationsNone,
-                modifier = Modifier
-                    .padding(end = 10.dp)
-                    .align(Alignment.CenterEnd),
-                tint = Color.White,
-                contentDescription = ""
-            )
-        }*/
-
         // Top App Bar
         TopAppBar(
             title = {
@@ -145,10 +118,10 @@ fun HomeCandidatePreview(
                 IconButton(onClick = { /* Handle notifications */ }) {
                     Icon(Icons.Default.Notifications, contentDescription = "Notifications")
                 }
-                IconButton(onClick = {
+                IconButton(onClick = { //painterResource(id = R.drawable.settings)
                     navController.navigate(Screen.SettingScreen.route)
                 }) {
-                    Icon(painterResource(id = R.drawable.settings), contentDescription = "More")
+                    Icon(Icons.Default.Settings, contentDescription = "More")
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(

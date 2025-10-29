@@ -1,10 +1,14 @@
 package com.example.myjob.common
 
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.asFlow
 import androidx.work.Constraints
 import androidx.work.Data
@@ -60,6 +64,7 @@ object GlobalEntries {
     var langState = MutableStateFlow("Français")
     var languageShared = MutableSharedFlow<String>()
     var stepShared = -1
+    var listImageUri by mutableStateOf<List<Uri?>>(emptyList())
 
     @RequiresApi(Build.VERSION_CODES.O)
     var start: ZonedDateTime = ZonedDateTime.parse("2018-04-06T16:01:00.000+03:00")

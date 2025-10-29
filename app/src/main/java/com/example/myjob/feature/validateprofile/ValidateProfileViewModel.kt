@@ -1,37 +1,62 @@
 package com.example.myjob.feature.validateprofile
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myjob.base.reources.ResourceState
+import com.example.myjob.common.FileReader
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.usecase.home.UploadCVUseCase
+import com.example.myjob.domain.usecase.verification.GetVerifiedCandidateStatusUseCase
+import com.example.myjob.domain.usecase.verification.SendMailVerificationUseCase
+import com.example.myjob.domain.usecase.verification.ValidateEmailUseCase
 import com.example.myjob.domain.usecase.verification.VerificationCompanyUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
 class ValidateProfileViewModel @Inject constructor(
     private val sharedPreference: SharedPreference,
-    private val verificationCompanyUseCase: VerificationCompanyUseCase
+    private val validateEmailUseCase: ValidateEmailUseCase,
+    private val sendMailVerificationUseCase: SendMailVerificationUseCase,
+    private val verificationCompanyUseCase: VerificationCompanyUseCase,
+    private val getVerifiedCandidateStatusUseCase: GetVerifiedCandidateStatusUseCase,
+    private val uploadCVUseCase: UploadCVUseCase
 ) : ViewModel() {
 
 
     val user = MutableStateFlow(User())
 
-    fun changeNumSecuritySocial(number: String) {
+    val isEmailValid = MutableStateFlow(false)
+
+    fun changeUserEmail(email: String) {
         user.update {
-            it.numSecuritySocial = number
+            it.email = email
             it
         }
     }
 
-    fun changeDocs(docs: List<String>) {
-        user.update {
-            it.docs = docs
-            it
+    fun validateEmail(text: String): Boolean {
+        var t = false
+        viewModelScope.launch {
+            isEmailValid.update {
+                validateEmailUseCase.execute(text) ?: false
+            }
+            t = validateEmailUseCase.execute(text) ?: false
         }
+
+        return t
     }
 
     fun validateCompany() {
@@ -41,6 +66,80 @@ class ValidateProfileViewModel @Inject constructor(
 
             }
         }
+    }
+
+    private val messageEmailed = MutableStateFlow("")
+    var message = messageEmailed.asStateFlow()
+
+
+    var uploadMessage = MutableStateFlow("")
+
+    fun uploadDoc(context: Context, fileUri: Uri, index: Int) {
+        val file = FileReader.getFile(context, fileUri) // Helper function to convert URI to File
+
+        val requestBody: RequestBody =
+            RequestBody.create("application/*".toMediaTypeOrNull(), file)
+
+        val contentResolver = context.contentResolver
+        val mimeType = contentResolver.getType(fileUri) ?: "application/octet-stream"
+        val inputStream = contentResolver.openInputStream(fileUri) ?: return
+
+        val tempFile = File(context.cacheDir, "upload_${System.currentTimeMillis()}")
+        tempFile.outputStream().use { output ->
+            inputStream.copyTo(output)
+        }
+
+
+        val requestBody1 = tempFile.asRequestBody(mimeType.toMediaTypeOrNull())
+
+
+        val expectedName = "document $index"
+        val multipartBody: MultipartBody.Part =
+            MultipartBody.Part.createFormData("file", expectedName, requestBody1)
+
+        viewModelScope.launch {
+            uploadCVUseCase.execute(multipartBody).collect { res ->
+                when (res.status) {
+                    ResourceState.SUCCESS -> {
+                        uploadMessage.update {
+                            res.data ?: ""
+                        }
+                    }
+
+                    else -> {
+                        uploadMessage.update { "" }
+                    }
+                }
+            }
+        }
+    }
+
+    fun validate(validation: ValidationProfileStatus) {
+        viewModelScope.launch {
+            val idUser = sharedPreference.getInt("idUser", -1)
+            validation.id = idUser
+            sendMailVerificationUseCase.execute(validation).collect { res ->
+                messageEmailed.update {
+                    res.data?.message ?: ""
+                }
+            }
+        }
+    }
+    val verificationSteps = MutableStateFlow(ValidationProfileStatus())
+
+    private fun getStatusValidation() {
+        viewModelScope.launch {
+            val idUser = sharedPreference.getInt("idUser", -1)
+            getVerifiedCandidateStatusUseCase.execute(idUser).collect { res ->
+                verificationSteps.update {
+                    res.data ?: ValidationProfileStatus()
+                }
+            }
+        }
+    }
+
+    init {
+        getStatusValidation()
     }
 
 }

@@ -433,7 +433,7 @@ fun JobSwipeCard(
                         )
 
                         Text(
-                            text = profile.availability ?: "Now",
+                            text = profile.professionalStatus.availability ?: "Now",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Normal
                         )

@@ -293,7 +293,7 @@ fun PersonalForm(
                     val birthDateUser by profileViewModel.birthDateUser.collectAsState()
                     //val birthDateUser = user.birthDate?: ""
 
-                    Text(text = birthDateUser, color = Color.Black)
+                    Text(text = birthDateUser ?: "", color = Color.Black)
 
                     Icon(
                         modifier = Modifier
@@ -326,9 +326,9 @@ fun PersonalForm(
 
             val employmentTypeOptions = listOf(contractText, freelanceText, bothText)
             var selectedEmploymentType by remember {
-                mutableStateOf(userEmploymentTypeChoice.ifEmpty { employmentTypeOptions[0] })
+                mutableStateOf(userEmploymentTypeChoice?.ifEmpty { employmentTypeOptions[0] })
             }
-            profileViewModel.changeEmploymentTypeChoice(selectedEmploymentType)
+            profileViewModel.changeEmploymentTypeChoice(selectedEmploymentType ?: "")
 
             Row(
                 modifier = Modifier
@@ -369,9 +369,9 @@ fun PersonalForm(
 
             val situationOptions = listOf(marriedText, singleText, engagedText)
             var selectedSituation by remember {
-                mutableStateOf(userSituation.ifEmpty { situationOptions[0] })
+                mutableStateOf(userSituation?.ifEmpty { situationOptions[0] })
             }
-            profileViewModel.changeSituation(selectedSituation)
+            profileViewModel.changeSituation(selectedSituation ?: "")
 
             Row(
                 modifier = Modifier
@@ -411,9 +411,9 @@ fun PersonalForm(
             )
             var selectedSexe by remember {
                 mutableStateOf(
-                    userSex.ifEmpty { sexeOptions[0] })
+                    userSex?.ifEmpty { sexeOptions[0] })
             }
-            profileViewModel.changeSex(selectedSexe)
+            profileViewModel.changeSex(selectedSexe?:"")
 
             Row(
                 modifier = Modifier
@@ -688,7 +688,7 @@ fun PersonalForm(
             )
             CustomDropdownMenu(
                 list = list,
-                defaultSelected = availability,
+                defaultSelected = availability ?: "",
                 color = colorResource(id = R.color.whatsapp),
                 withIcon = false,
                 onSelected = {

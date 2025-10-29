@@ -95,12 +95,13 @@ fun ValidateDocScreen(
                     .padding(horizontal = 20.dp)
                     .padding(top = 20.dp),
                 isRequired = true,
-                readOnly = true
-            ) { isFocused ->
-                if (isFocused) {
-                    selectImage.launch("image/*")
+                readOnly = true,
+                focusChange = { isFocused ->
+                    if (isFocused) {
+                        selectImage.launch("image/*")
+                    }
                 }
-            }
+            )
         }
 
         Box(modifier = Modifier.fillMaxWidth()) {

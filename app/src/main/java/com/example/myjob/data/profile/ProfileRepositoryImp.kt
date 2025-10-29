@@ -7,8 +7,10 @@ import androidx.paging.cachedIn
 import com.example.myjob.base.GenericSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
+import com.example.myjob.domain.entities.CandidateSkills
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
+import com.example.myjob.domain.entities.ProfessionalStatus
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.local.database.SharedPreference
@@ -133,6 +135,42 @@ class ProfileRepositoryImp @Inject constructor(
         try {
             // Get data from RemoteDataSource
             val data = profileDataSource.savePersonalInfo(user)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun saveProfessionalInfo(user: ProfessionalStatus): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = profileDataSource.saveProfessionalInfo(user)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun updateCandidateSkills(user: CandidateSkills): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = profileDataSource.updateCandidateSkills(user)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun updateCandidateCompleted(id: Int): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = profileDataSource.updateCandidateCompleted(id)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {

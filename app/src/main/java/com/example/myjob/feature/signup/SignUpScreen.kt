@@ -296,7 +296,6 @@ fun SignUpScreen(
 
                 if (selectedIndex == 1) {
 
-
                     FormTextField(
                         value = userFirstName,
                         onValueChange = {

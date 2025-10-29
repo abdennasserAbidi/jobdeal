@@ -1,5 +1,7 @@
 package com.example.myjob.feature.profile.test
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.*
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -8,10 +10,12 @@ import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.feature.profile.ProfileViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CandidateProfileFormExec(
     navController: NavController,
     list: List<NewCountry>,
+    clearData: () -> Unit = {},
     allSubjects: MutableList<Subject>,
     profileViewModel: ProfileViewModel = hiltViewModel(),
 ) {
@@ -86,9 +90,10 @@ fun CandidateProfileFormExec(
         initialData = initialFormData,
         navController = navController,
         list = list,
+        clearData = clearData,
         allSubjects = allSubjects,
         onBackClick = {
-            showToast = "Back clicked"
+            navController.popBackStack()
         },
         onSaveProfile = { formData ->
             showToast = "Profile completed successfully!"

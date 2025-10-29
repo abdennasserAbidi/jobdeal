@@ -1,8 +1,10 @@
 package com.example.myjob.remote.source.profile
 
 import com.example.myjob.base.GenericResponse
+import com.example.myjob.domain.entities.CandidateSkills
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
+import com.example.myjob.domain.entities.ProfessionalStatus
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.remote.api.ApiService
@@ -27,6 +29,15 @@ class ProfileDataSourceImp @Inject constructor(
 
     override suspend fun savePersonalInfo(user: User): UserResponse =
         apiService.savePersonalInfo(user)
+
+    override suspend fun saveProfessionalInfo(user: ProfessionalStatus): UserResponse =
+        apiService.updateCandidateProfessional(user)
+
+    override suspend fun updateCandidateSkills(user: CandidateSkills): UserResponse =
+        apiService.updateCandidateSkills(user)
+
+    override suspend fun updateCandidateCompleted(id: Int): UserResponse =
+        apiService.updateCandidateCompleted(id)
 
     override suspend fun saveCompanyInfo(user: User): UserResponse =
         apiService.saveCompanyInfo(user)

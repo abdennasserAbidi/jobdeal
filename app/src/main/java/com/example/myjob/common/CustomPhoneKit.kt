@@ -66,11 +66,11 @@ fun CustomPhoneKit(
 
         Box(contentAlignment = Alignment.Center) {
             Row(modifier = Modifier
-                .fillMaxWidth(0.9f)
+                .fillMaxWidth()
                 .border(
                     1.dp,
                     colorResource(id = R.color.whatsapp),
-                    RoundedCornerShape(30.dp)
+                    RoundedCornerShape(12.dp)
                 )
                 .align(Alignment.TopCenter)
                 .animateContentSize(
@@ -84,7 +84,7 @@ fun CustomPhoneKit(
                     indication = null
                 ) {
                 }
-                .background(color = Color.White, shape = RoundedCornerShape(30.dp)),
+                .background(color = Color.Transparent, shape = RoundedCornerShape(12.dp)),
                 verticalAlignment = Alignment.CenterVertically
             )
             {
@@ -138,7 +138,7 @@ fun CustomPhoneKit(
                             onValueChanged(input)
                         }
                     },
-                    placeholder = { Text(text = "") },
+                    placeholder = { Text(text = "Phone number") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         keyboardType = KeyboardType.Number // Numeric keyboard
