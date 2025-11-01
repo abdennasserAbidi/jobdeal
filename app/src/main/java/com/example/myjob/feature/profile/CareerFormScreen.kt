@@ -933,10 +933,6 @@ fun CareerFormScreen(
                         val textId = if (freelanceFeeType == listFreelanceFee[0]) R.string.hourly_rate_text
                         else R.string.daily_rate_text
 
-                        Log.i("freelance", "hourlyRateExp: $hourlyRateExp")
-                        Log.i("freelance", "nbHoursExp: $nbHoursExp")
-                        Log.i("freelance", "nbDaysExp: $nbDaysExp")
-
                         FreelanceForm(defaultValue = "$hourlyRateExp", text = "${stringResource(id = textId)}: ", false) {
                             profileViewModel.changeHourlyRateExp(it)
                         }

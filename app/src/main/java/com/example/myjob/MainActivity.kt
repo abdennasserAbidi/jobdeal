@@ -590,11 +590,14 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = false
                         //SearchScreen(navController)
                         //CandidateCompleteProfileApp()
+                        listCompany = app.listCompanies
+
 
                         CandidateProfileFormExec(
                             navController = navController,
                             list = listCountry,
                             allSubjects = allSubjects,
+                            listCompany = app.listCompanies,
                             clearData = {
                                 selectedTabIndex = 0
                             },

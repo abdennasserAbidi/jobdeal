@@ -147,6 +147,7 @@ fun CandidateProfileFormScreen(
     clearData: () -> Unit = {},
     list: List<NewCountry>,
     allSubjects: MutableList<Subject>,
+    listCompany: MutableList<String>,
     profileViewModel: ProfileViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
     onSaveProfile: (CandidateFormData) -> Unit = {},
@@ -166,6 +167,11 @@ fun CandidateProfileFormScreen(
     var selectedTab by remember { mutableStateOf(0) }
     var showSaveDialog by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
+
+    var isCompanyVisible by remember { mutableStateOf(false) }
+    var typeDate by remember { mutableStateOf("birthDay") }
+    var indexToChange by remember { mutableStateOf(0) }
+
 
     val tabs =
         listOf(
@@ -307,6 +313,10 @@ fun CandidateProfileFormScreen(
                         profileViewModel = profileViewModel,
                         list = list,
                         allSubjects = allSubjects,
+                        onBirthDateChange = {
+                            typeDate = "birthDay"
+                            profileViewModel.changeVisibilityDate(true)
+                        },
                         onSubmit = {
                             selectedTab += 1
                         },
@@ -325,7 +335,20 @@ fun CandidateProfileFormScreen(
                     )
 
                     3 -> ExperienceForm(
-                        formData = formData,
+                        profileViewModel = profileViewModel,
+                        onCompanyChange = {
+                            isCompanyVisible = true
+                        },
+                        onDateStartChange = {
+                            typeDate = "start"
+                            indexToChange = it
+                            profileViewModel.changeVisibilityDate(true)
+                        },
+                        onDateEndChange = {
+                            typeDate = "end"
+                            indexToChange = it
+                            profileViewModel.changeVisibilityDate(true)
+                        },
                         onDataChange = { formData = it }
                     )
 
@@ -351,10 +374,21 @@ fun CandidateProfileFormScreen(
         DateContainer(
             isDateShowed = isDateShowed,
             changeDate = {
-                profileViewModel.changeBirthDate(it)
-                user.birthDate = it
+                when (typeDate) {
+                    "birthDay" -> {
+                        profileViewModel.changeBirthDate(it)
+                        user.birthDate = it
+                    }
+                    "start" -> {
+                        profileViewModel.changeStartDateExperience(indexToChange, it)
+                        profileViewModel.changeEndDateExp(it)
+                    }
+                    "end" -> {
+                        profileViewModel.changeEndDateExperience(indexToChange, it)
+                        profileViewModel.changeEndDateExp(it)
+                    }
+                }
             }, onDismiss = {
-                //isDateShowed = false
                 profileViewModel.changeVisibilityDate(false)
             })
 
@@ -384,6 +418,32 @@ fun CandidateProfileFormScreen(
                         user.preferredActivitySector = item
                     },
                     title = stringResource(id = R.string.activity_text)
+                )
+            }
+        }
+
+        AnimatedVisibility(
+            visible = isCompanyVisible,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                GenericSearch(
+                    mListOfJobs = listCompany,
+                    onDismissRequest = {
+                        isCompanyVisible = false
+                    },
+                    onSelectedBank = { item, index ->
+                        isCompanyVisible = false
+                        profileViewModel.changeCompanyExp(item)
+                    },
+                    title = stringResource(id = R.string.companies_text)
                 )
             }
         }

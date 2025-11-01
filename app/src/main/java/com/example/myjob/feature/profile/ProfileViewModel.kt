@@ -147,14 +147,10 @@ class ProfileViewModel @Inject constructor(
         // Read the JSON file
         val json = context.assets.open("countries.json").bufferedReader().use { it.readText() }
         val items: List<NewCountry> = Gson().fromJson(json, Array<NewCountry>::class.java).toList()
-        Log.i("reachedLast", "CountryPicker: $page")
-
 
         // Calculate start and end indices
         val startIndex = page * pageSize
         val endIndex = (startIndex + pageSize).coerceAtMost(items.size)
-        Log.i("reachedLast", "startIndex: $startIndex")
-        Log.i("reachedLast", "endIndex: $endIndex")
         // Return the sublist for the requested page
         return if (startIndex < items.size) items.subList(startIndex, endIndex) else emptyList()
     }
@@ -966,7 +962,6 @@ class ProfileViewModel @Inject constructor(
     ///////////////////////////////////////////////////////////////////////////
     // EXPERIENCE
     ///////////////////////////////////////////////////////////////////////////
-
     private val _experience: MutableStateFlow<PagingData<Experience>> =
         MutableStateFlow(value = PagingData.empty())
     val experience: MutableStateFlow<PagingData<Experience>> get() = _experience
@@ -974,6 +969,134 @@ class ProfileViewModel @Inject constructor(
     val allExp: MutableStateFlow<List<Experience>> = MutableStateFlow(emptyList())
     val exp: MutableStateFlow<List<Experience>> = MutableStateFlow(emptyList())
     val exp1: MutableStateFlow<Experience> = MutableStateFlow(Experience())
+    fun changePreferenceContract(index: Int, search: String) {
+        val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
+        if (listExperience.isNotEmpty() && index < listExperience.size - 1) {
+            listExperience[index].isContract = true
+            listExperience[index].type = search
+            listExperience[index].typeContract = search
+        }
+
+        allExp.update {
+            listExperience
+        }
+
+        user.update {
+            it.experience = listExperience
+            it
+        }
+    }
+
+    fun changePreferenceFreelance(index: Int, search: String) {
+        val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
+        if (listExperience.isNotEmpty() && index < listExperience.size - 1) {
+            listExperience[index].isFreelance = true
+            listExperience[index].type = search
+            listExperience[index].typeContract = search
+        }
+
+        allExp.update {
+            listExperience
+        }
+        user.update {
+            it.experience = listExperience
+            it
+        }
+    }
+
+    fun changeStartDateExperience(index: Int, search: String) {
+        val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
+        if (listExperience.isNotEmpty() && index < listExperience.size - 1) {
+            listExperience[index].dateStart = search
+        }
+
+        allExp.update {
+            listExperience
+        }
+        user.update {
+            it.experience = listExperience
+            it
+        }
+    }
+
+    fun changeEndDateExperience(index: Int, search: String) {
+        val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
+        if (listExperience.isNotEmpty() && index < listExperience.size - 1) {
+            listExperience[index].dateEnd = search
+        }
+
+        allExp.update {
+            listExperience
+        }
+        user.update {
+            it.experience = listExperience
+            it
+        }
+    }
+
+    fun changeDescriptionExperience(index: Int, search: String) {
+        val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
+        if (listExperience.isNotEmpty() && index < listExperience.size - 1) {
+            listExperience[index].description = search
+        }
+
+        allExp.update {
+            listExperience
+        }
+        user.update {
+            it.experience = listExperience
+            it
+        }
+    }
+
+    fun addTechnologyExperience(index: Int, newTechnology: String) {
+        val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
+        if (listExperience.isNotEmpty() && index < listExperience.size - 1) {
+            val listSkills = listExperience[index].listSkills ?: mutableListOf()
+
+            if (newTechnology.isNotBlank() && !listSkills.contains(newTechnology)) {
+                listSkills.add(newTechnology)
+            }
+
+            listExperience[index].listSkills = listSkills
+        }
+
+        allExp.update {
+            listExperience
+        }
+        user.update {
+            it.experience = listExperience
+            it
+        }
+    }
+
+    fun addNewExperience() {
+        val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
+        listExperience.add(Experience())
+
+        allExp.update {
+            listExperience
+        }
+        user.update {
+            it.experience = listExperience
+            it
+        }
+    }
+
+    fun removeSelectedExperience(index: Int) {
+        val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
+        if (listExperience.isNotEmpty() && index < listExperience.size - 1) {
+            listExperience.removeAt(index)
+        }
+
+        allExp.update {
+            listExperience
+        }
+        user.update {
+            it.experience = listExperience
+            it
+        }
+    }
 
     var withDetail = MutableStateFlow(false)
 
@@ -1037,9 +1160,9 @@ class ProfileViewModel @Inject constructor(
             locationExp.update { place ?: "" }
             companyExp.update { companyName ?: "" }
             val typeLang = if (lang == "French") "Contrat" else "Contract"
-            typeEmploymentExp.update { if (type.isNullOrEmpty()) typeLang else type }
+            typeEmploymentExp.update { if (type.isNullOrEmpty()) typeLang else type ?:"" }
             val typeFee = if (lang == "French") "Par heurs" else "Hourly"
-            freelanceFeeType.update { if (freelanceFee.isNullOrEmpty()) typeFee else freelanceFee }
+            freelanceFeeType.update { if (freelanceFee.isNullOrEmpty()) typeFee else freelanceFee ?: "" }
             typeContractExp.update { typeContract ?: "" }
             hourlyRateExp.update { hourlyRate ?: 0 }
             nbHoursExp.update { nbHours ?: 0 }
@@ -1104,10 +1227,10 @@ class ProfileViewModel @Inject constructor(
         locationExp.update { item.place ?: "" }
         companyExp.update { item.companyName ?: "" }
         val typeLang = if (lang == "French") "Contrat" else "Contract"
-        typeEmploymentExp.update { if (item.type.isNullOrEmpty()) typeLang else item.type }
+        typeEmploymentExp.update { if (item.type.isNullOrEmpty()) typeLang else item.type ?: "" }
         typeContractExp.update { item.typeContract ?: "" }
         val typeFee = if (lang == "French") "Par heurs" else "Hourly"
-        freelanceFeeType.update { if (item.freelanceFee.isNullOrEmpty()) typeFee else item.freelanceFee }
+        freelanceFeeType.update { if (item.freelanceFee.isNullOrEmpty()) typeFee else item.freelanceFee ?: "" }
         nbHoursExp.update { item.nbHours ?: 10 }
         nbDaysExp.update { item.nbDays ?: 10 }
         birthDate.update { item.dateStart ?: "" }

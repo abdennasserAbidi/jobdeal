@@ -288,5 +288,8 @@
     <string name="verification_rejected_info_text">Votre compte a été rejeté</string>
     <string name="verification_validate_info_text">Votre compte a été valider</string>
 
+    <string name="work_experience_text">Expérience professionnelle</string>
+    <string name="pro_journey_text">Votre parcours professionnel</string>
+    <string name="add_experience_pro_text">Ajouter une expérience de travail</string>
 
 </resources>

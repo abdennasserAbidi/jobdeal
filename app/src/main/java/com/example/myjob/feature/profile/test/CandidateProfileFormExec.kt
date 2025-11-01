@@ -17,6 +17,7 @@ fun CandidateProfileFormExec(
     list: List<NewCountry>,
     clearData: () -> Unit = {},
     allSubjects: MutableList<Subject>,
+    listCompany: MutableList<String>,
     profileViewModel: ProfileViewModel = hiltViewModel(),
 ) {
     // Sample initial data (could be empty for new profile or pre-filled for editing)
@@ -92,6 +93,7 @@ fun CandidateProfileFormExec(
         list = list,
         clearData = clearData,
         allSubjects = allSubjects,
+        listCompany = listCompany,
         onBackClick = {
             navController.popBackStack()
         },

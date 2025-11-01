@@ -1,5 +1,6 @@
 package com.example.myjob.feature.profile.test
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,6 +23,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -51,10 +54,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.myjob.R
+import com.example.myjob.domain.entities.Experience
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,7 +97,8 @@ fun WorkPreferenceSelector(
         )
 
         ExposedDropdownMenu(
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier
+                .fillMaxWidth()
                 .padding(horizontal = 20.dp),
             expanded = expanded,
             onDismissRequest = { expanded = false }
@@ -570,8 +576,13 @@ fun LanguageCard(
 
 @Composable
 fun WorkExperienceCard(
-    experience: WorkExperienceForm,
-    onExperienceChange: (WorkExperienceForm) -> Unit,
+    experience: Experience,
+    onExperienceTypeChange: (String) -> Unit,
+    onCompanyNameChange: () -> Unit,
+    onDateStartChange: () -> Unit,
+    onDateEndChange: () -> Unit,
+    onDescriptionChange: (String) -> Unit,
+    addTechnologiesChanged: (String) -> Unit,
     onRemove: () -> Unit
 ) {
     var newTechnology by remember { mutableStateOf("") }
@@ -614,18 +625,43 @@ fun WorkExperienceCard(
                 }
             }
 
-            FormTextField(
-                value = experience.company,
-                onValueChange = { onExperienceChange(experience.copy(company = it)) },
-                label = "Company Name",
-                isRequired = true
+            var isContract by remember { mutableStateOf(experience.isContract) }
+            var isFreelance by remember { mutableStateOf(experience.isFreelance) }
+
+            Log.i("flkzhfrzgrz", "type: ${experience.type}")
+
+            WorkTypeContract(
+                contract = isContract,
+                freelance = isFreelance,
+                onContractChange = {
+                    isContract = it
+                    onExperienceTypeChange("Contract")
+                },
+                onFreelanceChange = {
+                    isFreelance = it
+                    onExperienceTypeChange("Freelance")
+                }
             )
 
             FormTextField(
-                value = experience.position,
-                onValueChange = { onExperienceChange(experience.copy(position = it)) },
+                value = experience.companyName ?: "Unspecified",
+                onValueChange = {},
+                label = "Company Name",
+                isRequired = true,
+                readOnly = true,
+                onClick = {
+                    onCompanyNameChange()
+                }
+            )
+
+            FormTextField(
+                value = experience.title ?: "Unspecified",
+                onValueChange = {},
                 label = "Position/Title",
-                isRequired = true
+                isRequired = true,
+                readOnly = true,
+                onClick = {
+                }
             )
 
             Row(
@@ -633,20 +669,30 @@ fun WorkExperienceCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FormTextField(
-                    value = experience.startDate,
-                    onValueChange = { onExperienceChange(experience.copy(startDate = it)) },
+                    value = experience.dateStart ?: "",
+                    onValueChange = {},
                     label = "Start Date",
                     placeholder = "MM/YYYY",
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    isRequired = true,
+                    readOnly = true,
+                    onClick = {
+                        onDateStartChange()
+                    }
                 )
 
                 if (!experience.current) {
                     FormTextField(
-                        value = experience.endDate,
-                        onValueChange = { onExperienceChange(experience.copy(endDate = it)) },
+                        value = experience.dateEnd ?: "",
+                        onValueChange = {},
                         label = "End Date",
                         placeholder = "MM/YYYY",
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        isRequired = true,
+                        readOnly = true,
+                        onClick = {
+                            onDateEndChange()
+                        }
                     )
                 } else {
                     Spacer(modifier = Modifier.weight(1f))
@@ -658,7 +704,7 @@ fun WorkExperienceCard(
             ) {
                 Checkbox(
                     checked = experience.current,
-                    onCheckedChange = { onExperienceChange(experience.copy(current = it)) },
+                    onCheckedChange = {},
                     colors = CheckboxDefaults.colors(checkedColor = whatsAppGreen)
                 )
                 Text(
@@ -668,8 +714,10 @@ fun WorkExperienceCard(
             }
 
             FormTextField(
-                value = experience.description,
-                onValueChange = { onExperienceChange(experience.copy(description = it)) },
+                value = experience.description ?: "",
+                onValueChange = {
+                    onDescriptionChange(it)
+                },
                 label = "Job Description",
                 placeholder = "Describe your responsibilities and achievements...",
                 maxLines = 4,
@@ -698,14 +746,8 @@ fun WorkExperienceCard(
 
                 Button(
                     onClick = {
-                        if (newTechnology.isNotBlank() && !experience.technologies.contains(
-                                newTechnology
-                            )
-                        ) {
-                            experience.technologies.add(newTechnology)
-                            onExperienceChange(experience)
-                            newTechnology = ""
-                        }
+                        addTechnologiesChanged(newTechnology)
+                        newTechnology = ""
                     },
                     enabled = newTechnology.isNotBlank(),
                     colors = ButtonDefaults.buttonColors(containerColor = whatsAppGreen)
@@ -714,16 +756,16 @@ fun WorkExperienceCard(
                 }
             }
 
-            if (experience.technologies.isNotEmpty()) {
+            if (experience.listSkills?.isNotEmpty() == true) {
+                val listTech = experience.listSkills?.toMutableList() ?: mutableListOf()
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    items(experience.technologies) { tech ->
+                    items(listTech) { tech ->
                         SkillChipRemovable(
                             skill = tech,
                             onRemove = {
-                                experience.technologies.remove(tech)
-                                onExperienceChange(experience)
+
                             }
                         )
                     }
@@ -991,6 +1033,44 @@ fun WorkTypePreferences(
                 icon = Icons.Default.LocationOn,
                 isSelected = onSiteWork,
                 onSelectionChange = onOnSiteChange,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+fun WorkTypeContract(
+    contract: Boolean,
+    freelance: Boolean,
+    onContractChange: (Boolean) -> Unit,
+    onFreelanceChange: (Boolean) -> Unit
+) {
+    Column {
+        Text(
+            text = stringResource(id = R.string.fee_text),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            WorkTypeChip(
+                text = stringResource(id = R.string.type1_text),
+                icon = Icons.Default.Work,
+                isSelected = contract,
+                onSelectionChange = onContractChange,
+                modifier = Modifier.weight(1f)
+            )
+
+            WorkTypeChip(
+                text = stringResource(id = R.string.type2_text),
+                icon = Icons.Default.Person,
+                isSelected = freelance,
+                onSelectionChange = onFreelanceChange,
                 modifier = Modifier.weight(1f)
             )
         }

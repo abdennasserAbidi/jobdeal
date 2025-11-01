@@ -683,7 +683,8 @@ fun ExperienceItem(experience: Experience) {
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                items(experience.listSkills) { tech ->
+                val listTech = experience.listSkills?.toMutableList() ?: mutableListOf()
+                items(listTech) { tech ->
                     SkillChip(skill = tech, isHighlighted = false)
                 }
             }

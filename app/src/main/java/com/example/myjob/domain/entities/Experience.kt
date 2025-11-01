@@ -15,21 +15,24 @@ val USER_EXP = listOf(
 @Serializable
 data class Experience(
     var id: Int = View.generateViewId(),
-    val title: String? = "",
-    val description: String? = "",
-    val listSkills: MutableList<String>? = mutableListOf(),
-    val companyName: String? = "",
-    val dateStart: String? = "",
-    val dateEnd: String? = "",
-    val place: String? = "",
-    val type: String? = "",
-    val typeContract: String? = "",
-    val anotherActivitySector: String? = "",
-    val freelanceFee: String? = "",
-    val nbHours: Int? = 0,
-    val nbDays: Int? = 0,
-    val salary: Int? = 1000,
-    val hourlyRate: Int? = 0,
+    var title: String? = "",
+    var description: String? = "",
+    var listSkills: MutableList<String>? = mutableListOf(),
+    var companyName: String? = "",
+    var dateStart: String? = "",
+    var dateEnd: String? = "",
+    var place: String? = "",
+    var type: String? = "",
+    var typeContract: String? = "",
+    var anotherActivitySector: String? = "",
+    var freelanceFee: String? = "",
+    var nbHours: Int? = 0,
+    var nbDays: Int? = 0,
+    var salary: Int? = 1000,
+    var hourlyRate: Int? = 0,
+    var current: Boolean = false,
+    var isFreelance: Boolean = false,
+    var isContract: Boolean = false,
     var idUser: Int? = 0
 ) {
 
@@ -40,7 +43,7 @@ data class Experience(
         val companyNameValid = !companyName.isNullOrEmpty()
         val countryValid = !place.isNullOrEmpty()
         val dateStartValid = dateStart != null && dateStart != "Choose Date"
-        val dateEndValid = dateEnd != null && dateEnd != "Choose Date" && dateEnd.isNotEmpty()
+        val dateEndValid = dateEnd != null && dateEnd != "Choose Date" && dateEnd?.isNotEmpty() == true
         val typeValid = !type.isNullOrEmpty()
         val typeContractValid = !typeContract.isNullOrEmpty()
         val salaryValid = salary != null && salary != 1000
@@ -91,7 +94,7 @@ data class Experience(
         val companyNameValid = !companyName.isNullOrEmpty()
         val countryValid = !place.isNullOrEmpty()
         val dateStartValid = dateStart != null && dateStart != "Choose Date"
-        val dateEndValid = dateEnd != null && dateEnd != "Choose Date" && dateEnd.isNotEmpty()
+        val dateEndValid = dateEnd != null && dateEnd != "Choose Date" && dateEnd?.isNotEmpty() == true
         val typeValid = !type.isNullOrEmpty()
         val typeContractValid = !typeContract.isNullOrEmpty()
         val salaryValid = salary != null && salary != 1000

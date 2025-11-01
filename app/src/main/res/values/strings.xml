@@ -302,4 +302,9 @@
     <string name="verification_rejected_info_text">Your account has been rejected</string>
     <string name="verification_validate_info_text">Your account has been validated</string>
 
+
+    <string name="work_experience_text">Work Experience</string>
+    <string name="pro_journey_text">Your professional journey</string>
+    <string name="add_experience_pro_text">Add Work Experience</string>
+
 </resources>
