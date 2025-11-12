@@ -510,7 +510,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun changeSelectionContract(index: Int, title: String, isSelected: Boolean) {
+    private fun changeSelectionContract(index: Int, title: String, isSelected: Boolean) {
         val availability = selectedTypeContract.value.toMutableList()
         availability[index].titleString = title
         availability[index].isSelected = isSelected

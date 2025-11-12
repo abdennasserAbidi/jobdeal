@@ -12,6 +12,7 @@
     RUN yes | sdkmanager --licenses && \
         sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools" "extras;android;m2repository" "extras;google;m2repository"
 
+
     # Set working directory
     WORKDIR /app
 
