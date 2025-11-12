@@ -127,7 +127,8 @@ fun CandidateCard(
                 }
 
                 // Status Badge
-                StatusBadge(status = candidate.status)
+
+                //CandidateStatus.AVAILABLE
             }
 
             Spacer(modifier = Modifier.height(12.dp))

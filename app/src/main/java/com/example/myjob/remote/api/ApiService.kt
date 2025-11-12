@@ -150,6 +150,9 @@ ApiService {
     @POST("auth/sendInvitation")
     suspend fun sendInvitation(@Body invitationParams: InvitationParams): UserResponse
 
+    @POST("auth/deleteInvitation")
+    suspend fun deleteInvitation(@Query("idInvitation") idInvitation: Int): UserResponse
+
     @POST("auth/finishProcess")
     suspend fun finishProcess(@Body invitationParams: InvitationParams): InvitationParams
 

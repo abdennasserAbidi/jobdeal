@@ -538,29 +538,6 @@ class HomeViewModel @Inject constructor(
     val situations = MutableStateFlow(emptyList<SituationChoices>())
     val selectedSituation = MutableStateFlow(listOf(false, false, false))
 
-    fun clearSelectionSituation() {
-        val availability = situations.value.toMutableList()
-        for (i in 0 until availability.size) {
-            availability[i].isSelected = false
-        }
-        situations.update {
-            availability
-        }
-
-        val selectedAvailabilities = selectedSituation.value.toMutableList()
-        for (i in 0 until selectedAvailabilities.size) {
-            selectedAvailabilities[i] = false
-        }
-        selectedSituation.update {
-            selectedAvailabilities
-        }
-
-        criteria.update {
-            it.situation = mutableListOf()
-            it
-        }
-    }
-
     fun changeSelectionSituation(index: Int, title: String, isSelected: Boolean) {
 
         val availability = situations.value.toMutableList()
@@ -577,16 +554,8 @@ class HomeViewModel @Inject constructor(
         }
 
         val list = criteria.value.situation
-
-        if (isSelected) {
-            availability.map {
-                if (it.titleString.isNotEmpty() && !list.contains(it.titleString)) list.add(it.titleString)
-            }
-        } else {
-            availability.map {
-                if (it.titleString.isNotEmpty() && list.contains(it.titleString)) list.remove(it.titleString)
-            }
-        }
+        if (isSelected && !list.contains(title))
+            list.add(title) else list.remove(title)
 
         criteria.update {
             it.situation = list
@@ -597,28 +566,6 @@ class HomeViewModel @Inject constructor(
 
     val sexChoices = MutableStateFlow(emptyList<SexChoices>())
     val selectedSex = MutableStateFlow(listOf(false, false))
-    fun clearSelectionSex() {
-        val availability = sexChoices.value.toMutableList()
-        for (i in 0 until availability.size) {
-            availability[i].isSelected = false
-        }
-        sexChoices.update {
-            availability
-        }
-
-        val selectedAvailabilities = selectedSex.value.toMutableList()
-        for (i in 0 until selectedAvailabilities.size) {
-            selectedAvailabilities[i] = false
-        }
-        selectedSex.update {
-            selectedAvailabilities
-        }
-
-        criteria.update {
-            it.sex = mutableListOf()
-            it
-        }
-    }
 
     fun changeSelectionSex(index: Int, title: String, isSelected: Boolean) {
         val availability = sexChoices.value.toMutableList()
@@ -635,16 +582,8 @@ class HomeViewModel @Inject constructor(
         }
 
         val list = criteria.value.sex
-
-        if (isSelected) {
-            availability.map {
-                if (it.titleString.isNotEmpty() && !list.contains(it.titleString)) list.add(it.titleString)
-            }
-        } else {
-            availability.map {
-                if (it.titleString.isNotEmpty() && list.contains(it.titleString)) list.remove(it.titleString)
-            }
-        }
+        if (isSelected && !list.contains(title))
+            list.add(title) else list.remove(title)
 
         criteria.update {
             it.sex = list
@@ -840,9 +779,6 @@ class HomeViewModel @Inject constructor(
                         loadingState.update { false }
                         invitationSent.update { true }
                         idUserTo.update { user.id ?: -1 }
-                        /*_user.update {
-
-                        }*/
                     }
 
                     else -> {}

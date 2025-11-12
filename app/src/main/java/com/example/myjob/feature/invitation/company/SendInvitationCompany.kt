@@ -113,7 +113,7 @@ fun SendInvitationCompany(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Send Invitation",
+                        text = stringResource(id = R.string.send_invitation_text),
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -227,7 +227,7 @@ fun SendInvitationCompany(
                             strokeWidth = 2.dp
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Sending...")
+                        Text(stringResource(id = R.string.sending_text))
                     } else {
                         Icon(
                             Icons.Default.Send,
@@ -236,7 +236,7 @@ fun SendInvitationCompany(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Send",
+                            stringResource(id = R.string.send_text),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )

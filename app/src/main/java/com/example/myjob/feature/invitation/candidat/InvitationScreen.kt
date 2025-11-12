@@ -118,58 +118,10 @@ fun InvitationScreen(
 
         Column(modifier = Modifier.fillMaxWidth()) {
 
-            /*Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(70.dp)
-                    .background(color = colorResource(id = R.color.whatsapp)),
-                contentAlignment = Alignment.Center
-            ) {
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 15.dp, horizontal = 15.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        tint = Color.White,
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                navController.popBackStack()
-                            },
-                        contentDescription = ""
-                    )
-
-                    Text(
-                        text = "My Invitations",
-                        modifier = Modifier.align(Alignment.Center),
-                        color = Color.White,
-                        style = TextStyle(
-                            fontSize = 18.sp,
-                            fontFamily = FontFamily.Default,
-                            fontWeight = FontWeight.Medium
-                        )
-                    )
-                }
-            }*/
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(color = colorResource(id = R.color.whatsapp))
-                    /*.background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color(0xFF25D366),
-                                Color(0xFF20BA5A)
-                            )
-                        )
-                    )*/
                     .padding(horizontal = 20.dp, vertical = 24.dp)
             ) {
                 Row(

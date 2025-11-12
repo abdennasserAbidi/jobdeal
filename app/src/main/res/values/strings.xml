@@ -141,6 +141,7 @@
     <string name="all_candidates_text">All Candidates</string>
     <string name="candidates_text">Candidates</string>
     <string name="search_candidates_text">Search candidates</string>
+    <string name="rejected_offer_text">You rejected this offer</string>
 
     <string name="invitation_found_text">invitations found</string>
     <string name="phone_text">Phone</string>
@@ -291,6 +292,8 @@
     <string name="fee_text">Post details</string>
     <string name="post_type_text">Post type</string>
     <string name="send_text">Send</string>
+    <string name="sending_text">Sending…</string>
+    <string name="candidate_information_text">Candidate Information</string>
 
 
     <string name="intern_user_text">Intern</string>

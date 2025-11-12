@@ -24,6 +24,10 @@ enum class InvitationStatus {
     ON_HOLD, IN_PROCESS, HIRED, NOT_INTERESTED, REJECTED
 }
 
+enum class InvitationStatusFr {
+    ON_HOLD, IN_PROCESS, HIRED, NOT_INTERESTED, REJECTED
+}
+
 enum class SituationCandidate {
     IDLE, ACCEPTED, REJECTED
 }

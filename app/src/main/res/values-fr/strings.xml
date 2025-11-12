@@ -276,6 +276,8 @@
     <string name="fee_text">Détail du post</string>
     <string name="post_type_text">Type du post</string>
     <string name="send_text">Envoyer</string>
+    <string name="sending_text">Entrain d\'envoyer…</string>
+    <string name="candidate_information_text">Information du candidat</string>
 
     <string name="intern_user_text">Stagiaire</string>
     <string name="trainer_user_text">Formateur</string>
@@ -297,6 +299,7 @@
     <string name="show_result_text">Voir les resultats</string>
     <string name="hire_text">L\'entreprise vous a embauché</string>
     <string name="refuse_text">L\'entreprise a rejeté votre candidature car :</string>
+    <string name="rejected_offer_text">Vous avez refusé cette offre.</string>
 
     <string name="other_text">Autres</string>
     <string name="interview_text">Entretien</string>

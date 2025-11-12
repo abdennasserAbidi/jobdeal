@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -35,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -58,9 +60,17 @@ fun DetailInviScreen(
         MutableInteractionSource()
     }
 
+    val deletedStatus by invitationDetailViewModel.deletedStatus.collectAsStateWithLifecycle()
     val c by invitationDetailViewModel.candidate.collectAsStateWithLifecycle()
     val invitationModel by invitationDetailViewModel.invitations.collectAsState()
+    val language by invitationDetailViewModel.language.collectAsState()
     val invitation = invitationModel.invitationModel
+
+    LaunchedEffect(deletedStatus) {
+        if (deletedStatus == "removed successfully") {
+            navController.popBackStack()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -97,7 +107,7 @@ fun DetailInviScreen(
                 )
 
                 Text(
-                    text = "My Invitations",
+                    text = stringResource(id = R.string.invitations_text),
                     modifier = Modifier.align(Alignment.Center),
                     color = Color.White,
                     style = TextStyle(
@@ -122,7 +132,10 @@ fun DetailInviScreen(
                     status = invitation.status ?: "",
                     sentDate = invitation.date ?: "",
                     responseDate = invitation.dateEnd,
-                    invitationModel = invitation
+                    invitationModel = invitation,
+                    onDeleteInvitation = {
+                        invitationDetailViewModel.deleteInvitation(it.idInvitation)
+                    }
                 )
             }
 
@@ -145,7 +158,7 @@ fun DetailInviScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "Candidate Information",
+                        text = stringResource(id = R.string.candidate_information_text),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 12.dp)
@@ -242,19 +255,12 @@ fun DetailInviScreen(
             // Contract & Fee Details Card
             Box(modifier = Modifier.padding(top = 5.dp)) {
                 ContractDetailsCard(invitationModel = invitation)
-
             }
 
             // Notes Card (if available)
             invitation.reason?.let { notes ->
                 NotesCard(notes = notes)
             }
-
-            // Action Buttons
-            /*ActionButtonsSection(
-                status = invitation.status,
-                invitationModel = invitation
-            )*/
 
             Spacer(modifier = Modifier.height(16.dp))
         }
