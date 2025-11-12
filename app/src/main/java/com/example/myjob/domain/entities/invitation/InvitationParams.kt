@@ -28,6 +28,7 @@ enum class SituationCandidate {
     IDLE, ACCEPTED, REJECTED
 }
 
+@Serializable
 data class InvitationModel(
     var idInvitation: Int = View.generateViewId(),
     var idTo: Int = 0,

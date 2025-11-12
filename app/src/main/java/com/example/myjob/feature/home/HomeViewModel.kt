@@ -1,5 +1,6 @@
 package com.example.myjob.feature.home
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -7,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.filter
+import androidx.paging.map
 import com.example.myjob.R
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
@@ -22,6 +24,7 @@ import com.example.myjob.domain.entities.HOME_ENTITY
 import com.example.myjob.domain.entities.ParentChoices
 import com.example.myjob.domain.entities.SexChoices
 import com.example.myjob.domain.entities.SituationChoices
+import com.example.myjob.domain.entities.StatusChoices
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
@@ -208,6 +211,13 @@ class HomeViewModel @Inject constructor(
                 }
             }
 
+            R.string.status_type_text -> {
+                changeSelectionStatusCategory(index, title, isSelected)
+                listChoiceParentSelected.update {
+                    selectedStatusChoice.value
+                }
+            }
+
             R.string.sexe_text -> {
                 changeSelectionSex(index, title, isSelected)
                 listChoiceParentSelected.update {
@@ -219,6 +229,7 @@ class HomeViewModel @Inject constructor(
 
     fun changeOption(title: String, titleRes: Int) {
         val listChoices: List<Choices>? = when (titleRes) {
+            R.string.status_type_text -> selectedStatus.value.toMutableList()
             R.string.categories_text -> selectedCategory.value.toMutableList()
             R.string.experience_text -> selectedExperience.value.toMutableList()
             R.string.disponibility_text -> availabilities.value.toMutableList()
@@ -229,11 +240,6 @@ class HomeViewModel @Inject constructor(
         }
 
         choiceParentSelect.update { title }
-
-        /*R.string.activity_text ->
-            R.string.institution_text ->
-            R.string.location_text ->
-            R.string.company_name_text -> */
 
         val l = listChoiceParentSelected.value.toMutableList()
         listChoices?.map {
@@ -409,6 +415,41 @@ class HomeViewModel @Inject constructor(
 
     }
 
+    val selectedStatus = MutableStateFlow(emptyList<StatusChoices>())
+    val selectedStatusChoice = MutableStateFlow(listOf(false, false, false, false))
+    fun changeSelectionStatusCategory(index: Int, title: String, isSelected: Boolean) {
+        val availability = selectedStatus.value.toMutableList()
+        availability[index].titleString = title
+        availability[index].isSelected = isSelected
+        selectedStatus.update {
+            availability
+        }
+
+        val selectedAvailabilities = selectedStatusChoice.value.toMutableList()
+        selectedAvailabilities[index] = isSelected
+        selectedStatusChoice.update {
+            selectedAvailabilities
+        }
+
+        val list = criteria.value.status
+
+        if (isSelected) {
+            availability.map {
+                if (it.titleString.isNotEmpty() && !list.contains(it.titleString)) list.add(it.titleString)
+            }
+        } else {
+            availability.map {
+                if (it.titleString.isNotEmpty() && list.contains(it.titleString)) list.remove(it.titleString)
+            }
+        }
+
+        criteria.update {
+            it.status = list
+            it
+        }
+
+    }
+
     fun changeSelectionExp(index: Int, title: String, isSelected: Boolean) {
 
         val availability = selectedExperience.value.toMutableList()
@@ -484,16 +525,8 @@ class HomeViewModel @Inject constructor(
         }
 
         val list = criteria.value.typeContract
-
-        if (isSelected) {
-            availability.map {
-                if (it.titleString.isNotEmpty() && !list.contains(it.titleString)) list.add(it.titleString)
-            }
-        } else {
-            availability.map {
-                if (it.titleString.isNotEmpty() && list.contains(it.titleString)) list.remove(it.titleString)
-            }
-        }
+        if (isSelected && !list.contains(title))
+            list.add(title) else list.remove(title)
 
         criteria.update {
             it.typeContract = list
@@ -885,24 +918,17 @@ class HomeViewModel @Inject constructor(
 
     fun validateFilter(criteria: CriteriaModel) {
         viewModelScope.launch {
+
             if (!criteria.checkEmpty()) {
                 searchUserUseCase.execute(criteria).collect { res ->
-
+                    res.data?.map {
+                        Log.i("ljkljlkjkljlkgtr", "validateFilter: $it")
+                    }
                     _user.update {
                         res.data ?: PagingData.empty()
                     }
                 }
             } else getAllUser()
-        }
-    }
-
-    fun skipCurrentProfile(user: User) {
-        // Handle skipping the profile (e.g., move to the next profile)
-        viewModelScope.launch {
-            val s = _user.value.filter {
-                it.id != user.id
-            }
-            _user.update { s }
         }
     }
 
@@ -944,6 +970,7 @@ class HomeViewModel @Inject constructor(
         langState.update { lang }
 
         val listParent = listOf(
+            ParentChoices(title = R.string.status_type_text, isSelected = false),
             ParentChoices(title = R.string.employment_type_text, isSelected = false),
             ParentChoices(title = R.string.categories_text, isSelected = false),
             ParentChoices(title = R.string.experience_text, isSelected = false),
@@ -1025,15 +1052,23 @@ class HomeViewModel @Inject constructor(
             listSex
         }
 
-        /*CategoryChoices(title = R.string.type_intern_text, isSelected = false),
-            CategoryChoices(title = R.string.type_formation_text, isSelected = false),
-            CategoryChoices(title = R.string.type_event_text, isSelected = false)*/
         val listCategories = listOf(
             CategoryChoices(title = R.string.type1_text, isSelected = false),
             CategoryChoices(title = R.string.type2_text, isSelected = false)
         )
         selectedCategory.update {
             listCategories
+        }
+
+        val listStatus = listOf(
+            StatusChoices(title = R.string.available_text, isSelected = false),
+            StatusChoices(title = R.string.hired_text, isSelected = false),
+            StatusChoices(title = R.string.in_process_text, isSelected = false),
+            StatusChoices(title = R.string.not_interested_text, isSelected = false)
+        )
+
+        selectedStatus.update {
+            listStatus
         }
 
         getInvitations()

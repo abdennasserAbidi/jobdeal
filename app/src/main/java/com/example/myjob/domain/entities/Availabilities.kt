@@ -40,6 +40,13 @@ data class CategoryChoices(
     var isSelected: Boolean = false
 ): Choices()
 
+data class StatusChoices(
+    val id: Int? = View.generateViewId(),
+    var title: Int = R.string.type1_text,
+    var titleString: String = "",
+    var isSelected: Boolean = false
+): Choices()
+
 data class ContractTypeChoices(
     val id: Int? = View.generateViewId(),
     var title: Int = R.string.disponibility1_text,

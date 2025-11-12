@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.LanguageHelper
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.domain.usecase.verification.GetVerifiedCompanyUseCase
@@ -28,6 +29,12 @@ class SplashViewModel @Inject constructor(
     val listCompanies = MutableStateFlow(emptyList<String>())
 
     init {
+
+        //TODO("to change to both english and french after validation")
+        sharedPreferences.putString("lang", "Français")
+        GlobalEntries.language = "Français"
+        GlobalEntries.langState.update { "Français" }
+
         role.update {
             sharedPreferences.getString("role", "") ?: ""
         }

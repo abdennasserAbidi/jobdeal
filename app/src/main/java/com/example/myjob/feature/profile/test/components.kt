@@ -17,9 +17,12 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
@@ -44,7 +47,10 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,11 +61,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.myjob.R
+import com.example.myjob.common.GlobalEntries
+import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
+import com.example.myjob.domain.entities.ProfessionalStatus
+import com.example.myjob.feature.profile.ProfileViewModel
+import com.example.myjob.feature.signup.CustomDropdownMenu
+import kotlinx.coroutines.flow.update
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -443,7 +458,7 @@ fun LanguagesSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Languages",
+                text = stringResource(id = R.string.language_title_text),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium
             )
@@ -454,9 +469,14 @@ fun LanguagesSection(
                     onLanguagesChange(languages.toList())
                 }
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Language")
+                Icon(Icons.Default.Add,
+                    tint = colorResource(id = R.color.whatsapp),
+                    contentDescription = "Add Language")
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Add Language")
+                Text(
+                    text = stringResource(id = R.string.language_add_text),
+                    color = colorResource(id = R.color.whatsapp)
+                )
             }
         }
 
@@ -508,7 +528,7 @@ fun LanguageCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Language",
+                    text = stringResource(id = R.string.language_title_text),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
@@ -532,10 +552,16 @@ fun LanguageCard(
                 FormTextField(
                     value = language.name,
                     onValueChange = { onLanguageChange(language.copy(name = it)) },
-                    label = "Language",
-                    placeholder = "e.g., English, Spanish...",
+                    label = stringResource(id = R.string.language_title_text),
+                    placeholder = "English...",
                     modifier = Modifier.weight(1f)
                 )
+
+                /*keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = imeActions
+            ),
+            keyboardActions = keyboardActions*/
 
                 ExposedDropdownMenuBox(
                     expanded = expanded,
@@ -546,12 +572,17 @@ fun LanguageCard(
                         value = language.proficiency,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Proficiency") },
+                        label = { Text(stringResource(id = R.string.proficiency_text)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .menuAnchor(),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            unfocusedBorderColor = colorResource(id = R.color.whatsapp),
+                            focusedBorderColor = colorResource(id = R.color.whatsapp),
+                            cursorColor = Color.Black
+                        )
                     )
 
                     ExposedDropdownMenu(
@@ -577,16 +608,157 @@ fun LanguageCard(
 @Composable
 fun WorkExperienceCard(
     experience: Experience,
+    profileViewModel: ProfileViewModel,
     onExperienceTypeChange: (String) -> Unit,
     onCompanyNameChange: () -> Unit,
+    onFreelanceSalaryChange: (String) -> Unit,
+    onHourPaymentChange: (Boolean) -> Unit,
+    onDayPaymentChange: (Boolean) -> Unit,
+    onProjectPaymentChange: (Boolean) -> Unit,
     onDateStartChange: () -> Unit,
     onDateEndChange: () -> Unit,
+    onChangeCurrent: (Boolean) -> Unit,
+    onTitleChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
     addTechnologiesChanged: (String) -> Unit,
-    onRemove: () -> Unit
+    onRemove: () -> Unit,
+    onSubmit: () -> Unit,
 ) {
     var newTechnology by remember { mutableStateOf("") }
     val whatsAppGreen = colorResource(id = R.color.whatsapp)
+
+    var activatedCheck by remember { mutableStateOf(false) }
+    var isContract by remember(experience.type) {
+        mutableStateOf(experience.type?.isNotEmpty() == true && experience.type == "Contract")
+    }
+
+    var isFreelance by remember(experience.type) {
+        mutableStateOf(experience.type?.isNotEmpty() == true && experience.type != "Contract")
+    }
+
+    var isPerHour by remember {
+        mutableStateOf(experience.perHourPaymentMethod)
+    }
+
+    var isPerDay by remember {
+        mutableStateOf(experience.perDayPaymentMethod)
+    }
+
+    var isPerProject by remember {
+        mutableStateOf(experience.perProjectPaymentMethod)
+    }
+
+    var isCurrent by remember { mutableStateOf(experience.current) }
+    val textSalaryFreelance = if (experience.freelanceSalary == 0) ""
+    else "${experience.freelanceSalary}"
+
+    var freelanceSalary by remember { mutableStateOf(textSalaryFreelance) }
+    var title by remember {
+        mutableStateOf(experience.title ?: "")
+    }
+
+    var type by remember {
+        mutableStateOf(experience.type ?: "")
+    }
+
+    var companyName by remember {
+        mutableStateOf(experience.companyName ?: "")
+    }
+
+    val workValidator = type.isNotEmpty()
+    val companyNameValidator = experience.companyName?.isNotEmpty() == true
+    val dateStartValidator = experience.dateStart?.isNotEmpty() == true
+    val dateEndValidator = if (isCurrent == true) true else experience.dateEnd?.isNotEmpty() == true
+    val titleValidator = title.isNotEmpty()
+    val freelanceSalaryValidator = freelanceSalary.isNotEmpty()
+    val paymentMethodValidator = isPerDay || isPerHour || isPerProject
+
+    val isSubmitAction by GlobalEntries.isSubmitAction.collectAsState()
+
+    LaunchedEffect(isSubmitAction) {
+        if (isSubmitAction) {
+
+            val isAllCheck = if (type == "Freelance" && isCurrent == true) {
+                workValidator
+                        && paymentMethodValidator
+                        && freelanceSalaryValidator
+                        && companyNameValidator
+                        && dateStartValidator
+                        && titleValidator
+            } else if (type == "Freelance") {
+                workValidator
+                        && paymentMethodValidator
+                        && freelanceSalaryValidator
+                        && companyNameValidator
+                        && dateStartValidator
+                        && dateEndValidator
+                        && titleValidator
+            } else if (type == "Contract" && isCurrent == true) {
+                workValidator
+                        && companyNameValidator
+                        && dateStartValidator
+                        && dateEndValidator
+                        && titleValidator
+            } else if (type == "Contract") {
+                workValidator
+                        && companyNameValidator
+                        && dateStartValidator
+                        && titleValidator
+            } else {
+                workValidator
+                        && paymentMethodValidator
+                        && freelanceSalaryValidator
+                        && companyNameValidator
+                        && dateStartValidator
+                        && titleValidator
+            }
+
+            val hasError = if (type == "Freelance" && isCurrent == true) {
+                !workValidator ||
+                        !paymentMethodValidator ||
+                        !freelanceSalaryValidator ||
+                        !companyNameValidator ||
+                        !dateStartValidator ||
+                        !titleValidator
+            } else if (type == "Freelance") {
+                !workValidator ||
+                        !paymentMethodValidator ||
+                        !freelanceSalaryValidator ||
+                        !companyNameValidator ||
+                        !dateStartValidator ||
+                        !dateEndValidator ||
+                        !titleValidator
+            } else if (type == "Contract" && isCurrent == true) {
+                        !workValidator ||
+                        !companyNameValidator ||
+                        !dateStartValidator ||
+                        !titleValidator
+            } else if (type == "Contract") {
+                !workValidator ||
+                        !companyNameValidator ||
+                        !dateStartValidator ||
+                        !dateEndValidator ||
+                        !titleValidator
+            } else {
+                !workValidator ||
+                        !paymentMethodValidator ||
+                        !freelanceSalaryValidator ||
+                        !companyNameValidator ||
+                        !dateStartValidator ||
+                        !titleValidator
+            }
+
+            if (hasError) {
+                activatedCheck = true
+                GlobalEntries.isSubmitAction.update { false }
+                profileViewModel.triggerExperienceCheck(false)
+            }
+
+            if (isAllCheck) {
+                onSubmit()
+            }
+        }
+    }
 
     Card(
         modifier = Modifier
@@ -625,28 +797,88 @@ fun WorkExperienceCard(
                 }
             }
 
-            var isContract by remember { mutableStateOf(experience.isContract) }
-            var isFreelance by remember { mutableStateOf(experience.isFreelance) }
-
-            Log.i("flkzhfrzgrz", "type: ${experience.type}")
-
             WorkTypeContract(
                 contract = isContract,
                 freelance = isFreelance,
                 onContractChange = {
                     isContract = it
+                    isFreelance = false
+                    type = "Contract"
                     onExperienceTypeChange("Contract")
                 },
                 onFreelanceChange = {
                     isFreelance = it
+                    isContract = false
+                    type = "Freelance"
                     onExperienceTypeChange("Freelance")
                 }
             )
 
+            if (activatedCheck && !workValidator) {
+                Text(
+                    text = stringResource(id = R.string.error_work_type),
+                    color = Color.Red
+                )
+            }
+
+            if (isFreelance) {
+                WorkFeePreferences(
+                    perHour = isPerHour,
+                    perDay = isPerDay,
+                    perProject = isPerProject,
+                    onHourChange = {
+                        isPerHour = it
+                        isPerDay = false
+                        isPerProject = false
+                        onHourPaymentChange(it)
+                    },
+                    onDayChange = {
+                        isPerHour = false
+                        isPerDay = it
+                        isPerProject = false
+                        onDayPaymentChange(it)
+                    },
+                    onProjectChange = {
+                        isPerHour = false
+                        isPerDay = false
+                        isPerProject = it
+                        onProjectPaymentChange(it)
+                    }
+                )
+
+                if (activatedCheck && !paymentMethodValidator) {
+                    Text(
+                        text = stringResource(id = R.string.error_work_type),
+                        color = Color.Red
+                    )
+                }
+
+                FormTextField(
+                    value = freelanceSalary,
+                    borderColor = if (activatedCheck && freelanceSalary.isEmpty()) Color.Red else colorResource(
+                        id = R.color.whatsapp
+                    ),
+                    onValueChange = {
+                        if (activatedCheck) it.isNotEmpty()
+                        if (it.isNotEmpty()) {
+                            freelanceSalary = it
+                            onFreelanceSalaryChange(it)
+                        }
+                    },
+                    label = stringResource(id = R.string.freelance_salary_text),
+                    isRequired = true
+                )
+            }
+
             FormTextField(
-                value = experience.companyName ?: "Unspecified",
-                onValueChange = {},
-                label = "Company Name",
+                value = experience.companyName ?: "",
+                borderColor = if (activatedCheck && experience.companyName?.isNotEmpty() == false) Color.Red else colorResource(
+                    id = R.color.whatsapp
+                ),
+                onValueChange = {
+
+                },
+                label = stringResource(id = R.string.company_name_text),
                 isRequired = true,
                 readOnly = true,
                 onClick = {
@@ -655,25 +887,36 @@ fun WorkExperienceCard(
             )
 
             FormTextField(
-                value = experience.title ?: "Unspecified",
-                onValueChange = {},
+                value = title,
+                borderColor = if (activatedCheck && title.isEmpty()) Color.Red else colorResource(
+                    id = R.color.whatsapp
+                ),
+                onValueChange = {
+                    if (activatedCheck) it.isNotEmpty()
+                    title = it
+                    onTitleChange(it)
+                },
                 label = "Position/Title",
-                isRequired = true,
-                readOnly = true,
-                onClick = {
-                }
+                isRequired = true
             )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+
+                val modifier = if (isCurrent == false) Modifier.weight(1f)
+                else Modifier.fillMaxWidth()
+
                 FormTextField(
                     value = experience.dateStart ?: "",
+                    borderColor = if (activatedCheck && experience.dateStart?.isNotEmpty() == false) Color.Red else colorResource(
+                        id = R.color.whatsapp
+                    ),
                     onValueChange = {},
-                    label = "Start Date",
+                    label = stringResource(id = R.string.start_date_text),
                     placeholder = "MM/YYYY",
-                    modifier = Modifier.weight(1f),
+                    modifier = modifier,
                     isRequired = true,
                     readOnly = true,
                     onClick = {
@@ -681,11 +924,14 @@ fun WorkExperienceCard(
                     }
                 )
 
-                if (!experience.current) {
+                if (isCurrent == false) {
                     FormTextField(
                         value = experience.dateEnd ?: "",
+                        borderColor = if (activatedCheck && experience.dateEnd?.isNotEmpty() == false) Color.Red else colorResource(
+                            id = R.color.whatsapp
+                        ),
                         onValueChange = {},
-                        label = "End Date",
+                        label = stringResource(id = R.string.end_date_text),
                         placeholder = "MM/YYYY",
                         modifier = Modifier.weight(1f),
                         isRequired = true,
@@ -703,8 +949,11 @@ fun WorkExperienceCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
-                    checked = experience.current,
-                    onCheckedChange = {},
+                    checked = isCurrent ?: false,
+                    onCheckedChange = {
+                        isCurrent = it
+                        onChangeCurrent(it)
+                    },
                     colors = CheckboxDefaults.colors(checkedColor = whatsAppGreen)
                 )
                 Text(
@@ -713,9 +962,15 @@ fun WorkExperienceCard(
                 )
             }
 
+            var description by remember {
+                mutableStateOf(experience.description ?: "")
+            }
+
             FormTextField(
-                value = experience.description ?: "",
+                value = description,
+                borderColor = colorResource(id = R.color.whatsapp),
                 onValueChange = {
+                    description = it
                     onDescriptionChange(it)
                 },
                 label = "Job Description",
@@ -771,6 +1026,211 @@ fun WorkExperienceCard(
                     }
                 }
             }
+        }
+    }
+}
+
+
+
+@Composable
+fun EducationCard(
+    education: Educations,
+    onChangeDegree: () -> Unit,
+    onChangeFieldOfStudy: () -> Unit,
+    onChangeGrade: (String) -> Unit,
+    onChangeInstitution: () -> Unit,
+    onSubmit: () -> Unit,
+    onRemove: () -> Unit
+) {
+
+    var activatedCheck by remember { mutableStateOf(false) }
+
+    val schoolNameValidator = education.schoolName?.isNotEmpty() == true
+    val degreeValidator = education.degree?.isNotEmpty() == true
+    val fieldStudyValidator = education.fieldStudy?.isNotEmpty() == true
+
+    val isSubmitEducationAction by GlobalEntries.isSubmitEducationAction.collectAsState()
+
+    LaunchedEffect(isSubmitEducationAction) {
+        if (isSubmitEducationAction) {
+
+            if (!schoolNameValidator || !degreeValidator || !fieldStudyValidator) {
+                activatedCheck = true
+                GlobalEntries.isSubmitEducationAction.update { false }
+            }
+
+            if (schoolNameValidator && degreeValidator && fieldStudyValidator) {
+                onSubmit()
+            }
+        }
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(5.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = R.string.education_text),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                IconButton(
+                    onClick = onRemove,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Remove",
+                        modifier = Modifier.size(16.dp),
+                        tint = Color.Red
+                    )
+                }
+            }
+
+            FormTextField(
+                value = education.schoolName ?: "",
+                borderColor = if (activatedCheck && education.schoolName?.isNotEmpty() == false) Color.Red else colorResource(
+                    id = R.color.whatsapp
+                ),
+                onValueChange = { },
+                label = "Institution/University",
+                isRequired = true,
+                readOnly = true,
+                onClick = {
+                    onChangeInstitution()
+                }
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FormTextField(
+                    value = education.degree ?: "",
+                    borderColor = if (activatedCheck && education.degree?.isNotEmpty() == false) Color.Red else colorResource(
+                        id = R.color.whatsapp
+                    ),
+                    onValueChange = { },
+                    label = stringResource(id = R.string.degree_text),
+                    placeholder = "Bachelor's, Master's...",
+                    modifier = Modifier.weight(1f),
+                    isRequired = true,
+                    readOnly = true,
+                    onClick = {
+                        onChangeDegree()
+                    }
+                )
+
+                FormTextField(
+                    value = education.fieldStudy ?: "",
+                    borderColor = if (activatedCheck && education.fieldStudy?.isNotEmpty() == false) Color.Red else colorResource(
+                        id = R.color.whatsapp
+                    ),
+                    onValueChange = { },
+                    label = "Field of Study",
+                    placeholder = "Computer Science...",
+                    modifier = Modifier.weight(1f),
+                    isRequired = true,
+                    readOnly = true,
+                    onClick = {
+                        onChangeFieldOfStudy()
+                    }
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+
+                var year by remember { mutableStateOf("") }
+
+                FormTextField(
+                    value = year,
+                    onValueChange = {
+                         year = it
+                    },
+                    label = "Graduation Year",
+                    placeholder = "2023",
+                    keyboardType = KeyboardType.Number,
+                    modifier = Modifier.weight(1f)
+                )
+
+                var grade by remember { mutableStateOf(education.grade ?: "") }
+
+                FormTextField(
+                    value = grade,
+                    onValueChange = {
+                        grade = it
+                        onChangeGrade(it)
+                    },
+                    label = "GPA (Optional)",
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun WorkTypePreferences(
+    remoteWork: Boolean,
+    hybridWork: Boolean,
+    onSiteWork: Boolean,
+    onRemoteChange: (Boolean) -> Unit,
+    onHybridChange: (Boolean) -> Unit,
+    onOnSiteChange: (Boolean) -> Unit
+) {
+    Column {
+        Text(
+            text = "Work Type Preferences",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            WorkTypeChip(
+                text = "Remote",
+                icon = Icons.Default.Home,
+                isSelected = remoteWork,
+                onSelectionChange = onRemoteChange,
+                modifier = Modifier.weight(1f)
+            )
+
+            WorkTypeChip(
+                text = "Hybrid",
+                icon = Icons.Default.Business,
+                isSelected = hybridWork,
+                onSelectionChange = onHybridChange,
+                modifier = Modifier.weight(1f)
+            )
+
+            WorkTypeChip(
+                text = "On-site",
+                icon = Icons.Default.LocationOn,
+                isSelected = onSiteWork,
+                onSelectionChange = onOnSiteChange,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
@@ -898,111 +1358,17 @@ fun ProjectCard(
 }
 
 @Composable
-fun EducationCard(
-    education: EducationForm,
-    onEducationChange: (EducationForm) -> Unit,
-    onRemove: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Education",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                IconButton(
-                    onClick = onRemove,
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "Remove",
-                        modifier = Modifier.size(16.dp),
-                        tint = Color.Red
-                    )
-                }
-            }
-
-            FormTextField(
-                value = education.institution,
-                onValueChange = { onEducationChange(education.copy(institution = it)) },
-                label = "Institution/University",
-                isRequired = true
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FormTextField(
-                    value = education.degree,
-                    onValueChange = { onEducationChange(education.copy(degree = it)) },
-                    label = "Degree",
-                    placeholder = "Bachelor's, Master's...",
-                    modifier = Modifier.weight(1f),
-                    isRequired = true
-                )
-
-                FormTextField(
-                    value = education.field,
-                    onValueChange = { onEducationChange(education.copy(field = it)) },
-                    label = "Field of Study",
-                    placeholder = "Computer Science...",
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FormTextField(
-                    value = education.year,
-                    onValueChange = { onEducationChange(education.copy(year = it)) },
-                    label = "Graduation Year",
-                    placeholder = "2023",
-                    keyboardType = KeyboardType.Number,
-                    modifier = Modifier.weight(1f)
-                )
-
-                FormTextField(
-                    value = education.gpa,
-                    onValueChange = { onEducationChange(education.copy(gpa = it)) },
-                    label = "GPA (Optional)",
-                    placeholder = "3.8",
-                    keyboardType = KeyboardType.Decimal,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun WorkTypePreferences(
-    remoteWork: Boolean,
-    hybridWork: Boolean,
-    onSiteWork: Boolean,
-    onRemoteChange: (Boolean) -> Unit,
-    onHybridChange: (Boolean) -> Unit,
-    onOnSiteChange: (Boolean) -> Unit
+fun WorkFeePreferences(
+    perHour: Boolean,
+    perDay: Boolean,
+    perProject: Boolean,
+    onHourChange: (Boolean) -> Unit,
+    onDayChange: (Boolean) -> Unit,
+    onProjectChange: (Boolean) -> Unit
 ) {
     Column {
         Text(
-            text = "Work Type Preferences",
+            text = stringResource(id = R.string.fee_freelance_text),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(bottom = 8.dp)
@@ -1012,27 +1378,34 @@ fun WorkTypePreferences(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+
             WorkTypeChip(
-                text = "Remote",
-                icon = Icons.Default.Home,
-                isSelected = remoteWork,
-                onSelectionChange = onRemoteChange,
+                text = stringResource(id = R.string.per_hour_text),
+                icon = Icons.Default.AccessTime,
+                isSelected = perHour,
+                onSelectionChange = {
+                    onHourChange(it)
+                },
                 modifier = Modifier.weight(1f)
             )
 
             WorkTypeChip(
-                text = "Hybrid",
-                icon = Icons.Default.Business,
-                isSelected = hybridWork,
-                onSelectionChange = onHybridChange,
+                text = stringResource(id = R.string.per_day_text),
+                icon = Icons.Default.CalendarToday,
+                isSelected = perDay,
+                onSelectionChange = {
+                    onDayChange(it)
+                },
                 modifier = Modifier.weight(1f)
             )
 
             WorkTypeChip(
-                text = "On-site",
-                icon = Icons.Default.LocationOn,
-                isSelected = onSiteWork,
-                onSelectionChange = onOnSiteChange,
+                text = stringResource(id = R.string.per_project_text),
+                icon = Icons.Default.Dashboard,
+                isSelected = perProject,
+                onSelectionChange = {
+                    onProjectChange(it)
+                },
                 modifier = Modifier.weight(1f)
             )
         }

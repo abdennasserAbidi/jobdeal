@@ -35,7 +35,6 @@ import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
-import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GenericMultipleSearch
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.candidateUser
@@ -121,6 +120,11 @@ fun CandidateListScreen(
     val selectedCat by homeViewModel.selectedParentChoices.collectAsState()
 
     val selectedCategories by homeViewModel.selectedCat.collectAsState()
+
+    val selectedStatus by homeViewModel.selectedStatus.collectAsState()
+    val selectedStatusChoice by homeViewModel.selectedStatusChoice.collectAsState()
+
+
     val selectedRole by homeViewModel.selectedCategory.collectAsState()
     val selectedAvailability by homeViewModel.selectedAvailability.collectAsState()
     val selectedExp by homeViewModel.selectedExp.collectAsState()
@@ -190,7 +194,7 @@ fun CandidateListScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Candidates",
+                        text = stringResource(id = R.string.candidates_text),
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -221,7 +225,7 @@ fun CandidateListScreen(
                         homeViewModel.filterUser(it)
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Search candidates...") },
+                    placeholder = { Text("${stringResource(id = R.string.search_candidates_text)}...") },
                     leadingIcon = {
                         Icon(Icons.Default.Search, contentDescription = "Search")
                     },
@@ -272,7 +276,6 @@ fun CandidateListScreen(
                                     interactionSource = interactionSource,
                                     indication = null
                                 ) {
-                                    //filterOpen = true
                                     showFilterSheet = true
                                     GlobalEntries.isVisibleNav.update { false }
                                     itemRes = item.title
@@ -280,12 +283,6 @@ fun CandidateListScreen(
                                     titleParent = title
                                     isSelectedParent = !selectedCat[index]
                                     homeViewModel.changeOption(title, item.title)
-                                    /*homeViewModel.changeSelectionParentChoices(
-                                        index,
-                                        item.title,
-                                        title,
-                                        !selectedCat[index]
-                                    )*/
                                 },
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -300,98 +297,98 @@ fun CandidateListScreen(
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-
-                /*Text(
-                    text = "${filteredCandidates.size} candidates found",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )*/
             }
 
             val lazyPagingItems = homeViewModel.user.collectAsLazyPagingItems()
 
-            // Candidates List
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(lazyPagingItems.itemCount) { index ->
-                    val user = lazyPagingItems[index] ?: User()
-                    //user.getYearsExp()
-                    val exp = user.experience ?: emptyList()
+            if (lazyPagingItems.itemCount > 0) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(lazyPagingItems.itemCount) { index ->
+                        val user = lazyPagingItems[index] ?: User()
 
-                    val lastExperience = if (exp.isNotEmpty()) exp[exp.lastIndex]
-                    else Experience()
+                        val exp = user.experience ?: emptyList()
 
-                    val candidate = Candidate(
-                        name = user.fullName?.trimStart() ?: "",
-                        position = user.preferredActivitySector ?: "",
-                        company = lastExperience.companyName ?: "",
-                        experience = "5+ years",
-                        location = lastExperience.place ?: "",
-                        salary = "${lastExperience.salary ?: 0} DT",
-                        skills = emptyList()
-                    )
-                    val statusInvitation = stringResource(id = R.string.holding)
+                        val lastExperience = if (exp.isNotEmpty()) exp[exp.lastIndex]
+                        else Experience()
 
-                    CandidateCard(
-                        candidate = candidate,
-                        onClick = {
-                            GlobalEntries.userForCompany = user
-                            navController.navigate(Screen.DetailScreen.route)
-                        },
-                        onSendInvitation = {
+                        val candidate = Candidate(
+                            name = user.fullName?.trimStart() ?: "",
+                            position = user.preferredActivitySector ?: "",
+                            company = lastExperience.companyName ?: "",
+                            experience = "5+ years",
+                            location = lastExperience.place ?: "",
+                            salary = "${lastExperience.salary ?: 0} DT",
+                            skills = emptyList()
+                        )
+                        val statusInvitation = stringResource(id = R.string.holding)
 
-                            candidateUser = user
-                            navController.navigate(Screen.SendInvitationScreen.route)
+                        CandidateCard(
+                            user = user,
+                            candidate = candidate,
+                            onClick = {
+                                GlobalEntries.userForCompany = user
+                                navController.navigate(Screen.DetailScreen.route)
+                            },
+                            onSendInvitation = {
+
+                                candidateUser = user
+                                navController.navigate(Screen.SendInvitationScreen.route)
+                            }
+                        )
+
+                        if (index >= lazyPagingItems.itemCount) {
+                            Spacer(modifier = Modifier
+                                .height(50.dp)
+                                .fillMaxWidth())
                         }
-                    )
 
-                    if (index >= lazyPagingItems.itemCount) {
-                        Spacer(modifier = Modifier.height(50.dp).fillMaxWidth())
+                        Spacer(modifier = Modifier
+                            .height(50.dp)
+                            .fillMaxWidth())
+                    }
+                    lazyPagingItems.apply {
+                        when {
+                            loadState.refresh is LoadState.Loading -> {
+                                item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
+                            }
+
+                            loadState.refresh is LoadState.Error -> {
+                                //val error = lazyPagingItems.loadState.refresh as LoadState.Error
+                                val error = (loadState.refresh as? LoadState.Error)?.error
+
+                                /*item {
+                                    ErrorMessage(
+                                        modifier = Modifier.fillParentMaxSize(),
+                                        message = error?.localizedMessage ?: "",
+                                        onClickRetry = { retry() })
+                                }*/
+                            }
+
+                            loadState.append is LoadState.Loading -> {
+                                item { LoadingNextPageItem(modifier = Modifier) }
+                            }
+
+                            loadState.append is LoadState.Error -> {
+                                //val error = lazyPagingItems.loadState.append as LoadState.Error
+                                val error = (loadState.append as? LoadState.Error)?.error
+
+                                /*item {
+                                    ErrorMessage(
+                                        modifier = Modifier,
+                                        message = error?.localizedMessage?:"",
+                                        onClickRetry = { retry() })
+                                }*/
+                            }
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(50.dp).fillMaxWidth())
-                }
-                lazyPagingItems.apply {
-                    when {
-                        loadState.refresh is LoadState.Loading -> {
-                            item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
-                        }
-
-                        loadState.refresh is LoadState.Error -> {
-                            //val error = lazyPagingItems.loadState.refresh as LoadState.Error
-                            val error = (loadState.refresh as? LoadState.Error)?.error
-
-                            /*item {
-                                ErrorMessage(
-                                    modifier = Modifier.fillParentMaxSize(),
-                                    message = error?.localizedMessage ?: "",
-                                    onClickRetry = { retry() })
-                            }*/
-                        }
-
-                        loadState.append is LoadState.Loading -> {
-                            item { LoadingNextPageItem(modifier = Modifier) }
-                        }
-
-                        loadState.append is LoadState.Error -> {
-                            //val error = lazyPagingItems.loadState.append as LoadState.Error
-                            val error = (loadState.append as? LoadState.Error)?.error
-
-                            /*item {
-                                ErrorMessage(
-                                    modifier = Modifier,
-                                    message = error?.localizedMessage?:"",
-                                    onClickRetry = { retry() })
-                            }*/
-                        }
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
@@ -452,6 +449,7 @@ fun CandidateListScreen(
                             )
 
                             val l = when (itemRes) {
+                                R.string.status_type_text -> selectedStatusChoice
                                 R.string.categories_text -> selectedCategories
                                 R.string.experience_text -> selectedExp
                                 R.string.disponibility_text -> selectedAvailability
@@ -479,6 +477,7 @@ fun CandidateListScreen(
                                 ) {
                                     filterOpen = false
                                     GlobalEntries.isVisibleNav.update { true }
+                                    Log.i("ljkljlkjkljlkgtr", "CandidateListScreen: $criteria")
                                     homeViewModel.validateFilter(criteria)
                                     homeViewModel.changeSelectionParentChoices(
                                         indexParent,
@@ -564,10 +563,7 @@ fun CandidateListScreen(
 
     }
 
-
-
     if (showFilterSheet) {
-
         listChoiceParentSelect?.let {
             ModalBottomSheet(
                 onDismissRequest = {
@@ -614,6 +610,7 @@ fun CandidateListScreen(
                         )
 
                         val l = when (itemRes) {
+                            R.string.status_type_text -> selectedStatusChoice
                             R.string.categories_text -> selectedCategories
                             R.string.experience_text -> selectedExp
                             R.string.disponibility_text -> selectedAvailability

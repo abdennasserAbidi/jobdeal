@@ -33,10 +33,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.base.MyApp
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.LanguageHelper
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.feature.navigation.Screen
 
 @Composable
@@ -50,7 +53,13 @@ fun SplashScreen(
     val context = LocalContext.current
     val app = context.applicationContext as MyApp
 
-    var isFirstTime = true
+    val lifecycle = rememberLifecycleEvent()
+    LaunchedEffect(lifecycle) {
+        if (lifecycle == Lifecycle.Event.ON_RESUME) {
+            LanguageHelper.changeLanguage(context, "fr")
+            LanguageHelper.updateLanguage(context, "fr")
+        }
+    }
 
     LaunchedEffect(listCompanies) {
         app.listCompanies.removeLast()
@@ -58,10 +67,6 @@ fun SplashScreen(
     }
 
     val user by splashViewModel.user.collectAsState()
-
-    LaunchedEffect(user.isFirstTime) {
-        isFirstTime = user.isFirstTime ?: true
-    }
 
     Column(
         modifier = Modifier
@@ -107,8 +112,10 @@ fun SplashScreen(
 
                     if (isFinished) {
                         if (token.isNotEmpty()) {
-                            if (isFirstTime) navController.navigate(Screen.SearchWordScreen.route)
-                            else navController.navigate(Screen.HomeScreen.route)
+                            if (user.role == "Candidate" || user.role == "Candidat") {
+                                if (user.firstTimeUse == true) navController.navigate(Screen.SearchWordScreen.route)
+                                else navController.navigate(Screen.HomeScreen.route)
+                            } else navController.navigate(Screen.HomeScreen.route)
                         } else navController.navigate(Screen.LoginScreen.route)
 
                     } else navController.navigate(Screen.OnBoardingScreen.route)

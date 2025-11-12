@@ -29,7 +29,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,9 +60,12 @@ fun ValidateProfileCandidate(
 
     val interactionSource = remember { MutableInteractionSource() }
 
+    val context = LocalContext.current
+
     val lifecycle = rememberLifecycleEvent()
     LaunchedEffect(lifecycle) {
         if (lifecycle == Lifecycle.Event.ON_RESUME) {
+            viewModel.initList(context)
         }
     }
 
@@ -72,7 +77,7 @@ fun ValidateProfileCandidate(
                 .background(colorResource(id = R.color.whatsapp))
         ) {
             Text(
-                text = "Validate profile",
+                text = stringResource(id = R.string.validate_profile_text),
                 modifier = Modifier
                     .align(Alignment.Center),
                 fontSize = 20.sp,
@@ -119,8 +124,8 @@ fun ValidateProfileCandidate(
                         onClick = {
                             when(index) {
                                 0 -> navController.navigate(Screen.ValidateDocCandidateScreen.route)
-                                1 -> Log.i("", "ValidateProfileCandidate: fzkghrzg")
-                                2 -> navController.navigate(Screen.ValidationInterviewScreen.route)
+                                1 -> navController.navigate(Screen.ValidationInterviewScreen.route)
+                                2 -> Log.i("", "ValidateProfileCandidate: fzkghrzg")
                                 else -> Log.i("", "ValidateProfileCandidate: fzkghrzg")
                             }
 

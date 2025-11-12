@@ -151,6 +151,19 @@ class SignUpViewModel @Inject constructor(
         }
     }
 
+    fun changeRoleIndex(roleIndex: Int) {
+        user.update {
+            if (roleIndex == 0) {
+                it.candidate = false
+                it.company = true
+            } else {
+                it.candidate = true
+                it.company = false
+            }
+            it
+        }
+    }
+
     fun changeCompanyName(firstName: String) {
         user.update {
             it.companyName = firstName

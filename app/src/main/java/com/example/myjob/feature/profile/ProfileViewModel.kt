@@ -526,6 +526,12 @@ class ProfileViewModel @Inject constructor(
     // PERSONAL
     ///////////////////////////////////////////////////////////////////////////
     val saveUserState = MutableStateFlow("")
+
+    val isCheckPersonal = MutableStateFlow(false)
+    fun triggerPersonalCheck(isChecking: Boolean) {
+        isCheckPersonal.update { isChecking }
+    }
+
     fun saveUserPersonalInfo() {
         viewModelScope.launch {
             savePersonalUseCase.execute(user.value).collect { res ->
@@ -542,6 +548,11 @@ class ProfileViewModel @Inject constructor(
     ///////////////////////////////////////////////////////////////////////////
     // PROFESSIONAL
     ///////////////////////////////////////////////////////////////////////////
+    val isCheckProfessional = MutableStateFlow(false)
+    fun triggerProfessionalCheck(isChecking: Boolean) {
+        isCheckProfessional.update { isChecking }
+    }
+
     var onSitePreference = MutableStateFlow(user.value.professionalStatus.onSitePreference)
     fun changePreferenceSite(search: Boolean) {
         onSitePreference.update { search }
@@ -582,6 +593,20 @@ class ProfileViewModel @Inject constructor(
 
         user.update {
             it.professionalStatus.availability = search
+            it
+        }
+    }
+
+    var workType = MutableStateFlow(user.value.professionalStatus.workType)
+    var workTypeOptions = MutableStateFlow(emptyList<Int>())
+
+    fun changeWorkType(search: String) {
+        workType.update {
+            search
+        }
+
+        user.update {
+            it.professionalStatus.workType = search
             it
         }
     }
@@ -644,6 +669,7 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val userId = sharedPreference.getInt("idUser", 0)
             professionalStatus.id = userId
+            professionalStatus.language = sharedPreference.getString("lang", "") ?: "en"
 
             saveProfessionalInfoUseCase.execute(professionalStatus).collect { res ->
                 saveCandidateProfessionalState.update {
@@ -797,6 +823,15 @@ class ProfileViewModel @Inject constructor(
     // EDUCATIONS
     ///////////////////////////////////////////////////////////////////////////
 
+    var locationEducation = MutableStateFlow("")
+    var schoolName = MutableStateFlow("")
+    var degree = MutableStateFlow("")
+    var startDateEducation = MutableStateFlow("")
+    var endDateEducation = MutableStateFlow("")
+    var grade = MutableStateFlow("")
+    var fieldStudy = MutableStateFlow("")
+    var description = MutableStateFlow("")
+
     val degreeList = MutableStateFlow(DEFAULT_DEGREE)
 
     val educations = MutableStateFlow<List<Educations>>(emptyList())
@@ -807,6 +842,63 @@ class ProfileViewModel @Inject constructor(
     val education: MutableStateFlow<PagingData<Educations>> get() = _education
 
     var educationDetail = MutableStateFlow(false)
+
+    val isCheckEducations = MutableStateFlow(false)
+    fun triggerEducationCheck(isChecking: Boolean) {
+        isCheckEducations.update { isChecking }
+    }
+
+    fun changeInstitution(index: Int, item: String) {
+        val listEducation = user.value.education?.toMutableList() ?: mutableListOf()
+        if (listEducation.isNotEmpty() && index < listEducation.size) {
+            listEducation[index].schoolName = item
+            GlobalEntries.listEducations[index].schoolName = item
+        }
+
+        user.update {
+            it.education = listEducation
+            it
+        }
+    }
+    fun changeFieldOfStudyEducation(index: Int, item: String) {
+        val listEducation = user.value.education?.toMutableList() ?: mutableListOf()
+        if (listEducation.isNotEmpty() && index < listEducation.size) {
+            listEducation[index].fieldStudy = item
+            GlobalEntries.listEducations[index].fieldStudy = item
+        }
+
+        user.update {
+            it.education = listEducation
+            it
+        }
+    }
+
+    fun changeGradeEducation(index: Int, item: String) {
+        val listEducation = user.value.education?.toMutableList() ?: mutableListOf()
+        if (listEducation.isNotEmpty() && index < listEducation.size) {
+            listEducation[index].grade = item
+            GlobalEntries.listEducations[index].grade = item
+        }
+
+        user.update {
+            it.education = listEducation
+            it
+        }
+    }
+
+
+    fun changeDegreeEducation(index: Int, item: String) {
+        val listEducation = user.value.education?.toMutableList() ?: mutableListOf()
+        if (listEducation.isNotEmpty() && index < listEducation.size) {
+            listEducation[index].degree = item
+            GlobalEntries.listEducations[index].degree = item
+        }
+
+        user.update {
+            it.education = listEducation
+            it
+        }
+    }
 
     fun getInitialEducationDetail() {
         educationDetail.update {
@@ -828,15 +920,6 @@ class ProfileViewModel @Inject constructor(
             isCurrent
         }
     }
-
-    var locationEducation = MutableStateFlow("")
-    var schoolName = MutableStateFlow("")
-    var degree = MutableStateFlow("")
-    var startDateEducation = MutableStateFlow("")
-    var endDateEducation = MutableStateFlow("")
-    var grade = MutableStateFlow("")
-    var fieldStudy = MutableStateFlow("")
-    var description = MutableStateFlow("")
 
     fun changeDescriptionEducation(item: String) {
         description.update { item }
@@ -944,6 +1027,18 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun saveEducations(educations: List<Educations>) {
+        viewModelScope.launch {
+            educations.map {
+                it.idUser = user.value.id
+                saveEducationUseCase.execute(it).collect { res ->
+                    saveEducationState.update { res.data?.message ?: "" }
+                    if (res.data?.message == "saved successfully") getAllEducations(user.value.id ?: 0)
+                }
+            }
+        }
+    }
+
     val removeEducationState = MutableStateFlow("")
 
     fun removeEducation(educationId: Int) {
@@ -969,16 +1064,105 @@ class ProfileViewModel @Inject constructor(
     val allExp: MutableStateFlow<List<Experience>> = MutableStateFlow(emptyList())
     val exp: MutableStateFlow<List<Experience>> = MutableStateFlow(emptyList())
     val exp1: MutableStateFlow<Experience> = MutableStateFlow(Experience())
-    fun changePreferenceContract(index: Int, search: String) {
+
+    val isCheckExperiences = MutableStateFlow(false)
+    fun triggerExperienceCheck(isChecking: Boolean) {
+        isCheckExperiences.update { isChecking }
+    }
+
+    fun changeCurrent(index: Int, item: Boolean) {
         val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
-        if (listExperience.isNotEmpty() && index < listExperience.size - 1) {
-            listExperience[index].isContract = true
-            listExperience[index].type = search
-            listExperience[index].typeContract = search
+        if (listExperience.isNotEmpty() && index < listExperience.size) {
+            listExperience[index].current = item
+            GlobalEntries.listExperience[index].current = item
         }
 
-        allExp.update {
-            listExperience
+        user.update {
+            it.experience = listExperience
+            it
+        }
+    }
+    fun changeFreelanceSalary(index: Int, item: Int) {
+        val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
+        if (listExperience.isNotEmpty() && index < listExperience.size) {
+            listExperience[index].freelanceSalary = item
+
+            GlobalEntries.listExperience[index].freelanceSalary = item
+        }
+
+        user.update {
+            it.experience = listExperience
+            it
+        }
+    }
+
+    fun changePerHourWorkMethod(index: Int, item: Boolean) {
+        val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
+        if (listExperience.isNotEmpty() && index < listExperience.size) {
+            listExperience[index].perHourPaymentMethod = item
+
+            GlobalEntries.listExperience[index].perHourPaymentMethod = item
+        }
+
+        user.update {
+            it.experience = listExperience
+            it
+        }
+    }
+
+    fun changePerDayWorkMethod(index: Int, item: Boolean) {
+        val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
+        if (listExperience.isNotEmpty() && index < listExperience.size) {
+            listExperience[index].perDayPaymentMethod = item
+            GlobalEntries.listExperience[index].perDayPaymentMethod = item
+        }
+
+        user.update {
+            it.experience = listExperience
+            it
+        }
+    }
+
+    fun changePerProjectWorkMethod(index: Int, item: Boolean) {
+        val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
+        if (listExperience.isNotEmpty() && index < listExperience.size) {
+            listExperience[index].perProjectPaymentMethod = item
+            GlobalEntries.listExperience[index].perProjectPaymentMethod = item
+        }
+
+        user.update {
+            it.experience = listExperience
+            it
+        }
+    }
+
+    fun changePreferenceContract(index: Int, search: String) {
+        val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
+        if (listExperience.isNotEmpty() && index < listExperience.size) {
+            listExperience[index].isContract = true
+            listExperience[index].isFreelance = false
+            listExperience[index].type = search
+            listExperience[index].typeContract = search
+
+            GlobalEntries.listExperience[index].isContract = true
+            GlobalEntries.listExperience[index].isFreelance = false
+            if (search.isNotEmpty()) {
+                GlobalEntries.listExperience[index].type = search
+                GlobalEntries.listExperience[index].typeContract = search
+            }
+        }
+
+        user.update {
+            it.experience = listExperience
+            it
+        }
+    }
+
+    fun changeCompanyExperience(index: Int, item: String) {
+        val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
+        if (listExperience.isNotEmpty() && index < listExperience.size) {
+            listExperience[index].companyName = item
+            GlobalEntries.listExperience[index].companyName = item
         }
 
         user.update {
@@ -989,15 +1173,20 @@ class ProfileViewModel @Inject constructor(
 
     fun changePreferenceFreelance(index: Int, search: String) {
         val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
-        if (listExperience.isNotEmpty() && index < listExperience.size - 1) {
+        if (listExperience.isNotEmpty() && index < listExperience.size) {
+            listExperience[index].isContract = false
             listExperience[index].isFreelance = true
             listExperience[index].type = search
             listExperience[index].typeContract = search
+
+            if (search.isNotEmpty()) {
+                GlobalEntries.listExperience[index].isContract = false
+                GlobalEntries.listExperience[index].isFreelance = true
+                GlobalEntries.listExperience[index].type = search
+                GlobalEntries.listExperience[index].typeContract = search
+            }
         }
 
-        allExp.update {
-            listExperience
-        }
         user.update {
             it.experience = listExperience
             it
@@ -1006,12 +1195,9 @@ class ProfileViewModel @Inject constructor(
 
     fun changeStartDateExperience(index: Int, search: String) {
         val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
-        if (listExperience.isNotEmpty() && index < listExperience.size - 1) {
+        if (listExperience.isNotEmpty() && index < listExperience.size) {
             listExperience[index].dateStart = search
-        }
-
-        allExp.update {
-            listExperience
+            GlobalEntries.listExperience[index].dateStart = search
         }
         user.update {
             it.experience = listExperience
@@ -1021,8 +1207,9 @@ class ProfileViewModel @Inject constructor(
 
     fun changeEndDateExperience(index: Int, search: String) {
         val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
-        if (listExperience.isNotEmpty() && index < listExperience.size - 1) {
+        if (listExperience.isNotEmpty() && index < listExperience.size) {
             listExperience[index].dateEnd = search
+            GlobalEntries.listExperience[index].dateEnd = search
         }
 
         allExp.update {
@@ -1036,12 +1223,21 @@ class ProfileViewModel @Inject constructor(
 
     fun changeDescriptionExperience(index: Int, search: String) {
         val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
-        if (listExperience.isNotEmpty() && index < listExperience.size - 1) {
+        if (listExperience.isNotEmpty() && index < listExperience.size) {
             listExperience[index].description = search
+            GlobalEntries.listExperience[index].description = search
         }
+        user.update {
+            it.experience = listExperience
+            it
+        }
+    }
 
-        allExp.update {
-            listExperience
+    fun changeTitleExperience(index: Int, search: String) {
+        val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
+        if (listExperience.isNotEmpty() && index < listExperience.size) {
+            listExperience[index].title = search
+            GlobalEntries.listExperience[index].title = search
         }
         user.update {
             it.experience = listExperience
@@ -1051,7 +1247,7 @@ class ProfileViewModel @Inject constructor(
 
     fun addTechnologyExperience(index: Int, newTechnology: String) {
         val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
-        if (listExperience.isNotEmpty() && index < listExperience.size - 1) {
+        if (listExperience.isNotEmpty() && index < listExperience.size) {
             val listSkills = listExperience[index].listSkills ?: mutableListOf()
 
             if (newTechnology.isNotBlank() && !listSkills.contains(newTechnology)) {
@@ -1059,10 +1255,7 @@ class ProfileViewModel @Inject constructor(
             }
 
             listExperience[index].listSkills = listSkills
-        }
-
-        allExp.update {
-            listExperience
+            GlobalEntries.listExperience[index].listSkills = listSkills
         }
         user.update {
             it.experience = listExperience
@@ -1070,22 +1263,29 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun addNewExperience() {
+    fun addNewExperience(experience: Experience) {
         val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
-        listExperience.add(Experience())
+        listExperience.add(experience)
 
-        allExp.update {
-            listExperience
-        }
         user.update {
             it.experience = listExperience
+            it
+        }
+    }
+
+    fun addNewEducation(education: Educations) {
+        val listEducation = user.value.education?.toMutableList() ?: mutableListOf()
+        listEducation.add(education)
+
+        user.update {
+            it.education = listEducation
             it
         }
     }
 
     fun removeSelectedExperience(index: Int) {
         val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
-        if (listExperience.isNotEmpty() && index < listExperience.size - 1) {
+        if (listExperience.isNotEmpty() && index < listExperience.size) {
             listExperience.removeAt(index)
         }
 
@@ -1310,6 +1510,18 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun saveExperiences(experiences: MutableList<Experience>) {
+        viewModelScope.launch {
+            GlobalEntries.listExperience.map {
+                it.idUser = user.value.id
+                saveExperienceUseCase.execute(it).collect { res ->
+                    saveExpState.update { res.data?.message ?: "" }
+                    if (res.data?.message == "saved successfully") getAllExperience(user.value.id ?: 0)
+                }
+            }
+        }
+    }
+
     val removeExpState = MutableStateFlow("")
 
     fun removeExperience(experienceId: Int) {
@@ -1331,6 +1543,8 @@ class ProfileViewModel @Inject constructor(
     init {
         lang = sharedPreference.getString("lang", "") ?: ""
         langState.update { lang }
+
+        getUserById()
 
         val genderOptions = listOf(
             R.string.male_text,
@@ -1367,11 +1581,21 @@ class ProfileViewModel @Inject constructor(
             R.string.more_3_months_text
         )
 
+        val workTypesOptions = listOf(
+            R.string.full_time_text,
+            R.string.part_time_text,
+            R.string.self_employed_text,
+            R.string.internship_text,
+            R.string.apprenticeship_text,
+            R.string.seasonal_text
+        )
+
         gendersOptions.update { genderOptions }
         situationsOptions.update { situationOptions }
         typesOptions.update { typeOptions }
         availabilityOptions.update { availabilitiesOptions }
         experienceOptions.update { experiencesOptions }
+        workTypeOptions.update { workTypesOptions }
 
         //getInitialEducationDetail()
         getInitialExperienceDetail()

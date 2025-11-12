@@ -151,10 +151,12 @@ fun LoginScreen(
         if (token.isNotEmpty()) {
             //isProgressing = false
             viewModel.isFromLogin(true)
-            val isFirstTime = login.user?.isFirstTime ?: true
-            if (isFirstTime) navController.navigate(Screen.SearchWordScreen.route)
-            else navController.navigate(Screen.HomeScreen.route)
 
+            if (user.role == "Candidate" || user.role == "Candidat") {
+                val isFirstTime = login.user?.firstTimeUse ?: true
+                if (isFirstTime) navController.navigate(Screen.SearchWordScreen.route)
+                else navController.navigate(Screen.HomeScreen.route)
+            } else navController.navigate(Screen.HomeScreen.route)
         }
     }
 

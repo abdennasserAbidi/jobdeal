@@ -1,5 +1,8 @@
 package com.example.myjob.feature.validateprofile
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class ValidationProfileStatus(
     var id: Int = -1,
     var email: String = "",

@@ -63,6 +63,8 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -403,20 +405,34 @@ fun CustomRectangleTab(
     tabWidth: Dp = 140.dp,
     onClick: (index: Int) -> Unit,
 ) {
+
+    val density = LocalDensity.current
+    val screenHeight = with(density) {
+        LocalConfiguration.current.screenHeightDp.dp.toPx().toInt()
+    }
+
+    val screenWidth = with(density) {
+        LocalConfiguration.current.screenWidthDp.dp
+    }
+
+    val s = if (selectedItemIndex == 0) ((screenWidth/2) * selectedItemIndex)
+    else (screenWidth/2) - 50.dp
+
     val indicatorOffset: Dp by animateDpAsState(
-        targetValue = tabWidth * selectedItemIndex,
+        targetValue = s,
         animationSpec = tween(easing = LinearEasing), label = "",
     )
 
     Box(
         modifier = modifier
-            .fillMaxWidth(0.73f)
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(colorResource(id = R.color.whatsapp))
             .height(60.dp)
     ) {
         MyTabIndicatorRec(
-            indicatorWidth = tabWidth,
+            indicatorWidth = (screenWidth/2),
             indicatorOffset = indicatorOffset,
             indicatorColor = colorResource(id = R.color.ligt_white),
         )
@@ -435,6 +451,7 @@ fun CustomRectangleTab(
                         onClick(index)
                     },
                     tabWidth = tabWidth,
+                    modifier = Modifier.weight(1f),
                     text = text,
                 )
             }

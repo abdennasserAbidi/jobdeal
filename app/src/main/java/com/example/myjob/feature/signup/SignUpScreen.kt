@@ -169,7 +169,12 @@ fun SignUpScreen(
 
     LaunchedEffect(saveUserRes.token?.isNotEmpty()) {
         isProgressing = false
-        if (saveUserRes.token?.isNotEmpty() == true) navController.navigate(Screen.HomeScreen.route)
+        if (saveUserRes.token?.isNotEmpty() == true) {
+            Log.i("ellhkelag", "selectedIndex: $selectedIndex")
+            if (selectedIndex == 1) {
+                navController.navigate(Screen.SearchWordScreen.route)
+            } else navController.navigate(Screen.HomeScreen.route)
+        }
     }
 
     if (showDialog) {
@@ -283,12 +288,12 @@ fun SignUpScreen(
                     ) {
                         CustomRectangleTab(
                             items = listRole,
-                            modifier = Modifier.padding(top = 10.dp, start = 10.dp),
+                            modifier = Modifier.padding(top = 10.dp),
                             selectedItemIndex = selectedIndex,
                             onClick = {
                                 selectedIndex = it
                                 viewModel.changeRole(listRole[it])
-
+                                viewModel.changeRoleIndex(it)
                             }
                         )
                     }

@@ -6,16 +6,16 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Educations(
     var id: Int = View.generateViewId(),
-    val title: String? = "",
-    val schoolName: String? = "",
-    val degree: String? = "",
-    val fieldStudy: String? = "",
-    val dateStart: String? = "",
-    val dateEnd: String? = "",
-    val place: String? = "",
-    val grade: String? = "",
-    val description: String? = "",
-    val stillStudying: Boolean? = true,
+    var title: String? = "",
+    var schoolName: String? = "",
+    var degree: String? = "",
+    var fieldStudy: String? = "",
+    var dateStart: String? = "",
+    var dateEnd: String? = "",
+    var place: String? = "",
+    var grade: String? = "",
+    var description: String? = "",
+    var stillStudying: Boolean? = true,
     var idUser: Int? = 0
 ) {
 
@@ -26,7 +26,7 @@ data class Educations(
         val schoolNameValid = !schoolName.isNullOrEmpty()
         val countryValid = !place.isNullOrEmpty()
         val dateStartValid = dateStart != null && dateStart != "Choose Date"
-        val dateEndValid = dateEnd != null && dateEnd != "Choose Date" && dateEnd.isNotEmpty()
+        val dateEndValid = dateEnd != null && dateEnd != "Choose Date" && dateEnd?.isNotEmpty() == true
         val degreeValid = !degree.isNullOrEmpty()
         val fieldStudyValid = !fieldStudy.isNullOrEmpty()
         val gradeValid = !grade.isNullOrEmpty()
@@ -80,7 +80,7 @@ data class Educations(
         val schoolNameValid = !schoolName.isNullOrEmpty()
         val countryValid = !place.isNullOrEmpty()
         val dateStartValid = dateStart != null && dateStart != "Choose Date"
-        val dateEndValid = dateEnd != null && dateEnd != "Choose Date" && dateEnd.isNotEmpty()
+        val dateEndValid = dateEnd != null && dateEnd != "Choose Date" && dateEnd?.isNotEmpty() == true
         val degreeValid = !degree.isNullOrEmpty()
         val fieldStudyValid = !fieldStudy.isNullOrEmpty()
         val gradeValid = !grade.isNullOrEmpty()

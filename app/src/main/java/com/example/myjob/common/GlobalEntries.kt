@@ -41,6 +41,8 @@ object GlobalEntries {
     var idInvitation = 0
     var listIdToRemove = mutableListOf<Int>()
     var listIdAccepted = mutableListOf<Int>()
+    var listExperience = mutableListOf<Experience>()
+    var listEducations = mutableListOf<Educations>()
     var experience = Experience()
     var educations = Educations()
     var user = User()
@@ -60,6 +62,9 @@ object GlobalEntries {
     var isFromLogin = false
     var isFromSettings = false
     var isVisibleNav = MutableStateFlow(true)
+    var isSubmitAction = MutableStateFlow(false)
+    var isSubmitEducationAction = MutableStateFlow(false)
+    var isSubmitProfessionalAction = MutableStateFlow(false)
     var isHidden = derivedStateOf { !isVisibleNav.value }
     var langState = MutableStateFlow("Français")
     var languageShared = MutableSharedFlow<String>()

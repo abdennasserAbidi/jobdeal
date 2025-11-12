@@ -1,7 +1,5 @@
 package com.example.myjob.feature.setting
 
-
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -10,15 +8,46 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,7 +91,7 @@ fun ModernSettingScreen(
     val user by settingViewModel.user.collectAsState()
     val verificationSteps by settingViewModel.verificationSteps.collectAsState()
 
-    val userName = if (role == "Candidate" || role == "Candidat") GlobalEntries.user.fullName
+    val userName = if (role == "Candidate" || role == "Candidat") GlobalEntries.user.fullName?.trimStart()
     else GlobalEntries.user.companyName
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -368,7 +397,6 @@ fun LanguageSection(
             val language by settingViewModel.language.collectAsState()
             var lc by remember { mutableStateOf(if (language == "English") "en" else "fr") }
 
-            Log.i("lkzgjkrlzglk", "LanguageSection: $language")
             var selected by remember(language) {
                 mutableStateOf(
                     if (language == "" || language == "English" || language == "Anglais") 0 else 1
@@ -398,10 +426,8 @@ fun LanguageSection(
                             ) {
                                 selected = index
                                 settingViewModel.changeLanguage(allLanguages[index])
-                                lc =
-                                    if (allLanguages[index] == "English" || allLanguages[index] == "Anglais") "en" else "fr"
-
-                                //TODO("Check this behaviour with real device")
+                                lc = "fr"
+                                    //if (allLanguages[index] == "English" || allLanguages[index] == "Anglais") "en" else "fr"
 
                                 LanguageHelper.changeLanguage(context, lc)
                                 LanguageHelper.updateLanguage(context, lc)

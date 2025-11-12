@@ -10,8 +10,10 @@
     <string name="welcome">Bienvenue!</string>
     <string name="sub_title_welcome">Connectez-vous à votre compte existant</string>
     <string name="error_email">Email est invalid</string>
+    <string name="error_work_type">Il faut choisir type de travail</string>
     <string name="password_text">Mot de passe</string>
     <string name="add_document_text">Ajouter document</string>
+    <string name="remove_document_text">Supprimer document</string>
     <string name="registration_number_text">Numéro de Registration</string>
     <string name="confirm_password_text">Confirmer mot de passe</string>
     <string name="error_password">Doit contenir des majuscules et des chiffres</string>
@@ -27,6 +29,8 @@
     <string name="education_add_text">Ajoutez vos études</string>
     <string name="education_title_text">Éducation</string>
     <string name="education_desc_text">Parlez de votre formation aux employeurs</string>
+    <string name="academic_text">Votre parcours académique</string>
+
 
     <string name="licence_add_text">Ajoutez licence</string>
     <string name="licence_title_text">Licences</string>
@@ -91,6 +95,7 @@
     <string name="personal_info_text">Info personnelle</string>
     <string name="generic_info_text">Info géneral</string>
     <string name="view_detail_text">Afficher les détails</string>
+    <string name="contact_information_text">Information du contact</string>
 
     <!--education form-->
     <string name="education_text">Formations</string>
@@ -132,12 +137,19 @@
 
     <string name="categories_text">Categories</string>
 
+    <string name="available_text">Disponible</string>
+    <string name="hired_text">Embauché</string>
+    <string name="not_interested_text">Pas intéressé</string>
+    <string name="in_process_text">En cours de traitement</string>
+
+
     <!--career form-->
     <string name="experience_text">Experience</string>
     <string name="add_experience_text">Ajouter Experience</string>
     <string name="location_text">Emplacement</string>
     <string name="company_name_text">Nom de l\'entreprise</string>
 
+    <string name="status_type_text">Status</string>
     <string name="employment_type_text">Type d\'emploi</string>
     <string name="employment_type_choice_text">Voulez vous travailler</string>
     <string name="type1_text">Contrat</string>
@@ -173,7 +185,9 @@
     <string name="delete_text">Supprimer</string>
     <string name="hourly_text">Par heurs</string>
     <string name="daily_text">Par jours</string>
+    <string name="project_text">Project</string>
     <string name="per_hour_text">Par heurs</string>
+    <string name="per_project_text">Par project</string>
     <string name="per_day_text">Par jours</string>
     <string name="hourly_rate_text">Taux horaire</string>
     <string name="daily_rate_text">Tarif journalier</string>
@@ -181,6 +195,7 @@
     <string name="nb_hours_text">Heurs par jours</string>
     <string name="nb_day_text">Jours par semaine</string>
 
+    <string name="freelance_salary_text">Salaire freelance</string>
     <string name="salary_text">Salaire</string>
     <string name="duration_text">Durée</string>
 
@@ -219,12 +234,12 @@
     <string name="exported_text">Exporter</string>
 
     <!--Contract-->
-    <string name="full_time_text">Full-time</string>
-    <string name="part_time_text">Part-time</string>
-    <string name="self_employed_text">Self-employed</string>
-    <string name="internship_text">Internship</string>
-    <string name="apprenticeship_text">Apprenticeship</string>
-    <string name="seasonal_text">Seasonal</string>
+    <string name="full_time_text">À temps plein</string>
+    <string name="part_time_text">À temps partiel</string>
+    <string name="self_employed_text">Indépendant</string>
+    <string name="internship_text">Stage</string>
+    <string name="apprenticeship_text">Formation</string>
+    <string name="seasonal_text">Saisonnier/Saisonnière</string>
 
     <!--exp-->
     <string name="intern_text">Stagiare/Alternant</string>
@@ -267,11 +282,15 @@
     <string name="event_user_text">Organisateur</string>
     <string name="event_candidate_text">Evènnement</string>
     <string name="all_user_text">Tous</string>
-
+    <string name="interviewing_text">Entretien</string>
+    <string name="on_hold_text">En attente</string>
+    <string name="filter_status_text">Filtrer par statut</string>
+    <string name="all_candidates_text">Tous les Candidats</string>
+    <string name="in_process_long_text">En cours de traitement…</string>
+    <string name="invitation_found_text">invitations trouvées</string>
 
     <string name="reject_text">Refuser</string>
     <string name="accept_text">Accepter</string>
-    <string name="in_process_text">In process</string>
     <string name="delete_invitation_text">Supprimer</string>
     <string name="view_profile_text">Voir profil</string>
     <string name="terminate_text">Terminer le process</string>
@@ -282,6 +301,7 @@
     <string name="other_text">Autres</string>
     <string name="interview_text">Entretien</string>
     <string name="interview_validation_text">Entrez votre adresse mail pour recevoir un email pour un entretien</string>
+    <string name="interview_explanation_text">Vérifier après l\'entretien</string>
 
     <string name="verification_done_text">Compte vérifié</string>
     <string name="verification_info_text">Votre compte est en cours de vérification</string>
@@ -291,5 +311,16 @@
     <string name="work_experience_text">Expérience professionnelle</string>
     <string name="pro_journey_text">Votre parcours professionnel</string>
     <string name="add_experience_pro_text">Ajouter une expérience de travail</string>
+
+    <string name="id_document_text">Pièce d\'identité</string>
+    <string name="desc_document_text">Télécharger un document d\'identification</string>
+
+    <string name="video_intro_text">Présentation par video</string>
+    <string name="video_explanation_text">Enregistrez une vidéo de présentation</string>
+    <string name="technical_skills_text">Compétences techniques</string>
+    <string name="proficiency_text">Compétence</string>
+    <string name="candidates_text">Candidats</string>
+    <string name="search_candidates_text">Rechercher des candidats</string>
+
 
 </resources>

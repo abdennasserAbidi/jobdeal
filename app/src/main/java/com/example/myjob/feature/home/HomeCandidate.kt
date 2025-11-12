@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -118,10 +119,12 @@ fun HomeCandidatePreview(
                 IconButton(onClick = { /* Handle notifications */ }) {
                     Icon(Icons.Default.Notifications, contentDescription = "Notifications")
                 }
-                IconButton(onClick = { //painterResource(id = R.drawable.settings)
-                    navController.navigate(Screen.SettingScreen.route)
+                IconButton(onClick = {
+                    homeViewModel.logout()
+                    clearData()
+                    navController.navigate(Screen.LoginScreen.route)
                 }) {
-                    Icon(Icons.Default.Settings, contentDescription = "More")
+                    Icon(Icons.Default.Logout, contentDescription = "logout")
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -256,7 +259,7 @@ fun HomeCandidatePreview(
             }
         }
 
-        Card(
+        /*Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 20.dp)
@@ -300,7 +303,7 @@ fun HomeCandidatePreview(
                     )
                 )
             }
-        }
+        }*/
     }
 
     /*Box(

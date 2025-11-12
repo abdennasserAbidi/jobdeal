@@ -9,9 +9,11 @@
     <string name="welcome">Welcome!</string>
     <string name="sub_title_welcome">Login to your existing account</string>
     <string name="error_email">Invalid email</string>
+    <string name="error_work_type">You should select work type</string>
     <string name="error_password">Must contain uppercase and number</string>
     <string name="password_text">Password</string>
     <string name="add_document_text">Add document</string>
+    <string name="remove_document_text">Remove document</string>
     <string name="registration_number_text">Registration Number</string>
     <string name="confirm_password_text">Confirm password</string>
     <string name="forgot_password_text">Forgot password?</string>
@@ -30,11 +32,13 @@
     <string name="education_add_text">Add education</string>
     <string name="education_title_text">Education</string>
     <string name="education_desc_text">Tell employers about your education</string>
+    <string name="academic_text">Your academic background</string>
 
     <string name="licence_add_text">Add licence</string>
     <string name="licence_title_text">Licences</string>
     <string name="licence_desc_text">Showcase your licences, certificates, memberships and accreditations</string>
 
+    <string name="proficiency_text">Proficiency</string>
     <string name="language_add_text">Add language</string>
     <string name="language_title_text">Languages</string>
     <string name="language_desc_text">Add languages to appeal to more companies and employers</string>
@@ -129,6 +133,16 @@
     <string name="disponibility3_text">In 3 months</string>
     <string name="disponibility4_text">More than 3 months</string>
 
+    <string name="available_text">Available</string>
+    <string name="in_process_text">In process</string>
+    <string name="in_process_long_text">In process…</string>
+    <string name="hired_text">Hired</string>
+    <string name="not_interested_text">Not Interested</string>
+    <string name="all_candidates_text">All Candidates</string>
+    <string name="candidates_text">Candidates</string>
+    <string name="search_candidates_text">Search candidates</string>
+
+    <string name="invitation_found_text">invitations found</string>
     <string name="phone_text">Phone</string>
 
     <string name="skipp_text">Skipp</string>
@@ -142,6 +156,7 @@
     <string name="location_text">Location</string>
     <string name="company_name_text">Company name</string>
 
+    <string name="status_type_text">Status</string>
     <string name="employment_type_text">Employment type</string>
     <string name="employment_type_choice_text">Want to work</string>
     <string name="type1_text">Contract</string>
@@ -178,7 +193,9 @@
     <string name="delete_text">Delete</string>
     <string name="hourly_text">Hourly</string>
     <string name="daily_text">Daily</string>
+    <string name="project_text">Project</string>
     <string name="per_hour_text">Per hour</string>
+    <string name="per_project_text">Per project</string>
     <string name="per_day_text">Per day</string>
     <string name="hourly_rate_text">Hourly rate</string>
     <string name="daily_rate_text">Daily rate</string>
@@ -188,6 +205,7 @@
 
 
 
+    <string name="freelance_salary_text">Freelance salary</string>
     <string name="salary_text">Salary</string>
     <string name="duration_text">Duration</string>
 
@@ -218,6 +236,7 @@
     <string name="change_language_text">Change</string>
 
     <string name="profile_candidate_type_text">Candidate Profile</string>
+    <string name="contact_information_text">Contact Information</string>
 
     <string name="my_resume_text">My Resume</string>
     <string name="upload_resume_text">Upload &amp; view your resumes</string>
@@ -279,6 +298,9 @@
     <string name="event_user_text">Event handler</string>
     <string name="event_candidate_text">Event</string>
     <string name="all_user_text">ALL</string>
+    <string name="interviewing_text">Interviewing</string>
+    <string name="on_hold_text">On hold</string>
+    <string name="filter_status_text">Filter by Status</string>
 
     <string name="other_text">Other</string>
 
@@ -286,7 +308,6 @@
 
     <string name="reject_text">Reject</string>
     <string name="accept_text">Accept</string>
-    <string name="in_process_text">In process</string>
     <string name="delete_invitation_text">Delete</string>
     <string name="view_profile_text">View profile</string>
     <string name="terminate_text">Terminate process</string>
@@ -296,6 +317,7 @@
 
     <string name="interview_text">Interview</string>
     <string name="interview_validation_text">Enter your email address to receive an email for an interview</string>
+    <string name="interview_explanation_text">Verify after interviewing</string>
 
     <string name="verification_done_text">Verified Account</string>
     <string name="verification_info_text">Your account is in the verification process</string>
@@ -307,4 +329,10 @@
     <string name="pro_journey_text">Your professional journey</string>
     <string name="add_experience_pro_text">Add Work Experience</string>
 
+    <string name="id_document_text">ID Document</string>
+    <string name="desc_document_text">Upload a document ID</string>
+
+    <string name="video_intro_text">Video Introduction</string>
+    <string name="video_explanation_text">Record a video introduction</string>
+    <string name="technical_skills_text">Technical Skills</string>
 </resources>

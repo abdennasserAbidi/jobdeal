@@ -43,16 +43,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.myjob.R
+import com.example.myjob.common.GlobalEntries
+import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
+import com.example.myjob.feature.profile.test.LanguageForm
 
 @Composable
 fun CandidateHeaderCard(
     candidateProfile: User,
+    experienceYears: Int,
     sendInvitation: (User) -> Unit
 ) {
     Card(
@@ -73,7 +80,7 @@ fun CandidateHeaderCard(
                 Surface(
                     modifier = Modifier.size(80.dp),
                     shape = RoundedCornerShape(20.dp),
-                    color = WhatsAppGreen
+                    color = colorResource(id = R.color.whatsapp)
                 ) {
                     Box(
                         contentAlignment = Alignment.Center
@@ -111,8 +118,10 @@ fun CandidateHeaderCard(
                         shape = RoundedCornerShape(12.dp),
                         color = WhatsAppGreen.copy(alpha = 0.2f)
                     ) {
+                        val availability =
+                            candidateProfile.professionalStatus.availability ?: "available"
                         Text(
-                            text = "available",
+                            text = availability,
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelMedium,
                             color = WhatsAppDarkGreen,
@@ -130,53 +139,57 @@ fun CandidateHeaderCard(
                 lastExp = experiences[experiences.lastIndex]
             }
 
-
-            // Quick Info Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                QuickInfoItem(
-                    icon = Icons.Default.Business,
-                    label = "Company",
-                    value = lastExp.title ?: ""
-                )
-                QuickInfoItem(
-                    icon = Icons.Default.Work,
-                    label = "Experience",
-                    value = "+5 years"
-                )
-                QuickInfoItem(
-                    icon = Icons.Default.LocationOn,
-                    label = "Location",
-                    value = lastExp.place ?: ""
-                )
+            val lastContractExp = experiences.findLast {
+                it.type == "Contract" || it.type == "Contrat"
             }
 
-            OutlinedButton(
-                onClick = {
-                    sendInvitation(candidateProfile)
-                },
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .padding(top = 10.dp),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Icon(
-                    Icons.Default.Send,
-                    contentDescription = "Send Invitation",
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Send Invitation")
+            lastContractExp?.let { lastContractExperience ->
+                // Quick Info Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    QuickInfoItem(
+                        icon = Icons.Default.Business,
+                        label = "Company",
+                        value = lastContractExperience.companyName ?: ""
+                    )
+
+                    if (experienceYears != 0) {
+                        val textExp = if (experienceYears <= 5) "$experienceYears years"
+                        else "+$experienceYears years"
+                        QuickInfoItem(
+                            icon = Icons.Default.Work,
+                            label = "Experience",
+                            value = textExp
+                        )
+                    }
+
+                    QuickInfoItem(
+                        icon = Icons.Default.LocationOn,
+                        label = "Location",
+                        value = lastContractExperience.place ?: ""
+                    )
+                }
             }
 
-            /*if (candidateProfile.isFriend) {
+            var isFriend = false
+            val invitations = GlobalEntries.user.invitations ?: mutableListOf()
+            if (invitations.isNotEmpty()) {
+                val invitation = invitations.filter { it.idTo ==  candidateProfile.id }
+                if (invitation.isNotEmpty()) {
+                    isFriend = invitation[0].accepted
+                }
+            }
+
+            if (!isFriend) {
                 OutlinedButton(
                     onClick = {
-
+                        sendInvitation(candidateProfile)
                     },
-                    modifier = Modifier.fillMaxWidth(0.9f).padding(top = 10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Icon(
@@ -192,7 +205,9 @@ fun CandidateHeaderCard(
                     onClick = {
 
                     },
-                    modifier = Modifier.fillMaxWidth(0.9f).padding(top = 10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .padding(top = 10.dp),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Icon(
@@ -203,71 +218,87 @@ fun CandidateHeaderCard(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Contact")
                 }
-            }*/
+            }
         }
     }
 }
 
 @Composable
-fun ContactInformationCard(candidateProfile: CandidateProfile) {
+fun ContactInformationCard(candidateProfile: User) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Contact Information",
+                text = stringResource(id = R.string.contact_information_text),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            ContactDetailRow(
-                icon = Icons.Default.Email,
-                label = "Email",
-                value = candidateProfile.email,
-                isClickable = true
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            ContactDetailRow(
-                icon = Icons.Default.Phone,
-                label = "Phone",
-                value = candidateProfile.phone,
-                isClickable = true
-            )
-
-            candidateProfile.linkedIn?.let { linkedIn ->
-                Spacer(modifier = Modifier.height(8.dp))
+            val email = candidateProfile.email ?: ""
+            if (email.isNotEmpty()) {
                 ContactDetailRow(
-                    icon = Icons.Default.Link,
-                    label = "LinkedIn",
-                    value = linkedIn,
+                    icon = Icons.Default.Email,
+                    label = "Email",
+                    value = candidateProfile.email ?: "",
                     isClickable = true
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
-            candidateProfile.github?.let { github ->
-                Spacer(modifier = Modifier.height(8.dp))
+            val phone = candidateProfile.phone ?: ""
+            if (phone.isNotEmpty()) {
                 ContactDetailRow(
-                    icon = Icons.Default.Code,
-                    label = "GitHub",
-                    value = github,
+                    icon = Icons.Default.Phone,
+                    label = stringResource(id = R.string.phone_text),
+                    value = phone,
                     isClickable = true
-                )
+                )   
             }
 
-            candidateProfile.portfolio?.let { portfolio ->
-                Spacer(modifier = Modifier.height(8.dp))
-                ContactDetailRow(
-                    icon = Icons.Default.Web,
-                    label = "Portfolio",
-                    value = portfolio,
-                    isClickable = true
-                )
+            candidateProfile.professionalStatus.userMedium?.let { medium ->
+                if (medium.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ContactDetailRow(
+                        icon = Icons.Default.Link,
+                        label = "LinkedIn",
+                        value = medium,
+                        isClickable = true
+                    )
+                }
+            }
+
+            candidateProfile.professionalStatus.userGithub?.let { github ->
+                if (github.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ContactDetailRow(
+                        icon = Icons.Default.Code,
+                        label = "GitHub",
+                        value = github,
+                        isClickable = true
+                    )
+                }
+            }
+
+            candidateProfile.professionalStatus.userPortfolio?.let { portfolio ->
+                if (portfolio.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ContactDetailRow(
+                        icon = Icons.Default.Web,
+                        label = "Portfolio",
+                        value = portfolio,
+                        isClickable = true
+                    )
+                }
             }
         }
     }
@@ -277,7 +308,11 @@ fun ContactInformationCard(candidateProfile: CandidateProfile) {
 fun BioCard(bio: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -332,13 +367,17 @@ fun SkillsCard(skills: List<String>) {
 fun ExperienceCard(experience: List<Experience>) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Work Experience",
+                text = stringResource(id = R.string.work_experience_text),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 12.dp)
@@ -383,23 +422,27 @@ fun ProjectsCard(projects: List<Project>) {
 }
 
 @Composable
-fun EducationCard(education: List<Education>) {
+fun EducationCard(educations: MutableList<Educations>) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Education",
+                text = stringResource(id = R.string.education_title_text),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            education.forEach { edu ->
-                EducationItem(education = edu)
+            educations.forEach { education ->
+                EducationItem(education = education)
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
@@ -409,14 +452,18 @@ fun EducationCard(education: List<Education>) {
 @Composable
 fun AdditionalInfoCard(
     certifications: List<String>,
-    languages: List<Language>,
+    languages: List<LanguageForm>,
     availability: String,
     expectedSalary: String,
     noticePeriod: String
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -662,9 +709,26 @@ fun ExperienceItem(experience: Experience) {
                     fontWeight = FontWeight.Medium
                 )
             }
-            //val duration = experience.dateEnd - experience.dateStart
+
+            val start = experience.dateStart ?: ""
+            val end = experience.dateEnd ?: ""
+
+            var duration = ""
+
+            if (start.isNotEmpty()) {
+                val startArray = start.split(", ")
+                duration = "${startArray[1].split(" ")[1]} ${startArray[2]}"
+
+                if (experience.current == false) {
+                    if (end.isNotEmpty()) {
+                        val endArray = end.split(", ")
+                        duration += " - ${endArray[1].split(" ")[1]} ${endArray[2]}"
+                    }
+                } else duration += " to present"
+            }
+
             Text(
-                text = "2019 - 2025",
+                text = duration,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -738,15 +802,15 @@ fun ProjectItem(project: Project) {
 }
 
 @Composable
-fun EducationItem(education: Education) {
+fun EducationItem(education: Educations) {
     Column {
         Text(
-            text = education.degree,
+            text = education.degree ?: "",
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = "${education.field} • ${education.institution}",
+            text = "${education.fieldStudy} • ${education.schoolName}",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -754,18 +818,12 @@ fun EducationItem(education: Education) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            val duration = "${education.dateStart} - ${education.dateEnd}"
             Text(
-                text = education.year,
+                text = duration,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            education.gpa?.let { gpa ->
-                Text(
-                    text = "GPA: $gpa",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
         }
     }
 }

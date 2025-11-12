@@ -180,6 +180,7 @@ class LoginViewModel @Inject constructor(
                     token.update { sharedPreferences.getString("token", "") ?: "" }
 
                     tokenNotEmpty.update { token.value.isNotEmpty() }
+                    Log.i("kgklzjgekgkeg", "data: ${res.data}")
 
                     login.update { res.data ?: LoginResponse() }
 

@@ -68,6 +68,7 @@ import com.example.myjob.domain.entities.ContractTypeChoices
 import com.example.myjob.domain.entities.ExperienceChoices
 import com.example.myjob.domain.entities.SexChoices
 import com.example.myjob.domain.entities.SituationChoices
+import com.example.myjob.domain.entities.StatusChoices
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.feature.navigation.Screen
 
@@ -611,6 +612,7 @@ fun flowHandling(
         list.mapIndexed { index, exp ->
 
             val titleItem = when (exp) {
+                is StatusChoices -> exp.title
                 is ExperienceChoices -> exp.title
                 is Availabilities -> exp.title
                 is ContractTypeChoices -> exp.title

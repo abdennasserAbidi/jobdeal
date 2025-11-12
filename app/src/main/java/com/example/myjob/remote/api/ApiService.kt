@@ -130,8 +130,15 @@ ApiService {
         @Query("size") size: Int = 10
     ): GenericResponse<Educations>
 
-    @GET("auth/getAllJobs")
+    @GET("auth/getAllCandidate")
     suspend fun getAllUser(
+        @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<User>
+
+    @GET("auth/getNewCandidate")
+    suspend fun getNewCandidate(
         @Query("id") id: Int,
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10

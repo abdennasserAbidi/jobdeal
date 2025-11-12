@@ -2,6 +2,8 @@ package com.example.myjob.domain.entities
 
 import android.util.Log
 import android.view.View
+import com.example.myjob.domain.entities.invitation.InvitationModel
+import com.example.myjob.feature.validateprofile.ValidationProfileStatus
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
@@ -19,23 +21,27 @@ data class User(
     var newCountry: String? = "",
     var bio: String? = "",
     var role: String? = "Company",
+    var candidate: Boolean? = false,
+    var company: Boolean? = true,
     var email: String? = "abidi.baha@gmail.com",
     var preferredWorkType: MutableList<String>? = mutableListOf(),
     var workPreferences: MutableList<String>? = mutableListOf(),
     var fullName: String? = "$firstName $lastName",
     var password: String? = "Aladin@123",
     var preferredEmploymentType: String? = "",
-    var address: String? = "Unspecified",
+    var address: String? = "",
     var situation: String? = "",
     var isVerified: Boolean? = false,
-    var isFirstTime: Boolean? = true,
+    var firstTime: Boolean? = true,
+    var firstTimeUse: Boolean? = true,
     var sexe: String? = "",
-    var nationality: String? = "Unspecified",
+    var nationality: String? = "",
     var birthDate: String? = "Choose Date",
     var activitySector: String? = "Choose activity sector",
-    var rangeSalary: String? = "Unspecified",
-    var preferredActivitySector: String? = "Unspecified",
+    var rangeSalary: String? = "",
+    var preferredActivitySector: String? = "",
 
+    var validationProfileStatus: ValidationProfileStatus = ValidationProfileStatus(),
     var professionalStatus: ProfessionalStatus = ProfessionalStatus(),
     var candidateSkills: CandidateSkills = CandidateSkills(),
 
@@ -43,6 +49,7 @@ data class User(
     var experience: MutableList<Experience>? = mutableListOf(),
     var education: MutableList<Educations>? = mutableListOf(),
     //company
+    val invitations: MutableList<InvitationModel>? = mutableListOf(),
     val listNum: MutableList<String>? = mutableListOf(),
     var companyName: String? = "",
     var phoneCompany: String? = "",

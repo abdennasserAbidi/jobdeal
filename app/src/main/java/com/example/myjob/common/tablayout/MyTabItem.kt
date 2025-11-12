@@ -3,6 +3,7 @@ package com.example.myjob.common.tablayout
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.padding
@@ -16,7 +17,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -67,6 +67,7 @@ fun MyTabItemRect(
     isSelected: Boolean,
     onClick: () -> Unit,
     tabWidth: Dp,
+    modifier: Modifier,
     text: String,
 ) {
 
@@ -78,7 +79,7 @@ fun MyTabItemRect(
         animationSpec = tween(easing = LinearEasing), label = "",
     )
     Text(
-        modifier = Modifier
+        modifier = modifier
             .clip(
                 RoundedCornerShape(12.dp)
             )
@@ -88,10 +89,9 @@ fun MyTabItemRect(
             ) {
                 onClick()
             }
-            .width(tabWidth)
+            //.width(tabWidth)
             .padding(
                 vertical = 8.dp,
-                horizontal = 12.dp,
             ),
         text = text,
         color = tabTextColor,

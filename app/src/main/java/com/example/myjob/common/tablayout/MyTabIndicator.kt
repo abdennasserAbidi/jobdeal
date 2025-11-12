@@ -49,7 +49,8 @@ fun MyTabIndicatorRec(
             .width(
                 width = indicatorWidth,
             )
-            .padding(10.dp)
+            .padding(vertical = 10.dp)
+            .padding(start = 5.dp, end = 20.dp)
             .offset(
                 x = indicatorOffset,
             )

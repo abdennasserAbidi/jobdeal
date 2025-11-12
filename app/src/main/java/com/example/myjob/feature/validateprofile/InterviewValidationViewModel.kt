@@ -1,28 +1,35 @@
 package com.example.myjob.feature.validateprofile
 
+import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
 import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Badge
-import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.VideoCall
 import androidx.compose.material.icons.filled.Work
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myjob.R
+import com.example.myjob.base.reources.ResourceState
+import com.example.myjob.common.FileReader
 import com.example.myjob.domain.entities.User
-import com.example.myjob.domain.usecase.subscription.ForgotPasswordUseCase
-import com.example.myjob.domain.usecase.subscription.ResetPasswordUseCase
+import com.example.myjob.domain.usecase.home.UploadCVUseCase
 import com.example.myjob.domain.usecase.verification.GetVerifiedCandidateStatusUseCase
 import com.example.myjob.domain.usecase.verification.SendMailVerificationUseCase
 import com.example.myjob.domain.usecase.verification.ValidateEmailUseCase
-import com.example.myjob.domain.usecase.verification.ValidatePasswordUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,7 +37,8 @@ class InterviewValidationViewModel @Inject constructor(
     private val sharedPreference: SharedPreference,
     private val sendMailVerificationUseCase: SendMailVerificationUseCase,
     private val getVerifiedCandidateStatusUseCase: GetVerifiedCandidateStatusUseCase,
-    private val validateEmailUseCase: ValidateEmailUseCase
+    private val validateEmailUseCase: ValidateEmailUseCase,
+    private val uploadCVUseCase: UploadCVUseCase
 ) : ViewModel() {
 
     val verificationSteps = MutableStateFlow<List<StepStatus>>(emptyList())
@@ -55,6 +63,20 @@ class InterviewValidationViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun imageInfo(context: Context, imageUri: Uri?): String {
+        return imageUri?.let { uri ->
+            val cursor = context.contentResolver.query(uri, null, null, null, null)
+            cursor?.use {
+                val nameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (nameIndex != -1 && it.moveToFirst()) {
+                    it.getString(nameIndex)
+                } else {
+                    null
+                }
+            }
+        } ?: ""
     }
 
     /*fun getVerifiedCandidateStatus(list: List<StepStatus>) {
@@ -136,7 +158,81 @@ class InterviewValidationViewModel @Inject constructor(
         }
     }
 
-    init {
+    fun initList(context: Context) {
+        val list = listOf(
+            StepStatus(
+                VerificationStep.ID_DOCUMENT,
+                VerificationStatus.NOT_STARTED,
+                context.resources.getString(R.string.id_document_text),
+                context.resources.getString(R.string.desc_document_text),
+                Icons.Default.Badge,
+                isRequired = false
+            ),
+            StepStatus(
+                VerificationStep.WORK_EMAIL,
+                VerificationStatus.NOT_STARTED,
+                context.resources.getString(R.string.interview_text),
+                context.resources.getString(R.string.interview_explanation_text),
+                Icons.Default.Work,
+                isRequired = false
+            ),
+            StepStatus(
+                VerificationStep.VIDEO_INTRO,
+                VerificationStatus.NOT_STARTED,
+                context.resources.getString(R.string.video_intro_text),
+                context.resources.getString(R.string.video_explanation_text),
+                Icons.Default.VideoCall,
+                isRequired = false
+            )
+        )
+
+        getVerifiedCandidateStatus(list)
+    }
+
+    var uploadMessage = MutableStateFlow("")
+
+    fun uploadDoc(context: Context, fileUri: Uri, index: Int) {
+        val file = FileReader.getFile(context, fileUri) // Helper function to convert URI to File
+
+        val requestBody: RequestBody =
+            RequestBody.create("application/*".toMediaTypeOrNull(), file)
+
+        val contentResolver = context.contentResolver
+        val mimeType = contentResolver.getType(fileUri) ?: "application/octet-stream"
+        val inputStream = contentResolver.openInputStream(fileUri) ?: return
+
+        val tempFile = File(context.cacheDir, "upload_${System.currentTimeMillis()}")
+        tempFile.outputStream().use { output ->
+            inputStream.copyTo(output)
+        }
+
+
+        val requestBody1 = tempFile.asRequestBody(mimeType.toMediaTypeOrNull())
+
+
+        val expectedName = "document $index"
+        val multipartBody: MultipartBody.Part =
+            MultipartBody.Part.createFormData("file", expectedName, requestBody1)
+
+        viewModelScope.launch {
+            uploadCVUseCase.execute(multipartBody).collect { res ->
+                when (res.status) {
+                    ResourceState.SUCCESS -> {
+                        uploadMessage.update {
+                            res.data ?: ""
+                        }
+                    }
+
+                    else -> {
+                        uploadMessage.update { "" }
+                    }
+                }
+            }
+        }
+    }
+
+    /*init {
+
         val list = listOf(
             StepStatus(
                 VerificationStep.ID_DOCUMENT,
@@ -144,14 +240,6 @@ class InterviewValidationViewModel @Inject constructor(
                 "ID Document",
                 "Upload a government-issued ID (optional)",
                 Icons.Default.Badge,
-                isRequired = false
-            ),
-            StepStatus(
-                VerificationStep.LINKEDIN_VERIFICATION,
-                VerificationStatus.NOT_STARTED,
-                "LinkedIn Profile",
-                "Connect your LinkedIn for professional verification",
-                Icons.Default.Link,
                 isRequired = false
             ),
             StepStatus(
@@ -173,5 +261,5 @@ class InterviewValidationViewModel @Inject constructor(
         )
 
         getVerifiedCandidateStatus(list)
-    }
+    }*/
 }

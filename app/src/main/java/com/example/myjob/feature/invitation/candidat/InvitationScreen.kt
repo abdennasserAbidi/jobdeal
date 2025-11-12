@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
@@ -43,6 +45,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -114,7 +118,7 @@ fun InvitationScreen(
 
         Column(modifier = Modifier.fillMaxWidth()) {
 
-            Box(
+            /*Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(70.dp)
@@ -152,6 +156,57 @@ fun InvitationScreen(
                         )
                     )
                 }
+            }*/
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = colorResource(id = R.color.whatsapp))
+                    /*.background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFF25D366),
+                                Color(0xFF20BA5A)
+                            )
+                        )
+                    )*/
+                    .padding(horizontal = 20.dp, vertical = 24.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        IconButton(
+                            onClick = {
+                                navController.popBackStack()
+                            },
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.2f))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        Text(
+                            text = stringResource(id = R.string.invitations_text),
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
             }
 
             // Filter Row
@@ -162,8 +217,9 @@ fun InvitationScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val invitationFound = stringResource(id = R.string.invitation_found_text)
                 Text(
-                    text = "${invitations.itemCount} invitations found",
+                    text = "${invitations.itemCount} $invitationFound",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -173,12 +229,12 @@ fun InvitationScreen(
                     label = {
                         Text(
                             text = when (selectedFilter) {
-                                FilterType.ALL -> "All"
-                                FilterType.INTERVIEWING -> "Interviewing"
-                                FilterType.HIRED -> "Hired"
-                                FilterType.NOT_INTERESTED -> "Not Interested"
-                                FilterType.ON_HOLD -> "On hold"
-                                FilterType.REJECTED -> "Rejected"
+                                FilterType.ALL -> stringResource(id = R.string.all_user_text)
+                                FilterType.INTERVIEWING -> stringResource(id = R.string.interviewing_text)
+                                FilterType.HIRED -> stringResource(id = R.string.hired_text)
+                                FilterType.NOT_INTERESTED -> stringResource(id = R.string.not_interested_text)
+                                FilterType.ON_HOLD -> stringResource(id = R.string.on_hold_text)
+                                FilterType.REJECTED -> stringResource(id = R.string.Rejected)
                             }
                         )
                     },
@@ -192,9 +248,8 @@ fun InvitationScreen(
                     },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = WhatsAppLightGreen,
-                        selectedLabelColor = WhatsAppDarkGreen,
-
-                        )
+                        selectedLabelColor = WhatsAppDarkGreen
+                    )
                 )
             }
 
@@ -270,7 +325,7 @@ fun InvitationScreen(
                     InvitationCard(
                         statusInvitations = statusCandidate ?: "",
                         invitationModel = item,
-                        onClick = { /*TODO*/ },
+                        onClick = {  },
                         onAcceptInvitation = {
                             item.status = InvitationStatus.IN_PROCESS.name
                             invitationViewModel.acceptRejectInvitation(item)
@@ -357,24 +412,29 @@ fun FilterBottomSheet(
             .padding(16.dp)
     ) {
         Text(
-            text = "Filter by Status",
+            text = stringResource(id = R.string.filter_status_text),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-
+        val allCandidatesText = stringResource(id = R.string.all_candidates_text)
+        val inProcessText = stringResource(id = R.string.in_process_long_text)
+        val hiredText = stringResource(id = R.string.hired_text)
+        val notInterestedText = stringResource(id = R.string.not_interested_text)
+        val onHoldText = stringResource(id = R.string.on_hold_text)
+        val rejectedText = stringResource(id = R.string.Rejected)
         FilterType.values().forEach { filter ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
                         val text = when (filter) {
-                            FilterType.ALL -> "All Candidates"
-                            FilterType.INTERVIEWING -> "In process..."
-                            FilterType.HIRED -> "Hired"
-                            FilterType.NOT_INTERESTED -> "Not Interested"
-                            FilterType.ON_HOLD -> "On hold"
-                            FilterType.REJECTED -> "Rejected"
+                            FilterType.ALL -> allCandidatesText
+                            FilterType.INTERVIEWING -> inProcessText
+                            FilterType.HIRED -> hiredText
+                            FilterType.NOT_INTERESTED -> notInterestedText
+                            FilterType.ON_HOLD -> onHoldText
+                            FilterType.REJECTED -> rejectedText
                         }
                         onFilterSelected(filter, text)
                     }
@@ -385,12 +445,12 @@ fun FilterBottomSheet(
                     selected = selectedFilter == filter,
                     onClick = {
                         val text = when (filter) {
-                            FilterType.ALL -> "All Candidates"
-                            FilterType.INTERVIEWING -> "In process..."
-                            FilterType.HIRED -> "Hired"
-                            FilterType.NOT_INTERESTED -> "Not Interested"
-                            FilterType.ON_HOLD -> "On hold"
-                            FilterType.REJECTED -> "Rejected"
+                            FilterType.ALL -> allCandidatesText
+                            FilterType.INTERVIEWING -> inProcessText
+                            FilterType.HIRED -> hiredText
+                            FilterType.NOT_INTERESTED -> notInterestedText
+                            FilterType.ON_HOLD -> onHoldText
+                            FilterType.REJECTED -> rejectedText
                         }
                         onFilterSelected(filter, text)
                     },
@@ -402,12 +462,12 @@ fun FilterBottomSheet(
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = when (filter) {
-                        FilterType.ALL -> "All Candidates"
-                        FilterType.INTERVIEWING -> "In process..."
-                        FilterType.HIRED -> "Hired"
-                        FilterType.NOT_INTERESTED -> "Not Interested"
-                        FilterType.ON_HOLD -> "On hold"
-                        FilterType.REJECTED -> "Rejected"
+                        FilterType.ALL -> allCandidatesText
+                        FilterType.INTERVIEWING -> inProcessText
+                        FilterType.HIRED -> hiredText
+                        FilterType.NOT_INTERESTED -> notInterestedText
+                        FilterType.ON_HOLD -> onHoldText
+                        FilterType.REJECTED -> rejectedText
                     },
                     style = MaterialTheme.typography.bodyLarge
                 )

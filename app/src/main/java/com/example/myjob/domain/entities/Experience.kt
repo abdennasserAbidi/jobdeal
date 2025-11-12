@@ -26,13 +26,17 @@ data class Experience(
     var typeContract: String? = "",
     var anotherActivitySector: String? = "",
     var freelanceFee: String? = "",
+    var perHourPaymentMethod: Boolean = false,
+    var perDayPaymentMethod: Boolean = false,
+    var perProjectPaymentMethod: Boolean = false,
+    var freelanceSalary: Int? = 0,
     var nbHours: Int? = 0,
     var nbDays: Int? = 0,
-    var salary: Int? = 1000,
+    var salary: Int? = -1,
     var hourlyRate: Int? = 0,
-    var current: Boolean = false,
-    var isFreelance: Boolean = false,
-    var isContract: Boolean = false,
+    var current: Boolean? = false,
+    var isFreelance: Boolean? = false,
+    var isContract: Boolean? = false,
     var idUser: Int? = 0
 ) {
 

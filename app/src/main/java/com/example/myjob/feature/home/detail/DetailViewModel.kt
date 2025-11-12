@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,6 +50,7 @@ class DetailViewModel @Inject constructor(
 
     val showUser = MutableStateFlow(mapOf<String, String>())
     val user = MutableStateFlow(User(id = 0))
+    val experienceYears = MutableStateFlow(0)
 
     fun getUserById(id: Int) {
         getUser(lang, id)
@@ -61,10 +63,25 @@ class DetailViewModel @Inject constructor(
                     user.update { u }
                     GlobalEntries.userCandidate = u
                     sharedPreference.putString("username", u.fullName ?: "")
-                    Log.i("userValue", "getUser: $u")
-                    Log.i("userValue", "getUser: ${u.showUser(lang)}")
                     showUser.update {
                         u.showUser(lang)
+                    }
+
+                    val experiences = u.experience ?: mutableListOf()
+                    if (experiences.isNotEmpty()) {
+                        val firstExp = experiences[0]
+                        val start = firstExp.dateStart ?: ""
+
+                        if (start.isNotEmpty()) {
+                            val startArray = start.split(", ")
+                            val yearStart = startArray[2].toInt()
+
+                            val calendar: Calendar = Calendar.getInstance()
+                            val currentYear: Int = calendar.get(Calendar.YEAR)
+
+                            val diffYear = currentYear - yearStart
+                            experienceYears.update { diffYear }
+                        }
                     }
                 }
             }

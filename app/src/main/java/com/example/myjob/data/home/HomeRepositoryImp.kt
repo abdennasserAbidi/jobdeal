@@ -71,8 +71,10 @@ class HomeRepositoryImp @Inject constructor(
                         val situation = it.situation ?: ""
                         it.changeSituation(situation, lang)
 
-                        val availability = it.professionalStatus.availability ?: ""
-                        it.changeAvailability(availability, lang)
+                        /*if (it.role == "Candidate" || it.role == "Candidat") {
+                            val availability = it.professionalStatus.availability ?: ""
+                            it.changeAvailability(availability, lang)
+                        }*/
                     }
 
                     val json = Gson().toJson(users.content)

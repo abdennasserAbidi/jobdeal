@@ -76,9 +76,9 @@ import com.example.myjob.feature.favorites.CompanyFavorites
 import com.example.myjob.feature.forgotpassword.ForgotPasswordScreen
 import com.example.myjob.feature.home.HomeCandidate
 import com.example.myjob.feature.home.HomeCompany
+import com.example.myjob.feature.home.ModernHomeScreen
 import com.example.myjob.feature.home.detail.CandidateDetailScreen
 import com.example.myjob.feature.home.detail.DetailsScreen
-import com.example.myjob.feature.home.detail.sampleProfile
 import com.example.myjob.feature.home.filter.FilterScreenUpdated
 import com.example.myjob.feature.home.filter.FilteredHome
 import com.example.myjob.feature.home.filter.SearchScreen
@@ -140,9 +140,7 @@ class MainActivity : ComponentActivity() {
     //TODO("EVENNEMENT(céminaire, formation, foire) => annonces : forum(commentaire, like)")
     //TODO("Annonce : emplacememnt dans la bottom bar instead of search")
     //TODO("Notification")
-    //TODO("FIxer le design partout")
 
-    //text recognition
     private var imageUri = mutableStateOf<Uri?>(null)
     private var textChanged = mutableStateOf("Scanned text will appear here..")
 
@@ -151,6 +149,8 @@ class MainActivity : ComponentActivity() {
             imageUri.value = uri
             val list = listImageUri.toMutableList()
             list.add(uri)
+            listImageUri
+            Log.i("jfeakhgealgk", ": $list")
         }
 
     lateinit var launcher: ActivityResultLauncher<Intent>
@@ -479,11 +479,8 @@ class MainActivity : ComponentActivity() {
                         route = Screen.DetailScreen.route,
                     ) {
                         isVisibleNav = false
-                        /*DetailsScreen(navController, hideNavigation = {
-                            isVisibleNav = false
-                        })*/
 
-                        CandidateDetailScreen(navController, sampleProfile, hideNavigation = {
+                        CandidateDetailScreen(navController, hideNavigation = {
                             isVisibleNav = false
                         })
                     }
@@ -573,12 +570,20 @@ class MainActivity : ComponentActivity() {
                                 onResumed = { index ->
                                     selectedTabIndex = index
                                 })*/
-                        } else HomeCandidate(
+                        } else {
+                            /*HomeCandidate(
                             navController,
                             clearData = {
                                 selectedTabIndex = 0
                             }
-                        )
+                        )*/
+                            ModernHomeScreen(
+                                navController = navController,
+                                clearData = {
+                                    selectedTabIndex = 0
+                                }
+                            )
+                        }
                     }
 
                     composable(route = Screen.FilteredHome.route) {
@@ -597,6 +602,9 @@ class MainActivity : ComponentActivity() {
                             navController = navController,
                             list = listCountry,
                             allSubjects = allSubjects,
+                            listStudyField = studyField,
+                            listSchools = listSchools,
+                            listGrade = listCountries,
                             listCompany = app.listCompanies,
                             clearData = {
                                 selectedTabIndex = 0
