@@ -8,10 +8,12 @@ import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.entities.invitation.InvitationModel
+import com.example.myjob.domain.entities.invitation.InvitationParams
+import com.example.myjob.domain.usecase.home.GetUserUseCase
+import com.example.myjob.domain.usecase.invitation.FinishProcessUseCase
 import com.example.myjob.domain.usecase.profile.GetAllEducationUseCase
 import com.example.myjob.domain.usecase.profile.GetAllExperienceUseCase
-import com.example.myjob.domain.usecase.home.GetUserUseCase
-import com.example.myjob.domain.usecase.home.SaveToFavoriteUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +29,7 @@ class DetailViewModel @Inject constructor(
     private val getAllExperienceUseCase: GetAllExperienceUseCase,
     private val getAllEducationUseCase: GetAllEducationUseCase,
     private val getUserUseCase: GetUserUseCase,
-    private val saveToFavoriteUseCase: SaveToFavoriteUseCase
+    private val finishProcessUseCase: FinishProcessUseCase
 ) : ViewModel() {
 
     var lang = ""
@@ -54,6 +56,17 @@ class DetailViewModel @Inject constructor(
 
     fun getUserById(id: Int) {
         getUser(lang, id)
+    }
+
+    private fun getCurrent(id: Int) {
+        viewModelScope.launch {
+            getUserUseCase.execute(id).collect {
+                it.data?.let { u ->
+                    Log.i("klhjehrzjgezjgz", "getCurrent: $u")
+                    GlobalEntries.user = u
+                }
+            }
+        }
     }
 
     private fun getUser(lang: String, id: Int) {
@@ -119,13 +132,32 @@ class DetailViewModel @Inject constructor(
         }
     }
 
-    val updateFavoriteState = MutableStateFlow(false)
+    ///////////////////////////////////////////////////////////////////////////
+    // FINISH PROCESS
+    ///////////////////////////////////////////////////////////////////////////
+    private val _invitation: MutableStateFlow<InvitationParams> =
+        MutableStateFlow(InvitationParams())
+    val invitation: MutableStateFlow<InvitationParams> get() = _invitation
+    fun finishProcess(invitationModel: InvitationModel) {
 
-    fun saveToFavorites(id: Int) {
-        /*viewModelScope.launch {
-            saveToFavoriteUseCase.execute(Pair(id, true)).collect { res ->
-                updateFavoriteState.update { res.data?.message == "saved successfully" }
-            }
-        }*/
+        val id = sharedPreference.getInt("idUser", 0)
+        val invitationParams = InvitationParams(
+            idConnected = id,
+            invitationModel = invitationModel
+        )
+
+        viewModelScope.launch {
+            finishProcessUseCase.execute(invitationParams)
+                .collectLatest { res ->
+                    _invitation.update {
+                        res.data ?: InvitationParams()
+                    }
+
+                }
+        }
+    }
+
+    init {
+        getCurrent(sharedPreference.getInt("idUser", 0))
     }
 }

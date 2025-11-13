@@ -88,6 +88,7 @@
     <string name="hello">Bonjour</string>
 
     <string name="holding">En attente</string>
+    <string name="pending_text">En attente</string>
     <string name="Accepted">Accepté</string>
     <string name="Rejected">Rejeté</string>
 
@@ -96,6 +97,7 @@
     <string name="generic_info_text">Info géneral</string>
     <string name="view_detail_text">Afficher les détails</string>
     <string name="contact_information_text">Information du contact</string>
+    <string name="contact_text">Message</string>
 
     <!--education form-->
     <string name="education_text">Formations</string>
@@ -166,6 +168,7 @@
     <string name="senior_text">Sénior (5–8 ans)</string>
     <string name="lead_team_text">Chef d’équipe / Principal (8+ ans)</string>
     <string name="executive_text">Cadre / Direction (10+ ans)</string>
+    <string name="years_text">ans</string>
 
     <string name="immediately_text">Disponible immédiatement</string>
     <string name="one_week_text">Disponible dans 1 semaine</string>
@@ -299,7 +302,9 @@
     <string name="show_result_text">Voir les resultats</string>
     <string name="hire_text">L\'entreprise vous a embauché</string>
     <string name="refuse_text">L\'entreprise a rejeté votre candidature car :</string>
+    <string name="refuse_candidate_text">Le candidat a refusé ton invitation</string>
     <string name="rejected_offer_text">Vous avez refusé cette offre.</string>
+    <string name="about_text">A propos</string>
 
     <string name="other_text">Autres</string>
     <string name="interview_text">Entretien</string>

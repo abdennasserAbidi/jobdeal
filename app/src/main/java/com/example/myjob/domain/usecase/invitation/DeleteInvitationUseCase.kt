@@ -13,9 +13,9 @@ import javax.inject.Inject
 class DeleteInvitationUseCase @Inject constructor(
     private val repository: InvitationRepository,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
-) : FlowBaseUseCase<UserResponse, Int>() {
+) : FlowBaseUseCase<UserResponse, Pair<Int, Int>>() {
 
-    override suspend fun buildRequest(params: Int?): Flow<Resource<UserResponse>> {
-        return repository.deleteInvitation(params ?: 0).flowOn(dispatcher)
+    override suspend fun buildRequest(params: Pair<Int, Int>?): Flow<Resource<UserResponse>> {
+        return repository.deleteInvitation(params?.first ?: 0, params?.second ?: 0).flowOn(dispatcher)
     }
 }

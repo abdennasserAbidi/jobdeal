@@ -29,7 +29,7 @@ interface InvitationDataSource {
     ): GenericResponse<InvitationModel>
 
     suspend fun sendInvitation(invitationParams: InvitationParams): UserResponse
-    suspend fun deleteInvitation(idInvitation: Int): UserResponse
+    suspend fun deleteInvitation(idInvitation: Int, idInvitationFrom: Int): UserResponse
     suspend fun finishProcess(invitationParams: InvitationParams): InvitationParams
     suspend fun acceptRejectInvitation(invitationParams: InvitationParams): UserResponse
 }

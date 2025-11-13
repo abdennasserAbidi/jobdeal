@@ -22,6 +22,8 @@ import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.Candidate
+import com.example.myjob.domain.entities.invitation.InvitationModel
+import com.example.myjob.feature.invitation.company.EnProcessForm
 import com.example.myjob.feature.navigation.Screen
 
 // WhatsApp Green Theme Colors
@@ -91,16 +93,11 @@ fun CandidateDetailScreen(
     var isSaved by remember { mutableStateOf(false) }
 
     val user = GlobalEntries.userForCompany
-    val userFullName by detailViewModel.userFullName.collectAsState()
-    val username by detailViewModel.username.collectAsState()
-    val showUser by detailViewModel.showUser.collectAsState()
     val experienceYears by detailViewModel.experienceYears.collectAsState()
+    val invitation by detailViewModel.invitation.collectAsState()
 
-    val lazyPagingItems = detailViewModel.experience.collectAsLazyPagingItems()
-    val experience = lazyPagingItems.itemSnapshotList.items
-
-    val lazyPagingItemsEducation = detailViewModel.education.collectAsLazyPagingItems()
-    val education = lazyPagingItemsEducation.itemSnapshotList.items
+    var openFinishProcess by remember { mutableStateOf(false) }
+    var invitationModel by remember { mutableStateOf(InvitationModel()) }
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
@@ -113,6 +110,17 @@ fun CandidateDetailScreen(
                 if (it.isNotEmpty()) detailViewModel.getUserNameAbbreviation(it)
             }
         }
+    }
+
+    if (openFinishProcess) {
+        EnProcessForm(invitationModel,
+            onDismissRequest = {
+                openFinishProcess = false
+            },
+            onConfirmation = {
+                detailViewModel.finishProcess(it)
+                openFinishProcess = false
+            })
     }
 
 
@@ -171,10 +179,19 @@ fun CandidateDetailScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Header Card with Basic Info
-            CandidateHeaderCard(candidateProfile = user, experienceYears) {
-                GlobalEntries.candidateUser = it
-                navController.navigate(Screen.SendInvitationScreen.route)
-            }
+            CandidateHeaderCard(candidateProfile = user, experienceYears,
+                sendInvitation = {
+                    GlobalEntries.candidateUser = it
+                    navController.navigate(Screen.SendInvitationScreen.route)
+                },
+                sendMessage = {
+                    GlobalEntries.candidateUser = it
+                    navController.navigate(Screen.SendInvitationScreen.route)
+                },
+                onTerminateInvitation = {
+                    invitationModel = it
+                    openFinishProcess = true
+                })
 
             // Contact Information Card
             ContactInformationCard(candidateProfile = user)

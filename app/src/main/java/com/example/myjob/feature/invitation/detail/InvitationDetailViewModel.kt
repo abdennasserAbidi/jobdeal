@@ -68,9 +68,9 @@ class InvitationDetailViewModel @Inject constructor(
     val deletedStatus: MutableStateFlow<String> get() = _deletedStatus
     fun deleteInvitation(idInvitation: Int) {
         val idUser = sharedPreference.getInt("idUser", 0)
-        val pair = Pair(idUser, idInvitation)
+        val pair = Pair(idInvitation, idUser)
         viewModelScope.launch {
-            deleteInvitationUseCase.execute(idInvitation)
+            deleteInvitationUseCase.execute(pair)
                 .collect { res ->
                     if (res.status == ResourceState.SUCCESS) {
                         _deletedStatus.update {

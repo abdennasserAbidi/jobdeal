@@ -50,7 +50,9 @@ import com.example.myjob.domain.entities.FilterType
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.candidates
+import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.feature.home.filter.flowHandling
+import com.example.myjob.feature.invitation.company.EnProcessForm
 import com.example.myjob.feature.navigation.Screen
 import kotlinx.coroutines.flow.update
 
@@ -77,6 +79,7 @@ fun CandidateListScreen(
     LaunchedEffect(lifecycle) {
         if (lifecycle == Lifecycle.Event.ON_RESUME) {
             changeIndexTab()
+            homeViewModel.getCurrent()
             homeViewModel.getUserToken()
         }
     }
@@ -158,7 +161,6 @@ fun CandidateListScreen(
             GlobalEntries.isVisibleNav.update { true }
 
             homeViewModel.addToList(contractText, freelanceText)
-            //onResumed(0)
             if (GlobalEntries.isFromFilter) {
                 homeViewModel.validateFilter(GlobalEntries.criteriaModel)
                 GlobalEntries.isFromFilter = false
@@ -177,6 +179,22 @@ fun CandidateListScreen(
                 homeViewModel.sendNotification(title, message)
             }
         }
+    }
+
+    val invitation by homeViewModel.invitation.collectAsState()
+
+    var openFinishProcess by remember { mutableStateOf(false) }
+    var invitationModel by remember { mutableStateOf(InvitationModel()) }
+
+    if (openFinishProcess) {
+        EnProcessForm(invitationModel,
+            onDismissRequest = {
+                openFinishProcess = false
+            },
+            onConfirmation = {
+                homeViewModel.finishProcess(it)
+                openFinishProcess = false
+            })
     }
 
     Box(
@@ -337,6 +355,10 @@ fun CandidateListScreen(
 
                                 candidateUser = user
                                 navController.navigate(Screen.SendInvitationScreen.route)
+                            },
+                            onTerminateInvitation = {
+                                invitationModel = it
+                                openFinishProcess = true
                             }
                         )
 

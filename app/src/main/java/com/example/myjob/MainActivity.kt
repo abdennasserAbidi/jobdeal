@@ -103,6 +103,7 @@ import com.example.myjob.feature.profile.PersonalForm
 import com.example.myjob.feature.profile.ProfileScreen
 import com.example.myjob.feature.home.detail.test.CandidateCompleteProfileApp
 import com.example.myjob.feature.invitation.candidat.InvitationCareerScreen
+import com.example.myjob.feature.messagerie.DiscussionScreen
 import com.example.myjob.feature.profile.test.CandidateProfileFormExec
 import com.example.myjob.feature.setting.ModernSettingScreen
 import com.example.myjob.feature.setting.SettingScreen
@@ -481,6 +482,15 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = false
 
                         CandidateDetailScreen(navController, hideNavigation = {
+                            isVisibleNav = false
+                        })
+                    }
+
+                    composable(
+                        route = Screen.SendMessageScreen.route,
+                    ) {
+                        isVisibleNav = false
+                        DiscussionScreen(navController, hideNavigation = {
                             isVisibleNav = false
                         })
                     }

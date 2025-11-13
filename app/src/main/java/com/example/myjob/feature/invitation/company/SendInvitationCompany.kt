@@ -84,6 +84,14 @@ fun SendInvitationCompany(
         }
     }
 
+    val invitationSent by homeViewModel.invitationSent.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(invitationSent) {
+        if (invitationSent) navController.popBackStack()
+        else Toast.makeText(context, "error", Toast.LENGTH_SHORT).show()
+    }
+
     var contractWorkOpen by remember { mutableStateOf(false) }
     var secondContractWorkOpen by remember { mutableStateOf(false) }
     val list = listOf(
@@ -181,16 +189,8 @@ fun SendInvitationCompany(
                 val statusInvitation = stringResource(id = R.string.holding)
 
                 val loadingState by homeViewModel.loadingState.collectAsState()
-                val invitationSent by homeViewModel.invitationSent.collectAsState()
 
                 val duration by homeViewModel.durationMission.collectAsState()
-
-                val context = LocalContext.current
-
-                LaunchedEffect(invitationSent) {
-                    if (invitationSent) navController.popBackStack()
-                    else Toast.makeText(context, "error", Toast.LENGTH_SHORT).show()
-                }
 
                 // Send Button
                 Button(
@@ -199,11 +199,17 @@ fun SendInvitationCompany(
                         val subjectNotEmpty = subject.isNotEmpty()
                         val messageNotEmpty = message.isNotEmpty()
 
-                        if (duration.isEmpty()) isErrorDuration = true
+                        var isAllGood = subjectNotEmpty && messageNotEmpty
+
+                        if (contractType == ContractType.FREELANCE) {
+                            if (duration.isEmpty()) isErrorDuration = true
+                            isAllGood = isAllGood && durationNotEmpty
+                        }
+
                         if (subject.isEmpty()) isErrorSubject = true
                         if (message.isEmpty()) isErrorMessage = true
 
-                        if (durationNotEmpty && subjectNotEmpty && messageNotEmpty) {
+                        if (isAllGood) {
                             homeViewModel.clearToken()
                             homeViewModel.getUserToken(user.id ?: -1)
                             homeViewModel.matchCurrentProfile(user, statusInvitation, paymentTerms)
@@ -488,16 +494,13 @@ fun InvitationFormSection(
                     fontWeight = FontWeight.SemiBold
                 )
 
-                val isContract =
-                    user.preferredWorkType?.contains(stringResource(id = R.string.type1_text))
-                        ?: false
-                val isFreelance =
-                    user.preferredWorkType?.contains(stringResource(id = R.string.type2_text))
-                        ?: false
+                /*val isContract = user.preferredWorkType?.contains(stringResource(id = R.string.type1_text)) ?: false
+                val isFreelance = user.preferredWorkType?.contains(stringResource(id = R.string.type2_text)) ?: false*/
+                val isContract = (user.preferredWorkType?.contains("Contrat") ?: false) || (user.preferredWorkType?.contains("Contract") ?: false)
+                val isFreelance = user.preferredWorkType?.contains("Freelance") ?: false
                 val isBoth = isContract && isFreelance
 
                 if (isBoth) {
-
                     // Contract Type Selection
                     Text(
                         text = stringResource(id = R.string.post_type_text),
@@ -710,7 +713,8 @@ fun InvitationFormSection(
                         }
                     }
 
-                } else if (isContract) {
+                }
+                else if (isContract) {
 
                     ExposedDropdownMenuBox(
                         modifier = Modifier
@@ -802,7 +806,8 @@ fun InvitationFormSection(
                         )
                     }
 
-                } else {
+                }
+                else {
                     homeViewModel.changeTypeContract(stringResource(id = R.string.type2_text))
                     OutlinedTextField(
                         value = duration,
@@ -834,7 +839,7 @@ fun InvitationFormSection(
                 }
 
                 val placeHolder =
-                    if (contractType == ContractType.FREELANCE) "Le contract sa sera per hour"
+                    if (contractType == ContractType.FREELANCE) "Le contract sa sera par heure"
                     else "Le contract va commencer le 10/12/2025"
 
                 // Payment Terms

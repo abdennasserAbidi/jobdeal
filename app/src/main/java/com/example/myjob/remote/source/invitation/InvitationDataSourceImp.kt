@@ -44,8 +44,8 @@ class InvitationDataSourceImp @Inject constructor(
     override suspend fun sendInvitation(invitationParams: InvitationParams): UserResponse =
         apiService.sendInvitation(invitationParams)
 
-    override suspend fun deleteInvitation(idInvitation: Int): UserResponse =
-        apiService.deleteInvitation(idInvitation)
+    override suspend fun deleteInvitation(idInvitation: Int, idInvitationFrom: Int): UserResponse =
+        apiService.deleteInvitation(idInvitation, idInvitationFrom)
 
     override suspend fun finishProcess(invitationParams: InvitationParams): InvitationParams =
         apiService.finishProcess(invitationParams)

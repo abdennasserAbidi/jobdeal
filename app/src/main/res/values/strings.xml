@@ -81,6 +81,7 @@
     <string name="item5">favorites</string>
     <string name="item4">Setting</string>
 
+    <string name="about_text">About</string>
     <string name="about_role_text">About your next role</string>
     <string name="availability_text">Availability</string>
     <string name="work_type_text">Preferred work types</string>
@@ -175,6 +176,7 @@
     <string name="senior_text">Senior (5–8 years)</string>
     <string name="lead_team_text">Lead/Principal (8+ years)</string>
     <string name="executive_text">Executive (10+ years)</string>
+    <string name="years_text">years</string>
 
     <string name="immediately_text">Available immediately</string>
     <string name="one_week_text">Available in 1 week</string>
@@ -238,6 +240,7 @@
 
     <string name="profile_candidate_type_text">Candidate Profile</string>
     <string name="contact_information_text">Contact Information</string>
+    <string name="contact_text">Contact</string>
 
     <string name="my_resume_text">My Resume</string>
     <string name="upload_resume_text">Upload &amp; view your resumes</string>
@@ -306,6 +309,7 @@
     <string name="filter_status_text">Filter by Status</string>
 
     <string name="other_text">Other</string>
+    <string name="pending_text">Pending</string>
 
 
 
@@ -317,6 +321,7 @@
     <string name="hire_text">The company hired you</string>
     <string name="show_result_text">See results</string>
     <string name="refuse_text">the company rejected your candidature because :</string>
+    <string name="refuse_candidate_text">the candidate rejected your invitation</string>
 
     <string name="interview_text">Interview</string>
     <string name="interview_validation_text">Enter your email address to receive an email for an interview</string>

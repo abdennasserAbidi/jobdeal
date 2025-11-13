@@ -48,11 +48,11 @@ class InvitationRepositoryImp @Inject constructor(
             }
         }
 
-    override suspend fun deleteInvitation(idInvitation: Int): Flow<Resource<UserResponse>> =
+    override suspend fun deleteInvitation(idInvitation: Int, idInvitationFrom: Int): Flow<Resource<UserResponse>> =
         flow {
             try {
                 // Get data from RemoteDataSource
-                val data = remoteDataSource.deleteInvitation(idInvitation)
+                val data = remoteDataSource.deleteInvitation(idInvitation, idInvitationFrom)
                 // Emit data
                 emit(Resource(ResourceState.SUCCESS, data, null))
             } catch (ex: Exception) {

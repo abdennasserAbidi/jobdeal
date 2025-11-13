@@ -32,6 +32,7 @@ import com.example.myjob.domain.entities.notification.NotificationMessage
 import com.example.myjob.domain.usecase.home.GetAllUserUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.domain.usecase.home.SaveToFavoriteUseCase
+import com.example.myjob.domain.usecase.invitation.FinishProcessUseCase
 import com.example.myjob.domain.usecase.invitation.GetAllInvitationsUseCase
 import com.example.myjob.domain.usecase.invitation.SendInvitationUseCase
 import com.example.myjob.domain.usecase.notification.SendNotificationsUseCase
@@ -67,6 +68,7 @@ class HomeViewModel @Inject constructor(
     private val getUserUseCase: GetUserUseCase,
     private val getFilteredUserUseCase: GetFilteredUserUseCase,
     private val getAllInvitationsUseCase: GetAllInvitationsUseCase,
+    private val finishProcessUseCase: FinishProcessUseCase
 ) : ViewModel() {
 
     private val _invitations: MutableStateFlow<PagingData<InvitationModel>> =
@@ -89,6 +91,31 @@ class HomeViewModel @Inject constructor(
                 }
 
             }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // FINISH PROCESS
+    ///////////////////////////////////////////////////////////////////////////
+    private val _invitation: MutableStateFlow<InvitationParams> =
+        MutableStateFlow(InvitationParams())
+    val invitation: MutableStateFlow<InvitationParams> get() = _invitation
+    fun finishProcess(invitationModel: InvitationModel) {
+
+        val id = sharedPreference.getInt("idUser", 0)
+        val invitationParams = InvitationParams(
+            idConnected = id,
+            invitationModel = invitationModel
+        )
+
+        viewModelScope.launch {
+            finishProcessUseCase.execute(invitationParams)
+                .collectLatest { res ->
+                    _invitation.update {
+                        res.data ?: InvitationParams()
+                    }
+
+                }
         }
     }
 
@@ -779,6 +806,7 @@ class HomeViewModel @Inject constructor(
                         loadingState.update { false }
                         invitationSent.update { true }
                         idUserTo.update { user.id ?: -1 }
+                        getCurrent()
                     }
 
                     else -> {}
@@ -905,6 +933,8 @@ class HomeViewModel @Inject constructor(
         lang = sharedPreference.getString("lang", "") ?: ""
         langState.update { lang }
 
+        getCurrent()
+
         val listParent = listOf(
             ParentChoices(title = R.string.status_type_text, isSelected = false),
             ParentChoices(title = R.string.employment_type_text, isSelected = false),
@@ -1008,6 +1038,16 @@ class HomeViewModel @Inject constructor(
         }
 
         getInvitations()
+    }
+
+    fun getCurrent() {
+        viewModelScope.launch {
+            getUserUseCase.execute(sharedPreference.getInt("idUser", 0)).collect {
+                it.data?.let { u ->
+                    GlobalEntries.user = u
+                }
+            }
+        }
     }
 
     fun logout() {

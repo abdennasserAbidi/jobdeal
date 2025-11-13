@@ -161,8 +161,8 @@ class HomeRepositoryImp @Inject constructor(
             val situation = data.situation ?: ""
             data.changeSituation(situation, lang)
 
-            val availability = data.professionalStatus.availability ?: ""
-            data.changeAvailability(availability, lang)
+            /*val availability = data.professionalStatus.availability ?: ""
+            data.changeAvailability(availability, lang)*/
 
             Log.i("zlmezlmlezm", "SUCCESS: $data")
 
