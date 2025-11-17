@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -538,7 +539,7 @@ fun VerificationBenefitsCard() {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Verification Benefits",
+                    text = stringResource(id = R.string.benefits_text),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF1F2937)
@@ -548,11 +549,10 @@ fun VerificationBenefitsCard() {
             Spacer(modifier = Modifier.height(16.dp))
 
             val benefits = listOf(
-                "✓ Stand out to employers with verified badge",
-                "✓ Higher profile visibility in search results",
-                "✓ Build trust and credibility",
-                "✓ Access to premium job opportunities",
-                "✓ Faster application approvals"
+                "✓ ${stringResource(id = R.string.badge_text)}",
+                "✓ ${stringResource(id = R.string.visibility_search_text)}",
+                "✓ ${stringResource(id = R.string.build_trust_text)}",
+                "✓ ${stringResource(id = R.string.approvals_text)}"
             )
 
             benefits.forEach { benefit ->

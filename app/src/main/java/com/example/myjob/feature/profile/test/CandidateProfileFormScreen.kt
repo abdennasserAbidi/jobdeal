@@ -144,7 +144,6 @@ data class ProjectForm(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CandidateProfileFormScreen(
-    initialData: CandidateFormData = CandidateFormData(),
     navController: NavController,
     clearData: () -> Unit = {},
     list: List<NewCountry>,
@@ -153,10 +152,7 @@ fun CandidateProfileFormScreen(
     listSchools: MutableList<String>,
     listGrade: MutableList<String>,
     listCompany: MutableList<String>,
-    profileViewModel: ProfileViewModel = hiltViewModel(),
-    onBackClick: () -> Unit = {},
-    onSaveProfile: (CandidateFormData) -> Unit = {},
-    onSaveDraft: (CandidateFormData) -> Unit = {}
+    profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
 
 
@@ -169,7 +165,6 @@ fun CandidateProfileFormScreen(
 
     val degreeList by profileViewModel.degreeList.collectAsState()
 
-    var formData by remember { mutableStateOf(initialData) }
     var selectedTab by remember { mutableStateOf(0) }
     var showSaveDialog by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
@@ -362,8 +357,7 @@ fun CandidateProfileFormScreen(
                             typeDate = "end"
                             indexToChange = it
                             profileViewModel.changeVisibilityDate(true)
-                        },
-                        onDataChange = { formData = it }
+                        }
                     )
 
                     4 -> EducationFormSection(
@@ -769,7 +763,6 @@ fun CandidateProfileFormScreen(
             onConfirm = {
                 isLoading = true
                 showSaveDialog = false
-                onSaveProfile(formData)
             },
             onDismiss = { showSaveDialog = false }
         )

@@ -2,6 +2,7 @@ package com.example.myjob.domain.entities
 
 import android.util.Log
 import android.view.View
+import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.feature.validateprofile.ValidationProfileStatus
 import com.google.gson.annotations.SerializedName
@@ -48,6 +49,7 @@ data class User(
     @SerializedName("experiences")
     var experience: MutableList<Experience>? = mutableListOf(),
     var education: MutableList<Educations>? = mutableListOf(),
+    var announces: MutableList<AnnouncementModel>? = mutableListOf(),
     //company
     val invitations: MutableList<InvitationModel>? = mutableListOf(),
     val listNum: MutableList<String>? = mutableListOf(),

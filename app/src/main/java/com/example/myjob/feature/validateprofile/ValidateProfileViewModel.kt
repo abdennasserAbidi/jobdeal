@@ -2,6 +2,7 @@ package com.example.myjob.feature.validateprofile
 
 import android.content.Context
 import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myjob.base.reources.ResourceState
@@ -35,8 +36,21 @@ class ValidateProfileViewModel @Inject constructor(
     private val uploadCVUseCase: UploadCVUseCase
 ) : ViewModel() {
 
-
     val user = MutableStateFlow(User())
+
+    fun imageInfo(context: Context, imageUri: Uri?): String {
+        return imageUri?.let { uri ->
+            val cursor = context.contentResolver.query(uri, null, null, null, null)
+            cursor?.use {
+                val nameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (nameIndex != -1 && it.moveToFirst()) {
+                    it.getString(nameIndex)
+                } else {
+                    null
+                }
+            }
+        } ?: ""
+    }
 
     val isEmailValid = MutableStateFlow(false)
 

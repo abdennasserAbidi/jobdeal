@@ -72,6 +72,7 @@
     <string name="item2">Invitations</string>
     <string name="item6">Notifications</string>
     <string name="item3">Rechercher</string>
+    <string name="item7">Publications</string>
     <string name="item5">favoris</string>
     <string name="item4">Paramètre</string>
 
@@ -91,6 +92,13 @@
     <string name="pending_text">En attente</string>
     <string name="Accepted">Accepté</string>
     <string name="Rejected">Rejeté</string>
+
+    <string name="like_text">J\'aime</string>
+    <string name="comments_text">commentaires</string>
+    <string name="comment_action_text">Commenter</string>
+    <string name="post_action_text">Publier</string>
+    <string name="posted_by_text">Publié par</string>
+    <string name="add_comment_hint_text">Ajouter un commentaire…</string>
 
     <string name="loading_text">Chargement</string>
     <string name="personal_info_text">Info personnelle</string>
@@ -212,10 +220,23 @@
 
     <string name="first_name_error">Prénom est invalid</string>
     <string name="last_name_error">Nom est invalid</string>
+    <string name="password_error">Mot de passe est invalid</string>
+    <string name="change_password_text">Changer mot de passe</string>
     <string name="company_name_error">Nom de l\'entreprise est invalid</string>
     <string name="confirm_password_error">Ce n\'est pas le même mot de passe</string>
     <string name="first_name_text">Prénom</string>
     <string name="last_name_text">Nom</string>
+
+    <string name="basic_text">Basique</string>
+    <string name="conversational_text">Conversationnelle</string>
+    <string name="fluent_text">Courant</string>
+    <string name="native_text">langue maternelle</string>
+
+    <string name="benefits_text">Avantages de la vérification</string>
+    <string name="badge_text">Démarquez-vous auprès des employeurs grâce à un badge vérifié.</string>
+    <string name="visibility_search_text">Meilleure visibilité dans les résultats de recherche</string>
+    <string name="build_trust_text">Instaurer la confiance et la crédibilité</string>
+    <string name="approvals_text">Approbation plus rapide des demandes</string>
 
     <string name="have_account_text">Vous avez déjà un compte ?</string>
     <string name="log_in_text">Se connecter</string>
@@ -260,6 +281,7 @@
     <string name="notification_text">Notifications</string>
     <string name="validate_text">Validation</string>
     <string name="validate_profile_text">Valider votre profile</string>
+    <string name="posts_text">Publications</string>
     <string name="terms_text">Termes et conditions</string>
     <string name="confidentiality_text">Politique de Confidentialité</string>
     <string name="my_account_text">Mon Compte</string>
@@ -268,10 +290,10 @@
     <string name="navigate_invitations_text">Voir vos invitations</string>
     <string name="career_text">Carrière</string>
     <string name="navigate_career_text">Booseter mon carrière</string>
-    <string name="setting_text">Settings</string>
+    <string name="setting_text">Paramètres</string>
     <string name="navigate_settings_text">Sélectionnez vos paramètres</string>
     <string name="profile_text">Profil</string>
-    <string name="navigate_profile_text">EDIT YOUR PROFILE</string>
+    <string name="navigate_profile_text">Modifier votre profil</string>
 
     <string name="send_invitation_text">Envoyer invitation</string>
     <string name="post_title_text">Titre du poste</string>
@@ -281,6 +303,10 @@
     <string name="send_text">Envoyer</string>
     <string name="sending_text">Entrain d\'envoyer…</string>
     <string name="candidate_information_text">Information du candidat</string>
+
+
+    <string name="send_email_text">Un email contenant un lien vous a été envoyé. Cliquez dessus pour réinitialiser votre mot de passe.</string>
+    <string name="forget_password_intro_text">Saisissez votre adresse e-mail pour recevoir un courriel permettant de réinitialiser votre mot de passe.</string>
 
     <string name="intern_user_text">Stagiaire</string>
     <string name="trainer_user_text">Formateur</string>

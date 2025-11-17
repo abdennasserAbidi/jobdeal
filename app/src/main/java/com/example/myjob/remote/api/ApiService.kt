@@ -11,6 +11,8 @@ import com.example.myjob.domain.entities.ProfessionalStatus
 import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
+import com.example.myjob.domain.entities.announcement.CommentsPost
+import com.example.myjob.domain.entities.announcement.LikesPost
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
 import com.example.myjob.domain.entities.invitation.InvitationResponse
@@ -295,6 +297,24 @@ ApiService {
     suspend fun makeAnnouncement(
         @Query("idUserConnected") idUserConnected: Int,
         @Body announcementModel: AnnouncementModel
+    ): UserResponse
+
+    @POST("auth/removeLike")
+    suspend fun removeLike(
+        @Query("idAnnounce") idAnnounce: Int,
+        @Query("idConnected") idConnected: Int
+    ): UserResponse
+
+    @POST("auth/addLikes")
+    suspend fun addLikes(
+        @Query("idAnnounce") idAnnounce: Int,
+        @Body likesPost: LikesPost
+    ): UserResponse
+
+    @POST("auth/addComment")
+    suspend fun addComment(
+        @Query("idAnnounce") idAnnounce: Int,
+        @Body commentsPost: CommentsPost
     ): UserResponse
 
     @GET("auth/getCompanyAnnouncements")

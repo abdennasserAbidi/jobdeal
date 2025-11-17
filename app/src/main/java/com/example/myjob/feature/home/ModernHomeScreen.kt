@@ -75,6 +75,14 @@ fun ModernHomeScreen(
     val fcmToken by homeViewModel.fcmToken.collectAsState()
 
     val invitations = homeViewModel.invitations.collectAsLazyPagingItems()
+    var count by remember { mutableStateOf(0) }
+
+    invitations.itemSnapshotList.map {
+        val status = it?.status ?: ""
+        if (status == stringResource(id = R.string.on_hold_text) || status == "Holding") {
+            count += 1
+        }
+    }
 
     val lifecycle = rememberLifecycleEvent()
     LaunchedEffect(lifecycle) {
@@ -125,7 +133,7 @@ fun ModernHomeScreen(
                         //navController.navigate(Screen.ProfileScreen.route)
                         navController.navigate(Screen.SearchWordScreen.route)
                     },
-                    invitationsCount = invitations.itemCount
+                    invitationsCount = count
                 )
             }
         }
@@ -248,6 +256,8 @@ fun MainActionsGrid(
         ) {
 
             val invitationItem = listHomeEntity[0]
+
+
 
             ModernActionCard(
                 modifier = Modifier.weight(1f),

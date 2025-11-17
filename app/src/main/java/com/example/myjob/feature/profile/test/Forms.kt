@@ -770,8 +770,7 @@ fun ExperienceForm(
     profileViewModel: ProfileViewModel,
     onCompanyChange: (index: Int) -> Unit,
     onDateStartChange: (index: Int) -> Unit,
-    onDateEndChange: (index: Int) -> Unit,
-    onDataChange: (CandidateFormData) -> Unit
+    onDateEndChange: (index: Int) -> Unit
 ) {
 
     val experience: LazyPagingItems<Experience> =

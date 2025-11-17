@@ -19,10 +19,12 @@ import androidx.compose.foundation.border
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.InsertInvitation
+import androidx.compose.material.icons.filled.LocalPostOffice
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.InsertInvitation
+import androidx.compose.material.icons.outlined.LocalPostOffice
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
@@ -104,7 +106,9 @@ import com.example.myjob.feature.profile.ProfileScreen
 import com.example.myjob.feature.home.detail.test.CandidateCompleteProfileApp
 import com.example.myjob.feature.invitation.candidat.InvitationCareerScreen
 import com.example.myjob.feature.messagerie.DiscussionScreen
+import com.example.myjob.feature.posts.PostScreen
 import com.example.myjob.feature.profile.test.CandidateProfileFormExec
+import com.example.myjob.feature.profile.test.CandidateProfileFormScreen
 import com.example.myjob.feature.setting.ModernSettingScreen
 import com.example.myjob.feature.setting.SettingScreen
 import com.example.myjob.feature.signup.SignUpScreen
@@ -320,10 +324,10 @@ class MainActivity : ComponentActivity() {
             )
 
             val settingsTab = TabBarItem(
-                title = stringResource(id = R.string.item3),
-                tag = "search_screen",
-                selectedIcon = Icons.Filled.Search,
-                unselectedIcon = Icons.Outlined.Search
+                title = stringResource(id = R.string.item7),
+                tag = "post_screen",
+                selectedIcon = Icons.Filled.LocalPostOffice,
+                unselectedIcon = Icons.Outlined.LocalPostOffice
             )
             val moreTab = TabBarItem(
                 title = stringResource(id = R.string.item4),
@@ -362,6 +366,7 @@ class MainActivity : ComponentActivity() {
                     startDestination = Screen.SplashScreen.route
                 ) {
 
+                    //SUBSCRIPTIONS
                     composable(route = Screen.SplashScreen.route) {
 
                         isVisibleNav = false
@@ -403,7 +408,7 @@ class MainActivity : ComponentActivity() {
                         route = Screen.ForgotPasswordScreen.route,
                         deepLinks = listOf(
                             navDeepLink {
-                                uriPattern = "http://app/{token}"
+                                uriPattern = "http://192.168.1.13/{token}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),
@@ -417,6 +422,19 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = false
                         val token = entry.arguments?.getString("token") ?: ""
                         ForgotPasswordScreen(navController = navController, token = token)
+                    }
+                    //END SUBSCRIPTION
+
+
+                    //INVITATION
+                    composable(route = Screen.InvitationCompanyScreen.route) {
+                        isVisibleNav = true
+                        InvitationCompanyScreen(
+                            navController = navController,
+                            changeIndexTab = {
+                                selectedTabIndex = 0
+                            }
+                        )
                     }
 
                     composable(
@@ -448,32 +466,44 @@ class MainActivity : ComponentActivity() {
                         DetailInviScreen(navController = navController)
                     }
 
+                    composable(route = Screen.SendInvitationScreen.route) {
+                        isVisibleNav = false
+                        //SendInvitationScreen(navController)
+                        SendInvitationCompany(navController)
+                    }
+
+                    composable(route = Screen.InvitationScreen.route) {
+                        if (role == "Candidate" || role == "Candidat") isVisibleNav = false
+                        InvitationScreen(navController = navController)
+                    }
+
+                    composable(route = Screen.InvitationBoostScreen.route) {
+                        if (role == "Candidate" || role == "Candidat") isVisibleNav = false
+                        InvitationCareerScreen(navController = navController)
+                    }
+                    //END INVITATION
+
+
+
                     /*composable(route = Screen.textRecognitionScreen.route) {
                         if (cameraPermissionState.status.isGranted) CameraScreen(navController = navController)
                         else NoPermissionScreen(cameraPermissionState::launchPermissionRequest)
                     }*/
 
-                    composable(route = Screen.ProfileScreen.route) {
+
+                    //MESSAGERIE
+                    composable(
+                        route = Screen.SendMessageScreen.route,
+                    ) {
                         isVisibleNav = false
-                        if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") CompanyProfile(
-                            navController
-                        )
-                        else CandidateProfile(navController)
+                        DiscussionScreen(navController, hideNavigation = {
+                            isVisibleNav = false
+                        })
                     }
 
-                    composable(route = Screen.FavoritesScreen.route) {
+                    composable(route = Screen.NotificationCompanyScreen.route) {
                         isVisibleNav = true
-                        CompanyFavorites(navController)
-                    }
-
-                    composable(route = Screen.ValidationInterviewScreen.route) {
-                        isVisibleNav = true
-                        InterviewValidationScreen(navController)
-                    }
-
-                    composable(route = Screen.CompanyProfileScreen.route) {
-                        isVisibleNav = true
-                        ProfileScreen(navController)
+                        NotificationScreen(navController)
                     }
 
                     composable(
@@ -485,29 +515,24 @@ class MainActivity : ComponentActivity() {
                             isVisibleNav = false
                         })
                     }
+                    //END MESSAGERIE
 
-                    composable(
-                        route = Screen.SendMessageScreen.route,
-                    ) {
+
+
+
+
+                    //VALIDATION
+                    composable(route = Screen.ValidateDocCandidateScreen.route) {
                         isVisibleNav = false
-                        DiscussionScreen(navController, hideNavigation = {
-                            isVisibleNav = false
-                        })
-                    }
-
-                    composable(route = Screen.InvitationCompanyScreen.route) {
-                        isVisibleNav = true
-                        InvitationCompanyScreen(
+                        ValidateDocScreen(
                             navController = navController,
-                            changeIndexTab = {
-                                selectedTabIndex = 0
-                            }
+                            selectImage = selectImage
                         )
                     }
 
-                    composable(route = Screen.NotificationCompanyScreen.route) {
-                        isVisibleNav = true
-                        NotificationScreen(navController)
+                    composable(route = Screen.ValidateProfileCandidateScreen.route) {
+                        isVisibleNav = false
+                        ValidateProfileCandidate(navController)
                     }
 
                     composable(route = Screen.ValidateProfileCompanyScreen.route) {
@@ -522,19 +547,15 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    composable(route = Screen.ValidateDocCandidateScreen.route) {
-                        isVisibleNav = false
-                        ValidateDocScreen(
-                            navController = navController,
-                            selectImage = selectImage
-                        )
+                    composable(route = Screen.ValidationInterviewScreen.route) {
+                        isVisibleNav = true
+                        InterviewValidationScreen(navController)
                     }
+                    //END VALIDATION
 
-                    composable(route = Screen.ValidateProfileCandidateScreen.route) {
-                        isVisibleNav = false
-                        ValidateProfileCandidate(navController)
-                    }
 
+
+                    //HOME
                     composable(route = Screen.FilterScreen.route) {
                         isVisibleNav = false
                         FilterScreenUpdated(
@@ -544,12 +565,6 @@ class MainActivity : ComponentActivity() {
                             listCountries = listCountries,
                             listCompany = app.listCompanies
                         )
-                    }
-
-                    composable(route = Screen.SendInvitationScreen.route) {
-                        isVisibleNav = false
-                        //SendInvitationScreen(navController)
-                        SendInvitationCompany(navController)
                     }
 
                     composable(route = Screen.HomeScreen.route) {
@@ -567,26 +582,14 @@ class MainActivity : ComponentActivity() {
                                 listSchools = listSchools,
                                 listCountries = listCountries,
                                 listCompany = app.listCompanies,
+                                clearData = {
+                                    selectedTabIndex = 0
+                                },
                                 changeIndexTab = {
                                     selectedTabIndex = 0
                                 }
                             )
-
-                            /*HomeCompany(navController = navController,
-                                allSubjects = allSubjects,
-                                listSchools = listSchools,
-                                listCountries = listCountries,
-                                listCompany = listCompany,
-                                onResumed = { index ->
-                                    selectedTabIndex = index
-                                })*/
                         } else {
-                            /*HomeCandidate(
-                            navController,
-                            clearData = {
-                                selectedTabIndex = 0
-                            }
-                        )*/
                             ModernHomeScreen(
                                 navController = navController,
                                 clearData = {
@@ -607,19 +610,23 @@ class MainActivity : ComponentActivity() {
                         //CandidateCompleteProfileApp()
                         listCompany = app.listCompanies
 
-
-                        CandidateProfileFormExec(
+                        CandidateProfileFormScreen(
                             navController = navController,
                             list = listCountry,
+                            clearData = {
+                                selectedTabIndex = 0
+                            },
                             allSubjects = allSubjects,
                             listStudyField = studyField,
                             listSchools = listSchools,
                             listGrade = listCountries,
-                            listCompany = app.listCompanies,
-                            clearData = {
-                                selectedTabIndex = 0
-                            },
+                            listCompany = app.listCompanies
                         )
+                    }
+
+                    composable(route = Screen.PostScreen.route) {
+                        isVisibleNav = true
+                        PostScreen(navController = navController)
                     }
 
                     composable(route = Screen.SettingScreen.route) {
@@ -665,17 +672,11 @@ class MainActivity : ComponentActivity() {
                                 selectedTabIndex = index
                             })
                     }
+                    //END HOME
 
-                    composable(route = Screen.InvitationScreen.route) {
-                        if (role == "Candidate" || role == "Candidat") isVisibleNav = false
-                        InvitationScreen(navController = navController)
-                    }
 
-                    composable(route = Screen.InvitationBoostScreen.route) {
-                        if (role == "Candidate" || role == "Candidat") isVisibleNav = false
-                        InvitationCareerScreen(navController = navController)
-                    }
 
+                    //PROFILE
                     composable(route = Screen.CareerScreen.route) {
                         isVisibleNav = false
                         AllCareer(navController = navController)
@@ -718,6 +719,25 @@ class MainActivity : ComponentActivity() {
                             listGrade = listCountries
                         )
                     }
+
+                    composable(route = Screen.ProfileScreen.route) {
+                        isVisibleNav = false
+                        if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") CompanyProfile(
+                            navController
+                        )
+                        else CandidateProfile(navController)
+                    }
+
+                    composable(route = Screen.FavoritesScreen.route) {
+                        isVisibleNav = true
+                        CompanyFavorites(navController)
+                    }
+
+                    composable(route = Screen.CompanyProfileScreen.route) {
+                        isVisibleNav = true
+                        ProfileScreen(navController)
+                    }
+                    //END PROFILE
                 }
 
             }

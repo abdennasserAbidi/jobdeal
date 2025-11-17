@@ -187,7 +187,10 @@ fun ModernSettingScreen(
                             }
 
                             else -> {
-                                //navController.navigate(Screen.ValidateProfileCompanyScreen.route)
+                                val route = if (role == "Candidate" || role == "Candidat")
+                                    Screen.ValidateProfileCandidateScreen.route
+                                else Screen.ValidateProfileCompanyScreen.route
+                                navController.navigate(route)
                             }
                         }
                     },

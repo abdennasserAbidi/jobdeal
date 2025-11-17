@@ -6,14 +6,19 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -37,6 +42,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -100,40 +106,60 @@ fun ValidateDocScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        // Top App Bar
-        TopAppBar(
-            title = {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = colorResource(id = R.color.whatsapp)
+                )
+                .padding(horizontal = 20.dp, vertical = 24.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = {
+                        navController.popBackStack()
+                    },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.2f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
                 Text(
                     text = stringResource(id = R.string.validate_profile_text),
                     fontWeight = FontWeight.Bold
                 )
-            },
-            navigationIcon = {
-                IconButton(onClick = {
-                    navController.popBackStack()
-                }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                }
-            },
-            actions = {
-                IconButton(onClick = {
-                    docs = (docs + "").toMutableList()
-                    //GlobalEntries.listImageUri = (GlobalEntries.listImageUri + Uri.EMPTY).toMutableList()
-                    docsVerify = (docsVerify + false).toMutableList()
-                }) {
+
+                IconButton(
+                    onClick = {
+                        docs = (docs + "").toMutableList()
+                        docsVerify = (docsVerify + false).toMutableList()
+                    },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.2f))
+                ) {
                     Icon(
-                        Icons.Default.Add,
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "More",
                         tint = Color.White,
-                        contentDescription = "More"
+                        modifier = Modifier.size(20.dp)
                     )
                 }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = colorResource(id = R.color.whatsapp),
-                titleContentColor = Color.White,
-                navigationIconContentColor = Color.White
-            )
-        )
+            }
+        }
 
         //docs
         Log.i("jfeakhgealgk", "ValidateDocScreen: ${imageUri.value}")

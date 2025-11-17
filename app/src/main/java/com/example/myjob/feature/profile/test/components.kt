@@ -504,7 +504,11 @@ fun LanguageCard(
     onRemove: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val proficiencyLevels = listOf("Basic", "Conversational", "Fluent", "Native")
+    val basic = stringResource(id = R.string.basic_text)
+    val conversational = stringResource(id = R.string.conversational_text)
+    val fluent = stringResource(id = R.string.fluent_text)
+    val native = stringResource(id = R.string.native_text)
+    val proficiencyLevels = listOf(basic, conversational, fluent, native)
 
     Card(
         modifier = Modifier

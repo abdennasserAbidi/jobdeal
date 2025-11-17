@@ -22,6 +22,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -45,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -58,6 +61,11 @@ import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.CustomDialog
 import com.example.myjob.domain.entities.ResetPasswordParam
+import com.example.myjob.feature.profile.test.FormTextField
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,9 +96,9 @@ fun ForgotPasswordScreen(
                         modifier = Modifier
                             .align(Alignment.TopStart)
                             .clickable(
-                    interactionSource = interactionSource,
-                    indication = null
-                ) {
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
                                 if (message.isNotEmpty()) viewModel.clearMessage()
                                 else navController.popBackStack()
                             },
@@ -116,9 +124,11 @@ fun ForgotPasswordScreen(
         }
     ) { padding ->
 
-        Box(modifier = Modifier
-            .padding(padding)
-            .fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+        ) {
 
             Column(
                 modifier = Modifier
@@ -162,123 +172,52 @@ fun ForgotPasswordScreen(
                         }
                     }
 
-                    Text(
-                        text = "Password",
-                        modifier = Modifier.padding(start = 20.dp),
-                        style = TextStyle(
-                            color = colorResource(id = R.color.whatsapp),
-                            fontFamily = FontFamily.Default,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-
-                    var showPassword by remember { mutableStateOf(false) }
-
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 10.dp)
-                            .border(
-                                width = 1.dp,
-                                color = if (activatedCheckPassword && !passwordVerified) Color.Red else colorResource(id = R.color.whatsapp),
-                                shape = RoundedCornerShape(30.dp)
-                            )
-                            .clip(shape = RoundedCornerShape(30.dp)),
-                        colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
+                    FormTextField(
                         value = password,
+                        borderColor = if (activatedCheckPassword && !passwordVerified) Color.Red else colorResource(
+                            id = R.color.whatsapp
+                        ),
                         onValueChange = {
                             password = it
                             if (activatedCheckPassword) viewModel.validatePassword(it)
                         },
-                        visualTransformation = if (showPassword) {
-                            VisualTransformation.None
-                        } else {
-                            PasswordVisualTransformation()
-                        }, trailingIcon = {
-                            if (showPassword) {
-                                IconButton(onClick = { showPassword = false }) {
-                                    Icon(imageVector = Icons.Filled.Visibility, contentDescription = "")
-                                }
-                            } else {
-                                IconButton(onClick = { showPassword = true }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.VisibilityOff,
-                                        contentDescription = ""
-                                    )
-                                }
-                            }
-                        },
-                        textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                        label = stringResource(id = R.string.password_text),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 20.dp),
+                        isRequired = true,
+                        isPassword = true
                     )
-                    Log.i("passwordVerified", "SignUpScreen: $passwordVerified")
 
                     if (activatedCheckPassword) {
                         if (password.isEmpty() || !passwordVerified) {
 
                             Text(
                                 modifier = Modifier.padding(top = 5.dp, start = 20.dp),
-                                text = "Must contain uppercase and number",
+                                text = stringResource(id = R.string.error_password),
                                 color = Color.Red
                             )
                         }
                     }
 
-                    Text(
-                        text = "Confirm password",
-                        modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                        style = TextStyle(
-                            color = colorResource(id = R.color.whatsapp),
-                            fontFamily = FontFamily.Default,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                    var showConfirmPassword by remember { mutableStateOf(false) }
 
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 10.dp)
-                            .border(
-                                width = 1.dp,
-                                color = if (activatedCheckPassword && !confirmPasswordVerified) Color.Red else colorResource(id = R.color.whatsapp),
-                                shape = RoundedCornerShape(30.dp)
-                            )
-                            .clip(shape = RoundedCornerShape(30.dp)),
-                        colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
+                    FormTextField(
                         value = confirmPassword,
+                        borderColor = if (activatedCheckPassword && !confirmPasswordVerified) Color.Red else colorResource(
+                            id = R.color.whatsapp
+                        ),
                         onValueChange = {
                             confirmPassword = it
                             viewModel.checkConfirmPassword(password, it)
                         },
-                        visualTransformation = if (showConfirmPassword) {
-                            VisualTransformation.None
-                        } else {
-                            PasswordVisualTransformation()
-                        }, trailingIcon = {
-                            if (showConfirmPassword) {
-                                IconButton(onClick = { showConfirmPassword = false }) {
-                                    Icon(imageVector = Icons.Filled.Visibility, contentDescription = "")
-                                }
-                            } else {
-                                IconButton(onClick = { showConfirmPassword = true }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.VisibilityOff,
-                                        contentDescription = ""
-                                    )
-                                }
-                            }
-                        },
-                        textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                        label = stringResource(id = R.string.confirm_password_text),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 20.dp),
+                        isRequired = true,
+                        isPassword = true
                     )
 
                     if (activatedCheckPassword) {
@@ -286,115 +225,40 @@ fun ForgotPasswordScreen(
 
                             Text(
                                 modifier = Modifier.padding(top = 5.dp, start = 20.dp),
-                                text = "Is not the same password",
+                                text = stringResource(id = R.string.confirm_password_error),
                                 color = Color.Red
                             )
                         }
                     }
 
-                    Column(
+                    Button(
+                        onClick = {
+                            val confirmValidator =
+                                viewModel.checkConfirmPassword(password, confirmPassword)
+                            val passwordValidator = viewModel.validatePassword(password)
+
+                            if (!confirmPasswordVerified || !passwordVerified) activatedCheckPassword =
+                                true
+
+                            if (passwordValidator && confirmValidator) {
+                                isProgressing = true
+                                viewModel.resetPassword(ResetPasswordParam(token, password))
+                            }
+                        },
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxWidth(0.9f)
                             .padding(top = 20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorResource(id = R.color.whatsapp)
+                        )
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.9f)
-                                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null
-                ) {
-                                    val confirmValidator =
-                                        viewModel.checkConfirmPassword(password, confirmPassword)
-                                    val passwordValidator = viewModel.validatePassword(password)
-
-                                    if (!confirmPasswordVerified || !passwordVerified) activatedCheckPassword =
-                                        true
-
-                                    if (passwordValidator && confirmValidator) {
-                                        isProgressing = true
-                                        viewModel.resetPassword(ResetPasswordParam(token, password))
-                                    }
-                                }
-                                .background(color = Color.Blue, shape = RoundedCornerShape(30.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Change password",
-                                modifier = Modifier.padding(vertical = 20.dp),
-                                style = TextStyle(
-                                    color = Color.White,
-                                    fontFamily = FontFamily.Default,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-                        }
-
-                        Row(
-                            Modifier
-                                .padding(top = 25.dp)
-                                .fillMaxWidth(0.8f),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .height(2.dp)
-                                    .weight(1f)
-                                    .background(Color.LightGray)
-                            ) {}
-
-                            Text(
-                                text = "Or",
-                                modifier = Modifier.weight(1f),
-                                color = Color.Gray,
-                                style = TextStyle(
-                                    textAlign = TextAlign.Center
-                                )
-                            )
-
-                            Box(
-                                modifier = Modifier
-                                    .height(2.dp)
-                                    .weight(1f)
-                                    .background(Color.LightGray)
-                            ) {}
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.9f)
-                                .padding(top = 20.dp)
-                                .border(
-                                    1.dp,
-                                    Color.Black,
-                                    RoundedCornerShape(30.dp)
-                                )
-                                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null
-                ) {
-                                    navController.popBackStack()
-                                }
-                                .background(
-                                    color = Color.Transparent,
-                                    shape = RoundedCornerShape(30.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Back to login",
-                                modifier = Modifier.padding(vertical = 20.dp),
-                                style = TextStyle(
-                                    color = Color.Black,
-                                    fontFamily = FontFamily.Default,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-                        }
+                        Text(
+                            stringResource(id = R.string.change_password_text),
+                            modifier = Modifier.padding(vertical = 5.dp)
+                        )
                     }
+
                 } else if (message.isNotEmpty()) {
                     //second
                     isProgressing = false
@@ -418,7 +282,7 @@ fun ForgotPasswordScreen(
                             .weight(2f)
                     ) {
                         Text(
-                            text = "An email with a link has been sent. Click to reset your password.",
+                            text = stringResource(id = R.string.send_email_text),
                             modifier = Modifier.padding(vertical = 20.dp, horizontal = 20.dp),
                             style = TextStyle(
                                 color = Color.Black,
@@ -440,10 +304,9 @@ fun ForgotPasswordScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                    )
-                    {
+                    ) {
                         Text(
-                            text = "Enter your address mail to receive an email to reset your password",
+                            text = stringResource(id = R.string.forget_password_intro_text),
                             modifier = Modifier
                                 .padding(horizontal = 20.dp)
                                 .padding(top = 20.dp)
@@ -462,86 +325,60 @@ fun ForgotPasswordScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(2f)
-                    )
-                    {
+                    ) {
 
-                        Text(
-                            text = "Email",
-                            modifier = Modifier.padding(top = 20.dp, start = 30.dp),
-                            style = TextStyle(
-                                color = colorResource(id = R.color.whatsapp),
-                                fontFamily = FontFamily.Default,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-
-                        TextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                                .padding(top = 10.dp)
-                                .border(
-                                    width = 1.dp,
-                                    color = if (activatedCheck && !emailVerified) Color.Red else colorResource(id = R.color.whatsapp),
-                                    shape = RoundedCornerShape(30.dp)
-                                )
-                                .clip(shape = RoundedCornerShape(30.dp)),
-                            colors = TextFieldDefaults.textFieldColors(
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
-                            ),
+                        FormTextField(
                             value = email,
+                            borderColor = if (activatedCheck && !emailVerified) Color.Red else colorResource(
+                                id = R.color.whatsapp
+                            ),
                             onValueChange = {
                                 email = it
                                 if (activatedCheck) viewModel.validateEmail(it)
                                 //viewModel.changeUserEmail(it)
                             },
-                            textStyle = TextStyle(Color.Black, fontSize = 14.sp)
+                            label = "Email",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                                .padding(top = 40.dp),
+                            isRequired = true
                         )
 
                         if (activatedCheck) {
                             if (email.isEmpty() || !emailVerified) {
-                                Log.i("submitEnabled", "SignUpScreen: $emailVerified")
 
                                 Text(
                                     modifier = Modifier.padding(top = 5.dp, start = 20.dp),
-                                    text = if (emailVerified) "Valid First name" else "Invalid Email",
-                                    color = if (emailVerified) Color.Green else Color.Red
+                                    text = stringResource(id = R.string.error_email),
+                                    color = Color.Red
                                 )
                             }
                         }
 
-                        Box(
+                        Button(
+                            onClick = {
+                                val emailValidator = viewModel.validateEmail(email)
+
+                                if (!emailVerified) activatedCheck = true
+
+                                if (emailValidator) {
+                                    isProgressing = true
+                                    viewModel.forgotPasswordUseCase(email)
+                                }
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 20.dp)
-                                .padding(top = 20.dp)
-                                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null
-                ) {
-                                    val emailValidator = viewModel.validateEmail(email)
-
-                                    if (!emailVerified) activatedCheck = true
-
-                                    if (emailValidator) {
-                                        isProgressing = true
-                                        viewModel.forgotPasswordUseCase(email)
-                                    }
-                                }
-                                .background(color = colorResource(id = R.color.whatsapp), shape = RoundedCornerShape(30.dp)),
-                            contentAlignment = Alignment.Center
+                                .padding(top = 20.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(id = R.color.whatsapp)
+                            )
                         ) {
                             Text(
-                                text = "Send",
-                                modifier = Modifier.padding(vertical = 20.dp),
-                                style = TextStyle(
-                                    color = Color.White,
-                                    fontFamily = FontFamily.Default,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                stringResource(id = R.string.send_text),
+                                modifier = Modifier.padding(vertical = 5.dp)
                             )
                         }
                     }

@@ -59,6 +59,25 @@
                     android:host="notification"
                     android:scheme="myApp"
                     tools:ignore="AppLinkUrlError"/>
+
+            </intent-filter>
+
+            <intent-filter android:autoVerify="true" >
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <action android:name="android.intent.action.VIEW" />
+
+                <!--<data
+                    android:host="192.168.1.13"
+                    android:scheme="http"
+                    tools:ignore="AppLinkUrlError"/>-->
+
+                <!-- host: your domain -->
+                <data
+                    android:scheme="https"
+                    android:host="192.168.1.13"
+                    android:path="/reset-password" />
+
             </intent-filter>
 
             <!--

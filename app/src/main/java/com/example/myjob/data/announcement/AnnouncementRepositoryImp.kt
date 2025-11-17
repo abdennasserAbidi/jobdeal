@@ -8,6 +8,8 @@ import com.example.myjob.base.GenericSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
+import com.example.myjob.domain.entities.announcement.CommentsPost
+import com.example.myjob.domain.entities.announcement.LikesPost
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.local.database.SharedPreference
 import com.example.myjob.remote.source.announcement.AnnouncementDataSource
@@ -33,6 +35,50 @@ class AnnouncementRepositoryImp @Inject constructor(
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.makeAnnouncement(idUserConnected, announcementModel)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun removeLike(
+        idAnnounce: Int,
+        idConnected: Int
+    ): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.removeLike(idAnnounce, idConnected)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun addLikes(
+        idAnnounce: Int,
+        likesPost: LikesPost
+    ): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.addLikes(idAnnounce, likesPost)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+    override suspend fun addComment(
+        idAnnounce: Int,
+        commentsPost: CommentsPost
+    ): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.addComment(idAnnounce, commentsPost)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {
