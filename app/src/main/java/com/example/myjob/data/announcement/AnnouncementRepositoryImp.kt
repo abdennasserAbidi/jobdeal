@@ -114,4 +114,29 @@ class AnnouncementRepositoryImp @Inject constructor(
         emit(Resource(ResourceState.ERROR, null, ex.message))
     }
 
+    override suspend fun getAnnouncementsCandidate(): Flow<Resource<PagingData<AnnouncementModel>>> = flow {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            pagingSourceFactory = {
+                GenericSource { currentPage ->
+                    val educations =
+                        remoteDataSource.getAnnouncementsCandidate(pageNumber = currentPage)
+
+                    val json = Gson().toJson(educations.content)
+                    sharedPreference.putString("jsonCandidateAnnouncement", json)
+
+                    educations
+                }
+            }
+        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+        emitAll(
+            pager.map { pagingData ->
+                Resource(ResourceState.SUCCESS, pagingData, null)
+            }
+        )
+    }.catch { ex ->
+        emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
+
 }

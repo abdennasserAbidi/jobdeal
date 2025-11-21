@@ -37,4 +37,8 @@ class AnnouncementDataSourceImp @Inject constructor(
         pageNumber: Int
     ): GenericResponse<AnnouncementModel> = apiService.getCompanyAnnouncements(id, pageNumber)
 
+    override suspend fun getAnnouncementsCandidate(
+        pageNumber: Int
+    ): GenericResponse<AnnouncementModel> = apiService.getAnnouncementsCandidate(pageNumber)
+
 }

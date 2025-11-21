@@ -11,6 +11,7 @@ sealed class Screen(val route:String) {
     object FilteredHome : Screen("filtered_home_screen")
     object SearchWordScreen : Screen("search_screen")
     object PostScreen : Screen("post_screen")
+    object CandidatePostScreen : Screen("candidate_post_screen")
     object HomeCompanyScreen : Screen("home_company_screen")
     object InvitationScreen : Screen("invitation_screen")
     object InvitationBoostScreen : Screen("invitation_boost_screen")

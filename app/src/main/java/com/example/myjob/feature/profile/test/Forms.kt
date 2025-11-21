@@ -188,6 +188,7 @@ fun BasicInfoForm(
             )
 
             val userEmail by profileViewModel.userEmail.collectAsState()
+            var email by remember { mutableStateOf(GlobalEntries.user.email) }
             val isEmailValid by profileViewModel.isEmailValid.collectAsState()
             val emailCheck by remember { derivedStateOf { isEmailValid } }
 
@@ -210,11 +211,12 @@ fun BasicInfoForm(
             }
 
             FormTextField(
-                value = userEmail ?: "",
+                value = email ?: "",
                 borderColor = if (activatedCheck && !emailCheck) Color.Red else colorResource(
                     id = R.color.whatsapp
                 ),
                 onValueChange = {
+                    email = it
                     if (activatedCheck) profileViewModel.validateEmail(it)
                     profileViewModel.changeAddressMail(it)
                 },
@@ -439,11 +441,11 @@ fun ProfessionalForm(
             experienceLevel?.ifEmpty { "" })
     }
 
-    val expLevel = GlobalEntries.user.professionalStatus.userExperience ?: ""
-    val availabilities = GlobalEntries.user.professionalStatus.availability ?: ""
-    val workTypes = GlobalEntries.user.professionalStatus.workType ?: ""
+    val expLevel = GlobalEntries.user.professionalStatus?.userExperience ?: ""
+    val availabilities = GlobalEntries.user.professionalStatus?.availability ?: ""
+    val workTypes = GlobalEntries.user.professionalStatus?.workType ?: ""
     var salaryPreferred by remember {
-        mutableStateOf(user.professionalStatus.preferredSalary ?: "")
+        mutableStateOf(user.professionalStatus?.preferredSalary ?: "")
     }
 
     val userMedium by profileViewModel.userMedium.collectAsState()
@@ -453,15 +455,15 @@ fun ProfessionalForm(
     val isSubmitProfessionalAction by GlobalEntries.isSubmitProfessionalAction.collectAsState()
 
     var hybridPreference by remember {
-        mutableStateOf(GlobalEntries.user.professionalStatus.hybridPreference)
+        mutableStateOf(GlobalEntries.user.professionalStatus?.hybridPreference)
     }
 
     var remotePreference by remember {
-        mutableStateOf(GlobalEntries.user.professionalStatus.remotePreference)
+        mutableStateOf(GlobalEntries.user.professionalStatus?.remotePreference)
     }
 
     var onSitePreference by remember {
-        mutableStateOf(GlobalEntries.user.professionalStatus.onSitePreference)
+        mutableStateOf(GlobalEntries.user.professionalStatus?.onSitePreference)
     }
 
     LaunchedEffect(isSubmitProfessionalAction) {
@@ -478,7 +480,10 @@ fun ProfessionalForm(
             }
 
             if (expValidator && availabilityValidator && workValidator && salaryValidator && workTypesValidator) {
-                profileViewModel.saveUserProfessionalInfo(GlobalEntries.user.professionalStatus)
+                GlobalEntries.user.professionalStatus?.let {
+                    profileViewModel.saveUserProfessionalInfo(it)
+                    GlobalEntries.isSubmitProfessionalAction.update { false }
+                }
             }
         }
     }
@@ -493,16 +498,16 @@ fun ProfessionalForm(
             onRemoteChange = {
                 profileViewModel.changePreferenceRemote(it)
                 remotePreference = it
-                GlobalEntries.user.professionalStatus.remotePreference = it
+                GlobalEntries.user.professionalStatus?.remotePreference = it
             },
             onHybridChange = {
                 hybridPreference = it
-                GlobalEntries.user.professionalStatus.hybridPreference = it
+                GlobalEntries.user.professionalStatus?.hybridPreference = it
                 profileViewModel.changePreferenceHybrid(it)
             },
             onOnSiteChange = {
                 onSitePreference = it
-                GlobalEntries.user.professionalStatus.onSitePreference = it
+                GlobalEntries.user.professionalStatus?.onSitePreference = it
                 profileViewModel.changePreferenceSite(it)
             }
         )
@@ -578,7 +583,7 @@ fun ProfessionalForm(
                 if (activatedCheck) it.isNotEmpty()
                 profileViewModel.changePreferredSalary(it)
                 salaryPreferred = it
-                GlobalEntries.user.professionalStatus.preferredSalary = it
+                GlobalEntries.user.professionalStatus?.preferredSalary = it
             },
             label = stringResource(id = R.string.preferred_salary_text),
             keyboardType = KeyboardType.Number,
@@ -629,7 +634,7 @@ fun ProfessionalForm(
         globalList = availabilityOptions
         selectedItemGlobal = selectedAvailability ?: ""
         action = { name ->
-            GlobalEntries.user.professionalStatus.availability = name
+            GlobalEntries.user.professionalStatus?.availability = name
             profileViewModel.changeAvailability(name)
         }
     }
@@ -638,7 +643,7 @@ fun ProfessionalForm(
         globalList = workTypeOptions
         selectedItemGlobal = selectedWorkType ?: ""
         action = { name ->
-            GlobalEntries.user.professionalStatus.workType = name
+            GlobalEntries.user.professionalStatus?.workType = name
             profileViewModel.changeWorkType(name)
         }
     }
@@ -647,7 +652,7 @@ fun ProfessionalForm(
         globalList = experienceOptions
         selectedItemGlobal = selectedExperience ?: ""
         action = { name ->
-            GlobalEntries.user.professionalStatus.userExperience = name
+            GlobalEntries.user.professionalStatus?.userExperience = name
             profileViewModel.changeExperienceLevel(name)
         }
     }
@@ -698,7 +703,7 @@ fun SkillsForm(
 
         //val skills by profileViewModel.skills.collectAsState()
         var skills by remember {
-            mutableStateOf(GlobalEntries.user.candidateSkills.listSkills)
+            mutableStateOf(GlobalEntries.user.candidateSkills?.listSkills ?: mutableListOf())
         }
 
         // Skills Section
@@ -710,14 +715,14 @@ fun SkillsForm(
             onAddSkill = {
                 //skills.add(newSkill)
                 skills = (skills + newSkill).toMutableList()
-                GlobalEntries.user.candidateSkills.listSkills = skills
+                GlobalEntries.user.candidateSkills?.listSkills = skills
                 profileViewModel.addSkills(newSkill)
                 newSkill = ""
             },
             onRemoveSkill = { skill ->
                 //skills.remove(newSkill)
                 skills = (skills - skill).toMutableList()
-                GlobalEntries.user.candidateSkills.listSkills = skills
+                GlobalEntries.user.candidateSkills?.listSkills = skills
                 profileViewModel.removeSkills(skill)
             },
             placeholder = "e.g., Kotlin, React, Python..."
@@ -725,7 +730,7 @@ fun SkillsForm(
 
         //val certifications by profileViewModel.certifications.collectAsState()
         var certifications by remember {
-            mutableStateOf(GlobalEntries.user.candidateSkills.listCertification)
+            mutableStateOf(GlobalEntries.user.candidateSkills?.listCertification ?: mutableListOf())
         }
 
         // Certifications Section
@@ -736,13 +741,13 @@ fun SkillsForm(
             onNewSkillChange = { newCertification = it },
             onAddSkill = {
                 certifications = (certifications + newCertification).toMutableList()
-                GlobalEntries.user.candidateSkills.listCertification = certifications
+                GlobalEntries.user.candidateSkills?.listCertification = certifications
                 profileViewModel.addCertification(newCertification)
                 newCertification = ""
             },
             onRemoveSkill = { cert ->
                 certifications = (certifications - cert).toMutableList()
-                GlobalEntries.user.candidateSkills.listCertification = certifications
+                GlobalEntries.user.candidateSkills?.listCertification = certifications
                 profileViewModel.removeCertification(cert)
             },
             placeholder = "e.g., AWS Certified Developer..."
@@ -750,7 +755,7 @@ fun SkillsForm(
 
         //val languageSkills by profileViewModel.languageSkills.collectAsState()
         var languageSkills by remember {
-            mutableStateOf(GlobalEntries.user.candidateSkills.listLanguages)
+            mutableStateOf(GlobalEntries.user.candidateSkills?.listLanguages?: mutableListOf())
         }
 
         // Languages Section
@@ -758,7 +763,7 @@ fun SkillsForm(
             languages = languageSkills.toMutableList(),
             onLanguagesChange = {
                 languageSkills = it.toMutableList()
-                GlobalEntries.user.candidateSkills.listLanguages = languageSkills
+                GlobalEntries.user.candidateSkills?.listLanguages = languageSkills
                 profileViewModel.addLanguageSkills(it)
             }
         )

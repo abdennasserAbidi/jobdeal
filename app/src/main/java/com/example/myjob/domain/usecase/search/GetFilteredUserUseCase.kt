@@ -14,9 +14,9 @@ import javax.inject.Inject
 class GetFilteredUserUseCase @Inject constructor(
     private val repository: SearchRepository,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
-) : FlowBaseUseCase<PagingData<User>, String>() {
+) : FlowBaseUseCase<PagingData<User>, Pair<String, Int>>() {
 
-    override suspend fun buildRequest(params: String?): Flow<Resource<PagingData<User>>> {
-        return repository.getUserFiltered(params ?: "").flowOn(dispatcher)
+    override suspend fun buildRequest(params: Pair<String, Int>?): Flow<Resource<PagingData<User>>> {
+        return repository.getUserFiltered(params?.first ?: "", params?.second ?: 0).flowOn(dispatcher)
     }
 }

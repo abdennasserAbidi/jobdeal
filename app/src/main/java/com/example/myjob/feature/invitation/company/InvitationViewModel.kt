@@ -37,10 +37,10 @@ class InvitationViewModel @Inject constructor(
     private val _invitations: MutableStateFlow<PagingData<InvitationModel>> =
         MutableStateFlow(value = PagingData.empty())
     val invitations: MutableStateFlow<PagingData<InvitationModel>> get() = _invitations
-    private fun getCompanyInvitations(idUser: Int) {
+    fun getCompanyInvitations() {
 
         viewModelScope.launch {
-            getCompanyInvitationUseCase.execute(idUser)
+            getCompanyInvitationUseCase.execute(sharedPreference.getInt("idUser", 0))
                 .collectLatest { res ->
                     _invitations.update {
                         res.data ?: PagingData.empty()
@@ -78,9 +78,9 @@ class InvitationViewModel @Inject constructor(
     private val _announcement: MutableStateFlow<PagingData<AnnouncementModel>> =
         MutableStateFlow(value = PagingData.empty())
     val announcement: MutableStateFlow<PagingData<AnnouncementModel>> get() = _announcement
-    private fun getCompanyAnnouncement(idUser: Int) {
+    fun getCompanyAnnouncement() {
         viewModelScope.launch {
-            getAnnouncementUseCase.execute(idUser)
+            getAnnouncementUseCase.execute(sharedPreference.getInt("idUser", 0))
                 .collectLatest { res ->
                     _announcement.update {
                         res.data ?: PagingData.empty()
@@ -115,16 +115,16 @@ class InvitationViewModel @Inject constructor(
             saveAnnouncementUseCase.execute(announcementParams)
                 .collectLatest { res ->
                     if (res.status == ResourceState.SUCCESS) {
-                        getCompanyAnnouncement(id)
+                        getCompanyAnnouncement()
                     }
                 }
         }
     }
 
     init {
-        val id = sharedPreference.getInt("idUser", 0)
-        getCompanyInvitations(id)
-        getCompanyAnnouncement(id)
+        getCompanyInvitations()
+
+        getCompanyAnnouncement()
 
         // Collect messages from /topic/greetings
         /*CoroutineScope(Dispatchers.Main).launch {

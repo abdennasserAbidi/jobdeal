@@ -11,12 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Person
@@ -52,7 +49,7 @@ import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationStatus
-import kotlinx.coroutines.flow.update
+import com.example.myjob.feature.navigation.Screen
 import java.util.Calendar
 
 @Composable
@@ -61,6 +58,7 @@ fun CandidateCard(
     candidate: Candidate,
     onClick: () -> Unit,
     onSendInvitation: (Candidate) -> Unit = {},
+    onSendMessage: (User) -> Unit = {},
     onTerminateInvitation: (InvitationModel) -> Unit
 ) {
 
@@ -159,7 +157,7 @@ fun CandidateCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
 
-                    val userExperience = user.professionalStatus.userExperience ?: ""
+                    val userExperience = user.professionalStatus?.userExperience ?: ""
 
                     Text(
                         text = userExperience,
@@ -200,7 +198,7 @@ fun CandidateCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
 
-                    val availability = user.professionalStatus.availability ?: ""
+                    val availability = user.professionalStatus?.availability ?: ""
 
                     Text(
                         text = availability,
@@ -236,12 +234,51 @@ fun CandidateCard(
             if (invitations.isNotEmpty()) {
                 val invitation = invitations.filter { it.idTo == user.id }
                 if (invitation.isNotEmpty()) {
-                    val isFriend = invitation[0].status == InvitationStatus.IN_PROCESS.name || invitation[0].status == InvitationStatus.HIRED.name
-                    val isPending = invitation[0].status == stringResource(id = R.string.on_hold_text) || invitation[0].status == "Holding"
+                    val isFriend = invitation[0].status == InvitationStatus.HIRED.name
+                    val isInProcess = invitation[0].status == InvitationStatus.IN_PROCESS.name
+                    val isPending = invitation[0].status == InvitationStatus.ON_HOLD.name
                     val isRejecting = invitation[0].status == InvitationStatus.REJECTED.name
                     val notInterested = invitation[0].status == InvitationStatus.NOT_INTERESTED.name
 
                     if (isFriend) {
+                        OutlinedButton(
+                            onClick = { onClick() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 10.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, whatsappGreen)
+                        ) {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "View Profile",
+                                tint = whatsappGreen,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
+                        }
+
+                        OutlinedButton(
+                            onClick = {
+                                onSendMessage(user)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 10.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, whatsappGreen)
+                        ) {
+                            Icon(
+                                Icons.Default.Message,
+                                contentDescription = "Contact",
+                                tint = whatsappGreen,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(id = R.string.contact_text), color = whatsappGreen)
+                        }
+                    } else if (isInProcess) {
                         OutlinedButton(
                             onClick = { onClick() },
                             modifier = Modifier
@@ -339,6 +376,26 @@ fun CandidateCard(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
                         }
+
+                        Button(
+                            onClick = { onSendInvitation(candidate) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 5.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(id = R.color.whatsapp),
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Icon(
+                                Icons.Default.Send,
+                                contentDescription = "Send Invitation",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(id = R.string.send_invitation_text))
+                        }
                     }
                     else if (isRejecting) {
                         Text(
@@ -366,6 +423,45 @@ fun CandidateCard(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
                         }
+
+                        Button(
+                            onClick = { onSendInvitation(candidate) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 5.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(id = R.color.whatsapp),
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Icon(
+                                Icons.Default.Send,
+                                contentDescription = "Send Invitation",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(id = R.string.send_invitation_text))
+                        }
+                    }
+                }
+                else {
+                    OutlinedButton(
+                        onClick = { onClick() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, whatsappGreen)
+                    ) {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = "View Profile",
+                            tint = whatsappGreen,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
                     }
 
                     Button(

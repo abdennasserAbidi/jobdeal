@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.toUpperCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -28,6 +29,7 @@ import com.example.myjob.domain.entities.StatusChoices
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
+import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.domain.entities.notification.NotificationMessage
 import com.example.myjob.domain.usecase.home.GetAllUserUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
@@ -239,7 +241,15 @@ class HomeViewModel @Inject constructor(
             }
 
             R.string.status_type_text -> {
-                changeSelectionStatusCategory(index, title, isSelected)
+                val titleStatus = when (title) {
+                    "Holding", "En attente" -> InvitationStatus.ON_HOLD.name
+                    "In process", "En cours de traitement" -> InvitationStatus.IN_PROCESS.name
+                    "Hired", "Embauché" -> InvitationStatus.HIRED.name
+                    "Not Interested", "Pas intéressé" -> InvitationStatus.NOT_INTERESTED.name
+                    else -> InvitationStatus.REJECTED.name
+                }
+
+                changeSelectionStatusCategory(index, titleStatus, isSelected)
                 listChoiceParentSelected.update {
                     selectedStatusChoice.value
                 }
@@ -297,7 +307,7 @@ class HomeViewModel @Inject constructor(
     val criteria = MutableStateFlow(CriteriaModel())
 
     val availabilities = MutableStateFlow(emptyList<Availabilities>())
-    val selectedAvailability = MutableStateFlow(listOf(false, false, false, false))
+    val selectedAvailability = MutableStateFlow(listOf(false, false, false, false, false, false))
     fun clearSelectionAvailability() {
         val availability = availabilities.value.toMutableList()
         for (i in 0 until availability.size) {
@@ -459,16 +469,8 @@ class HomeViewModel @Inject constructor(
         }
 
         val list = criteria.value.status
-
-        if (isSelected) {
-            availability.map {
-                if (it.titleString.isNotEmpty() && !list.contains(it.titleString)) list.add(it.titleString)
-            }
-        } else {
-            availability.map {
-                if (it.titleString.isNotEmpty() && list.contains(it.titleString)) list.remove(it.titleString)
-            }
-        }
+        if (isSelected && !list.contains(title))
+            list.add(title) else list.remove(title)
 
         criteria.update {
             it.status = list
@@ -842,7 +844,9 @@ class HomeViewModel @Inject constructor(
     fun filterUser(query: String) {
         if (query.isNotEmpty()) {
             viewModelScope.launch {
-                getFilteredUserUseCase.execute(query).collectLatest { res ->
+                val id = sharedPreference.getInt("idUser", 0)
+                val params = Pair(query, id)
+                getFilteredUserUseCase.execute(params).collectLatest { res ->
                     _user.update {
                         res.data ?: PagingData.empty()
                     }
@@ -881,7 +885,10 @@ class HomeViewModel @Inject constructor(
     }
 
     fun validateFilter(criteria: CriteriaModel) {
+        /*R.string.available_text
+        if (criteria.)*/
         viewModelScope.launch {
+            Log.i("ljkljlkjkljlkgtr", "frzfzffefe: $criteria")
 
             if (!criteria.checkEmpty()) {
                 searchUserUseCase.execute(criteria).collect { res ->
@@ -963,23 +970,26 @@ class HomeViewModel @Inject constructor(
         }
 
         val list = listOf(
-            Availabilities(title = R.string.disponibility1_text, isSelected = false),
-            Availabilities(title = R.string.disponibility2_text, isSelected = false),
-            Availabilities(title = R.string.disponibility3_text, isSelected = false),
-            Availabilities(title = R.string.disponibility4_text, isSelected = false)
+            Availabilities(title = R.string.immediately_text, isSelected = false),
+            Availabilities(title = R.string.one_week_text, isSelected = false),
+            Availabilities(title = R.string.two_week_text, isSelected = false),
+            Availabilities(title = R.string.one_month_text, isSelected = false),
+            Availabilities(title = R.string.two_months_text, isSelected = false),
+            Availabilities(title = R.string.more_3_months_text, isSelected = false)
         )
 
         availabilities.update {
             list
         }
 
+
         val listExp = listOf(
-            ExperienceChoices(title = R.string.intern_text, isSelected = false),
-            ExperienceChoices(title = R.string.first_employemnt_text, isSelected = false),
-            ExperienceChoices(title = R.string.confirmed_text, isSelected = false),
-            ExperienceChoices(title = R.string.lead_text, isSelected = false),
-            ExperienceChoices(title = R.string.manager_text, isSelected = false),
-            ExperienceChoices(title = R.string.superior_text, isSelected = false)
+            ExperienceChoices(title = R.string.entry_level_text, isSelected = false),
+            ExperienceChoices(title = R.string.junior_text, isSelected = false),
+            ExperienceChoices(title = R.string.mid_level_text, isSelected = false),
+            ExperienceChoices(title = R.string.senior_text, isSelected = false),
+            ExperienceChoices(title = R.string.lead_team_text, isSelected = false),
+            ExperienceChoices(title = R.string.executive_text, isSelected = false)
         )
 
         selectedExperience.update {
@@ -1027,9 +1037,9 @@ class HomeViewModel @Inject constructor(
         }
 
         val listStatus = listOf(
-            StatusChoices(title = R.string.available_text, isSelected = false),
-            StatusChoices(title = R.string.hired_text, isSelected = false),
+            StatusChoices(title = R.string.holding, isSelected = false),
             StatusChoices(title = R.string.in_process_text, isSelected = false),
+            StatusChoices(title = R.string.hired_text, isSelected = false),
             StatusChoices(title = R.string.not_interested_text, isSelected = false)
         )
 

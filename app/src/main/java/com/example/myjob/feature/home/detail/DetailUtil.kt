@@ -168,12 +168,33 @@ fun CandidateHeaderCard(
             if (invitations.isNotEmpty()) {
                 val invitation = invitations.filter { it.idTo == candidateProfile.id }
                 if (invitation.isNotEmpty()) {
-                    val isFriend = invitation[0].status == InvitationStatus.IN_PROCESS.name || invitation[0].status == InvitationStatus.HIRED.name
-                    val isPending = invitation[0].status == stringResource(id = R.string.on_hold_text) || invitation[0].status == "Holding"
+                    val isFriend = invitation[0].status == InvitationStatus.HIRED.name
+                    val isInProcess = invitation[0].status == InvitationStatus.IN_PROCESS.name
+                    val isPending = invitation[0].status == InvitationStatus.ON_HOLD.name
                     val isRejecting = invitation[0].status == InvitationStatus.REJECTED.name || invitation[0].status == InvitationStatus.NOT_INTERESTED.name
 
                     val whatsappGreen = colorResource(id = R.color.whatsapp)
                     if (isFriend) {
+                        OutlinedButton(
+                            onClick = {
+                                sendMessage(candidateProfile)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 10.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, whatsappGreen)
+                        ) {
+                            Icon(
+                                Icons.Default.Message,
+                                contentDescription = "Contact",
+                                tint = whatsappGreen,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(id = R.string.contact_text), color = whatsappGreen)
+                        }
+                    } else if (isInProcess) {
                         OutlinedButton(
                             onClick = {
                                 sendMessage(candidateProfile)
@@ -431,7 +452,7 @@ fun ContactInformationCard(candidateProfile: User) {
                 )
             }
 
-            candidateProfile.professionalStatus.userMedium?.let { medium ->
+            candidateProfile.professionalStatus?.userMedium?.let { medium ->
                 if (medium.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     ContactDetailRow(
@@ -443,7 +464,7 @@ fun ContactInformationCard(candidateProfile: User) {
                 }
             }
 
-            candidateProfile.professionalStatus.userGithub?.let { github ->
+            candidateProfile.professionalStatus?.userGithub?.let { github ->
                 if (github.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     ContactDetailRow(
@@ -455,7 +476,7 @@ fun ContactInformationCard(candidateProfile: User) {
                 }
             }
 
-            candidateProfile.professionalStatus.userPortfolio?.let { portfolio ->
+            candidateProfile.professionalStatus?.userPortfolio?.let { portfolio ->
                 if (portfolio.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     ContactDetailRow(

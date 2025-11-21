@@ -31,4 +31,8 @@ interface AnnouncementDataSource {
         id: Int,
         pageNumber: Int
     ): GenericResponse<AnnouncementModel>
+
+    suspend fun getAnnouncementsCandidate(
+        pageNumber: Int
+    ): GenericResponse<AnnouncementModel>
 }

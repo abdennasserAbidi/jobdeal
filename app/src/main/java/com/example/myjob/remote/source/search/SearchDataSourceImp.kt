@@ -38,6 +38,7 @@ class SearchDataSourceImp @Inject constructor(
 
     override suspend fun getUserFiltered(
         word: String,
+        id: Int,
         pageNumber: Int
-    ): GenericResponse<User> = apiService.getUserFiltered(word, pageNumber)
+    ): GenericResponse<User> = apiService.getUserFiltered(word, id, pageNumber)
 }

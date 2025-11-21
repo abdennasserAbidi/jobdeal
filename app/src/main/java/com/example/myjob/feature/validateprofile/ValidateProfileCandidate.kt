@@ -8,15 +8,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -73,32 +81,41 @@ fun ValidateProfileCandidate(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(70.dp)
-                .background(colorResource(id = R.color.whatsapp))
+                .background(
+                    color = colorResource(id = R.color.whatsapp)
+                )
+                .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
-            Text(
-                text = stringResource(id = R.string.validate_profile_text),
-                modifier = Modifier
-                    .align(Alignment.Center),
-                fontSize = 20.sp,
-                color = Color.White,
-                fontWeight = FontWeight.Bold
-            )
-
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                modifier = Modifier
-                    .padding(start = 10.dp)
-                    .align(Alignment.CenterStart)
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null
-                    ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = {
                         navController.popBackStack()
                     },
-                tint = Color.White,
-                contentDescription = ""
-            )
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.2f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(20.dp))
+
+                Text(
+                    text = stringResource(id = R.string.validate_profile_text),
+                    fontSize = 20.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
         LazyColumn(
@@ -124,8 +141,8 @@ fun ValidateProfileCandidate(
                         onClick = {
                             when(index) {
                                 0 -> navController.navigate(Screen.ValidateDocCandidateScreen.route)
-                                1 -> navController.navigate(Screen.ValidationInterviewScreen.route)
-                                2 -> Log.i("", "ValidateProfileCandidate: fzkghrzg")
+                                //1 -> navController.navigate(Screen.ValidationInterviewScreen.route)
+                                1 -> Log.i("", "ValidateProfileCandidate: fzkghrzg")
                                 else -> Log.i("", "ValidateProfileCandidate: fzkghrzg")
                             }
 

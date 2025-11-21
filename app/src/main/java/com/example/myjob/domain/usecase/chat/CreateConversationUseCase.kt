@@ -5,17 +5,18 @@ import com.example.myjob.base.usecase.FlowBaseUseCase
 import com.example.myjob.data.chat.ChatRepository
 import com.example.myjob.domain.qualifiers.IoDispatcher
 import com.example.myjob.feature.messagerie.Conversation
+import com.example.myjob.feature.messagerie.CreateConversationRequest
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class GetUserConversationsUseCase @Inject constructor(
+class CreateConversationUseCase @Inject constructor(
     private val repository: ChatRepository,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
-) : FlowBaseUseCase<List<Conversation>, String>() {
+) : FlowBaseUseCase<Conversation, CreateConversationRequest>() {
 
-    override suspend fun buildRequest(params: String?): Flow<Resource<List<Conversation>>> {
-        return repository.getUserConversations(params ?: "").flowOn(dispatcher)
+    override suspend fun buildRequest(params: CreateConversationRequest?): Flow<Resource<Conversation>> {
+        return repository.createConversation(params ?: CreateConversationRequest()).flowOn(dispatcher)
     }
 }

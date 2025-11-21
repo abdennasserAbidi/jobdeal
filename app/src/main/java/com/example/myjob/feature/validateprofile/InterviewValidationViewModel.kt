@@ -168,14 +168,14 @@ class InterviewValidationViewModel @Inject constructor(
                 Icons.Default.Badge,
                 isRequired = false
             ),
-            StepStatus(
+            /*StepStatus(
                 VerificationStep.WORK_EMAIL,
                 VerificationStatus.NOT_STARTED,
                 context.resources.getString(R.string.interview_text),
                 context.resources.getString(R.string.interview_explanation_text),
                 Icons.Default.Work,
                 isRequired = false
-            ),
+            ),*/
             StepStatus(
                 VerificationStep.VIDEO_INTRO,
                 VerificationStatus.NOT_STARTED,

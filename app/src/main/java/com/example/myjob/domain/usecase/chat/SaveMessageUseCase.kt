@@ -10,12 +10,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class GetMessageUseCase @Inject constructor(
+class SaveMessageUseCase @Inject constructor(
     private val repository: ChatRepository,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
-) : FlowBaseUseCase<List<ChatMessage>, String>() {
+) : FlowBaseUseCase<ChatMessage, ChatMessage>() {
 
-    override suspend fun buildRequest(params: String?): Flow<Resource<List<ChatMessage>>> {
-        return repository.getMessages(params ?: "").flowOn(dispatcher)
+    override suspend fun buildRequest(params: ChatMessage?): Flow<Resource<ChatMessage>> {
+        return repository.saveMessage(params ?: ChatMessage()).flowOn(dispatcher)
     }
 }

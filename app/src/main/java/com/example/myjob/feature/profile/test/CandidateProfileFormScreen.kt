@@ -201,8 +201,7 @@ fun CandidateProfileFormScreen(
     val listNames by profileViewModel.listNames.collectAsState()
     val listFlagLazy = profileViewModel.listFlag.collectAsLazyPagingItems()
     val listFlag = listFlagLazy.itemSnapshotList.items
-    val isFirstTime = GlobalEntries.user.firstTime ?: true
-    //val isFirstTime = GlobalEntries.user.isFirstTime ?: true
+    val isFirstTime = GlobalEntries.user.firstTimeUse ?: true
 
 
     val lifecycleEvent = rememberLifecycleEvent()
@@ -227,7 +226,7 @@ fun CandidateProfileFormScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Complete Profile",
+                            text = stringResource(id = R.string.complete_profile_text),
                             fontWeight = FontWeight.Bold
                         )
                     },
@@ -251,7 +250,7 @@ fun CandidateProfileFormScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Complete Profile",
+                            text = stringResource(id = R.string.complete_profile_text),
                             fontWeight = FontWeight.Bold
                         )
                     },
@@ -385,14 +384,18 @@ fun CandidateProfileFormScreen(
         LaunchedEffect(saveCompletedState) {
             if (saveCompletedState == "saved successfully") {
                 navController.navigate(Screen.HomeScreen.route)
+                profileViewModel.clearComplete()
             }
         }
 
+        val snackbarHostState = remember { SnackbarHostState() }
+
         val saveUserState by profileViewModel.saveUserState.collectAsState()
-        LaunchedEffect(saveUserState) {
+        LaunchedEffect(Unit) {
             if (saveUserState == "saved successfully") {
                 profileViewModel.triggerPersonalCheck(false)
-                selectedTab += 1
+                /*selectedTab += 1
+                profileViewModel.clearPersoanlInfo()*/
             }
         }
 
@@ -400,7 +403,8 @@ fun CandidateProfileFormScreen(
         LaunchedEffect(saveCandidateProfessionalState) {
             if (saveCandidateProfessionalState == "saved successfully") {
                 profileViewModel.triggerProfessionalCheck(false)
-                selectedTab += 1
+                /*selectedTab += 1
+                profileViewModel.clearProfessionalInfo()*/
             }
         }
 
@@ -408,7 +412,8 @@ fun CandidateProfileFormScreen(
         LaunchedEffect(saveExpState) {
             if (saveExpState == "saved successfully") {
                 profileViewModel.triggerExperienceCheck(false)
-                selectedTab += 1
+                /*selectedTab += 1
+                profileViewModel.clearExpState()*/
             }
         }
 
@@ -417,6 +422,7 @@ fun CandidateProfileFormScreen(
             if (saveEducationState == "saved successfully") {
                 profileViewModel.triggerEducationCheck(false)
                 profileViewModel.saveIsCompletedProfileCandidate()
+                profileViewModel.clearProfessionalInfo()
             }
         }
 

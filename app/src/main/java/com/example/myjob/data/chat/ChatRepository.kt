@@ -1,35 +1,22 @@
-package com.example.myjob.data.announcement
+package com.example.myjob.data.chat
 
-import androidx.paging.PagingData
 import com.example.myjob.base.reources.Resource
-import com.example.myjob.domain.entities.announcement.AnnouncementModel
-import com.example.myjob.domain.entities.announcement.CommentsPost
-import com.example.myjob.domain.entities.announcement.LikesPost
-import com.example.myjob.domain.response.UserResponse
+import com.example.myjob.feature.messagerie.ChatMessage
+import com.example.myjob.feature.messagerie.Conversation
+import com.example.myjob.feature.messagerie.CreateConversationRequest
 import kotlinx.coroutines.flow.Flow
 
-interface AnnouncementRepository {
-    suspend fun makeAnnouncement(
-        idUserConnected: Int,
-        announcementModel: AnnouncementModel
-    ): Flow<Resource<UserResponse>>
+interface ChatRepository {
 
-    suspend fun removeLike(
-        idAnnounce: Int,
-        idConnected: Int
-    ): Flow<Resource<UserResponse>>
+    suspend fun getUserConversations(userId: String): Flow<Resource<List<Conversation>>>
 
-    suspend fun addLikes(
-        idAnnounce: Int,
-        likesPost: LikesPost
-    ): Flow<Resource<UserResponse>>
-
-    suspend fun addComment(
-        idAnnounce: Int,
-        commentsPost: CommentsPost
-    ): Flow<Resource<UserResponse>>
-
-    suspend fun getCompanyAnnouncements(
-        id: Int,
-    ): Flow<Resource<PagingData<AnnouncementModel>>>
+    suspend fun createConversation(request: CreateConversationRequest): Flow<Resource<Conversation>>
+    suspend fun findOrCreateConversation(
+        user1Id: String,
+        user2Id: String,
+        user1Name: String,
+        user2Name: String
+    ): Flow<Resource<Conversation>>
+    suspend fun getMessages(conversationId: String, limit: Int = 50): Flow<Resource<List<ChatMessage>>>
+    suspend fun saveMessage(message: ChatMessage): Flow<Resource<ChatMessage>>
 }

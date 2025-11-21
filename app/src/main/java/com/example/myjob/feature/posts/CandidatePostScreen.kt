@@ -22,21 +22,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChatBubbleOutline
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -66,26 +61,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
+import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.LoadingNextPageItem
+import com.example.myjob.common.PageLoader
+import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.announcement.CommentsPost
-import com.example.myjob.feature.profile.test.FormTextField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PostScreen(
+fun CandidatePostScreen(
     navController: NavController,
     postsViewModel: PostsViewModel = hiltViewModel()
 ) {
 
-    val posts by postsViewModel.posts.collectAsState()
-    var allPost by remember { mutableStateOf(posts) }
-    val announcementModel by postsViewModel.announcementModel.collectAsState()
+    val announcementModel = postsViewModel.announcementForCandidate.collectAsLazyPagingItems()
+
     val isNotLike by postsViewModel.isLiked.collectAsState()
     val likesPostUser by postsViewModel.likesPostUser.collectAsState()
     val disLikesPostUser by postsViewModel.disLikesPostUser.collectAsState()
     val userConnectedId by postsViewModel.userConnectedId.collectAsState()
-    val annoucementStatus by postsViewModel.annoucementStatus.collectAsState()
 
     var openAnnounceForm by remember { mutableStateOf(false) }
     var showAddButton by remember { mutableStateOf(true) }
@@ -107,12 +105,6 @@ fun PostScreen(
         if (disLikesPostUser) {
             likeCount -= 1
             isLiked = false
-        }
-    }
-
-    LaunchedEffect(annoucementStatus) {
-        if (annoucementStatus == "saved successfully") {
-            allPost = (allPost + announcementModel).toMutableList()
         }
     }
 
@@ -140,8 +132,7 @@ fun PostScreen(
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
                         onClick = {
@@ -167,24 +158,6 @@ fun PostScreen(
                         modifier = Modifier.padding(start = 20.dp),
                         color = Color.White
                     )
-
-                    IconButton(
-                        onClick = {
-                            showAddButton = false
-                            openAnnounceForm = true
-                        },
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.2f))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add",
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
                 }
             }
 
@@ -192,16 +165,14 @@ fun PostScreen(
             LazyColumn(
                 state = lazyListState,
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(horizontal = 16.dp)
                     .padding(top = 20.dp)
             ) {
-                itemsIndexed(
-                    items = posts,
-                    key = { _, item ->
-                        item.idAnnounce
-                    }
-                ) { index, item ->
+
+                items(announcementModel.itemCount) { index ->
+                    val item = announcementModel[index] ?: AnnouncementModel()
+
                     item.likes?.let {
                         likeCount = it.size
                     }
@@ -406,8 +377,39 @@ fun PostScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
                 }
-            }
 
+                announcementModel.apply {
+                    when {
+                        loadState.refresh is LoadState.Loading -> {
+                            item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
+                        }
+
+                        loadState.refresh is LoadState.Error -> {
+                            val error = announcementModel.loadState.refresh as LoadState.Error
+                            item {
+                                ErrorMessage(
+                                    modifier = Modifier.fillParentMaxSize(),
+                                    message = error.error.localizedMessage ?: "",
+                                    onClickRetry = { retry() })
+                            }
+                        }
+
+                        loadState.append is LoadState.Loading -> {
+                            item { LoadingNextPageItem(modifier = Modifier) }
+                        }
+
+                        loadState.append is LoadState.Error -> {
+                            val error = announcementModel.loadState.append as LoadState.Error
+                            item {
+                                ErrorMessage(
+                                    modifier = Modifier,
+                                    message = error.error.localizedMessage!!,
+                                    onClickRetry = { retry() })
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         AnimatedVisibility(
@@ -581,185 +583,6 @@ fun PostScreen(
             /*selectedPost.forEach { comment ->
                 CommentItem(comment)
             }*/
-        }
-
-        AnimatedVisibility(
-            visible = openAnnounceForm,
-            enter = slideInVertically(
-                initialOffsetY = { it }, // Slide from below the screen
-                animationSpec = tween(durationMillis = 600) // Set animation duration
-            ),
-            exit = slideOutVertically(
-                targetOffsetY = { it }, // Slide out upwards
-                animationSpec = tween(durationMillis = 600) // Set animation duration
-            ),
-            modifier = Modifier.align(Alignment.BottomCenter)
-        ) {
-
-            androidx.compose.material.Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.7f),
-                elevation = 5.dp,
-                shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .background(Color.White),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp)
-                            .padding(top = 20.dp)
-                    ) {
-
-                        androidx.compose.material.Icon(
-                            imageVector = Icons.Filled.Close,
-                            modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    openAnnounceForm = false
-                                    showAddButton = true
-                                },
-                            contentDescription = ""
-                        )
-
-                        Text(
-                            text = stringResource(id = R.string.posts_text),
-                            modifier = Modifier.align(Alignment.Center),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 22.sp
-                        )
-                    }
-
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        var postName by remember { mutableStateOf(announcementModel.title) }
-
-                        FormTextField(
-                            value = postName,
-                            borderColor = if (activatedCheck && postName.isEmpty()) Color.Red else colorResource(
-                                id = R.color.whatsapp
-                            ),
-                            onValueChange = {
-                                postName = it
-                                if (activatedCheck) postName.isNotEmpty()
-                                postsViewModel.changePostName(it)
-                            },
-                            label = stringResource(id = R.string.post_title_text),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                                .padding(top = 40.dp),
-                            isRequired = true
-                        )
-
-                        var descriptions by remember { mutableStateOf(announcementModel.description) }
-
-                        FormTextField(
-                            value = descriptions,
-                            borderColor = if (activatedCheck && descriptions.isEmpty()) Color.Red else colorResource(
-                                id = R.color.whatsapp
-                            ),
-                            onValueChange = {
-                                descriptions = it
-                                if (activatedCheck) descriptions.isNotEmpty()
-                                postsViewModel.changeDescriptions(it)
-                            },
-                            label = stringResource(id = R.string.post_description_text),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                                .padding(top = 40.dp),
-                            isRequired = true
-                        )
-
-                        Button(
-                            onClick = {
-                                val postTitleValidator = postName.isNotEmpty()
-                                val postDescriptionValidator = descriptions.isNotEmpty()
-                                if (!postTitleValidator || !postDescriptionValidator) {
-                                    activatedCheck = true
-                                }
-
-                                if (postTitleValidator && postDescriptionValidator) {
-                                    postsViewModel.saveCompanyAnnouncement()
-                                    openAnnounceForm = false
-                                    showAddButton = true
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                                .padding(top = 20.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(id = R.color.whatsapp)
-                            )
-                        ) {
-                            Text(
-                                stringResource(id = R.string.save_text),
-                                modifier = Modifier.padding(vertical = 5.dp)
-                            )
-                        }
-                    }
-
-                }
-            }
-
-        }
-    }
-}
-
-@Composable
-fun CommentItem(comment: CommentsPost) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp)
-            .padding(vertical = 8.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.secondaryContainer),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = comment.userName?.first().toString(),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = comment.userName ?: "",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = comment.text ?: "",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            /*Text(
-                text = comment.timestamp,
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray
-            )*/
         }
     }
 }

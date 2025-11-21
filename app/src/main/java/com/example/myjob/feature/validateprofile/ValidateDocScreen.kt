@@ -49,6 +49,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toFile
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -138,6 +139,8 @@ fun ValidateDocScreen(
 
                 Text(
                     text = stringResource(id = R.string.validate_profile_text),
+                    fontSize = 20.sp,
+                    color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
 

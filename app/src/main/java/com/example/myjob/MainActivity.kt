@@ -20,12 +20,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.InsertInvitation
 import androidx.compose.material.icons.filled.LocalPostOffice
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.InsertInvitation
 import androidx.compose.material.icons.outlined.LocalPostOffice
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -59,7 +57,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.example.myjob.base.MyApp
-import com.example.myjob.feature.home.CandidateListScreen
+import com.example.myjob.base.MyApp.Companion.stateApp
+import com.example.myjob.base.StateApp
 import com.example.myjob.common.FileReader
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.langState
@@ -76,14 +75,13 @@ import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.feature.favorites.CompanyFavorites
 import com.example.myjob.feature.forgotpassword.ForgotPasswordScreen
-import com.example.myjob.feature.home.HomeCandidate
+import com.example.myjob.feature.home.CandidateListScreen
 import com.example.myjob.feature.home.HomeCompany
 import com.example.myjob.feature.home.ModernHomeScreen
 import com.example.myjob.feature.home.detail.CandidateDetailScreen
-import com.example.myjob.feature.home.detail.DetailsScreen
 import com.example.myjob.feature.home.filter.FilterScreenUpdated
 import com.example.myjob.feature.home.filter.FilteredHome
-import com.example.myjob.feature.home.filter.SearchScreen
+import com.example.myjob.feature.invitation.candidat.InvitationCareerScreen
 import com.example.myjob.feature.invitation.candidat.InvitationScreen
 import com.example.myjob.feature.invitation.company.InvitationCompanyScreen
 import com.example.myjob.feature.invitation.company.SendInvitationCompany
@@ -91,9 +89,12 @@ import com.example.myjob.feature.invitation.detail.DetailInviScreen
 import com.example.myjob.feature.invitation.detail.DetailInvitationScreen
 import com.example.myjob.feature.login.LoginScreen
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
+import com.example.myjob.feature.messagerie.DiscussionScreen
 import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.notification.NotificationScreen
 import com.example.myjob.feature.onboarding.OnBoardingScreen
+import com.example.myjob.feature.posts.CandidatePostScreen
+import com.example.myjob.feature.posts.PostScreen
 import com.example.myjob.feature.profile.AllCareer
 import com.example.myjob.feature.profile.AllEducation
 import com.example.myjob.feature.profile.CandidateProfile
@@ -103,14 +104,8 @@ import com.example.myjob.feature.profile.CountryCodeScreen
 import com.example.myjob.feature.profile.EducationForm
 import com.example.myjob.feature.profile.PersonalForm
 import com.example.myjob.feature.profile.ProfileScreen
-import com.example.myjob.feature.home.detail.test.CandidateCompleteProfileApp
-import com.example.myjob.feature.invitation.candidat.InvitationCareerScreen
-import com.example.myjob.feature.messagerie.DiscussionScreen
-import com.example.myjob.feature.posts.PostScreen
-import com.example.myjob.feature.profile.test.CandidateProfileFormExec
 import com.example.myjob.feature.profile.test.CandidateProfileFormScreen
 import com.example.myjob.feature.setting.ModernSettingScreen
-import com.example.myjob.feature.setting.SettingScreen
 import com.example.myjob.feature.signup.SignUpScreen
 import com.example.myjob.feature.splash.SplashScreen
 import com.example.myjob.feature.validateprofile.InterviewValidationScreen
@@ -121,14 +116,19 @@ import com.example.myjob.local.database.SharedPreference
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import io.socket.client.IO
+import io.socket.client.Socket
+import io.socket.emitter.Emitter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.net.URISyntaxException
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -142,10 +142,17 @@ class MainActivity : ComponentActivity() {
     private var listCompany: MutableList<String> = mutableListOf()
     private var listCountries: MutableList<String> = mutableListOf()
 
-    //TODO("EVENNEMENT(céminaire, formation, foire) => annonces : forum(commentaire, like)")
-    //TODO("Annonce : emplacememnt dans la bottom bar instead of search")
     //TODO("Notification")
+    //TODO("validation user supprimer interview")
+    //TODO("Filtrage du poste")
+    //TODO("chat")
+    //TODO("ajouter company et institut a chaque fois on ne trouve pas dans la liste")
+    //TODO("détail company invitation détail")
+    //TODO("détail user quand on complète le profile")
+    //TODO("share application")
+    //TODO("upload images")
 
+    var mSocket: Socket? = null
     private var imageUri = mutableStateOf<Uri?>(null)
     private var textChanged = mutableStateOf("Scanned text will appear here..")
 
@@ -155,7 +162,6 @@ class MainActivity : ComponentActivity() {
             val list = listImageUri.toMutableList()
             list.add(uri)
             listImageUri
-            Log.i("jfeakhgealgk", ": $list")
         }
 
     lateinit var launcher: ActivityResultLauncher<Intent>
@@ -265,13 +271,29 @@ class MainActivity : ComponentActivity() {
         viewState.value = CountryPickerViewState(countries)
     }
 
+    suspend fun repeatEvery(duration: Long, block: suspend () -> Unit) {
+        while (true) {
+            block()
+            delay(duration)
+        }
+    }
+
     @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestNotificationPermission()
 
+        //setupSocket()
+
         fetchData()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val fiveMinutesInMillis: Long = 2 * 60 * 1000L
+            repeatEvery(fiveMinutesInMillis) {
+                GlobalEntries.isRefreshing.update { true }
+            }
+        }
 
         allSubjects = (applicationContext as MyApp).allSubjectList
 
@@ -629,6 +651,11 @@ class MainActivity : ComponentActivity() {
                         PostScreen(navController = navController)
                     }
 
+                    composable(route = Screen.CandidatePostScreen.route) {
+                        isVisibleNav = false
+                        CandidatePostScreen(navController = navController)
+                    }
+
                     composable(route = Screen.SettingScreen.route) {
 
                         CoroutineScope(Dispatchers.Main).launch {
@@ -742,6 +769,51 @@ class MainActivity : ComponentActivity() {
 
             }
         }
+    }
+
+    val onConnect = Emitter.Listener {
+        runOnUiThread {
+            Log.d("Socket.IO", "Connected to server")
+            mSocket?.emit("message", "Hello from Android!")
+        }
+    }
+
+    val onNewMessage = Emitter.Listener {
+        runOnUiThread {
+            val message = it.get(0) as String
+            Log.d("Socket.IO", "New message from server: $message")
+            // Update UI with the received message
+        }
+    }
+
+    val onDisconnect = Emitter.Listener {
+        runOnUiThread {
+            Log.d("Socket.IO", "Disconnected from server")
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mSocket?.disconnect()
+        mSocket?.off(Socket.EVENT_CONNECT, onConnect)
+        mSocket?.off(Socket.EVENT_DISCONNECT, onDisconnect)
+        mSocket?.off("message", onNewMessage)
+    }
+
+    private fun setupSocket() {
+        try {
+            mSocket =
+                IO.socket("http://YOUR_SERVER_IP:9092")
+        } catch (e: URISyntaxException) {
+            e.printStackTrace()
+        }
+
+        mSocket?.on(Socket.EVENT_CONNECT, onConnect)
+        mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
+        mSocket?.on("message", onNewMessage)
+
+
+        mSocket?.connect()
     }
 }
 

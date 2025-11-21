@@ -22,6 +22,9 @@ import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
+import com.example.myjob.feature.messagerie.ChatMessage
+import com.example.myjob.feature.messagerie.Conversation
+import com.example.myjob.feature.messagerie.CreateConversationRequest
 import com.example.myjob.feature.validateprofile.ValidationProfileStatus
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
@@ -32,6 +35,7 @@ import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
@@ -273,6 +277,7 @@ ApiService {
     @GET("auth/getUserFiltered")
     suspend fun getUserFiltered(
         @Query("word") word: String,
+        @Query("id") id: Int,
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
     ): GenericResponse<User>
@@ -324,6 +329,12 @@ ApiService {
         @Query("size") size: Int = 10
     ): GenericResponse<AnnouncementModel>
 
+    @GET("auth/getAnnouncementsCandidate")
+    suspend fun getAnnouncementsCandidate(
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<AnnouncementModel>
+
     ///////////////////////////////////////////////////////////////////////////
     // NOTIFICATION
     ///////////////////////////////////////////////////////////////////////////
@@ -333,4 +344,30 @@ ApiService {
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
     ): GenericResponse<NotificationModel>
+
+    ///////////////////////////////////////////////////////////////////////////
+    // REAL TIME CHAT
+    ///////////////////////////////////////////////////////////////////////////
+    @GET("conversations/{userId}")
+    suspend fun getUserConversations(@Path("userId") userId: String): List<Conversation>
+
+    @POST("conversations")
+    suspend fun createConversation(@Body request: CreateConversationRequest): Conversation
+
+    @GET("conversations/find")
+    suspend fun findOrCreateConversation(
+        @Query("user1Id") user1Id: String,
+        @Query("user2Id") user2Id: String,
+        @Query("user1Name") user1Name: String,
+        @Query("user2Name") user2Name: String
+    ): Conversation
+
+    @GET("conversations/{conversationId}/messages")
+    suspend fun getMessages(
+        @Path("conversationId") conversationId: String,
+        @Query("limit") limit: Int = 50
+    ): List<ChatMessage>
+
+    @POST("messages")
+    suspend fun saveMessage(@Body message: ChatMessage): ChatMessage
 }

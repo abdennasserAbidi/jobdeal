@@ -3,6 +3,8 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">10.0.2.2</domain> <!-- Your server IP -->
         <domain includeSubdomains="true">192.168.1.189</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">10.1.1.184</domain> <!-- Your server IP -->
+        <domain includeSubdomains="true">10.32.83.209</domain> <!-- Your server IP -->
 =
     </domain-config>
 </network-security-config>

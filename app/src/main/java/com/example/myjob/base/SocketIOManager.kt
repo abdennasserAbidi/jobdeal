@@ -1,10 +1,15 @@
-package com.example.myapplication.base
+package com.example.myjob.base
 
+import com.example.myjob.feature.messagerie.ChatMessage
+import com.example.myjob.feature.messagerie.TypingIndicator
+import com.example.myjob.feature.messagerie.UserJoinedEvent
 import com.google.gson.Gson
+import io.socket.client.IO
+import io.socket.client.Socket
+import io.socket.emitter.Emitter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.json.JSONObject
-import java.net.Socket
 import java.net.URISyntaxException
 
 class SocketIOManager(

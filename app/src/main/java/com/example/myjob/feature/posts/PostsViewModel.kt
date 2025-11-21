@@ -12,6 +12,7 @@ import com.example.myjob.domain.entities.announcement.LikesPost
 import com.example.myjob.domain.usecase.announcement.AddCommentUseCase
 import com.example.myjob.domain.usecase.announcement.AddLikeUseCase
 import com.example.myjob.domain.usecase.announcement.GetAnnouncementUseCase
+import com.example.myjob.domain.usecase.announcement.GetCandidateAnnouncementUseCase
 import com.example.myjob.domain.usecase.announcement.RemoveLikeUseCase
 import com.example.myjob.domain.usecase.announcement.SaveAnnouncementUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
@@ -30,11 +31,16 @@ class PostsViewModel @Inject constructor(
     private val sharedPreference: SharedPreference,
     private val getUserUseCase: GetUserUseCase,
     private val getAnnouncementUseCase: GetAnnouncementUseCase,
+    private val getCandidateAnnouncementUseCase: GetCandidateAnnouncementUseCase,
     private val removeLikeUseCase: RemoveLikeUseCase,
     private val addLikeUseCase: AddLikeUseCase,
     private val addCommentUseCase: AddCommentUseCase,
     private val saveAnnouncementUseCase: SaveAnnouncementUseCase
 ) : ViewModel() {
+
+    init {
+        getAnnouncementCandidate()
+    }
 
     private val _announcement: MutableStateFlow<PagingData<AnnouncementModel>> =
         MutableStateFlow(value = PagingData.empty())
@@ -44,6 +50,21 @@ class PostsViewModel @Inject constructor(
             getAnnouncementUseCase.execute(idUser)
                 .collectLatest { res ->
                     _announcement.update {
+                        res.data ?: PagingData.empty()
+                    }
+
+                }
+        }
+    }
+
+    private val _announcementForCandidate: MutableStateFlow<PagingData<AnnouncementModel>> =
+        MutableStateFlow(value = PagingData.empty())
+    val announcementForCandidate: MutableStateFlow<PagingData<AnnouncementModel>> get() = _announcementForCandidate
+    private fun getAnnouncementCandidate() {
+        viewModelScope.launch {
+            getCandidateAnnouncementUseCase.execute()
+                .collectLatest { res ->
+                    _announcementForCandidate.update {
                         res.data ?: PagingData.empty()
                     }
 
@@ -100,12 +121,13 @@ class PostsViewModel @Inject constructor(
 
     val commentStatus = MutableStateFlow("")
 
-    fun addComment(idAnnounce: Int, text: String) {
+    fun addComment(idAnnounce: Int, text: String, username: String) {
         viewModelScope.launch {
             val idConnected = sharedPreference.getInt("idUser", 0)
             val commentsPost = CommentsPost(
                 idCandidate = idConnected,
-                text = text
+                text = text,
+                userName = username
             )
             val pairParams = Pair(idAnnounce, commentsPost)
             addCommentUseCase.execute(pairParams).collectLatest { res ->

@@ -61,6 +61,7 @@ object GlobalEntries {
     var matchInvitation: () -> Unit = {}
     var isFromLogin = false
     var isFromSettings = false
+    var isRefreshing = MutableStateFlow(false)
     var isVisibleNav = MutableStateFlow(true)
     var isSubmitAction = MutableStateFlow(false)
     var isSubmitEducationAction = MutableStateFlow(false)

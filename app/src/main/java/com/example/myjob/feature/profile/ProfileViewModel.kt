@@ -508,7 +508,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun mapperPersonalInfo(user: User) {
-        availability.update { user.professionalStatus.availability ?: "" }
+        availability.update { user.professionalStatus?.availability ?: "" }
         rangeSalary.update { user.rangeSalary ?: "" }
 
         with(user) {
@@ -532,6 +532,10 @@ class ProfileViewModel @Inject constructor(
         isCheckPersonal.update { isChecking }
     }
 
+    fun clearPersoanlInfo() {
+        saveUserState.update { "" }
+    }
+
     fun saveUserPersonalInfo() {
         viewModelScope.launch {
             savePersonalUseCase.execute(user.value).collect { res ->
@@ -553,37 +557,37 @@ class ProfileViewModel @Inject constructor(
         isCheckProfessional.update { isChecking }
     }
 
-    var onSitePreference = MutableStateFlow(user.value.professionalStatus.onSitePreference)
+    var onSitePreference = MutableStateFlow(user.value.professionalStatus?.onSitePreference)
     fun changePreferenceSite(search: Boolean) {
         onSitePreference.update { search }
 
         user.update {
-            it.professionalStatus.onSitePreference = search
+            it.professionalStatus?.onSitePreference = search
             it
         }
     }
 
-    var hybridPreference = MutableStateFlow(user.value.professionalStatus.hybridPreference)
+    var hybridPreference = MutableStateFlow(user.value.professionalStatus?.hybridPreference)
     fun changePreferenceHybrid(search: Boolean) {
         hybridPreference.update { search }
 
         user.update {
-            it.professionalStatus.hybridPreference = search
+            it.professionalStatus?.hybridPreference = search
             it
         }
     }
 
-    var remotePreference = MutableStateFlow(user.value.professionalStatus.remotePreference)
+    var remotePreference = MutableStateFlow(user.value.professionalStatus?.remotePreference)
     fun changePreferenceRemote(search: Boolean) {
         remotePreference.update { search }
 
         user.update {
-            it.professionalStatus.remotePreference = search
+            it.professionalStatus?.remotePreference = search
             it
         }
     }
 
-    var availability = MutableStateFlow(user.value.professionalStatus.availability)
+    var availability = MutableStateFlow(user.value.professionalStatus?.availability)
     var availabilityOptions = MutableStateFlow(emptyList<Int>())
 
     fun changeAvailability(search: String) {
@@ -592,12 +596,12 @@ class ProfileViewModel @Inject constructor(
         }
 
         user.update {
-            it.professionalStatus.availability = search
+            it.professionalStatus?.availability = search
             it
         }
     }
 
-    var workType = MutableStateFlow(user.value.professionalStatus.workType)
+    var workType = MutableStateFlow(user.value.professionalStatus?.workType)
     var workTypeOptions = MutableStateFlow(emptyList<Int>())
 
     fun changeWorkType(search: String) {
@@ -606,12 +610,12 @@ class ProfileViewModel @Inject constructor(
         }
 
         user.update {
-            it.professionalStatus.workType = search
+            it.professionalStatus?.workType = search
             it
         }
     }
 
-    var experienceLevel = MutableStateFlow(user.value.professionalStatus.userExperience)
+    var experienceLevel = MutableStateFlow(user.value.professionalStatus?.userExperience)
     var experienceOptions = MutableStateFlow(emptyList<Int>())
 
     fun changeExperienceLevel(search: String) {
@@ -620,46 +624,46 @@ class ProfileViewModel @Inject constructor(
         }
 
         user.update {
-            it.professionalStatus.userExperience = search
+            it.professionalStatus?.userExperience = search
             it
         }
     }
 
-    var preferredSalary = MutableStateFlow(user.value.professionalStatus.preferredSalary)
+    var preferredSalary = MutableStateFlow(user.value.professionalStatus?.preferredSalary)
     fun changePreferredSalary(search: String) {
         preferredSalary.update {
             search
         }
 
         user.update {
-            it.professionalStatus.preferredSalary = search
+            it.professionalStatus?.preferredSalary = search
             it
         }
     }
 
-    var userGithub = MutableStateFlow(user.value.professionalStatus.userGithub)
+    var userGithub = MutableStateFlow(user.value.professionalStatus?.userGithub)
     fun changeGithub(name: String) {
         userGithub.update { name }
         user.update {
-            it.professionalStatus.userGithub = name
+            it.professionalStatus?.userGithub = name
             it
         }
     }
 
-    var userMedium = MutableStateFlow(user.value.professionalStatus.userMedium)
+    var userMedium = MutableStateFlow(user.value.professionalStatus?.userMedium)
     fun changeMedium(name: String) {
         userMedium.update { name }
         user.update {
-            it.professionalStatus.userMedium = name
+            it.professionalStatus?.userMedium = name
             it
         }
     }
 
-    var userPortFolio = MutableStateFlow(user.value.professionalStatus.userPortfolio)
+    var userPortFolio = MutableStateFlow(user.value.professionalStatus?.userPortfolio)
     fun changePortFolio(name: String) {
         userPortFolio.update { name }
         user.update {
-            it.professionalStatus.userPortfolio = name
+            it.professionalStatus?.userPortfolio = name
             it
         }
     }
@@ -680,6 +684,10 @@ class ProfileViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun clearProfessionalInfo() {
+        saveCandidateProfessionalState.update { "" }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -712,7 +720,7 @@ class ProfileViewModel @Inject constructor(
         skills.update { skillsList }
 
         user.update {
-            it.candidateSkills.listSkills = skillsList
+            it.candidateSkills?.listSkills = skillsList
             it
         }
     }
@@ -728,7 +736,7 @@ class ProfileViewModel @Inject constructor(
         }
 
         user.update {
-            it.candidateSkills.listCertification = certificationsList
+            it.candidateSkills?.listCertification = certificationsList
             it
         }
     }
@@ -743,7 +751,7 @@ class ProfileViewModel @Inject constructor(
         }
 
         user.update {
-            it.candidateSkills.listCertification = certificationsList
+            it.candidateSkills?.listCertification = certificationsList
             it
         }
     }
@@ -759,7 +767,7 @@ class ProfileViewModel @Inject constructor(
         }
 
         user.update {
-            it.candidateSkills.listLanguages = skillsList
+            it.candidateSkills?.listLanguages = skillsList
             it
         }
     }
@@ -769,7 +777,7 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val userId = sharedPreference.getInt("idUser", 0)
             val candidateSkill = user.value.candidateSkills
-            candidateSkill.id = userId
+            candidateSkill?.id = userId
 
             saveSkillsUseCase.execute(candidateSkill).collect { res ->
                 saveCandidateSkillsState.update {
@@ -793,6 +801,10 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun clearComplete() {
+        saveCompletedState.update { "" }
+    }
+
     fun getMapUser(): Map<String, String> {
         return GlobalEntries.user.showUser(lang)
     }
@@ -804,6 +816,12 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             getUserUseCase.execute(id).collect {
                 it.data?.let { u ->
+                    if (u.professionalStatus == null)
+                        u.professionalStatus = ProfessionalStatus()
+
+                    if (u.candidateSkills == null)
+                        u.candidateSkills = CandidateSkills()
+
                     user.update { u }
                     GlobalEntries.user = u
                     sharedPreference.putString("username", u.fullName ?: "")
@@ -1025,6 +1043,10 @@ class ProfileViewModel @Inject constructor(
                 if (res.data?.message == "saved successfully") getAllEducations(user.value.id ?: 0)
             }
         }
+    }
+
+    fun clearEducationState() {
+        saveEducationState.update { "" }
     }
 
     fun saveEducations(educations: List<Educations>) {
@@ -1508,6 +1530,10 @@ class ProfileViewModel @Inject constructor(
                 if (res.data?.message == "saved successfully") getAllExperience(user.value.id ?: 0)
             }
         }
+    }
+
+    fun clearExpState() {
+        saveExpState.update { "" }
     }
 
     fun saveExperiences(experiences: MutableList<Experience>) {

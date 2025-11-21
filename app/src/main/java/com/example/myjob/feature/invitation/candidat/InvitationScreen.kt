@@ -56,10 +56,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
+import com.example.myjob.base.MyApp
+import com.example.myjob.base.StateApp
 import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.LoadingNextPageItem
@@ -70,7 +73,9 @@ import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.ui.theme.WhatsAppDarkGreen
 import com.example.myjob.ui.theme.WhatsAppLightGreen
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,6 +116,14 @@ fun InvitationScreen(
             val title = GlobalEntries.user.fullName ?: ""
             val message = "This candidate has $acceptRejectInvitation your invitaion"
             invitationViewModel.sendNotification(title, message)
+        }
+    }
+
+    val isRefreshing by GlobalEntries.isRefreshing.collectAsState()
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            invitationViewModel.getInvitations()
+            GlobalEntries.isRefreshing.update { false }
         }
     }
 
@@ -382,11 +395,11 @@ fun FilterBottomSheet(
                     .clickable {
                         val text = when (filter) {
                             FilterType.ALL -> allCandidatesText
-                            FilterType.INTERVIEWING -> inProcessText
-                            FilterType.HIRED -> hiredText
-                            FilterType.NOT_INTERESTED -> notInterestedText
-                            FilterType.ON_HOLD -> onHoldText
-                            FilterType.REJECTED -> rejectedText
+                            FilterType.INTERVIEWING -> InvitationStatus.IN_PROCESS.name
+                            FilterType.HIRED -> InvitationStatus.HIRED.name
+                            FilterType.NOT_INTERESTED -> InvitationStatus.NOT_INTERESTED.name
+                            FilterType.ON_HOLD -> InvitationStatus.ON_HOLD.name
+                            FilterType.REJECTED -> InvitationStatus.REJECTED.name
                         }
                         onFilterSelected(filter, text)
                     }
@@ -398,11 +411,11 @@ fun FilterBottomSheet(
                     onClick = {
                         val text = when (filter) {
                             FilterType.ALL -> allCandidatesText
-                            FilterType.INTERVIEWING -> inProcessText
-                            FilterType.HIRED -> hiredText
-                            FilterType.NOT_INTERESTED -> notInterestedText
-                            FilterType.ON_HOLD -> onHoldText
-                            FilterType.REJECTED -> rejectedText
+                            FilterType.INTERVIEWING -> InvitationStatus.IN_PROCESS.name
+                            FilterType.HIRED -> InvitationStatus.HIRED.name
+                            FilterType.NOT_INTERESTED -> InvitationStatus.NOT_INTERESTED.name
+                            FilterType.ON_HOLD -> InvitationStatus.ON_HOLD.name
+                            FilterType.REJECTED -> InvitationStatus.REJECTED.name
                         }
                         onFilterSelected(filter, text)
                     },

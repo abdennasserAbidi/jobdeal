@@ -1,5 +1,6 @@
 package com.example.myjob.feature.invitation.company
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
@@ -64,6 +65,7 @@ import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.feature.navigation.Screen
+import kotlinx.coroutines.flow.update
 
 @OptIn(
     ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class,
@@ -95,6 +97,15 @@ fun InvitationCompanyScreen(
     LaunchedEffect(lifecycle) {
         if (lifecycle == Lifecycle.Event.ON_RESUME) {
             changeIndexTab()
+        }
+    }
+
+    val isRefreshing by GlobalEntries.isRefreshing.collectAsState()
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            invitationViewModel.getCompanyInvitations()
+            GlobalEntries.isRefreshing.update { false }
+            Log.i("lklknjrjkrhgz", "InvitationCompanyScreen: gkelhgelhgealkg")
         }
     }
 

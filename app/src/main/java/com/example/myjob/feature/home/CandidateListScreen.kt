@@ -94,6 +94,15 @@ fun CandidateListScreen(
         }
     }
 
+    val isRefreshing by GlobalEntries.isRefreshing.collectAsState()
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            homeViewModel.getCurrent()
+            GlobalEntries.isRefreshing.update { false }
+            Log.i("lklknjrjkrhgz", "home screen: gkelhgelhgealkg")
+        }
+    }
+
     //TODO("for v2 we add collaboration type invitation")
 
     val filteredCandidates = candidates.filter { candidate ->
@@ -298,6 +307,10 @@ fun CandidateListScreen(
                             }
                         }
                     },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = colorResource(id = R.color.whatsapp),
+                        focusedLabelColor = colorResource(id = R.color.whatsapp)
+                    ),
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true
                 )
@@ -400,6 +413,10 @@ fun CandidateListScreen(
                                 candidateUser = user
                                 navController.navigate(Screen.SendInvitationScreen.route)
                             },
+                            onSendMessage = { it ->
+                                candidateUser = it
+                                navController.navigate(Screen.SendMessageScreen.route)
+                            },
                             onTerminateInvitation = {
                                 invitationModel = it
                                 openFinishProcess = true
@@ -413,7 +430,7 @@ fun CandidateListScreen(
                         }
 
                         Spacer(modifier = Modifier
-                            .height(50.dp)
+                            .height(20.dp)
                             .fillMaxWidth())
                     }
                     lazyPagingItems.apply {
@@ -456,6 +473,8 @@ fun CandidateListScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
+
+                Spacer(modifier = Modifier.height(50.dp))
             }
         }
 
@@ -543,13 +562,13 @@ fun CandidateListScreen(
                                 ) {
                                     filterOpen = false
                                     GlobalEntries.isVisibleNav.update { true }
-                                    Log.i("ljkljlkjkljlkgtr", "CandidateListScreen: $criteria")
                                     homeViewModel.validateFilter(criteria)
                                     homeViewModel.changeSelectionParentChoices(
                                         indexParent,
                                         titleParent,
                                         !isSelectedParent
                                     )
+                                    filterOpen = false
                                 }
                                 .background(
                                     color = colorResource(id = R.color.whatsapp),
@@ -558,8 +577,8 @@ fun CandidateListScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "See results",
-                                color = Color.White,
+                                text = stringResource(id = R.string.show_result_text),
+                                color = White,
                                 style = TextStyle(fontWeight = FontWeight.Bold),
                                 modifier = Modifier.padding(vertical = 20.dp)
                             )

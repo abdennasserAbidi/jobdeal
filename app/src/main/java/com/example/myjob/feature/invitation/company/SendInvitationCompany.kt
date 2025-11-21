@@ -37,6 +37,7 @@ import com.example.myjob.common.GlobalEntries.notificationMessage
 import com.example.myjob.domain.entities.ContractType
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.feature.home.HomeViewModel
 import com.example.myjob.ui.theme.WhatsAppGreenSurface
 import com.example.myjob.ui.theme.WhatsAppLightGreen
@@ -186,7 +187,9 @@ fun SendInvitationCompany(
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-                val statusInvitation = stringResource(id = R.string.holding)
+                //val statusInvitation = stringResource(id = R.string.holding)
+                val statusInvitation = InvitationStatus.ON_HOLD.name
+                //val statusInvitation = stringResource(id = R.string.in_process_text)
 
                 val loadingState by homeViewModel.loadingState.collectAsState()
 

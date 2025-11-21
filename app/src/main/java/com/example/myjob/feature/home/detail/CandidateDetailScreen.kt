@@ -186,7 +186,7 @@ fun CandidateDetailScreen(
                 },
                 sendMessage = {
                     GlobalEntries.candidateUser = it
-                    navController.navigate(Screen.SendInvitationScreen.route)
+                    navController.navigate(Screen.SendMessageScreen.route)
                 },
                 onTerminateInvitation = {
                     invitationModel = it
@@ -202,8 +202,8 @@ fun CandidateDetailScreen(
             }
 
             // Skills Card
-            if (user.candidateSkills.listSkills.isNotEmpty())
-                SkillsCard(skills = user.candidateSkills.listSkills)
+            if (user.candidateSkills?.listSkills?.isNotEmpty() == true)
+                SkillsCard(skills = user.candidateSkills?.listSkills ?: mutableListOf())
 
             // Experience Card
             val experiences = user.experience ?: mutableListOf()
@@ -220,9 +220,9 @@ fun CandidateDetailScreen(
 
             // Additional Info Card
             AdditionalInfoCard(
-                certifications = user.candidateSkills.listCertification,
-                languages = user.candidateSkills.listLanguages,
-                availability = user.professionalStatus.availability ?: "",
+                certifications = user.candidateSkills?.listCertification ?: mutableListOf(),
+                languages = user.candidateSkills?.listLanguages ?: mutableListOf(),
+                availability = user.professionalStatus?.availability ?: "",
                 expectedSalary = "5000",
                 noticePeriod = "15"
             )

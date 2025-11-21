@@ -32,4 +32,6 @@ interface AnnouncementRepository {
     suspend fun getCompanyAnnouncements(
         id: Int,
     ): Flow<Resource<PagingData<AnnouncementModel>>>
+
+    suspend fun getAnnouncementsCandidate(): Flow<Resource<PagingData<AnnouncementModel>>>
 }

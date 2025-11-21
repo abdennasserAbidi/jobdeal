@@ -136,6 +136,7 @@
     <string name="disponibility3_text">In 3 months</string>
     <string name="disponibility4_text">More than 3 months</string>
 
+    <string name="opinion_text">What is your opinion</string>
     <string name="available_text">Available</string>
     <string name="in_process_text">In process</string>
     <string name="in_process_long_text">In process…</string>
@@ -145,6 +146,9 @@
     <string name="candidates_text">Candidates</string>
     <string name="search_candidates_text">Search candidates</string>
     <string name="rejected_offer_text">You rejected this offer</string>
+
+    <string name="message_rejected_offer_text">The candidate %1$s is Rejected : you should tell the reason</string>
+    <string name="message_accepted_offer_text">The candidate %1$s is Accepted</string>
 
     <string name="invitation_found_text">invitations found</string>
     <string name="phone_text">Phone</string>
@@ -288,13 +292,20 @@
     <string name="notification_text">Notifications</string>
     <string name="validate_text">Validation</string>
     <string name="validate_profile_text">Validate your profile</string>
+
     <string name="posts_text">Posts</string>
+    <string name="posts_desc_text">See all posts</string>
+
+    <string name="discussion_text">Discussions</string>
+    <string name="discussion_desc_text">View your discussions</string>
+
     <string name="post_action_text">Post</string>
     <string name="posted_by_text">Posted by</string>
     <string name="add_comment_hint_text">Add a comment…</string>
     <string name="terms_text">Terms and Conditions</string>
     <string name="confidentiality_text">Privacy Policy</string>
     <string name="my_account_text">My account</string>
+    <string name="complete_profile_text">Complete Profile</string>
 
 
     <string name="invitations_text">My invitations</string>
