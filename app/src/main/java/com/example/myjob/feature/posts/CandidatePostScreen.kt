@@ -60,6 +60,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -68,6 +69,7 @@ import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.announcement.CommentsPost
 
@@ -80,31 +82,27 @@ fun CandidatePostScreen(
 
     val announcementModel = postsViewModel.announcementForCandidate.collectAsLazyPagingItems()
 
-    val isNotLike by postsViewModel.isLiked.collectAsState()
-    val likesPostUser by postsViewModel.likesPostUser.collectAsState()
-    val disLikesPostUser by postsViewModel.disLikesPostUser.collectAsState()
     val userConnectedId by postsViewModel.userConnectedId.collectAsState()
-
-    var openAnnounceForm by remember { mutableStateOf(false) }
-    var showAddButton by remember { mutableStateOf(true) }
     val interactionSource = remember { MutableInteractionSource() }
-    var activatedCheck by remember { mutableStateOf(false) }
     var showComments by remember { mutableStateOf(false) }
     var selectedPost by remember { mutableStateOf(mutableListOf<CommentsPost>()) }
-    var isLiked by remember { mutableStateOf(false) }
-    var likeCount by remember { mutableStateOf(0) }
 
-    LaunchedEffect(likesPostUser) {
-        if (likesPostUser) {
-            likeCount += 1
-            isLiked = true
-        }
-    }
+    var isFirstTime by remember { mutableStateOf(false) }
 
-    LaunchedEffect(disLikesPostUser) {
-        if (disLikesPostUser) {
-            likeCount -= 1
-            isLiked = false
+    val isAllPostLiked by postsViewModel.isAllPostLiked.collectAsState()
+    var isAllPostLikedUser by remember(isAllPostLiked) { mutableStateOf(isAllPostLiked) }
+    var isItemLiked by remember { mutableStateOf(false) }
+
+    val numberLikes by postsViewModel.numberLikes.collectAsState()
+    var numberLikesUser by remember(numberLikes) { mutableStateOf(numberLikes) }
+    var itemNumberLike by remember { mutableStateOf(0) }
+
+    val lifecycleEvent = rememberLifecycleEvent()
+    LaunchedEffect(lifecycleEvent) {
+        if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+            isFirstTime = true
+            postsViewModel.isAllPostLiked()
+            postsViewModel.getPostNumberLikes()
         }
     }
 
@@ -173,9 +171,6 @@ fun CandidatePostScreen(
                 items(announcementModel.itemCount) { index ->
                     val item = announcementModel[index] ?: AnnouncementModel()
 
-                    item.likes?.let {
-                        likeCount = it.size
-                    }
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
@@ -242,33 +237,43 @@ fun CandidatePostScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                isLiked = postsViewModel.isNotLikedCandidate(
+                                postsViewModel.isNotLikedCandidate(
                                     item.likes ?: mutableListOf()
                                 )
-                                val like = postsViewModel.isNotLikedCandidate(
-                                    item.likes ?: mutableListOf()
-                                )
+
+                                if (isFirstTime) {
+                                    isItemLiked = if (isAllPostLikedUser.isNotEmpty()) isAllPostLikedUser[index] else false
+                                    itemNumberLike = if (numberLikesUser.isNotEmpty()) numberLikesUser[index] else 0
+                                }
                                 Row(
                                     modifier = Modifier
                                         .clickable(
                                             interactionSource = interactionSource,
                                             indication = null
                                         ) {
-                                            if (isLiked) postsViewModel.likePost(item.idAnnounce)
-                                            else postsViewModel.disLikePost(item.idAnnounce)
+                                            isFirstTime = false
+                                            if (isItemLiked) {
+                                                postsViewModel.disLikePost(item.idAnnounce)
+                                                if (itemNumberLike > 0) itemNumberLike -= 1
+                                                isItemLiked = false
+                                            } else {
+                                                postsViewModel.likePost(item.idAnnounce)
+                                                itemNumberLike += 1
+                                                isItemLiked = true
+                                            }
                                         }
                                         .padding(8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
-                                        imageVector = if (!isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                        imageVector = if (isItemLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                         contentDescription = "Like",
-                                        tint = if (!isLiked) Color.Red else Color.Gray,
+                                        tint = if (isItemLiked) Color.Red else Color.Gray,
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "$likeCount",
+                                        text = "$itemNumberLike",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = Color.Gray
                                     )

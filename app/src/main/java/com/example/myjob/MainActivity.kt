@@ -647,7 +647,14 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(route = Screen.PostScreen.route) {
-                        isVisibleNav = true
+                        //isVisibleNav = true
+                        CoroutineScope(Dispatchers.Main).launch {
+                            GlobalEntries.isVisibleNav.collect {
+                                Log.i("kjhrrtbffqfs", "onCreate: $it")
+                                isVisibleNav = it
+                            }
+                        }
+
                         PostScreen(navController = navController)
                     }
 

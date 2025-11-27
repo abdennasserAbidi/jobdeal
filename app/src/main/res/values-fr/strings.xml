@@ -326,8 +326,11 @@
     <string name="on_hold_text">En attente</string>
     <string name="filter_status_text">Filtrer par statut</string>
     <string name="all_candidates_text">Tous les Candidats</string>
+    <string name="all_posts_text">Tous les Annonces</string>
     <string name="in_process_long_text">En cours de traitement…</string>
     <string name="invitation_found_text">invitations trouvées</string>
+
+    <string name="type_change_text">Change type</string>
 
     <string name="reject_text">Refuser</string>
     <string name="accept_text">Accepter</string>

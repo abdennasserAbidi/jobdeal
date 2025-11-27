@@ -1,5 +1,6 @@
 package com.example.myjob.feature.posts
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -33,6 +34,7 @@ import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
@@ -41,11 +43,17 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -65,11 +73,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.rememberLifecycleEvent
+import com.example.myjob.domain.entities.FilterType
+import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.announcement.CommentsPost
+import com.example.myjob.domain.entities.announcement.PostType
+import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.feature.profile.test.FormTextField
+import com.example.myjob.ui.theme.WhatsAppDarkGreen
+import com.example.myjob.ui.theme.WhatsAppLightGreen
+import kotlinx.coroutines.flow.update
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,11 +96,9 @@ fun PostScreen(
 ) {
 
     val posts by postsViewModel.posts.collectAsState()
-    var allPost by remember { mutableStateOf(posts) }
+    var allPost by remember { mutableStateOf(emptyList<AnnouncementModel>()) }
+
     val announcementModel by postsViewModel.announcementModel.collectAsState()
-    val isNotLike by postsViewModel.isLiked.collectAsState()
-    val likesPostUser by postsViewModel.likesPostUser.collectAsState()
-    val disLikesPostUser by postsViewModel.disLikesPostUser.collectAsState()
     val userConnectedId by postsViewModel.userConnectedId.collectAsState()
     val annoucementStatus by postsViewModel.annoucementStatus.collectAsState()
 
@@ -93,26 +108,61 @@ fun PostScreen(
     var activatedCheck by remember { mutableStateOf(false) }
     var showComments by remember { mutableStateOf(false) }
     var selectedPost by remember { mutableStateOf(mutableListOf<CommentsPost>()) }
-    var isLiked by remember { mutableStateOf(false) }
-    var likeCount by remember { mutableStateOf(0) }
+    var showFilterSheet by remember { mutableStateOf(false) }
+    var selectedFilter by remember { mutableStateOf(PostType.ALL) }
 
-    LaunchedEffect(likesPostUser) {
-        if (likesPostUser) {
-            likeCount += 1
-            isLiked = true
-        }
+    var postName by remember { mutableStateOf(announcementModel.title) }
+    var descriptions by remember { mutableStateOf(announcementModel.description) }
+    var postType by remember { mutableStateOf(announcementModel.postType) }
+
+    var isFirstTime by remember { mutableStateOf(false) }
+
+    LaunchedEffect(posts) {
+        allPost = posts
     }
 
-    LaunchedEffect(disLikesPostUser) {
-        if (disLikesPostUser) {
-            likeCount -= 1
-            isLiked = false
+    val isPostLiked by postsViewModel.isPostLiked.collectAsState()
+    var isPostLikedUser by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isPostLiked) {
+        isPostLikedUser = isPostLiked
+    }
+
+
+    val isAllPostLiked by postsViewModel.isAllPostLikedCompany.collectAsState()
+    var isAllPostLikedUser by remember(isAllPostLiked) { mutableStateOf(isAllPostLiked) }
+    var isItemLiked by remember { mutableStateOf(false) }
+
+    val numberLikes by postsViewModel.numberLikesCompany.collectAsState()
+    var numberLikesUser by remember(numberLikes) { mutableStateOf(numberLikes) }
+    var itemNumberLike by remember { mutableStateOf(0) }
+
+    val numberCommentCompany by postsViewModel.numberCommentCompany.collectAsState()
+    var numberCommentUser by remember(numberCommentCompany) { mutableStateOf(numberCommentCompany) }
+    var itemNumberComment by remember { mutableStateOf(0) }
+
+    val commentsCompany by postsViewModel.commentsCompany.collectAsState()
+    /*var numberCommentUser by remember(numberCommentCompany) { mutableStateOf(numberCommentCompany) }
+    var itemNumberComment by remember { mutableStateOf(0) }*/
+
+    Log.i("numberCommentCompany", "PostScreen: $itemNumberComment")
+
+    val lifecycleEvent = rememberLifecycleEvent()
+    LaunchedEffect(lifecycleEvent) {
+        if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+            isFirstTime = true
+            postsViewModel.isAllPostLikedCompany()
+            postsViewModel.getPostNumberLikesCompany()
+            postsViewModel.getPostNumberCommentCompany()
         }
     }
 
     LaunchedEffect(annoucementStatus) {
         if (annoucementStatus == "saved successfully") {
-            allPost = (allPost + announcementModel).toMutableList()
+            val announce = AnnouncementModel()
+            announce.title = postName
+            announce.description = descriptions
+            allPost = (allPost + announce).toMutableList()
         }
     }
 
@@ -172,6 +222,9 @@ fun PostScreen(
                         onClick = {
                             showAddButton = false
                             openAnnounceForm = true
+                            GlobalEntries.isVisibleNav.update {
+                                false
+                            }
                         },
                         modifier = Modifier
                             .size(40.dp)
@@ -197,14 +250,11 @@ fun PostScreen(
                     .padding(top = 20.dp)
             ) {
                 itemsIndexed(
-                    items = posts,
+                    items = allPost,
                     key = { _, item ->
                         item.idAnnounce
                     }
                 ) { index, item ->
-                    item.likes?.let {
-                        likeCount = it.size
-                    }
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
@@ -271,36 +321,51 @@ fun PostScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                isLiked = postsViewModel.isNotLikedCandidate(
+                                postsViewModel.isNotLikedCandidate(
                                     item.likes ?: mutableListOf()
                                 )
-                                val like = postsViewModel.isNotLikedCandidate(
-                                    item.likes ?: mutableListOf()
-                                )
+
+                                if (isFirstTime) {
+                                    isItemLiked = if (isAllPostLikedUser.isNotEmpty()) isAllPostLikedUser[index] else false
+                                    itemNumberLike = if (numberLikesUser.isNotEmpty()) numberLikesUser[index] else 0
+                                }
+
                                 Row(
                                     modifier = Modifier
                                         .clickable(
                                             interactionSource = interactionSource,
                                             indication = null
                                         ) {
-                                            if (isLiked) postsViewModel.likePost(item.idAnnounce)
-                                            else postsViewModel.disLikePost(item.idAnnounce)
+                                            isFirstTime = false
+                                            if (isItemLiked) {
+                                                postsViewModel.disLikePost(item.idAnnounce)
+                                                if (itemNumberLike > 0) itemNumberLike -= 1
+                                                isItemLiked = false
+                                            } else {
+                                                postsViewModel.likePost(item.idAnnounce)
+                                                itemNumberLike += 1
+                                                isItemLiked = true
+                                            }
                                         }
                                         .padding(8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
-                                        imageVector = if (!isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                        imageVector = if (isItemLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                         contentDescription = "Like",
-                                        tint = if (!isLiked) Color.Red else Color.Gray,
+                                        tint = if (isItemLiked) Color.Red else Color.Gray,
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "$likeCount",
+                                        text = "$itemNumberLike",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = Color.Gray
                                     )
+                                }
+
+                                if (isFirstTime) {
+                                    itemNumberComment = if (numberCommentUser.isNotEmpty()) numberCommentUser[index] else 0
                                 }
 
                                 // Comment Button
@@ -310,8 +375,9 @@ fun PostScreen(
                                             interactionSource = interactionSource,
                                             indication = null
                                         ) {
+                                            postsViewModel.getPostCommentsCompany(item.idAnnounce)
                                             selectedPost = item.comments ?: mutableListOf()
-                                            if (selectedPost.size > 0)
+                                            if (itemNumberComment > 0)
                                                 showComments = !showComments
                                         }
                                         .padding(8.dp),
@@ -325,7 +391,7 @@ fun PostScreen(
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "${item.comments?.size}",
+                                        text = "$itemNumberComment",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = Color.Gray
                                     )
@@ -369,7 +435,11 @@ fun PostScreen(
                                     modifier = Modifier.weight(1f),
                                     placeholder = { Text(stringResource(id = R.string.add_comment_hint_text)) },
                                     shape = RoundedCornerShape(24.dp),
-                                    textStyle = MaterialTheme.typography.bodyMedium
+                                    textStyle = MaterialTheme.typography.bodyMedium,
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = colorResource(id = R.color.whatsapp),
+                                        focusedLabelColor = colorResource(id = R.color.whatsapp)
+                                    )
                                 )
 
                                 Spacer(modifier = Modifier.width(8.dp))
@@ -382,7 +452,15 @@ fun PostScreen(
                                                 if (GlobalEntries.user.role == "Candidate" || GlobalEntries.user.role == "Candidat")
                                                     GlobalEntries.user.fullName else GlobalEntries.user.companyName
 
-                                            postsViewModel.addComment(item.idAnnounce, commentText, username ?: "")
+                                            postsViewModel.addComment(
+                                                item.idAnnounce,
+                                                commentText,
+                                                username ?: ""
+                                            )
+
+                                            isFirstTime = false
+                                            itemNumberComment += 1
+
                                             selectedPost.add(
                                                 CommentsPost(
                                                     idCandidate = userConnectedId,
@@ -396,7 +474,7 @@ fun PostScreen(
                                     Icon(
                                         Icons.Default.Send,
                                         contentDescription = "Send comment",
-                                        tint = MaterialTheme.colorScheme.primary
+                                        tint = colorResource(id = R.color.whatsapp)
                                     )
                                 }
                             }
@@ -432,118 +510,6 @@ fun PostScreen(
                 elevation = 10.dp,
                 shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
             ) {
-                /*Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .background(Color.White),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp)
-                            .padding(top = 20.dp)
-                    ) {
-
-                        androidx.compose.material.Icon(
-                            imageVector = Icons.Filled.Close,
-                            modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    openAnnounceForm = false
-                                    showAddButton = true
-                                },
-                            contentDescription = ""
-                        )
-
-                        Text(
-                            text = stringResource(id = R.string.posts_text),
-                            modifier = Modifier.align(Alignment.Center),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 22.sp
-                        )
-                    }
-
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        var postName by remember { mutableStateOf(announcementModel.title) }
-
-                        FormTextField(
-                            value = postName,
-                            borderColor = if (activatedCheck && postName.isEmpty()) Color.Red else colorResource(
-                                id = R.color.whatsapp
-                            ),
-                            onValueChange = {
-                                postName = it
-                                if (activatedCheck) postName.isNotEmpty()
-                                postsViewModel.changePostName(it)
-                            },
-                            label = stringResource(id = R.string.post_title_text),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                                .padding(top = 40.dp),
-                            isRequired = true
-                        )
-
-                        var descriptions by remember { mutableStateOf(announcementModel.description) }
-
-                        FormTextField(
-                            value = descriptions,
-                            borderColor = if (activatedCheck && descriptions.isEmpty()) Color.Red else colorResource(
-                                id = R.color.whatsapp
-                            ),
-                            onValueChange = {
-                                descriptions = it
-                                if (activatedCheck) descriptions.isNotEmpty()
-                                postsViewModel.changeDescriptions(it)
-                            },
-                            label = stringResource(id = R.string.post_description_text),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                                .padding(top = 40.dp),
-                            isRequired = true
-                        )
-
-                        Button(
-                            onClick = {
-                                val postTitleValidator = postName.isNotEmpty()
-                                val postDescriptionValidator = descriptions.isNotEmpty()
-                                if (!postTitleValidator || !postDescriptionValidator) {
-                                    activatedCheck = true
-                                }
-
-                                if (postTitleValidator && postDescriptionValidator) {
-                                    postsViewModel.saveCompanyAnnouncement()
-                                    openAnnounceForm = false
-                                    showAddButton = true
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                                .padding(top = 20.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(id = R.color.whatsapp)
-                            )
-                        ) {
-                            Text(
-                                stringResource(id = R.string.save_text),
-                                modifier = Modifier.padding(vertical = 5.dp)
-                            )
-                        }
-                    }
-
-                }*/
 
                 Column(modifier = Modifier.fillMaxSize()) {
 
@@ -553,10 +519,20 @@ fun PostScreen(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
-                        HorizontalDivider(
-                            thickness = 5.dp,
-                            modifier = Modifier.width(100.dp)
-                        )
+                        Column {
+                            HorizontalDivider(
+                                thickness = 5.dp,
+                                modifier = Modifier.width(100.dp)
+                            )
+
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            Text(
+                                text = stringResource(id = R.string.comments_text),
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -568,19 +544,13 @@ fun PostScreen(
                     ) {
 
                         itemsIndexed(
-                            items = selectedPost
+                            items = commentsCompany
                         ) { index, comment ->
                             CommentItem(comment)
                         }
                     }
                 }
             }
-
-
-            // Existing Comments
-            /*selectedPost.forEach { comment ->
-                CommentItem(comment)
-            }*/
         }
 
         AnimatedVisibility(
@@ -599,9 +569,8 @@ fun PostScreen(
             androidx.compose.material.Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.7f),
-                elevation = 5.dp,
-                shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
+                    .fillMaxHeight(),
+                elevation = 10.dp
             ) {
                 Column(
                     modifier = Modifier
@@ -626,6 +595,9 @@ fun PostScreen(
                                     interactionSource = interactionSource,
                                     indication = null
                                 ) {
+                                    GlobalEntries.isVisibleNav.update {
+                                        true
+                                    }
                                     openAnnounceForm = false
                                     showAddButton = true
                                 },
@@ -640,11 +612,49 @@ fun PostScreen(
                         )
                     }
 
+                    Spacer(modifier = Modifier.height(30.dp))
+
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        var postName by remember { mutableStateOf(announcementModel.title) }
+
+                        // Filter Row
+                        val allPostsText = stringResource(id = R.string.all_posts_text)
+                        val internshipText = stringResource(id = R.string.internship_text)
+                        val eventText = stringResource(id = R.string.type_event_text)
+                        val formationText = stringResource(id = R.string.type_formation_text)
+
+                        FilterChip(
+                            onClick = { showFilterSheet = true },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(70.dp)
+                                .padding(top = 20.dp)
+                                .padding(horizontal = 20.dp),
+                            label = {
+                                Text(
+                                    text = when (selectedFilter) {
+                                        PostType.ALL -> allPostsText
+                                        PostType.INTERNSHIP -> internshipText
+                                        PostType.EVENT -> eventText
+                                        PostType.WORKSHOP -> formationText
+                                    }
+                                )
+                            },
+                            selected = false,
+                            trailingIcon = {
+                                androidx.compose.material.Icon(
+                                    Icons.Default.KeyboardArrowDown,
+                                    contentDescription = "Filter",
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = WhatsAppLightGreen,
+                                selectedLabelColor = WhatsAppDarkGreen
+                            )
+                        )
 
                         FormTextField(
                             value = postName,
@@ -663,8 +673,6 @@ fun PostScreen(
                                 .padding(top = 40.dp),
                             isRequired = true
                         )
-
-                        var descriptions by remember { mutableStateOf(announcementModel.description) }
 
                         FormTextField(
                             value = descriptions,
@@ -696,12 +704,15 @@ fun PostScreen(
                                     postsViewModel.saveCompanyAnnouncement()
                                     openAnnounceForm = false
                                     showAddButton = true
+                                    GlobalEntries.isVisibleNav.update {
+                                        true
+                                    }
                                 }
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 20.dp)
-                                .padding(top = 20.dp),
+                                .padding(top = 40.dp),
                             shape = RoundedCornerShape(8.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = colorResource(id = R.color.whatsapp)
@@ -718,6 +729,84 @@ fun PostScreen(
             }
 
         }
+    }
+
+    // Filter Bottom Sheet
+    if (showFilterSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showFilterSheet = false }
+        ) {
+            FilterPostBottomSheet(
+                selectedFilter = selectedFilter,
+                onFilterSelected = { filter ->
+                    selectedFilter = filter
+                    postType = filter.name
+                    postsViewModel.changePostType(postType)
+                    showFilterSheet = false
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun FilterPostBottomSheet(
+    selectedFilter: PostType,
+    onFilterSelected: (PostType) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = stringResource(id = R.string.type_change_text),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        val allPostsText = stringResource(id = R.string.all_posts_text)
+        val internshipText = stringResource(id = R.string.internship_text)
+        val eventText = stringResource(id = R.string.type_event_text)
+        val formationText = stringResource(id = R.string.type_formation_text)
+        PostType.values().forEach { filter ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        onFilterSelected(filter)
+                    }
+                    .padding(vertical = 7.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = selectedFilter == filter,
+                    onClick = {
+                        onFilterSelected(filter)
+                    },
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = colorResource(id = R.color.whatsapp),
+                        unselectedColor = colorResource(id = R.color.whatsapp)
+                    )
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = when (filter) {
+                        PostType.ALL -> allPostsText
+                        PostType.INTERNSHIP -> internshipText
+                        PostType.EVENT -> eventText
+                        PostType.WORKSHOP -> formationText
+                    },
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 

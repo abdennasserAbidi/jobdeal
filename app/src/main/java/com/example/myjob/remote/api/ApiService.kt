@@ -310,6 +310,55 @@ ApiService {
         @Query("idConnected") idConnected: Int
     ): UserResponse
 
+    @GET("auth/checkUserLike")
+    suspend fun checkUserLike(
+        @Query("idAnnounce") idAnnounce: Int,
+        @Query("idConnected") idConnected: Int
+    ): Boolean
+
+    ///////////////////////////////////////////////////////////////////////////
+    // CANDIDATE
+    ///////////////////////////////////////////////////////////////////////////
+    @GET("auth/checkUserLikeAllPost")
+    suspend fun checkUserLikeAllPost(
+        @Query("idConnected") idConnected: Int
+    ): List<Boolean>
+
+    @GET("auth/getNumberLikeAllPosts")
+    suspend fun getNumberLikeAllPosts(
+        @Query("idConnected") idConnected: Int
+    ): List<Int>
+
+    @GET("auth/getNumberCommentAllPosts")
+    suspend fun getNumberCommentAllPosts(
+        @Query("idConnected") idConnected: Int
+    ): List<Int>
+
+    ///////////////////////////////////////////////////////////////////////////
+    // COMPANY
+    ///////////////////////////////////////////////////////////////////////////
+    @GET("auth/checkUserLikeAllPostCompany")
+    suspend fun checkUserLikeAllPostCompany(
+        @Query("idConnected") idConnected: Int
+    ): List<Boolean>
+
+    @GET("auth/getNumberLikeAllPostsCompany")
+    suspend fun getNumberLikeAllPostsCompany(
+        @Query("idConnected") idConnected: Int
+    ): List<Int>
+
+    @GET("auth/getNumberCommentAllPostsCompany")
+    suspend fun getNumberCommentAllPostsCompany(
+        @Query("idConnected") idConnected: Int
+    ): List<Int>
+
+    @GET("auth/getCommentAllPostsCompany")
+    suspend fun getCommentAllPostsCompany(
+        @Query("idAnnounce") idAnnounce: Int,
+        @Query("idConnected") idConnected: Int
+    ): List<CommentsPost>
+
+
     @POST("auth/addLikes")
     suspend fun addLikes(
         @Query("idAnnounce") idAnnounce: Int,

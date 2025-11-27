@@ -5,6 +5,7 @@ import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.announcement.CommentsPost
 import com.example.myjob.domain.entities.announcement.LikesPost
 import com.example.myjob.domain.response.UserResponse
+import retrofit2.http.Query
 
 interface AnnouncementDataSource {
     suspend fun makeAnnouncement(
@@ -16,6 +17,31 @@ interface AnnouncementDataSource {
         idAnnounce: Int,
         idConnected: Int
     ): UserResponse
+
+    suspend fun checkUserLike(
+        idAnnounce: Int,
+        idConnected: Int
+    ): Boolean
+
+    ///////////////////////////////////////////////////////////////////////////
+    // CANDIDATE
+    ///////////////////////////////////////////////////////////////////////////
+    suspend fun checkUserLikeAllPost(idConnected: Int): List<Boolean>
+
+    suspend fun getNumberLikeAllPosts(idConnected: Int): List<Int>
+
+    suspend fun getNumberCommentAllPosts(idConnected: Int): List<Int>
+
+    ///////////////////////////////////////////////////////////////////////////
+    // COMPANY
+    ///////////////////////////////////////////////////////////////////////////
+    suspend fun checkUserLikeAllPostCompany(idConnected: Int): List<Boolean>
+    suspend fun getNumberLikeAllPostsCompany(idConnected: Int): List<Int>
+    suspend fun getNumberCommentAllPostsCompany(idConnected: Int): List<Int>
+    suspend fun getCommentAllPostsCompany(
+        idAnnounce: Int,
+        idConnected: Int
+    ): List<CommentsPost>
 
     suspend fun addLikes(
         idAnnounce: Int,

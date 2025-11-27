@@ -19,6 +19,25 @@ interface AnnouncementRepository {
         idConnected: Int
     ): Flow<Resource<UserResponse>>
 
+    suspend fun checkUserLike(
+        idAnnounce: Int,
+        idConnected: Int
+    ): Flow<Resource<Boolean>>
+
+    suspend fun checkUserLikeAllPost(idConnected: Int): Flow<Resource<List<Boolean>>>
+
+    suspend fun getNumberLikeAllPosts(idConnected: Int): Flow<Resource<List<Int>>>
+
+    suspend fun getNumberCommentAllPosts(idConnected: Int): Flow<Resource<List<Int>>>
+
+    ///////////////////////////////////////////////////////////////////////////
+    // COMPANY
+    ///////////////////////////////////////////////////////////////////////////
+    suspend fun checkUserLikeAllPostCompany(idConnected: Int): Flow<Resource<List<Boolean>>>
+    suspend fun getNumberLikeAllPostsCompany(idConnected: Int): Flow<Resource<List<Int>>>
+    suspend fun getNumberCommentAllPostsCompany(idConnected: Int): Flow<Resource<List<Int>>>
+    suspend fun getCommentAllPostsCompany(idAnnounce: Int, idConnected: Int): Flow<Resource<List<CommentsPost>>>
+
     suspend fun addLikes(
         idAnnounce: Int,
         likesPost: LikesPost
