@@ -40,19 +40,27 @@ class SubscriptionRepositoryImp @Inject constructor(
     }
 
     override suspend fun authenticate(user: User): Flow<Resource<LoginResponse>> = flow {
-
-        when (val apiResult: ApiResult<LoginResponse> = remoteDataSource.authenticate(user)) {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.authenticate(user)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+        
+        /*when (val apiResult: ApiResult<LoginResponse> = remoteDataSource.authenticate(user)) {
             is ApiResult.Success -> {
                 val data = apiResult.data
                 emit(Resource(ResourceState.SUCCESS, data, null))
             }
 
             is ApiResult.Error -> {
-                // Handle the error
                 val errorMessage = apiResult.message
                 emit(Resource(ResourceState.ERROR, null, errorMessage))
             }
-        }
+        }*/
     }
 
     override suspend fun verifyEmail(email: String): Flow<Resource<LoginResponse>> = flow {

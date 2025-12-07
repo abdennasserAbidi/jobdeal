@@ -11,6 +11,8 @@ import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
+import com.example.myjob.domain.response.FilesResponse
+import com.example.myjob.domain.response.UploadResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.local.database.SharedPreference
 import com.example.myjob.remote.source.home.HomeDataSource
@@ -183,6 +185,28 @@ class HomeRepositoryImp @Inject constructor(
             val data = remoteDataSource.uploadFile(file)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data.message, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+    override suspend fun uploadFiles(file: MultipartBody.Part): Flow<Resource<String>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.uploadFiles(file)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data.imageURL, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+    override suspend fun getFiles(id: Int): Flow<Resource<List<String>>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.getFiles(id)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data.url, null))
         } catch (ex: Exception) {
             // Emit error
             emit(Resource(ResourceState.ERROR, null, ex.message))

@@ -90,6 +90,7 @@ import com.example.myjob.feature.invitation.detail.DetailInvitationScreen
 import com.example.myjob.feature.login.LoginScreen
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.messagerie.DiscussionScreen
+import com.example.myjob.feature.messagerie.ListMessageScreen
 import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.notification.NotificationScreen
 import com.example.myjob.feature.onboarding.OnBoardingScreen
@@ -523,6 +524,15 @@ class MainActivity : ComponentActivity() {
                         })
                     }
 
+                    composable(
+                        route = Screen.ListMessagesScreen.route,
+                    ) {
+                        isVisibleNav = false
+                        ListMessageScreen(navController, hideNavigation = {
+                            isVisibleNav = false
+                        })
+                    }
+
                     composable(route = Screen.NotificationCompanyScreen.route) {
                         isVisibleNav = true
                         NotificationScreen(navController)
@@ -647,10 +657,8 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(route = Screen.PostScreen.route) {
-                        //isVisibleNav = true
                         CoroutineScope(Dispatchers.Main).launch {
                             GlobalEntries.isVisibleNav.collect {
-                                Log.i("kjhrrtbffqfs", "onCreate: $it")
                                 isVisibleNav = it
                             }
                         }

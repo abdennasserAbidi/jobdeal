@@ -1,11 +1,14 @@
 package com.example.myjob.feature.messagerie
 
+import android.view.View
+
 // ChatModels.kt
 data class ChatMessage(
-    val id: String? = null,
-    val conversationId: String = "",
-    val senderId: String = "",
-    val senderName: String = "",
+    val id: Int = View.generateViewId(),
+    val userReceivedId: Int = 0,
+    val userReceivedName: String = "",
+    val userConnectedId: Int = 0,
+    val userConnectedName: String = "",
     val content: String = "",
     val timestamp: String = "",
     val type: MessageType = MessageType.CHAT

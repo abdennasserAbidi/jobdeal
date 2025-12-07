@@ -1,5 +1,6 @@
 package com.example.myjob.feature.posts
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -97,6 +99,8 @@ fun CandidatePostScreen(
     var numberLikesUser by remember(numberLikes) { mutableStateOf(numberLikes) }
     var itemNumberLike by remember { mutableStateOf(0) }
 
+    var idAnnounceComment by remember { mutableStateOf(0) }
+
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
@@ -112,7 +116,7 @@ fun CandidatePostScreen(
             interactionSource = interactionSource,
             indication = null
         ) {
-            showComments = !showComments
+            showComments = false
         }) {
         Column(
             modifier = Modifier
@@ -170,7 +174,7 @@ fun CandidatePostScreen(
 
                 items(announcementModel.itemCount) { index ->
                     val item = announcementModel[index] ?: AnnouncementModel()
-
+                    idAnnounceComment = item.idAnnounce
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
@@ -233,106 +237,111 @@ fun CandidatePostScreen(
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            Row(
+                            Box(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                contentAlignment = Alignment.CenterEnd
                             ) {
-                                postsViewModel.isNotLikedCandidate(
-                                    item.likes ?: mutableListOf()
-                                )
-
-                                if (isFirstTime) {
-                                    isItemLiked = if (isAllPostLikedUser.isNotEmpty()) isAllPostLikedUser[index] else false
-                                    itemNumberLike = if (numberLikesUser.isNotEmpty()) numberLikesUser[index] else 0
-                                }
                                 Row(
-                                    modifier = Modifier
-                                        .clickable(
-                                            interactionSource = interactionSource,
-                                            indication = null
-                                        ) {
-                                            isFirstTime = false
-                                            if (isItemLiked) {
-                                                postsViewModel.disLikePost(item.idAnnounce)
-                                                if (itemNumberLike > 0) itemNumberLike -= 1
-                                                isItemLiked = false
-                                            } else {
-                                                postsViewModel.likePost(item.idAnnounce)
-                                                itemNumberLike += 1
-                                                isItemLiked = true
+                                    modifier = Modifier.wrapContentWidth()
+                                ) {
+                                    postsViewModel.isNotLikedCandidate(
+                                        item.likes ?: mutableListOf()
+                                    )
+
+                                    if (isFirstTime) {
+                                        isItemLiked =
+                                            if (isAllPostLikedUser.isNotEmpty()) isAllPostLikedUser[index] else false
+                                        itemNumberLike =
+                                            if (numberLikesUser.isNotEmpty()) numberLikesUser[index] else 0
+                                    }
+                                    Row(
+                                        modifier = Modifier
+                                            .clickable(
+                                                interactionSource = interactionSource,
+                                                indication = null
+                                            ) {
+                                                isFirstTime = false
+                                                if (isItemLiked) {
+                                                    postsViewModel.disLikePost(item.idAnnounce)
+                                                    if (itemNumberLike > 0) itemNumberLike -= 1
+                                                    isItemLiked = false
+                                                } else {
+                                                    postsViewModel.likePost(item.idAnnounce)
+                                                    itemNumberLike += 1
+                                                    isItemLiked = true
+                                                }
                                             }
-                                        }
-                                        .padding(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = if (isItemLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                        contentDescription = "Like",
-                                        tint = if (isItemLiked) Color.Red else Color.Gray,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "$itemNumberLike",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color.Gray
-                                    )
-                                }
+                                            .padding(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = if (isItemLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                            contentDescription = "Like",
+                                            tint = if (isItemLiked) Color.Red else Color.Gray,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "$itemNumberLike",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Color.Gray
+                                        )
+                                    }
 
-                                // Comment Button
-                                Row(
-                                    modifier = Modifier
-                                        .clickable(
-                                            interactionSource = interactionSource,
-                                            indication = null
-                                        ) {
-                                            selectedPost = item.comments ?: mutableListOf()
-                                            if (selectedPost.size > 0)
-                                                showComments = !showComments
-                                        }
-                                        .padding(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.ChatBubbleOutline,
-                                        contentDescription = "Comment",
-                                        tint = Color.Gray,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "${item.comments?.size}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color.Gray
-                                    )
-                                }
+                                    // Comment Button
+                                    Row(
+                                        modifier = Modifier
+                                            .clickable(
+                                                interactionSource = interactionSource,
+                                                indication = null
+                                            ) {
+                                                selectedPost = item.comments ?: mutableListOf()
+                                                if (selectedPost.size > 0)
+                                                    showComments = !showComments
+                                            }
+                                            .padding(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.ChatBubbleOutline,
+                                            contentDescription = "Comment",
+                                            tint = Color.Gray,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "${item.comments?.size}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Color.Gray
+                                        )
+                                    }
 
-                                // Share Button
-                                Row(
-                                    modifier = Modifier
-                                        .clickable { /* Share action */ }
-                                        .padding(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Share,
-                                        contentDescription = "Share",
-                                        tint = Color.Gray,
-                                        modifier = Modifier.size(20.dp)
-                                    )
+                                    // Share Button
+                                    Row(
+                                        modifier = Modifier
+                                            .clickable { /* Share action */ }
+                                            .padding(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Share,
+                                            contentDescription = "Share",
+                                            tint = Color.Gray,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
                                 }
                             }
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            HorizontalDivider(
+                            /*HorizontalDivider(
                                 modifier = Modifier.fillMaxWidth(),
                                 thickness = 1.dp
                             )
 
                             var commentText by remember { mutableStateOf("") }
 
-                            // Add Comment Input
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -375,7 +384,7 @@ fun CandidatePostScreen(
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
-                            }
+                            }*/
 
                         }
                     }
@@ -439,155 +448,94 @@ fun CandidatePostScreen(
                 elevation = 10.dp,
                 shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
             ) {
-                /*Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .background(Color.White),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Column(modifier = Modifier.fillMaxSize()) {
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp)
-                            .padding(top = 20.dp)
-                    ) {
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                        androidx.compose.material.Icon(
-                            imageVector = Icons.Filled.Close,
-                            modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    openAnnounceForm = false
-                                    showAddButton = true
-                                },
-                            contentDescription = ""
-                        )
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            HorizontalDivider(
+                                thickness = 5.dp,
+                                modifier = Modifier.width(100.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
 
                         Text(
-                            text = stringResource(id = R.string.posts_text),
-                            modifier = Modifier.align(Alignment.Center),
+                            text = stringResource(id = R.string.comments_text),
+                            modifier = Modifier.padding(horizontal = 20.dp),
+                            fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 22.sp
-                        )
-                    }
-
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        var postName by remember { mutableStateOf(announcementModel.title) }
-
-                        FormTextField(
-                            value = postName,
-                            borderColor = if (activatedCheck && postName.isEmpty()) Color.Red else colorResource(
-                                id = R.color.whatsapp
-                            ),
-                            onValueChange = {
-                                postName = it
-                                if (activatedCheck) postName.isNotEmpty()
-                                postsViewModel.changePostName(it)
-                            },
-                            label = stringResource(id = R.string.post_title_text),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                                .padding(top = 40.dp),
-                            isRequired = true
                         )
 
-                        var descriptions by remember { mutableStateOf(announcementModel.description) }
+                        Spacer(modifier = Modifier.height(20.dp))
 
-                        FormTextField(
-                            value = descriptions,
-                            borderColor = if (activatedCheck && descriptions.isEmpty()) Color.Red else colorResource(
-                                id = R.color.whatsapp
-                            ),
-                            onValueChange = {
-                                descriptions = it
-                                if (activatedCheck) descriptions.isNotEmpty()
-                                postsViewModel.changeDescriptions(it)
-                            },
-                            label = stringResource(id = R.string.post_description_text),
+                        LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                                .padding(top = 40.dp),
-                            isRequired = true
-                        )
-
-                        Button(
-                            onClick = {
-                                val postTitleValidator = postName.isNotEmpty()
-                                val postDescriptionValidator = descriptions.isNotEmpty()
-                                if (!postTitleValidator || !postDescriptionValidator) {
-                                    activatedCheck = true
-                                }
-
-                                if (postTitleValidator && postDescriptionValidator) {
-                                    postsViewModel.saveCompanyAnnouncement()
-                                    openAnnounceForm = false
-                                    showAddButton = true
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                                .padding(top = 20.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(id = R.color.whatsapp)
-                            )
+                                .background(Color.White)
                         ) {
-                            Text(
-                                stringResource(id = R.string.save_text),
-                                modifier = Modifier.padding(vertical = 5.dp)
-                            )
+
+                            itemsIndexed(
+                                items = selectedPost
+                            ) { index, comment ->
+                                CommentItem(comment)
+                            }
                         }
                     }
 
-                }*/
+                    var commentText by remember { mutableStateOf("") }
 
-                Column(modifier = Modifier.fillMaxSize()) {
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        HorizontalDivider(
-                            thickness = 5.dp,
-                            modifier = Modifier.width(100.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    LazyColumn(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color.White)
+                            .align(Alignment.BottomCenter)
+                            .padding(vertical = 12.dp, horizontal = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        OutlinedTextField(
+                            value = commentText,
+                            onValueChange = { commentText = it },
+                            modifier = Modifier.weight(1f),
+                            placeholder = { Text(stringResource(id = R.string.add_comment_hint_text)) },
+                            shape = RoundedCornerShape(24.dp),
+                            textStyle = MaterialTheme.typography.bodyMedium
+                        )
 
-                        itemsIndexed(
-                            items = selectedPost
-                        ) { index, comment ->
-                            CommentItem(comment)
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        IconButton(
+                            onClick = {
+                                if (commentText.isNotBlank()) {
+
+                                    val username =
+                                        if (GlobalEntries.user.role == "Candidate" || GlobalEntries.user.role == "Candidat")
+                                            GlobalEntries.user.fullName else GlobalEntries.user.companyName
+
+                                    postsViewModel.addComment(idAnnounceComment, commentText, username ?: "")
+                                    selectedPost.add(
+                                        CommentsPost(
+                                            idCandidate = userConnectedId,
+                                            userName = username
+                                        )
+                                    )
+                                    commentText = ""
+                                }
+                            }
+                        ) {
+                            Icon(
+                                Icons.Default.Send,
+                                contentDescription = "Send comment",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 }
             }
-
-
-            // Existing Comments
-            /*selectedPost.forEach { comment ->
-                CommentItem(comment)
-            }*/
         }
     }
 }

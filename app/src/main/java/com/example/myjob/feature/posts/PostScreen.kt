@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -78,11 +79,9 @@ import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.rememberLifecycleEvent
-import com.example.myjob.domain.entities.FilterType
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.announcement.CommentsPost
 import com.example.myjob.domain.entities.announcement.PostType
-import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.feature.profile.test.FormTextField
 import com.example.myjob.ui.theme.WhatsAppDarkGreen
 import com.example.myjob.ui.theme.WhatsAppLightGreen
@@ -144,8 +143,6 @@ fun PostScreen(
     val commentsCompany by postsViewModel.commentsCompany.collectAsState()
     /*var numberCommentUser by remember(numberCommentCompany) { mutableStateOf(numberCommentCompany) }
     var itemNumberComment by remember { mutableStateOf(0) }*/
-
-    Log.i("numberCommentCompany", "PostScreen: $itemNumberComment")
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
@@ -317,112 +314,115 @@ fun PostScreen(
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                postsViewModel.isNotLikedCandidate(
-                                    item.likes ?: mutableListOf()
-                                )
-
-                                if (isFirstTime) {
-                                    isItemLiked = if (isAllPostLikedUser.isNotEmpty()) isAllPostLikedUser[index] else false
-                                    itemNumberLike = if (numberLikesUser.isNotEmpty()) numberLikesUser[index] else 0
-                                }
+                            Box(modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.CenterEnd) {
 
                                 Row(
-                                    modifier = Modifier
-                                        .clickable(
-                                            interactionSource = interactionSource,
-                                            indication = null
-                                        ) {
-                                            isFirstTime = false
-                                            if (isItemLiked) {
-                                                postsViewModel.disLikePost(item.idAnnounce)
-                                                if (itemNumberLike > 0) itemNumberLike -= 1
-                                                isItemLiked = false
-                                            } else {
-                                                postsViewModel.likePost(item.idAnnounce)
-                                                itemNumberLike += 1
-                                                isItemLiked = true
+                                    modifier = Modifier.wrapContentWidth()
+                                ) {
+                                    postsViewModel.isNotLikedCandidate(
+                                        item.likes ?: mutableListOf()
+                                    )
+
+                                    if (isFirstTime) {
+                                        isItemLiked = if (isAllPostLikedUser.isNotEmpty()) isAllPostLikedUser[index] else false
+                                        itemNumberLike = if (numberLikesUser.isNotEmpty()) numberLikesUser[index] else 0
+                                    }
+
+                                    Row(
+                                        modifier = Modifier
+                                            .clickable(
+                                                interactionSource = interactionSource,
+                                                indication = null
+                                            ) {
+                                                isFirstTime = false
+                                                if (isItemLiked) {
+                                                    postsViewModel.disLikePost(item.idAnnounce)
+                                                    if (itemNumberLike > 0) itemNumberLike -= 1
+                                                    isItemLiked = false
+                                                } else {
+                                                    postsViewModel.likePost(item.idAnnounce)
+                                                    itemNumberLike += 1
+                                                    isItemLiked = true
+                                                }
                                             }
-                                        }
-                                        .padding(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = if (isItemLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                        contentDescription = "Like",
-                                        tint = if (isItemLiked) Color.Red else Color.Gray,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "$itemNumberLike",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color.Gray
-                                    )
+                                            .padding(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = if (isItemLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                            contentDescription = "Like",
+                                            tint = if (isItemLiked) Color.Red else Color.Gray,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "$itemNumberLike",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Color.Gray
+                                        )
+                                    }
+
+                                    if (isFirstTime) {
+                                        itemNumberComment = if (numberCommentUser.isNotEmpty()) numberCommentUser[index] else 0
+                                    }
+
+                                    // Comment Button
+                                    Row(
+                                        modifier = Modifier
+                                            .clickable(
+                                                interactionSource = interactionSource,
+                                                indication = null
+                                            ) {
+                                                postsViewModel.getPostCommentsCompany(item.idAnnounce)
+                                                selectedPost = item.comments ?: mutableListOf()
+                                                if (itemNumberComment > 0)
+                                                    showComments = !showComments
+                                            }
+                                            .padding(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.ChatBubbleOutline,
+                                            contentDescription = "Comment",
+                                            tint = Color.Gray,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "$itemNumberComment",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Color.Gray
+                                        )
+                                    }
+
+                                    // Share Button
+                                    Row(
+                                        modifier = Modifier
+                                            .clickable { /* Share action */ }
+                                            .padding(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Share,
+                                            contentDescription = "Share",
+                                            tint = Color.Gray,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
                                 }
 
-                                if (isFirstTime) {
-                                    itemNumberComment = if (numberCommentUser.isNotEmpty()) numberCommentUser[index] else 0
-                                }
-
-                                // Comment Button
-                                Row(
-                                    modifier = Modifier
-                                        .clickable(
-                                            interactionSource = interactionSource,
-                                            indication = null
-                                        ) {
-                                            postsViewModel.getPostCommentsCompany(item.idAnnounce)
-                                            selectedPost = item.comments ?: mutableListOf()
-                                            if (itemNumberComment > 0)
-                                                showComments = !showComments
-                                        }
-                                        .padding(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.ChatBubbleOutline,
-                                        contentDescription = "Comment",
-                                        tint = Color.Gray,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "$itemNumberComment",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color.Gray
-                                    )
-                                }
-
-                                // Share Button
-                                Row(
-                                    modifier = Modifier
-                                        .clickable { /* Share action */ }
-                                        .padding(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Share,
-                                        contentDescription = "Share",
-                                        tint = Color.Gray,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
                             }
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            HorizontalDivider(
+                            /*HorizontalDivider(
                                 modifier = Modifier.fillMaxWidth(),
                                 thickness = 1.dp
                             )
 
                             var commentText by remember { mutableStateOf("") }
 
-                            // Add Comment Input
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -477,7 +477,7 @@ fun PostScreen(
                                         tint = colorResource(id = R.color.whatsapp)
                                     )
                                 }
-                            }
+                            }*/
 
                         }
                     }

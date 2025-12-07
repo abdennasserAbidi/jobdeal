@@ -71,7 +71,7 @@ fun HomeCandidate(
 
     val interactionSource = remember { MutableInteractionSource() }
 
-    scheduleFileDownload(LocalContext.current, homeViewModel.getPDFName())
+    //scheduleFileDownload(LocalContext.current, homeViewModel.getPDFName())
 
     HomeCandidatePreview(navController, clearData = {
         clearData()

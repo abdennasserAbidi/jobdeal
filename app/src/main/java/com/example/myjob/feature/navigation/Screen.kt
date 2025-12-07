@@ -17,6 +17,7 @@ sealed class Screen(val route:String) {
     object InvitationBoostScreen : Screen("invitation_boost_screen")
     object SendInvitationScreen : Screen("send_invitation_screen")
     object SendMessageScreen : Screen("send_message_screen")
+    object ListMessagesScreen : Screen("list_messages_screen")
     object InvitationCompanyScreen : Screen("company_invitation_screen")
     object NotificationCompanyScreen : Screen("company_notification_screen")
     object CareerScreen : Screen("career_screen")

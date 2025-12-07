@@ -9,7 +9,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,9 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,9 +30,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -55,14 +51,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.feature.profile.test.FormTextField
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,6 +77,7 @@ fun ValidateProfileCompany(
 
     var numSecuritySocial by remember { mutableStateOf("") }
     var docs by remember { mutableStateOf(mutableListOf("")) }
+    var documentList by remember { mutableStateOf(mutableListOf(Documents())) }
 
     var activatedCheck by remember { mutableStateOf(false) }
 
@@ -96,6 +91,29 @@ fun ValidateProfileCompany(
     var docsVerify by remember { mutableStateOf(mutableListOf(false)) }
 
     val imageUri = rememberSaveable { mutableStateOf<Uri?>(null) }
+
+    val filesList by validateProfileViewModel.filesList.collectAsState()
+
+    val lifecycleEvent = rememberLifecycleEvent()
+    LaunchedEffect(lifecycleEvent) {
+        if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+            validateProfileViewModel.getFiles()
+        }
+    }
+
+    LaunchedEffect(filesList) {
+        if (filesList.isNotEmpty()) {
+            documentList.clear()
+            filesList.map {
+                val document = Documents(
+                    name = validateProfileViewModel.getNameDocFromLink(it),
+                    url = it,
+                    type = validateProfileViewModel.getTypeDocFromLink(it)
+                )
+                documentList = (documentList + document).toMutableList()
+            }
+        }
+    }
 
     val pickMediaLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -111,6 +129,15 @@ fun ValidateProfileCompany(
             val list = docs
             list[indexSelected] = fileName
             docs = list
+
+            documentList = (documentList - documentList[indexSelected]).toMutableList()
+            val document = Documents(
+                url = uri.path ?: "",
+                name = fileName,
+                type = validateProfileViewModel.getTypeDoc(fileName)
+            )
+            documentList.add(indexSelected, document)
+
         } else {
             // Handle the case where no media was selected
         }
@@ -161,7 +188,6 @@ fun ValidateProfileCompany(
             }
         }
 
-        Log.i("jkfeahfjekafffeezzf", "ValidateProfileCompany: ${verificationSteps.status}")
         when(verificationSteps.status) {
             VerificationStatus.PENDING_REVIEW.name -> {
                 isRejected = false
@@ -243,7 +269,7 @@ fun ValidateProfileCompany(
                         isRequired = true
                     )
 
-                    docs.mapIndexed { index, doc ->
+                    documentList.mapIndexed { index, doc ->
                         if (index > 0) {
                             Row(
                                 modifier = Modifier
@@ -253,8 +279,8 @@ fun ValidateProfileCompany(
                             ) {
 
                                 FormTextField(
-                                    value = doc,
-                                    borderColor = if (activatedCheck && doc.isEmpty()) Color.Red else colorResource(
+                                    value = doc.name,
+                                    borderColor = if (activatedCheck && doc.name.isEmpty()) Color.Red else colorResource(
                                         id = R.color.whatsapp
                                     ),
                                     onValueChange = {
@@ -283,6 +309,7 @@ fun ValidateProfileCompany(
                                         ) {
                                             if (docs.size > 1) {
                                                 docs = (docs - docs[index]).toMutableList()
+                                                documentList = (documentList - documentList[index]).toMutableList()
                                                 docsVerify =
                                                     (docsVerify - docsVerify[index]).toMutableList()
                                             }
@@ -292,8 +319,8 @@ fun ValidateProfileCompany(
                             }
                         } else {
                             FormTextField(
-                                value = doc,
-                                borderColor = if (activatedCheck && doc.isEmpty()) Color.Red else colorResource(
+                                value = doc.name,
+                                borderColor = if (activatedCheck && doc.name.isEmpty()) Color.Red else colorResource(
                                     id = R.color.whatsapp
                                 ),
                                 onValueChange = {},
@@ -322,6 +349,8 @@ fun ValidateProfileCompany(
                                     indication = null
                                 ) {
                                     docs = (docs + "").toMutableList()
+                                    val document = Documents()
+                                    documentList = (documentList + document).toMutableList()
                                     docsVerify = (docsVerify + false).toMutableList()
                                 },
                             color = colorResource(id = R.color.whatsapp),
@@ -351,7 +380,7 @@ fun ValidateProfileCompany(
                                 validationProfileStatus.status = VerificationStatus.PENDING_REVIEW.name
 
                                 GlobalEntries.listCompanyImageUri.mapIndexed { index, uri ->
-                                    uri?.let { validateProfileViewModel.uploadDoc(context, it, index) }
+                                    uri?.let { validateProfileViewModel.uploadDoc(context = context, it, index, documentList[index]) }
                                 }
                                 validateProfileViewModel.validate(validationProfileStatus)
                                 navController.popBackStack()
@@ -422,7 +451,7 @@ fun ValidateProfileCompany(
                         isRequired = true
                     )
 
-                    docs.mapIndexed { index, doc ->
+                    documentList.mapIndexed { index, doc ->
                         if (index > 0) {
                             Row(
                                 modifier = Modifier
@@ -432,8 +461,8 @@ fun ValidateProfileCompany(
                             ) {
 
                                 FormTextField(
-                                    value = doc,
-                                    borderColor = if (activatedCheck && doc.isEmpty()) Color.Red else colorResource(
+                                    value = doc.name,
+                                    borderColor = if (activatedCheck && doc.name.isEmpty()) Color.Red else colorResource(
                                         id = R.color.whatsapp
                                     ),
                                     onValueChange = {
@@ -462,6 +491,7 @@ fun ValidateProfileCompany(
                                         ) {
                                             if (docs.size > 1) {
                                                 docs = (docs - docs[index]).toMutableList()
+                                                documentList = (documentList - documentList[index]).toMutableList()
                                                 docsVerify =
                                                     (docsVerify - docsVerify[index]).toMutableList()
                                             }
@@ -471,8 +501,8 @@ fun ValidateProfileCompany(
                             }
                         } else {
                             FormTextField(
-                                value = doc,
-                                borderColor = if (activatedCheck && doc.isEmpty()) Color.Red else colorResource(
+                                value = doc.name,
+                                borderColor = if (activatedCheck && doc.name.isEmpty()) Color.Red else colorResource(
                                     id = R.color.whatsapp
                                 ),
                                 onValueChange = {},
@@ -501,6 +531,8 @@ fun ValidateProfileCompany(
                                     indication = null
                                 ) {
                                     docs = (docs + "").toMutableList()
+                                    val document = Documents()
+                                    documentList = (documentList + document).toMutableList()
                                     docsVerify = (docsVerify + false).toMutableList()
                                 },
                             color = colorResource(id = R.color.whatsapp),
@@ -530,7 +562,7 @@ fun ValidateProfileCompany(
                                 validationProfileStatus.status = VerificationStatus.PENDING_REVIEW.name
 
                                 GlobalEntries.listCompanyImageUri.mapIndexed { index, uri ->
-                                    uri?.let { validateProfileViewModel.uploadDoc(context, it, index) }
+                                    uri?.let { validateProfileViewModel.uploadDoc(context = context, it, index, documentList[index]) }
                                 }
                                 validateProfileViewModel.validate(validationProfileStatus)
                                 navController.popBackStack()

@@ -4,6 +4,8 @@ import com.example.myjob.base.GenericResponse
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
+import com.example.myjob.domain.response.FilesResponse
+import com.example.myjob.domain.response.UploadResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.remote.api.ApiService
 import okhttp3.MultipartBody
@@ -30,6 +32,9 @@ class HomeDataSourceImp @Inject constructor(
     override suspend fun getUser(id: Int): User = apiService.getUser(id)
     override suspend fun uploadFile(file: MultipartBody.Part): UserResponse =
         apiService.uploadFile(file)
+    override suspend fun uploadFiles(file: MultipartBody.Part): UploadResponse =
+        apiService.upload(file)
+    override suspend fun getFiles(id: Int): FilesResponse = apiService.getFiles(id)
 
     override suspend fun validateProfile(email: String): UserResponse =
         apiService.validateProfile(email)

@@ -17,12 +17,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.myjob.R
 import com.example.myjob.base.ConnectionState
+import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.rememberLifecycleEvent
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -33,19 +38,21 @@ fun DiscussionScreen(
     conversationId: String = "",
     conversationName: String = "Chat",
     viewModel: DiscussionViewModel = hiltViewModel(),
-    hideNavigation: () -> Unit = {},
-    onBackClick: () -> Unit = {}
+    hideNavigation: () -> Unit = {}
 ) {
     val messages by viewModel.messages.collectAsState()
     val typingUsers by viewModel.typingUsers.collectAsState()
     val connectionState by viewModel.connectionState.collectAsState()
 
+    //SEND MESSAGE TO GlobalEntries.candidateUser
+
     var messageText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
-    LaunchedEffect(conversationId) {
-        viewModel.connectSocket()
-        viewModel.selectConversation(conversationId)
+    val lifecycleEvent = rememberLifecycleEvent()
+    LaunchedEffect(lifecycleEvent) {
+        if (lifecycleEvent == Lifecycle.Event.ON_RESUME)
+            viewModel.connect()
     }
 
     LaunchedEffect(messages.size) {
@@ -75,7 +82,9 @@ fun DiscussionScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = {
+                        navController.popBackStack()
+                    }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             "Back",
@@ -84,7 +93,7 @@ fun DiscussionScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
+                    containerColor = colorResource(id = R.color.whatsapp),
                     titleContentColor = Color.White
                 )
             )
@@ -122,9 +131,11 @@ fun DiscussionScreen(
                 contentPadding = PaddingValues(16.dp)
             ) {
                 items(messages) { message ->
+                    val userId = GlobalEntries.candidateUser.id ?: -1
+
                     MessageBubble(
                         message = message,
-                        isOwnMessage = message.senderId == "user123"
+                        isOwnMessage = viewModel.isOwnMessage(message.senderId)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -162,7 +173,7 @@ fun DiscussionScreen(
                         }
                     },
                     modifier = Modifier.size(56.dp),
-                    containerColor = MaterialTheme.colorScheme.primary
+                    containerColor = colorResource(id = R.color.whatsapp)
                 ) {
                     Icon(
                         Icons.AutoMirrored.Filled.Send,
@@ -195,7 +206,7 @@ fun MessageBubble(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = message.senderName.first().toString().uppercase(),
+                    text = message.userReceivedName.first().toString().uppercase(),
                     color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
@@ -209,7 +220,7 @@ fun MessageBubble(
         ) {
             if (!isOwnMessage) {
                 Text(
-                    text = message.senderName,
+                    text = message.userReceivedName,
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray,
                     modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)
@@ -241,123 +252,6 @@ fun MessageBubble(
                 color = Color.Gray,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
             )
-        }
-    }
-}
-
-// ConversationsListScreen.kt
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ConversationsListScreen(
-    viewModel: DiscussionViewModel = viewModel(),
-    onConversationClick: (String, String) -> Unit
-) {
-    val conversations by viewModel.conversations.collectAsState()
-
-    LaunchedEffect(Unit) {
-        viewModel.loadConversations()
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Messages") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = Color.White
-                )
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { /* Open new conversation dialog */ },
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "New Chat",
-                    tint = Color.White
-                )
-            }
-        }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            items(conversations) { conversation ->
-                ConversationItem(
-                    conversation = conversation,
-                    onClick = {
-                        onConversationClick(conversation.id, "conversation.name")
-                    }
-                )
-                Divider()
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ConversationItem(
-    conversation: Conversation,
-    onClick: () -> Unit
-) {
-    val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-
-    Surface(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Ala".first().toString().uppercase(),
-                    color = Color.White,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "conversation.name",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-
-                conversation.lastMessage?.let { message ->
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray,
-                        maxLines = 1
-                    )
-                }
-            }
-
-            conversation.lastMessageTime?.let { time ->
-                Text(
-                    text = timeFormat.format(Date(time)),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-            }
         }
     }
 }

@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -17,6 +18,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -52,9 +58,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toFile
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.feature.profile.test.FormTextField
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -71,9 +81,33 @@ fun ValidateDocScreen(
     val context = LocalContext.current
 
     val user by viewModel.user.collectAsState()
+    val filesList by viewModel.filesList.collectAsState()
     val interactionSource = remember { MutableInteractionSource() }
 
     var docs by remember { mutableStateOf(mutableListOf("")) }
+    var documentList by remember { mutableStateOf(mutableListOf(Documents())) }
+
+    val lifecycleEvent = rememberLifecycleEvent()
+    LaunchedEffect(lifecycleEvent) {
+        if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+            viewModel.getFiles()
+        }
+    }
+
+    LaunchedEffect(filesList) {
+        if (filesList.isNotEmpty()) {
+            documentList.clear()
+            filesList.map {
+                val document = Documents(
+                    name = viewModel.getNameDocFromLink(it),
+                    url = it,
+                    type = viewModel.getTypeDocFromLink(it)
+                )
+                documentList = (documentList + document).toMutableList()
+            }
+        }
+    }
+
     var indexSelected by remember { mutableStateOf(0) }
     var docsVerify by remember { mutableStateOf(mutableListOf(false)) }
     var activatedCheck by remember { mutableStateOf(false) }
@@ -91,10 +125,18 @@ fun ValidateDocScreen(
             GlobalEntries.listImageUri = listImageUri
 
             val fileName = viewModel.imageInfo(context, uri)
-            val list = docs
-            list[indexSelected] = fileName
-            docs = list
-            Log.i("gjzgklehgklz", "ValidateDocScreen: $indexSelected")
+            docs = (docs - docs[indexSelected]).toMutableList()
+            docs.add(indexSelected, fileName)
+
+            documentList = (documentList - documentList[indexSelected]).toMutableList()
+            val document = Documents(
+                url = uri.path ?: "",
+                name = fileName,
+                type = viewModel.getTypeDoc(fileName)
+            )
+            documentList.add(indexSelected, document)
+
+            Log.i("gjzgklehgklz", "ValidateDocScreen: $documentList")
         } else {
             // Handle the case where no media was selected
         }
@@ -147,6 +189,8 @@ fun ValidateDocScreen(
                 IconButton(
                     onClick = {
                         docs = (docs + "").toMutableList()
+                        val document = Documents()
+                        documentList = (documentList + document).toMutableList()
                         docsVerify = (docsVerify + false).toMutableList()
                     },
                     modifier = Modifier
@@ -165,11 +209,10 @@ fun ValidateDocScreen(
         }
 
         //docs
-        Log.i("jfeakhgealgk", "ValidateDocScreen: ${imageUri.value}")
-        docs.mapIndexed { index, doc ->
+        documentList.mapIndexed { index, doc ->
             FormTextField(
-                value = doc,
-                borderColor = if (activatedCheck && doc.isEmpty()) Color.Red else colorResource(
+                value = doc.name,
+                borderColor = if (activatedCheck && doc.name.isEmpty()) Color.Red else colorResource(
                     id = R.color.whatsapp
                 ),
                 onValueChange = {
@@ -199,11 +242,9 @@ fun ValidateDocScreen(
                                 indication = null
                             ) {
 
-                                docs = (docs - doc).toMutableList()
-                                /*GlobalEntries.listImageUri =
-                                    (GlobalEntries.listImageUri - uri).toMutableList()*/
+                                docs = (docs - doc.name).toMutableList()
+                                documentList = (documentList - documentList[index]).toMutableList()
                                 docsVerify = (docsVerify - docsVerify[index]).toMutableList()
-
                             },
                         color = Color.Red,
                         text = stringResource(id = R.string.remove_document_text),
@@ -212,6 +253,21 @@ fun ValidateDocScreen(
             }
         }
 
+        val uploadMessage by viewModel.uploadMessage.collectAsState()
+        LaunchedEffect(uploadMessage) {
+            if (uploadMessage.contains("http")) {
+                GlobalEntries.stepShared = 0
+
+                val validationProfileStatus = ValidationProfileStatus()
+                validationProfileStatus.typeValidation = "doc"
+                validationProfileStatus.docs = docs
+                validationProfileStatus.documents = documentList
+                validationProfileStatus.status = VerificationStatus.PENDING_REVIEW.name
+                viewModel.validate(validationProfileStatus)
+
+                navController.popBackStack()
+            }
+        }
 
         Button(
             onClick = {
@@ -226,21 +282,12 @@ fun ValidateDocScreen(
                 }
 
                 if (isNoError) {
-                    Log.i("lkehagkelga", "ValidateDocScreen: ${GlobalEntries.listImageUri}")
+                    viewModel.changeDocs(docs)
                     GlobalEntries.listImageUri.mapIndexed { index, document ->
                         document?.let {
-                            viewModel.uploadDoc(context = context, it, index)
+                            viewModel.uploadDoc(context = context, it, index, documentList[index])
                         }
                     }
-                    viewModel.changeDocs(docs)
-                    GlobalEntries.stepShared = 0
-
-                    val validationProfileStatus = ValidationProfileStatus()
-                    validationProfileStatus.typeValidation = "doc"
-                    validationProfileStatus.status = VerificationStatus.PENDING_REVIEW.name
-                    viewModel.validate(validationProfileStatus)
-
-                    navController.popBackStack()
                 }
             },
             modifier = Modifier
@@ -257,48 +304,28 @@ fun ValidateDocScreen(
             )
         }
 
-    }
-}
-
-/*docs.mapIndexed { index, doc ->
-            FormTextField(
-                value = doc,
-                borderColor = if (activatedCheck && doc.isEmpty()) Color.Red else colorResource(
-                    id = R.color.whatsapp
-                ),
-                onValueChange = {
-                    docs[index] = it
-                },
-                label = stringResource(id = R.string.add_document_text),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .padding(top = 20.dp),
-                isRequired = true,
-                readOnly = true,
-                onClick = {
-                    selectImage.launch("image/*")
-                }
-            )
-
-            if (index > 0) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        modifier = Modifier
-                            .padding(top = 5.dp, end = 20.dp)
-                            .align(Alignment.CenterEnd)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-
-                                docs = (docs - doc).toMutableList()
-                                docsVerify = (docsVerify - docsVerify[index]).toMutableList()
-
-                            },
-                        color = Color.Red,
-                        text = stringResource(id = R.string.remove_document_text),
+        LazyRow {
+            itemsIndexed(
+                items = documentList
+            ) { index, doc ->
+                if (doc.url.isNotEmpty()) {
+                    Log.i("kllljffrrrrrrr", "url: ${doc.url}")
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data("https://res.cloudinary.com/dds7p6ltm/image/upload/document89")
+                            .crossfade(true)
+                            .build(),
+                        //model = doc.url,
+                        contentDescription = null,
+                        modifier = Modifier.size(100.dp),
+                        contentScale = ContentScale.Crop,
+                        onError = { error ->
+                            Log.e("IMAGE_ERROR", "Image failed to load: $error")
+                        }
                     )
                 }
             }
-        }*/
+        }
+
+    }
+}
