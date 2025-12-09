@@ -19,4 +19,7 @@ class NotificationDataSourceImp @Inject constructor(
 
     override suspend fun getCompaniesValidated(): List<String> =
         apiService.getCompaniesValidated()
+
+    override suspend fun getInstitutesValidated(): List<String> =
+        apiService.getInstitutesValidated()
 }

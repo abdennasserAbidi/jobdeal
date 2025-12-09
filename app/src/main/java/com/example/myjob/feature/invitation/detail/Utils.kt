@@ -1,5 +1,6 @@
 package com.example.myjob.feature.invitation.detail
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Subject
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Button
@@ -63,11 +65,11 @@ fun InvitationStatusCard(
 ) {
 
     val (statusColor, statusIcon) = when (status) {
-        stringResource(id = R.string.on_hold_text) -> Pair(Color(0xFFFF9800), Icons.Default.Send)
-        stringResource(id = R.string.hired_text) -> Pair(Color(0xFF2196F3), Icons.Default.Visibility)
-        stringResource(id = R.string.in_process_text) -> Pair(WhatsAppGreen, Icons.Default.CheckCircle)
-        stringResource(id = R.string.Rejected) -> Pair(Color(0xFFF44336), Icons.Default.Cancel)
-        stringResource(id = R.string.not_interested_text) -> Pair(Color(0xFFF44336), Icons.Default.Cancel)
+        InvitationStatus.ON_HOLD.name -> Pair(Color(0xFFFF9800), Icons.Default.Send)
+        InvitationStatus.HIRED.name -> Pair(Color(0xFF2196F3), Icons.Default.Visibility)
+        InvitationStatus.IN_PROCESS.name -> Pair(WhatsAppGreen, Icons.Default.CheckCircle)
+        InvitationStatus.REJECTED.name -> Pair(Color(0xFFF44336), Icons.Default.Cancel)
+        InvitationStatus.NOT_INTERESTED.name -> Pair(Color(0xFFF44336), Icons.Default.Cancel)
         else -> Pair(Color(0xFFF44336), Icons.Default.Cancel)
     }
 
@@ -266,7 +268,7 @@ fun InvitationStatusCard(
                 }
             } else {
                 when (status) {
-                    stringResource(id = R.string.not_interested_text) -> {
+                    InvitationStatus.NOT_INTERESTED.name -> {
                         Text(
                             text = stringResource(id = R.string.rejected_offer_text),
                             color = Color.Red,
@@ -276,7 +278,7 @@ fun InvitationStatusCard(
                         )
                     }
 
-                    stringResource(id = R.string.in_process_text) -> {
+                    InvitationStatus.IN_PROCESS.name -> {
                         OutlinedButton(
                             onClick = {},
                             enabled = false,
@@ -289,7 +291,7 @@ fun InvitationStatusCard(
                         }
                     }
 
-                    stringResource(id = R.string.hired_text) -> {
+                    InvitationStatus.HIRED.name -> {
 
                         Text(
                             text = stringResource(id = R.string.hire_text),
@@ -320,7 +322,7 @@ fun InvitationStatusCard(
                         }
                     }
 
-                    stringResource(id = R.string.Rejected) -> {
+                    InvitationStatus.REJECTED.name -> {
 
                         Text(
                             text = "${stringResource(id = R.string.refuse_text)} \n ${invitationModel.reason}",
@@ -400,7 +402,9 @@ fun InvitationContentCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -489,7 +493,6 @@ fun ContractDetailsCard(
             )
 
             Spacer(modifier = Modifier.height(12.dp))
-
 
 
             // Fee Information
@@ -849,7 +852,7 @@ fun InfoChip(
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant
+        color = Color.White
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),

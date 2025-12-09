@@ -136,16 +136,13 @@ fun LoginScreen(
 
     LaunchedEffect(token) {
         isProgressing = false
-        Log.i("khgrzlghlzrkgrz", "token: $token")
         if (token.isNotEmpty()) {
-            //isProgressing = false
-            Log.i("khgrzlghlzrkgrz", "role: ${login.user?.role}")
             viewModel.isFromLogin(true)
-            if (login.user?.role == "Candidate" || login.user?.role == "Candidat") {
-                val isFirstTime = login.user?.firstTimeUse ?: true
-                Log.i("khgrzlghlzrkgrz", "LoginScreen: $isFirstTime")
-                if (isFirstTime) navController.navigate(Screen.SearchWordScreen.route)
-                else navController.navigate(Screen.HomeScreen.route)
+            val isFirstTime = login.user?.firstTimeUse ?: true
+            if (isFirstTime) {
+                if (login.user?.role == "Candidate" || login.user?.role == "Candidat")
+                    navController.navigate(Screen.SearchWordScreen.route)
+                else navController.navigate(Screen.CompanyProfileForm.route)
             } else navController.navigate(Screen.HomeScreen.route)
         }
     }

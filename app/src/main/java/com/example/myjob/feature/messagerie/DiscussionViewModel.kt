@@ -90,6 +90,25 @@ class DiscussionViewModel @Inject constructor(
         }
     }
 
+    private val _listMessages: MutableStateFlow<List<ChatMessage>> = MutableStateFlow(emptyList())
+    val listMessages: StateFlow<List<ChatMessage>> = _listMessages.asStateFlow()
+
+    fun findConversations(userId: Int) {
+        viewModelScope.launch {
+            try {
+                val id = sharedPreference.getInt("idUser", 0)
+                val params = Pair(id, userId)
+                findConversationUseCase.execute(params).collectLatest { res ->
+                    _listMessages.update {
+                        res.data ?: emptyList()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     private fun getUserName(user: User): String? {
         return if (user.role == "Candidate" || user.role == "Candidat")
             user.fullName

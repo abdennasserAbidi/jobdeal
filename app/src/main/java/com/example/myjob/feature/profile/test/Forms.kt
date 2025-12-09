@@ -57,6 +57,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -68,6 +69,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
+import com.example.myjob.base.MyApp
 import com.example.myjob.common.CustomPhoneKit
 import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GlobalEntries
@@ -80,6 +82,7 @@ import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.FilterType
 import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.ProfessionalStatus
+import com.example.myjob.domain.entities.School
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.feature.invitation.candidat.FilterBottomSheet
 import com.example.myjob.feature.navigation.Screen
@@ -790,6 +793,15 @@ fun ExperienceForm(
 
     listExperience = user.experience ?: mutableListOf()
 
+    val listCompanies by profileViewModel.listCompanies.collectAsState()
+
+    val context = LocalContext.current
+    val app = context.applicationContext as MyApp
+    LaunchedEffect(listCompanies) {
+        app.listCompanies.removeLast()
+        if (!app.listCompanies.containsAll(listCompanies)) app.listCompanies.addAll(listCompanies.distinctBy { it })
+    }
+
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -819,10 +831,10 @@ fun ExperienceForm(
             Text(stringResource(id = R.string.add_experience_pro_text))
         }
 
-
         experiences.forEachIndexed { index, item ->
 
             WorkExperienceCard(
+                index = index,
                 experience = item,
                 profileViewModel = profileViewModel,
                 onExperienceTypeChange = {
@@ -878,6 +890,11 @@ fun ExperienceForm(
                     profileViewModel.removeExperience(item.id)
                 },
                 onSubmit = {
+                    item.companyName?.let {
+                        if (it.contains(",")) {
+                            profileViewModel.changeCompanyExperience(index, it.split(",")[1])
+                        }
+                    }
                     profileViewModel.saveExperiences(user.experience ?: mutableListOf())
                 }
             )
@@ -901,6 +918,23 @@ fun EducationFormSection(
     }
 
     listEducations = user.education ?: mutableListOf()
+
+
+    val listInstitutes by profileViewModel.listInstitutes.collectAsState()
+
+    val context = LocalContext.current
+    val app = context.applicationContext as MyApp
+    LaunchedEffect(listInstitutes) {
+        app.listSchools.removeLast()
+        val institutes = listInstitutes.map {
+            val school = School()
+            school.libelly = it
+            school
+        }
+        if (!app.listSchools.containsAll(institutes)) app.listSchools.addAll(institutes.distinctBy { it.libelly })
+    }
+
+
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -932,6 +966,8 @@ fun EducationFormSection(
         // Education Items
         educations.forEachIndexed { index, education ->
             EducationCard(
+                index = index,
+                profileViewModel = profileViewModel,
                 education = education,
                 onChangeDegree = {
                     onChangeDegree(index)
@@ -946,6 +982,11 @@ fun EducationFormSection(
                     profileViewModel.changeGradeEducation(index, it)
                 },
                 onSubmit = {
+                    education.schoolName?.let {
+                        if (it.contains(",")) {
+                            profileViewModel.changeInstitution(index, it.split(",")[1])
+                        }
+                    }
                     profileViewModel.saveEducations(user.education ?: mutableListOf())
                 },
                 onRemove = {

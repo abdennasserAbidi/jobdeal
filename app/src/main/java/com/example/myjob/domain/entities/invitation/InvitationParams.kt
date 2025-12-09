@@ -13,7 +13,8 @@ data class InvitationParams(
 
 data class InvitationUser(
     var invitationModel: InvitationModel = InvitationModel(),
-    var user: User = User()
+    var userCandidate: User = User(),
+    var userCompany: User = User()
 )
 
 data class InvitationResponse(

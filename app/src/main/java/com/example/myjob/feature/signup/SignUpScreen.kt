@@ -170,10 +170,9 @@ fun SignUpScreen(
     LaunchedEffect(saveUserRes.token?.isNotEmpty()) {
         isProgressing = false
         if (saveUserRes.token?.isNotEmpty() == true) {
-            Log.i("ellhkelag", "selectedIndex: $selectedIndex")
             if (selectedIndex == 1) {
                 navController.navigate(Screen.SearchWordScreen.route)
-            } else navController.navigate(Screen.HomeScreen.route)
+            } else navController.navigate(Screen.CompanyProfileForm.route)
         }
     }
 

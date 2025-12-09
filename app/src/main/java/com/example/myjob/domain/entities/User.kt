@@ -55,15 +55,15 @@ data class User(
     val listNum: MutableList<String>? = mutableListOf(),
     var companyName: String? = "",
     var phoneCompany: String? = "",
+    var companyAddress: String? = "13 Rue Sassi Bellil Borj el baccouch",
+    var companyActivitySector: String? = "Informatique",
     var numSecuritySocial: String? = "",
     var docs: List<String>? = mutableListOf(),
     var secondPhoneCompany: String? = "",
     var faxCompany: String? = "",
     var linkWebsite: String? = "",
     var linkLinkedIn: String? = "",
-    var companyActivitySector: String? = "",
     var companyDescription: String? = "",
-    var companyAddress: String? = "",
     var companySecondAddress: String? = "",
 ) {
 

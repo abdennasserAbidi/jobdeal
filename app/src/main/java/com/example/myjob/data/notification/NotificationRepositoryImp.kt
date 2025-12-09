@@ -66,4 +66,17 @@ class NotificationRepositoryImp @Inject constructor(
                 emit(Resource(ResourceState.ERROR, null, ex.message))
             }
         }
+
+    override suspend fun getInstitutesValidated(): Flow<Resource<List<String>>> =
+        flow {
+            try {
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.getInstitutesValidated()
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
+        }
 }

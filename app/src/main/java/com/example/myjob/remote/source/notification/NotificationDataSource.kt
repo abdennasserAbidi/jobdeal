@@ -8,4 +8,5 @@ interface NotificationDataSource {
     suspend fun sendNotification(base: NotificationMessage): UserResponse
     suspend fun verifyAccountCompany(id: Int): UserResponse
     suspend fun getCompaniesValidated(): List<String>
+    suspend fun getInstitutesValidated(): List<String>
 }

@@ -112,10 +112,12 @@ fun SplashScreen(
 
                     if (isFinished) {
                         if (token.isNotEmpty()) {
-                            if (user.role == "Candidate" || user.role == "Candidat") {
-                                if (user.firstTimeUse == true) navController.navigate(Screen.SearchWordScreen.route)
-                                else navController.navigate(Screen.HomeScreen.route)
+                            if (user.firstTimeUse == true) {
+                                if (user.role == "Candidate" || user.role == "Candidat")
+                                    navController.navigate(Screen.SearchWordScreen.route)
+                                else navController.navigate(Screen.CompanyProfileForm.route)
                             } else navController.navigate(Screen.HomeScreen.route)
+
                         } else navController.navigate(Screen.LoginScreen.route)
 
                     } else navController.navigate(Screen.OnBoardingScreen.route)

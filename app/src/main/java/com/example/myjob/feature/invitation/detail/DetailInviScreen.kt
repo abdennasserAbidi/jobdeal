@@ -22,8 +22,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -47,6 +49,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.domain.entities.Experience
+import com.example.myjob.domain.entities.invitation.InvitationStatus
 
 @Composable
 fun DetailInviScreen(
@@ -65,6 +68,7 @@ fun DetailInviScreen(
     val invitationModel by invitationDetailViewModel.invitations.collectAsState()
     val language by invitationDetailViewModel.language.collectAsState()
     val invitation = invitationModel.invitationModel
+    val userCompany = invitationModel.userCompany
 
     LaunchedEffect(deletedStatus) {
         if (deletedStatus == "removed successfully") {
@@ -123,10 +127,10 @@ fun DetailInviScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .padding(top = 16.dp)
+                .padding(top = 10.dp)
         ) {
 
-            Box(modifier = Modifier.padding(top = 5.dp)) {
+            Box {
                 // Status Card
                 InvitationStatusCard(
                     status = invitation.status ?: "",
@@ -140,25 +144,21 @@ fun DetailInviScreen(
             }
 
 
-            val userName = c.fullName ?: "Test Test"
-
-            val experiences = c.experience ?: mutableListOf()
-            var lastExp = Experience()
-            if (experiences.isNotEmpty()) {
-                lastExp = experiences[experiences.lastIndex]
-            }
+            val name = userCompany.companyName ?: "Test Test"
 
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 10.dp),
-                shape = RoundedCornerShape(16.dp)
+                    .padding(top = 20.dp),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = stringResource(id = R.string.candidate_information_text),
+                        text = stringResource(id = R.string.company_information_text),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 12.dp)
@@ -170,19 +170,18 @@ fun DetailInviScreen(
                     ) {
                         // Initials Avatar
                         Surface(
-                            modifier = Modifier.size(56.dp),
+                            modifier = Modifier.size(40.dp),
                             shape = RoundedCornerShape(16.dp),
                             color = WhatsAppGreen
                         ) {
-
-                            val nickname = userName.trim().ifEmpty { "Test Test" }.split(" ")
+                            val nickname = name.trim().ifEmpty { "Test Test" }.split(" ")
                                 .map { it.first() }.joinToString("")
                             Box(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = nickname,
-                                    style = MaterialTheme.typography.titleLarge,
+                                    style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
                                 )
@@ -193,11 +192,12 @@ fun DetailInviScreen(
 
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = userName,
-                                style = MaterialTheme.typography.titleLarge,
+                                text = name,
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
-                            lastExp.title?.let {
+
+                            userCompany.companyActivitySector?.let {
                                 if (it.isNotEmpty()) {
                                     Text(
                                         text = it,
@@ -208,33 +208,71 @@ fun DetailInviScreen(
                             }
 
                             Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
 
-                            // Info chips
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
+                    // Info chips
+                    Row(
+                        modifier = Modifier.padding(top = 10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        userCompany.email?.let {
+                            if (it.isNotEmpty()) {
+                                InfoChip(
+                                    icon = Icons.Default.Business,
+                                    text = it
+                                )
+                            }
+                        }
 
-                                lastExp.companyName?.let {
-                                    if (it.isNotEmpty()) {
-                                        InfoChip(
-                                            icon = Icons.Default.Business,
-                                            text = it
-                                        )
-                                    }
-                                }
-
+                        userCompany.country?.let {
+                            if (it.isNotEmpty()) {
                                 InfoChip(
                                     icon = Icons.Default.Work,
-                                    text = "5+ years"
+                                    text = it
                                 )
+                            }
+                        }
+
+                        Column {
+                            userCompany.companyAddress?.let {
+                                if (it.isNotEmpty()) {
+                                    InfoChip(
+                                        icon = Icons.Default.LocationOn,
+                                        text = it
+                                    )
+                                }
                             }
 
                             Spacer(modifier = Modifier.height(4.dp))
 
-                            lastExp.place?.let {
+                            userCompany.companySecondAddress?.let {
                                 if (it.isNotEmpty()) {
                                     InfoChip(
                                         icon = Icons.Default.LocationOn,
+                                        text = it
+                                    )
+                                }
+                            }
+
+                        }
+
+                        Column {
+                            userCompany.phoneCompany?.let {
+                                if (it.isNotEmpty()) {
+                                    InfoChip(
+                                        icon = Icons.Default.Phone,
+                                        text = it
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            userCompany.secondPhoneCompany?.let {
+                                if (it.isNotEmpty()) {
+                                    InfoChip(
+                                        icon = Icons.Default.Phone,
                                         text = it
                                     )
                                 }
@@ -245,7 +283,7 @@ fun DetailInviScreen(
             }
 
             // Invitation Content Card
-            Box(modifier = Modifier.padding(top = 5.dp)) {
+            Box(modifier = Modifier.padding(top = 15.dp)) {
                 InvitationContentCard(
                     subject = invitation.message,
                     message = invitation.description
@@ -253,7 +291,7 @@ fun DetailInviScreen(
             }
 
             // Contract & Fee Details Card
-            Box(modifier = Modifier.padding(top = 5.dp)) {
+            Box(modifier = Modifier.padding(top = 15.dp)) {
                 ContractDetailsCard(invitationModel = invitation)
             }
 

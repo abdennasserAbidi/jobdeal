@@ -166,6 +166,7 @@
     <string name="add_experience_text">Add Experience</string>
     <string name="location_text">Location</string>
     <string name="company_name_text">Company name</string>
+    <string name="put_company_name_text">Put the ccompany name</string>
 
     <string name="status_type_text">Status</string>
     <string name="employment_type_text">Employment type</string>
@@ -329,6 +330,7 @@
     <string name="send_text">Send</string>
     <string name="sending_text">Sending…</string>
     <string name="candidate_information_text">Candidate Information</string>
+    <string name="company_information_text">Company Information</string>
 
     <string name="send_email_text">An email with a link has been sent. Click to reset your password.</string>
     <string name="forget_password_intro_text">Enter your address mail to receive an email to reset your password.</string>

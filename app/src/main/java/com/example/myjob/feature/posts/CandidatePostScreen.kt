@@ -335,57 +335,6 @@ fun CandidatePostScreen(
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            /*HorizontalDivider(
-                                modifier = Modifier.fillMaxWidth(),
-                                thickness = 1.dp
-                            )
-
-                            var commentText by remember { mutableStateOf("") }
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                OutlinedTextField(
-                                    value = commentText,
-                                    onValueChange = { commentText = it },
-                                    modifier = Modifier.weight(1f),
-                                    placeholder = { Text(stringResource(id = R.string.add_comment_hint_text)) },
-                                    shape = RoundedCornerShape(24.dp),
-                                    textStyle = MaterialTheme.typography.bodyMedium
-                                )
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                IconButton(
-                                    onClick = {
-                                        if (commentText.isNotBlank()) {
-
-                                            val username =
-                                                if (GlobalEntries.user.role == "Candidate" || GlobalEntries.user.role == "Candidat")
-                                                    GlobalEntries.user.fullName else GlobalEntries.user.companyName
-
-                                            postsViewModel.addComment(item.idAnnounce, commentText, username ?: "")
-                                            selectedPost.add(
-                                                CommentsPost(
-                                                    idCandidate = userConnectedId,
-                                                    userName = username
-                                                )
-                                            )
-                                            commentText = ""
-                                        }
-                                    }
-                                ) {
-                                    Icon(
-                                        Icons.Default.Send,
-                                        contentDescription = "Send comment",
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }*/
-
                         }
                     }
 

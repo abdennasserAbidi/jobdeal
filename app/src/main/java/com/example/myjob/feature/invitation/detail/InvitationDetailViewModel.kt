@@ -51,7 +51,7 @@ class InvitationDetailViewModel @Inject constructor(
                         }
 
                         _candidate.update {
-                            res.data?.user ?: User()
+                            res.data?.userCandidate ?: User()
                         }
 
                     } else {

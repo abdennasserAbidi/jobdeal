@@ -611,6 +611,7 @@ fun LanguageCard(
 
 @Composable
 fun WorkExperienceCard(
+    index: Int,
     experience: Experience,
     profileViewModel: ProfileViewModel,
     onExperienceTypeChange: (String) -> Unit,
@@ -665,9 +666,7 @@ fun WorkExperienceCard(
         mutableStateOf(experience.type ?: "")
     }
 
-    var companyName by remember {
-        mutableStateOf(experience.companyName ?: "")
-    }
+    var newCompanyName by remember { mutableStateOf("") }
 
     val workValidator = type.isNotEmpty()
     val companyNameValidator = experience.companyName?.isNotEmpty() == true
@@ -874,14 +873,16 @@ fun WorkExperienceCard(
                 )
             }
 
+            val nameCompany = experience.companyName ?: ""
+            val newName = if (nameCompany.contains(",")) nameCompany.split(",")[0]
+            else nameCompany
+
             FormTextField(
-                value = experience.companyName ?: "",
+                value = newName,
                 borderColor = if (activatedCheck && experience.companyName?.isNotEmpty() == false) Color.Red else colorResource(
                     id = R.color.whatsapp
                 ),
-                onValueChange = {
-
-                },
+                onValueChange = {},
                 label = stringResource(id = R.string.company_name_text),
                 isRequired = true,
                 readOnly = true,
@@ -889,6 +890,20 @@ fun WorkExperienceCard(
                     onCompanyNameChange()
                 }
             )
+
+            if (experience.companyName?.contains(stringResource(id = R.string.other_text)) == true) {
+                FormTextField(
+                    value = newCompanyName,
+                    borderColor = if (activatedCheck && newCompanyName.isNotEmpty())
+                        Color.Red else colorResource(id = R.color.whatsapp),
+                    onValueChange = {
+                        newCompanyName = it
+                        profileViewModel.changeCompanyExperience(index, "${experience.companyName},$it")
+                    },
+                    label = stringResource(id = R.string.put_company_name_text),
+                    isRequired = true
+                )
+            }
 
             FormTextField(
                 value = title,
@@ -1038,6 +1053,8 @@ fun WorkExperienceCard(
 
 @Composable
 fun EducationCard(
+    index: Int,
+    profileViewModel: ProfileViewModel,
     education: Educations,
     onChangeDegree: () -> Unit,
     onChangeFieldOfStudy: () -> Unit,
@@ -1054,6 +1071,8 @@ fun EducationCard(
     val fieldStudyValidator = education.fieldStudy?.isNotEmpty() == true
 
     val isSubmitEducationAction by GlobalEntries.isSubmitEducationAction.collectAsState()
+
+    var newInstituteName by remember { mutableStateOf("") }
 
     LaunchedEffect(isSubmitEducationAction) {
         if (isSubmitEducationAction) {
@@ -1106,8 +1125,12 @@ fun EducationCard(
                 }
             }
 
+            val nameInstitute = education.schoolName ?: ""
+            val newName = if (nameInstitute.contains(",")) nameInstitute.split(",")[0]
+            else nameInstitute
+
             FormTextField(
-                value = education.schoolName ?: "",
+                value = newName,
                 borderColor = if (activatedCheck && education.schoolName?.isNotEmpty() == false) Color.Red else colorResource(
                     id = R.color.whatsapp
                 ),
@@ -1119,6 +1142,20 @@ fun EducationCard(
                     onChangeInstitution()
                 }
             )
+
+            if (education.schoolName?.contains(stringResource(id = R.string.other_text)) == true) {
+                FormTextField(
+                    value = newInstituteName,
+                    borderColor = if (activatedCheck && newInstituteName.isNotEmpty())
+                        Color.Red else colorResource(id = R.color.whatsapp),
+                    onValueChange = {
+                        newInstituteName = it
+                        profileViewModel.changeInstitution(index, "${education.schoolName},$it")
+                    },
+                    label = stringResource(id = R.string.put_company_name_text),
+                    isRequired = true
+                )
+            }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),

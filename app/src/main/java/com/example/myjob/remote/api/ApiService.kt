@@ -53,6 +53,9 @@ ApiService {
     @GET("auth/getCompaniesValidated")
     suspend fun getCompaniesValidated(): List<String>
 
+    @GET("auth/getInstitutesValidated")
+    suspend fun getInstitutesValidated(): List<String>
+
     @POST("auth/updatetoken")
     suspend fun updateToken(
         @Query("id") id: Int,

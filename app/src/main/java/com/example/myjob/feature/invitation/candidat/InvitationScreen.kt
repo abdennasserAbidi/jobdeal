@@ -71,6 +71,7 @@ import com.example.myjob.common.view.InvitationCard
 import com.example.myjob.domain.entities.FilterType
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationStatus
+import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.ui.theme.WhatsAppDarkGreen
 import com.example.myjob.ui.theme.WhatsAppLightGreen
 import kotlinx.coroutines.Dispatchers
@@ -290,7 +291,11 @@ fun InvitationScreen(
                     InvitationCard(
                         statusInvitations = statusCandidate ?: "",
                         invitationModel = item,
-                        onClick = {  },
+                        onClick = {
+                            GlobalEntries.idInvitation = item.idInvitation
+                            navController.navigate(Screen.NormalDetailInvitationScreen.route)
+                            //navController.navigate("${Screen.DetailInvitationScreen.route}/${item.idInvitation}")
+                        },
                         onAcceptInvitation = {
                             item.status = InvitationStatus.IN_PROCESS.name
                             invitationViewModel.acceptRejectInvitation(item)

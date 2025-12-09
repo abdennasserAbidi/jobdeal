@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,7 +21,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.base.ConnectionState
@@ -35,12 +33,11 @@ import java.util.*
 @Composable
 fun DiscussionScreen(
     navController: NavController,
-    conversationId: String = "",
     conversationName: String = "Chat",
     viewModel: DiscussionViewModel = hiltViewModel(),
     hideNavigation: () -> Unit = {}
 ) {
-    val messages by viewModel.messages.collectAsState()
+    val listMessages by viewModel.listMessages.collectAsState()
     val typingUsers by viewModel.typingUsers.collectAsState()
     val connectionState by viewModel.connectionState.collectAsState()
 
@@ -51,13 +48,16 @@ fun DiscussionScreen(
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
-        if (lifecycleEvent == Lifecycle.Event.ON_RESUME)
+        if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+            hideNavigation()
             viewModel.connect()
+            viewModel.findConversations(GlobalEntries.candidateUser.id ?: -1)
+        }
     }
 
-    LaunchedEffect(messages.size) {
-        if (messages.isNotEmpty()) {
-            listState.animateScrollToItem(messages.size - 1)
+    LaunchedEffect(listMessages.size) {
+        if (listMessages.isNotEmpty()) {
+            listState.animateScrollToItem(listMessages.size - 1)
         }
     }
 
@@ -130,12 +130,12 @@ fun DiscussionScreen(
                 state = listState,
                 contentPadding = PaddingValues(16.dp)
             ) {
-                items(messages) { message ->
+                items(listMessages) { message ->
                     val userId = GlobalEntries.candidateUser.id ?: -1
 
                     MessageBubble(
                         message = message,
-                        isOwnMessage = viewModel.isOwnMessage(message.senderId)
+                        isOwnMessage = viewModel.isOwnMessage(userId)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -152,9 +152,9 @@ fun DiscussionScreen(
                     value = messageText,
                     onValueChange = {
                         messageText = it
-                        if (it.isNotEmpty()) {
+                        /*if (it.isNotEmpty()) {
                             viewModel.sendTypingIndicator(true)
-                        }
+                        }*/
                     },
                     modifier = Modifier.weight(1f),
                     placeholder = { Text("Type a message...") },
@@ -168,7 +168,7 @@ fun DiscussionScreen(
                     onClick = {
                         if (messageText.isNotBlank()) {
                             viewModel.sendMessage(messageText)
-                            viewModel.sendTypingIndicator(false)
+                            //viewModel.sendTypingIndicator(false)
                             messageText = ""
                         }
                     },

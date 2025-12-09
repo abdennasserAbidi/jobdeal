@@ -106,6 +106,7 @@ import com.example.myjob.feature.profile.EducationForm
 import com.example.myjob.feature.profile.PersonalForm
 import com.example.myjob.feature.profile.ProfileScreen
 import com.example.myjob.feature.profile.test.CandidateProfileFormScreen
+import com.example.myjob.feature.profile.test.CompanyProfileFormScreen
 import com.example.myjob.feature.setting.ModernSettingScreen
 import com.example.myjob.feature.signup.SignUpScreen
 import com.example.myjob.feature.splash.SplashScreen
@@ -143,15 +144,14 @@ class MainActivity : ComponentActivity() {
     private var listCompany: MutableList<String> = mutableListOf()
     private var listCountries: MutableList<String> = mutableListOf()
 
-    //TODO("Notification")
-    //TODO("validation user supprimer interview")
-    //TODO("Filtrage du poste")
-    //TODO("chat")
-    //TODO("ajouter company et institut a chaque fois on ne trouve pas dans la liste")
     //TODO("détail company invitation détail")
+    //TODO("Filtrage du poste")
+    //TODO("ajouter company et institut a chaque fois on ne trouve pas dans la liste")
     //TODO("détail user quand on complète le profile")
-    //TODO("share application")
     //TODO("upload images")
+    //TODO("share application")
+    //TODO("Notification")
+    //TODO("chat")
 
     var mSocket: Socket? = null
     private var imageUri = mutableStateOf<Uri?>(null)
@@ -636,26 +636,6 @@ class MainActivity : ComponentActivity() {
                         FilteredHome(navController)
                     }
 
-                    composable(route = Screen.SearchWordScreen.route) {
-                        isVisibleNav = false
-                        //SearchScreen(navController)
-                        //CandidateCompleteProfileApp()
-                        listCompany = app.listCompanies
-
-                        CandidateProfileFormScreen(
-                            navController = navController,
-                            list = listCountry,
-                            clearData = {
-                                selectedTabIndex = 0
-                            },
-                            allSubjects = allSubjects,
-                            listStudyField = studyField,
-                            listSchools = listSchools,
-                            listGrade = listCountries,
-                            listCompany = app.listCompanies
-                        )
-                    }
-
                     composable(route = Screen.PostScreen.route) {
                         CoroutineScope(Dispatchers.Main).launch {
                             GlobalEntries.isVisibleNav.collect {
@@ -778,6 +758,39 @@ class MainActivity : ComponentActivity() {
                     composable(route = Screen.CompanyProfileScreen.route) {
                         isVisibleNav = true
                         ProfileScreen(navController)
+                    }
+
+                    //new
+                    composable(route = Screen.SearchWordScreen.route) {
+                        isVisibleNav = false
+                        //SearchScreen(navController)
+                        //CandidateCompleteProfileApp()
+                        app.listCompanies.add(stringResource(id = R.string.other_text))
+                        listCompany = app.listCompanies.distinctBy { it }.toMutableList()
+
+                        CandidateProfileFormScreen(
+                            navController = navController,
+                            list = listCountry,
+                            clearData = {
+                                selectedTabIndex = 0
+                            },
+                            allSubjects = allSubjects,
+                            listStudyField = studyField,
+                            listSchools = listSchools,
+                            listGrade = listCountries,
+                            listCompany = app.listCompanies
+                        )
+                    }
+
+                    composable(route = Screen.CompanyProfileForm.route) {
+                        isVisibleNav = false
+
+                        CompanyProfileFormScreen(
+                            navController = navController,
+                            clearData = {
+                                selectedTabIndex = 0
+                            }
+                        )
                     }
                     //END PROFILE
                 }

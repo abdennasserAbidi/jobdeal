@@ -117,7 +117,7 @@ fun ListMessageScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = item.senderName.split(" ").mapNotNull { it.firstOrNull() }.take(2)
+                                text = item.userReceivedName.split(" ").mapNotNull { it.firstOrNull() }.take(2)
                                     .joinToString(""),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
@@ -125,7 +125,7 @@ fun ListMessageScreen(
                             )
                         }
                         
-                        Text(text = item.senderName)
+                        Text(text = item.userReceivedName)
                     }
 
                     Icon(
