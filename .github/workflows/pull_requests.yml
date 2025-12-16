@@ -26,6 +26,8 @@ jobs:
 
   generate-log:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -34,6 +36,8 @@ jobs:
           persist-credentials: true
 
       - name: Generate commit log
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           echo "# Commit Log" > COMMIT_LOG.md
           echo "" >> COMMIT_LOG.md
@@ -45,13 +49,12 @@ jobs:
           git config user.email "abidi.abdennasser@gmail.com"
           git add COMMIT_LOG.md
           git commit -m "chore: update commit log" || echo "No changes to commit"
-          git push origin HEAD:develop || echo "Nothing to push" 
-
+          git push https://$PAT_TOKEN@github.com/abdennasserAbidi/jobdeal.git HEAD:develop
 
   bump-version:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # <-- Add this line
+      contents: write
 
     if: "!contains(github.event.head_commit.message, 'bump android version')"
 
