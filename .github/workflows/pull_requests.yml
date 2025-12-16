@@ -82,5 +82,6 @@ jobs:
         run: |
           git config user.name "abdennasserAbidi"
           git config user.email "abidi.abdennasser@gmail.com"
-          git add app/build.gradle
-          git commit -m "chore: bump android version to $NEW_VERSION_NAME" || exit 0            git push
+          git add ./app/build.gradle.kts
+          git commit -m "chore: bump android version to $NEW_VERSION_NAME" || exit 0           
+          git push
