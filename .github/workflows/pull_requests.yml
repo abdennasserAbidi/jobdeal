@@ -50,6 +50,8 @@ jobs:
 
   bump-version:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # <-- Add this line
 
     if: "!contains(github.event.head_commit.message, 'bump android version')"
 
@@ -87,5 +89,5 @@ jobs:
           git config user.name "abdennasserAbidi"
           git config user.email "abidi.abdennasser@gmail.com"
           git add $FILE
-          git commit -m "chore: bump android version to $NEW_VERSION_NAME" || echo "No changes to commit"
+          git commit -m "chore: bump android version to $NEW_VERSION_CODE" || echo "No changes to commit"
           git push https://$PAT_TOKEN@github.com/abdennasserAbidi/jobdeal.git HEAD:develop
