@@ -58,34 +58,32 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Increment version
-        run: |
-          
-          FILE=./app/build.gradle.kts   # adjust to your path
-
-              if [ ! -f "$FILE" ]; then
-               echo "File not found: $FILE"
-               exit 1
-              fi
-          
-          VERSION_CODE=$(grep "versionCode =" $FILE | awk '{print $3}')
-          VERSION_NAME=$(grep "versionName =" $FILE | sed 's/.*"//;s/"//')
-          
-          NEW_VERSION_CODE=$((VERSION_CODE + 1))
-          
-          
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NAME"
-          NEW_VERSION_NAME="$MAJOR.$MINOR.$((PATCH + 1))"
-          
-          sed -i "s/versionCode = $VERSION_CODE/versionCode = $NEW_VERSION_CODE/" $FILE
-          sed -i "s/versionName = \"$VERSION_NAME\"/versionName = \"$NEW_VERSION_NAME\"/" $FILE
-
-      - name: Commit & push
+      - name: Bump version, commit & push
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
+          FILE=./app/build.gradle.kts
+          if [ ! -f "$FILE" ]; then
+            echo "File not found: $FILE"
+            exit 1
+          fi
+
+          # Read current version
+          VERSION_CODE=$(grep "versionCode =" $FILE | awk '{print $3}')
+          VERSION_NAME=$(grep "versionName =" $FILE | sed 's/.*"//;s/"//')
+
+          # Increment
+          NEW_VERSION_CODE=$((VERSION_CODE + 1))
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NAME"
+          NEW_VERSION_NAME="$MAJOR.$MINOR.$((PATCH + 1))"
+
+          # Update file
+          sed -i "s/versionCode = $VERSION_CODE/versionCode = $NEW_VERSION_CODE/" $FILE
+          sed -i "s/versionName = \"$VERSION_NAME\"/versionName = \"$NEW_VERSION_NAME\"/" $FILE
+
+          # Commit & push
           git config user.name "abdennasserAbidi"
           git config user.email "abidi.abdennasser@gmail.com"
-          git add ./app/build.gradle.kts
-          git commit -m "chore: bump android version to $NEW_VERSION_NAME" || exit 0           
+          git add $FILE
+          git commit -m "chore: bump android version to $NEW_VERSION_NAME" || echo "No changes to commit"
           git push https://$PAT_TOKEN@github.com/abdennasserAbidi/jobdeal.git HEAD:develop
