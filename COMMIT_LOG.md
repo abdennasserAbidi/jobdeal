@@ -1,5 +1,8 @@
 # Commit Log
 
+- 564cfc1 Merge 8c597c4b63ceedb7fcb4596425ed9ee7cd089a55 into deb8598c4d6520d946051e4cb5c7547fad46c973 (abdennasserAbidi)
+- 8c597c4 cicd log and version (Abdennasser)
+- deb8598 chore: update commit log (abdennasserAbidi)
 - e6d4075 Merge 67d8c4705fc9547341583b4f58346a7eb2dd18b3 into 64004c7270292a6229fa6f95f743acc7f0963032 (abdennasserAbidi)
 - 67d8c47 cicd log and version (Abdennasser)
 - 64004c7 chore: update commit log (abdennasserAbidi)
