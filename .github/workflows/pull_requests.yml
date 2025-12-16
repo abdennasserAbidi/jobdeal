@@ -59,7 +59,7 @@ jobs:
 
       - name: Increment version
         run: |
-          FILE=./app/build.gradle
+          FILE=app/build.gradle.kts
           
           VERSION_CODE=$(grep "versionCode =" $FILE | awk '{print $3}')
           VERSION_NAME=$(grep "versionName =" $FILE | sed 's/.*"//;s/"//')
