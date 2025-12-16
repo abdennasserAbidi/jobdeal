@@ -1,5 +1,14 @@
 # Commit Log
 
+- bdc13b9 Merge d4f3cbb54f580d7ebf1b97d5f08b316bdd6d3bc8 into df5eb403633885534dbae94b727736a164dbd641 (abdennasserAbidi)
+- d4f3cbb cicd apk (Abdennasser)
+- df5eb40 chore: bump android version to 4 (abdennasserAbidi)
+- 979b2fa Merge 0d61d50beec2cf53ffe872123774995ecd4626bd into 07b389b6efa8fc01a99add351d997d30c8bf8f66 (abdennasserAbidi)
+- 0d61d50 cicd apk (Abdennasser)
+- 07b389b chore: bump android version to 3 (abdennasserAbidi)
+- 94c745e Merge a5364cd56c5824110574fb02ced4932f771dfe25 into 61f6de0afbc1a36232f3420becdf2ef7c2c551c6 (abdennasserAbidi)
+- a5364cd cicd apk (Abdennasser)
+- 61f6de0 chore: update commit log (abdennasserAbidi)
 - 84b525e Merge 2f733938d21452b17ab8576abde93e40967e037f into 613f4063b1b2fb6359dd5d236e56b0e6b4caadda (abdennasserAbidi)
 - 2f73393 cicd apk (Abdennasser)
 - 1b8783e cicd apk (Abdennasser)
