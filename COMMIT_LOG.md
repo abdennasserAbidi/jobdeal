@@ -1,5 +1,8 @@
 # Commit Log
 
+- e6d4075 Merge 67d8c4705fc9547341583b4f58346a7eb2dd18b3 into 64004c7270292a6229fa6f95f743acc7f0963032 (abdennasserAbidi)
+- 67d8c47 cicd log and version (Abdennasser)
+- 64004c7 chore: update commit log (abdennasserAbidi)
 - b7712a9 Merge 9fd186aa2baad5e5e467379787ecde308a3f70da into 425bc6ad7f9604ec1a054daaf3bfeb784c5c2d51 (abdennasserAbidi)
 - 9fd186a cicd log and version (Abdennasser)
 - 425bc6a chore: bump android version to 2 (abdennasserAbidi)
