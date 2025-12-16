@@ -60,6 +60,8 @@ jobs:
           persist-credentials: true
 
       - name: Increment version
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           
           FILE=./app/build.gradle.kts   # adjust to your path
@@ -87,4 +89,4 @@ jobs:
           git config user.email "abidi.abdennasser@gmail.com"
           git add ./app/build.gradle.kts
           git commit -m "chore: bump android version to $NEW_VERSION_NAME" || exit 0           
-          git push origin HEAD:develop || echo "Nothing to push"
+          git push https://$PAT_TOKEN@github.com/abdennasserAbidi/jobdeal.git HEAD:develop
