@@ -4,6 +4,7 @@ on:
   pull_request:
     branches: [develop]
 
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -123,8 +124,5 @@ jobs:
 
       - name: Grant execute permessions for gradlew
         run: chmod +x gradlew
-
-
-
       - name: Assemble Release Bundle
         run: ./gradlew bundleRelease
