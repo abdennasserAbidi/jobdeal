@@ -103,7 +103,7 @@ jobs:
 
   distribute:
     name: Distribute Bundle to google play
-    needs: test
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
