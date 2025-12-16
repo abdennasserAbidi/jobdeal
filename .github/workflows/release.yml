@@ -49,6 +49,3 @@ jobs:
 
         - name: Assemble Release Bundle
           run: ./gradlew bundleRelease
-
-        - name: Assemble Release Bundle
-          run: ./gradlew bundleRelease
