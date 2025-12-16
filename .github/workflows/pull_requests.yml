@@ -53,6 +53,7 @@ jobs:
           git push --force https://$PAT_TOKEN@github.com/abdennasserAbidi/jobdeal.git HEAD:develop
 
 
+
   bump-version:
     runs-on: ubuntu-latest
     permissions:
@@ -124,5 +125,11 @@ jobs:
       - name: Grant execute permessions for gradlew
         run: chmod +x gradlew
 
-      - name: Assemble Release Bundle
+      - name: Build unsigned release APK
         run: ./gradlew clean assembleRelease
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: unsigned-apk
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
