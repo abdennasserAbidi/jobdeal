@@ -71,7 +71,7 @@ jobs:
           # Read current version
           VERSION_CODE=$(grep "versionCode =" $FILE | awk '{print $3}')
           VERSION_NAME=$(grep "versionName =" $FILE | sed 's/.*"//;s/"//')
-
+          echo VERSION_CODE
 
           # Increment
           NEW_VERSION_CODE=$((VERSION_CODE + 1))
