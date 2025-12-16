@@ -72,6 +72,7 @@ jobs:
           VERSION_CODE=$(grep "versionCode =" $FILE | awk '{print $3}')
           VERSION_NAME=$(grep "versionName =" $FILE | sed 's/.*"//;s/"//')
 
+
           # Increment
           NEW_VERSION_CODE=$((VERSION_CODE + 1))
           IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NAME"
