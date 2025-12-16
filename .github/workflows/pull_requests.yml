@@ -50,7 +50,8 @@ jobs:
           git config user.email "abidi.abdennasser@gmail.com"
           git add COMMIT_LOG.md
           git commit -m "chore: update commit log" || echo "No changes to commit"
-          git push https://$PAT_TOKEN@github.com/abdennasserAbidi/jobdeal.git HEAD:develop
+          git push --force https://$PAT_TOKEN@github.com/abdennasserAbidi/jobdeal.git HEAD:develop
+
 
   bump-version:
     runs-on: ubuntu-latest
@@ -83,6 +84,7 @@ jobs:
           NEW_VERSION_CODE=$((VERSION_CODE + 1))
           echo "new version code $NEW_VERSION_CODE"
           IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NAME"
+          echo "patch $PATCH"
           NEW_VERSION_NAME="$MAJOR.$MINOR.$((PATCH + 1))"
 
           # Update file
@@ -95,10 +97,7 @@ jobs:
           git add $FILE
           git commit -m "chore: bump android version to $NEW_VERSION_CODE" || echo "No changes to commit"
           git push --force https://$PAT_TOKEN@github.com/abdennasserAbidi/jobdeal.git HEAD:develop
-          
-          # Build release APK
-          chmod +x gradlew
-          ./gradlew clean assembleRelease
+        
 
 
   distribute:
@@ -124,5 +123,6 @@ jobs:
 
       - name: Grant execute permessions for gradlew
         run: chmod +x gradlew
+
       - name: Assemble Release Bundle
-        run: ./gradlew bundleRelease
+        run: ./gradlew clean assembleRelease
