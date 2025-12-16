@@ -94,7 +94,7 @@ jobs:
           git config user.email "abidi.abdennasser@gmail.com"
           git add $FILE
           git commit -m "chore: bump android version to $NEW_VERSION_CODE" || echo "No changes to commit"
-          git push https://$PAT_TOKEN@github.com/abdennasserAbidi/jobdeal.git HEAD:develop
+          git push --force https://$PAT_TOKEN@github.com/abdennasserAbidi/jobdeal.git HEAD:develop
           
           # Build release APK
           chmod +x gradlew
