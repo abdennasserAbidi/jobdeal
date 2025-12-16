@@ -75,7 +75,7 @@ jobs:
 
           # Increment
           NEW_VERSION_CODE=$((VERSION_CODE + 1))
-          echo "new version code NEW_VERSION_CODE"
+          echo "new version code $NEW_VERSION_CODE"
           IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NAME"
           NEW_VERSION_NAME="$MAJOR.$MINOR.$((PATCH + 1))"
 
