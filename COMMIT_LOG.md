@@ -1,5 +1,14 @@
 # Commit Log
 
+- 84b525e Merge 2f733938d21452b17ab8576abde93e40967e037f into 613f4063b1b2fb6359dd5d236e56b0e6b4caadda (abdennasserAbidi)
+- 2f73393 cicd apk (Abdennasser)
+- 1b8783e cicd apk (Abdennasser)
+- 637fef7 cicd apk (Abdennasser)
+- 613f406 Merge pull request #10 from abdennasserAbidi/buildPipeline (abdennasserAbidi)
+- 9997a5a cicd log and version (Abdennasser)
+- 6d5970d cicd log and version (Abdennasser)
+- 66424eb cicd log and version (Abdennasser)
+- 0d109d4 chore: update commit log (abdennasserAbidi)
 - 5b8c64a Merge 184746c8bf0ad9967dfd831dc32af28ebdafc45d into d52540d8a6cf3af965614813df0525bb68325796 (abdennasserAbidi)
 - 184746c cicd log and version (Abdennasser)
 - d52540d chore: update commit log (abdennasserAbidi)
