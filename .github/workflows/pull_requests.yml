@@ -124,5 +124,6 @@ jobs:
       - name: Grant execute permessions for gradlew
         run: chmod +x gradlew
 
+
       - name: Assemble Release Bundle
         run: ./gradlew bundleRelease
