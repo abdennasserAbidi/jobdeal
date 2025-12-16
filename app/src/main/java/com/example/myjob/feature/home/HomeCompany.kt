@@ -871,7 +871,7 @@ fun HomeCompany(
                 homeViewModel.getUserToken(visibleUser.id ?: -1)
                 /*homeViewModel.updateCurrentPage()
                 homeViewModel.removeFromGlobal(visibleUser.id ?: 0)*/
-                homeViewModel.matchCurrentProfile(visibleUser, statusInvitation, "")
+                homeViewModel.matchCurrentProfile(visibleUser, statusInvitation, "", "")
             },
                 openFormInvitation = {
                     openFormInvitation = false

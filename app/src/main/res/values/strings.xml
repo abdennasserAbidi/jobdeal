@@ -178,7 +178,7 @@
     <string name="type_formation_text">Formation</string>
     <string name="type_event_text">Event</string>
     <string name="contract_type_text">Contract type</string>
-
+    <string name="contract_detail_text">Contract details</string>
 
     <string name="entry_level_text">Entry Level (0–1 years)</string>
     <string name="junior_text">Junior (1–3 years)</string>
@@ -220,6 +220,7 @@
 
     <string name="freelance_salary_text">Freelance salary</string>
     <string name="salary_text">Salary</string>
+    <string name="contract_description_text">Contract description</string>
     <string name="duration_text">Duration</string>
 
     <string name="work_still_text">I\'m still in this role</string>
@@ -313,6 +314,7 @@
 
 
     <string name="invitations_text">My invitations</string>
+    <string name="invitation_content_text">Invitation Content</string>
     <string name="navigate_invitations_text">View your invitations</string>
     <string name="career_text">Career</string>
     <string name="navigate_career_text">Boost my career</string>

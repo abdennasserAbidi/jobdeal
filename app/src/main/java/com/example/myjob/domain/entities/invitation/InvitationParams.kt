@@ -50,6 +50,7 @@ data class InvitationModel(
     var descriptionContract: String = if (typeContract == ContractType.FREELANCE.name) "Le contract sa sera per hour" else "Le contract sa sera en CDI",
     var disponibility: String = "",
     var tgm: String = "",
+    var duration: String? = "",
     var nbDaysPerWeek: String = "",
     var salary: String = "",
     var accepted: Boolean = false,

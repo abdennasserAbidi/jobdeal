@@ -215,7 +215,7 @@ fun SendInvitationCompany(
                         if (isAllGood) {
                             homeViewModel.clearToken()
                             homeViewModel.getUserToken(user.id ?: -1)
-                            homeViewModel.matchCurrentProfile(user, statusInvitation, paymentTerms)
+                            homeViewModel.matchCurrentProfile(user, statusInvitation, paymentTerms, duration)
                         }
                     },
                     modifier = Modifier

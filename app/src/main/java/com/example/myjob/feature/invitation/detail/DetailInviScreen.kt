@@ -1,5 +1,6 @@
 package com.example.myjob.feature.invitation.detail
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -48,8 +49,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.invitation.InvitationStatus
+import com.example.myjob.feature.navigation.Screen
 
 @Composable
 fun DetailInviScreen(
@@ -69,6 +72,7 @@ fun DetailInviScreen(
     val language by invitationDetailViewModel.language.collectAsState()
     val invitation = invitationModel.invitationModel
     val userCompany = invitationModel.userCompany
+    val userCandidate = invitationModel.userCandidate
 
     LaunchedEffect(deletedStatus) {
         if (deletedStatus == "removed successfully") {
@@ -137,6 +141,7 @@ fun DetailInviScreen(
                     sentDate = invitation.date ?: "",
                     responseDate = invitation.dateEnd,
                     invitationModel = invitation,
+                    userCandidate = userCandidate,
                     onDeleteInvitation = {
                         invitationDetailViewModel.deleteInvitation(it.idInvitation)
                     }
@@ -285,8 +290,13 @@ fun DetailInviScreen(
             // Invitation Content Card
             Box(modifier = Modifier.padding(top = 15.dp)) {
                 InvitationContentCard(
+                    status = invitation.status ?: "",
                     subject = invitation.message,
-                    message = invitation.description
+                    message = invitation.description,
+                    onUpdate = {
+                        GlobalEntries.candidateUser = userCandidate
+                        navController.navigate(Screen.SendInvitationScreen.route)
+                    }
                 )
             }
 
@@ -297,7 +307,8 @@ fun DetailInviScreen(
 
             // Notes Card (if available)
             invitation.reason?.let { notes ->
-                NotesCard(notes = notes)
+                if (notes.isNotEmpty())
+                    NotesCard(notes = notes)
             }
 
             Spacer(modifier = Modifier.height(16.dp))

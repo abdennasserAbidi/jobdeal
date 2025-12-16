@@ -1,6 +1,7 @@
 package com.example.myjob.feature.invitation.detail
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,16 +14,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Subject
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.TypeSpecimen
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Button
@@ -35,6 +37,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,6 +62,7 @@ fun InvitationStatusCard(
     sentDate: String,
     responseDate: String?,
     invitationModel: InvitationModel,
+    userCandidate: User = User(),
     onDeleteInvitation: (InvitationModel) -> Unit = {},
     viewProfile: (InvitationModel) -> Unit = {},
     onTerminateInvitation: (InvitationModel) -> Unit = {},
@@ -72,6 +78,17 @@ fun InvitationStatusCard(
         InvitationStatus.NOT_INTERESTED.name -> Pair(Color(0xFFF44336), Icons.Default.Cancel)
         else -> Pair(Color(0xFFF44336), Icons.Default.Cancel)
     }
+
+    val statusText = if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") {
+        when (status) {
+            InvitationStatus.ON_HOLD.name -> "Pending ${userCandidate.fullName} Reply"
+            InvitationStatus.HIRED.name -> "${userCandidate.fullName} is hired"
+            InvitationStatus.IN_PROCESS.name -> "${userCandidate.fullName} is in process"
+            InvitationStatus.REJECTED.name -> "Rejecting ${userCandidate.fullName}"
+            InvitationStatus.NOT_INTERESTED.name -> "${userCandidate.fullName} not interested"
+            else -> "Pending ${userCandidate.fullName} Reply"
+        }
+    } else status
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -112,7 +129,7 @@ fun InvitationStatusCard(
 
                     Column {
                         Text(
-                            text = status,
+                            text = statusText,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = statusColor
@@ -397,8 +414,10 @@ fun InvitationStatusCard(
 
 @Composable
 fun InvitationContentCard(
+    status: String,
     subject: String,
-    message: String
+    message: String,
+    onUpdate: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -409,12 +428,37 @@ fun InvitationContentCard(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            Text(
-                text = "Invitation Content",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.invitation_content_text),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.CenterStart)
+                )
+
+                val role = GlobalEntries.role
+                val isCompany = role == "Company" || role == "Entreprise"
+                val isNotHired = status != InvitationStatus.HIRED.name
+                if (isCompany && isNotHired) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+                                onUpdate()
+                            },
+                        contentDescription = "edit"
+                    )
+                }
+            }
 
             // Subject
             DetailRow(
@@ -468,6 +512,12 @@ fun InvitationContentCard(
 fun ContractDetailsCard(
     invitationModel: InvitationModel
 ) {
+
+    val typeContract by remember { mutableStateOf(invitationModel.typeContract) }
+    val descriptionContract by remember { mutableStateOf(invitationModel.descriptionContract) }
+    val duration by remember { mutableStateOf(invitationModel.duration ?: "") }
+    val nameContract by remember { mutableStateOf(invitationModel.nameContract) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -479,7 +529,7 @@ fun ContractDetailsCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Contract & Fee Details",
+                text = stringResource(id = R.string.contract_detail_text),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 12.dp)
@@ -487,36 +537,35 @@ fun ContractDetailsCard(
 
             // Contract Type
             DetailRow(
-                icon = if (invitationModel.typeContract == ContractType.CONTRACT.name) Icons.Default.Work else Icons.Default.Person,
-                label = "Contract Type",
-                value = if (invitationModel.typeContract == ContractType.CONTRACT.name) "Contract" else "Freelance"
+                icon = if (typeContract == ContractType.CONTRACT.name) Icons.Default.Work else Icons.Default.Person,
+                label = stringResource(id = R.string.work_type_text),
+                value = if (typeContract == ContractType.CONTRACT.name) "Contract" else "Freelance"
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
 
-            // Fee Information
-            if (invitationModel.typeContract == ContractType.FREELANCE.name) {
+            if (typeContract == ContractType.CONTRACT.name) {
                 DetailRow(
-                    icon = Icons.Default.AttachMoney,
-                    label = "TGM",
-                    value = invitationModel.tgm
+                    icon = Icons.Default.TypeSpecimen,
+                    label = stringResource(id = R.string.contract_type_text),
+                    value = nameContract
                 )
-            } else if (invitationModel.typeContract == ContractType.CONTRACT.name) {
+            } else if (typeContract == ContractType.FREELANCE.name) {
                 DetailRow(
-                    icon = Icons.Default.AttachMoney,
-                    label = stringResource(id = R.string.salary_text),
-                    value = invitationModel.salary
+                    icon = Icons.Default.Timer,
+                    label = stringResource(id = R.string.duration_text),
+                    value = duration
                 )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Payment Terms
+            // description
             DetailRow(
-                icon = Icons.Default.Schedule,
-                label = "Contract descriiption",
-                value = invitationModel.descriptionContract
+                icon = Icons.Default.Description,
+                label = stringResource(id = R.string.contract_description_text),
+                value = descriptionContract
             )
         }
     }

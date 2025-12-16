@@ -3,6 +3,7 @@ package com.example.myjob.feature.navigation
 sealed class Screen(val route:String) {
     object recordScreen : Screen("record_screen")
     object HomeScreen : Screen("home_screen")
+    object UpdateDetailsScreen : Screen("update_detail_screen")
     object ValidateProfileCompanyScreen : Screen("validate_profile_company_screen")
     object ValidateDocCandidateScreen : Screen("validate_doc_candidate_screen")
     object ValidateProfileCandidateScreen : Screen("validate_profile_candidate_screen")

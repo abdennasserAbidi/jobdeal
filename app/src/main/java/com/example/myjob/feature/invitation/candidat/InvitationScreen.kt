@@ -294,7 +294,6 @@ fun InvitationScreen(
                         onClick = {
                             GlobalEntries.idInvitation = item.idInvitation
                             navController.navigate(Screen.NormalDetailInvitationScreen.route)
-                            //navController.navigate("${Screen.DetailInvitationScreen.route}/${item.idInvitation}")
                         },
                         onAcceptInvitation = {
                             item.status = InvitationStatus.IN_PROCESS.name

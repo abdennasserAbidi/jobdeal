@@ -23,3 +23,59 @@ jobs:
 
       - name: Run unit tests
         run: ./gradlew clean testDebug
+
+  generate-log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate commit log
+        run: |
+          echo "# Commit Log" > COMMIT_LOG.md
+          echo "" >> COMMIT_LOG.md
+          git log --pretty=format:"- %h %s (%an)" >> COMMIT_LOG.md
+
+      - name: Commit and push log file
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add COMMIT_LOG.md
+          git commit -m "chore: update commit log" || echo "No changes to commit"
+          git push    
+
+
+  bump-version:
+    runs-on: ubuntu-latest
+
+    if: "!contains(github.event.head_commit.message, 'bump android version')"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Increment version
+        run: |
+          FILE=app/build.gradle.kts
+          
+          VERSION_CODE=$(grep "versionCode =" $FILE | awk '{print $3}')
+          VERSION_NAME=$(grep "versionName =" $FILE | sed 's/.*"//;s/"//')
+          
+          NEW_VERSION_CODE=$((VERSION_CODE + 1))
+          
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NAME"
+          NEW_VERSION_NAME="$MAJOR.$MINOR.$((PATCH + 1))"
+          
+          sed -i "s/versionCode = $VERSION_CODE/versionCode = $NEW_VERSION_CODE/" $FILE
+          sed -i "s/versionName = \"$VERSION_NAME\"/versionName = \"$NEW_VERSION_NAME\"/" $FILE
+
+      - name: Commit & push
+        run: |
+                git config user.name "github-actions"
+                git config user.email "github-actions@github.com"
+                git add app/build.gradle
+                git commit -m "chore: bump android version to $NEW_VERSION_NAME" || exit 0
+                git push

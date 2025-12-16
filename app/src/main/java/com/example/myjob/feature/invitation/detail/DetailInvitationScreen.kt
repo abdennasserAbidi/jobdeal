@@ -229,6 +229,7 @@ fun DetailInvitationScreen(
 
             // Invitation Content Card
             InvitationContentCard(
+                status = "",
                 subject = invitation.message,
                 message = invitation.description
             )

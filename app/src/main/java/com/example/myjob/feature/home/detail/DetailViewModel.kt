@@ -86,8 +86,8 @@ class DetailViewModel @Inject constructor(
                         val start = firstExp.dateStart ?: ""
 
                         if (start.isNotEmpty()) {
-                            val startArray = start.split(", ")
-                            val yearStart = startArray[2].toInt()
+                            val startArray = start.split(" ")
+                            val yearStart = startArray[1].toInt()
 
                             val calendar: Calendar = Calendar.getInstance()
                             val currentYear: Int = calendar.get(Calendar.YEAR)

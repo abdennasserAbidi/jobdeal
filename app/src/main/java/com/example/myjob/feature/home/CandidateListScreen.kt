@@ -399,7 +399,6 @@ fun CandidateListScreen(
                             salary = "${lastExperience.salary ?: 0} DT",
                             skills = emptyList()
                         )
-                        val statusInvitation = stringResource(id = R.string.holding)
 
                         CandidateCard(
                             user = user,
@@ -409,7 +408,6 @@ fun CandidateListScreen(
                                 navController.navigate(Screen.DetailScreen.route)
                             },
                             onSendInvitation = {
-
                                 candidateUser = user
                                 navController.navigate(Screen.SendInvitationScreen.route)
                             },
@@ -611,7 +609,6 @@ fun CandidateListScreen(
 
                     LaunchedEffect(pickOption) {
                         if (pickOption) {
-                            Log.i("hahiwachbiki", "CandidateListScreen: $criteria")
                             homeViewModel.validateFilter(criteria)
                             pickOption = false
                         }

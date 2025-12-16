@@ -766,7 +766,7 @@ class HomeViewModel @Inject constructor(
         durationMission.update { duration }
     }
 
-    fun matchCurrentProfile(user: User, status: String, descriptionContract: String) {
+    fun matchCurrentProfile(user: User, status: String, descriptionContract: String, duration: String) {
         val currentDate = Date()
         val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         val formattedDate = formatter.format(currentDate)
@@ -779,6 +779,7 @@ class HomeViewModel @Inject constructor(
             it.gender = user.sexe
             it.date = formattedDate
             it.status = status
+            it.duration = duration
             it.descriptionContract = descriptionContract
 
             if (it.nameContract == "AUTRE") {

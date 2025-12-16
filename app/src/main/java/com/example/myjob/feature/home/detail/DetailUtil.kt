@@ -796,13 +796,11 @@ fun ExperienceItem(experience: Experience) {
             var duration = ""
 
             if (start.isNotEmpty()) {
-                val startArray = start.split(", ")
-                duration = "${startArray[1].split(" ")[1]} ${startArray[2]}"
+                duration = start
 
                 if (experience.current == false) {
                     if (end.isNotEmpty()) {
-                        val endArray = end.split(", ")
-                        duration += " - ${endArray[1].split(" ")[1]} ${endArray[2]}"
+                        duration += " - $end"
                     }
                 } else duration += " to present"
             }

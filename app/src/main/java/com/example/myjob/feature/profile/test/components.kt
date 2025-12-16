@@ -783,7 +783,7 @@ fun WorkExperienceCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Work Experience",
+                    text = stringResource(id = R.string.work_experience_text),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )

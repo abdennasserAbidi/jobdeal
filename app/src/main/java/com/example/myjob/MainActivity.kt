@@ -107,6 +107,7 @@ import com.example.myjob.feature.profile.PersonalForm
 import com.example.myjob.feature.profile.ProfileScreen
 import com.example.myjob.feature.profile.test.CandidateProfileFormScreen
 import com.example.myjob.feature.profile.test.CompanyProfileFormScreen
+import com.example.myjob.feature.profile.test.UpdateDetailScreen
 import com.example.myjob.feature.setting.ModernSettingScreen
 import com.example.myjob.feature.signup.SignUpScreen
 import com.example.myjob.feature.splash.SplashScreen
@@ -145,12 +146,13 @@ class MainActivity : ComponentActivity() {
     private var listCountries: MutableList<String> = mutableListOf()
 
     //TODO("détail company invitation détail")
-    //TODO("Filtrage du poste")
     //TODO("ajouter company et institut a chaque fois on ne trouve pas dans la liste")
     //TODO("détail user quand on complète le profile")
-    //TODO("upload images")
+    //TODO("add phone to company complete profile")
     //TODO("share application")
+    //TODO("Filtrage du poste")
     //TODO("Notification")
+    //TODO("upload images")
     //TODO("chat")
 
     var mSocket: Socket? = null
@@ -549,10 +551,6 @@ class MainActivity : ComponentActivity() {
                     }
                     //END MESSAGERIE
 
-
-
-
-
                     //VALIDATION
                     composable(route = Screen.ValidateDocCandidateScreen.route) {
                         isVisibleNav = false
@@ -758,6 +756,11 @@ class MainActivity : ComponentActivity() {
                     composable(route = Screen.CompanyProfileScreen.route) {
                         isVisibleNav = true
                         ProfileScreen(navController)
+                    }
+
+                    composable(route = Screen.UpdateDetailsScreen.route) {
+                        isVisibleNav = false
+                        UpdateDetailScreen(navController)
                     }
 
                     //new

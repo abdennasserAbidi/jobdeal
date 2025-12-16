@@ -400,6 +400,9 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // ACTIVITY SECTOR
+    ///////////////////////////////////////////////////////////////////////////
     var titleGeneric = MutableStateFlow("")
 
     fun changeTitleGeneric(item: String) {
@@ -626,6 +629,8 @@ class ProfileViewModel @Inject constructor(
 
         with(user) {
             titleGeneric.update { preferredActivitySector ?: "" }
+            countryGeneric.update { country ?: "" }
+            userEmploymentTypeChoice.update { preferredEmploymentType ?: "" }
             userSituation.update { situation ?: "" }
             userSex.update { sexe ?: "" }
             birthDateUser.update { birthDate ?: "" }
@@ -1298,6 +1303,14 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun convertDate(date: String): String {
+        val forMonth = date.split(", ")[1]
+        val month = forMonth.split(" ")[1]
+        val year = date.split(", ")[2]
+
+        return "$month $year"
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // COMPANY NAMES
     ///////////////////////////////////////////////////////////////////////////
@@ -1698,7 +1711,7 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             experiences.idUser = user.value.id
             saveExperienceUseCase.execute(experiences).collect { res ->
-                saveExpState.update { res.data?.message ?: "" }
+                //saveExpState.update { res.data?.message ?: "" }
                 getCompaniesValidated()
                 if (res.data?.message == "saved successfully") getAllExperience(user.value.id ?: 0)
             }
@@ -1715,6 +1728,7 @@ class ProfileViewModel @Inject constructor(
                 it.idUser = user.value.id
                 saveExperienceUseCase.execute(it).collect { res ->
                     saveExpState.update { res.data?.message ?: "" }
+                    getCompaniesValidated()
                     if (res.data?.message == "saved successfully") getAllExperience(
                         user.value.id ?: 0
                     )

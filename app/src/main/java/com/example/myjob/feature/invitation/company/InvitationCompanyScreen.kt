@@ -1,35 +1,19 @@
 package com.example.myjob.feature.invitation.company
 
-import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Card
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,9 +23,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -62,15 +46,10 @@ import com.example.myjob.common.PageLoader
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.common.view.CompanyInvitationCard
 import com.example.myjob.domain.entities.User
-import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.feature.navigation.Screen
 import kotlinx.coroutines.flow.update
 
-@OptIn(
-    ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class
-)
 @Composable
 fun InvitationCompanyScreen(
     navController: NavController,
@@ -81,15 +60,8 @@ fun InvitationCompanyScreen(
     val invitations: LazyPagingItems<InvitationModel> =
         invitationViewModel.invitations.collectAsLazyPagingItems()
 
-    val announcement: LazyPagingItems<AnnouncementModel> =
-        invitationViewModel.announcement.collectAsLazyPagingItems()
-
-
-    var openAnnounceForm by remember { mutableStateOf(false) }
     var openFinishProcess by remember { mutableStateOf(false) }
     var invitationModel by remember { mutableStateOf(InvitationModel()) }
-    val selected by remember { mutableStateOf(0) }
-    val choiceList by invitationViewModel.choiceList.collectAsState()
     val invitation by invitationViewModel.invitation.collectAsState()
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -105,7 +77,6 @@ fun InvitationCompanyScreen(
         if (isRefreshing) {
             invitationViewModel.getCompanyInvitations()
             GlobalEntries.isRefreshing.update { false }
-            Log.i("lklknjrjkrhgz", "InvitationCompanyScreen: gkelhgelhgealkg")
         }
     }
 
@@ -144,7 +115,6 @@ fun InvitationCompanyScreen(
                     onClick = {
                         GlobalEntries.idInvitation = item.idInvitation
                         navController.navigate(Screen.NormalDetailInvitationScreen.route)
-                        //navController.navigate("${Screen.DetailInvitationScreen.route}/${item.idInvitation}")
                     },
                     viewProfile = {
                         userForCompany = User()
@@ -222,7 +192,7 @@ fun InvitationCompanyScreen(
                 )
 
                 Text(
-                    text = "My Invitations",
+                    text = stringResource(id = R.string.invitations_text),
                     modifier = Modifier.align(Alignment.Center),
                     color = Color.White,
                     style = TextStyle(
@@ -232,183 +202,6 @@ fun InvitationCompanyScreen(
                     )
                 )
             }
-        }
-
-        AnimatedVisibility(
-            visible = openAnnounceForm,
-            enter = slideInVertically(
-                initialOffsetY = { it }, // Slide from below the screen
-                animationSpec = tween(durationMillis = 600) // Set animation duration
-            ),
-            exit = slideOutVertically(
-                targetOffsetY = { it }, // Slide out upwards
-                animationSpec = tween(durationMillis = 600) // Set animation duration
-            ),
-            modifier = Modifier.align(Alignment.BottomCenter)
-        ) {
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.7f),
-                elevation = 5.dp,
-                shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .background(Color.White),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp)
-                            .padding(top = 20.dp)
-                    ) {
-
-                        Icon(
-                            imageVector = Icons.Filled.Close,
-                            modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    openAnnounceForm = false
-                                },
-                            contentDescription = ""
-                        )
-
-                        Text(
-                            text = "Announce",
-                            modifier = Modifier.align(Alignment.Center),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 22.sp
-                        )
-                    }
-
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        val announcementModel by invitationViewModel.announcementModel.collectAsState()
-                        var postName by remember { mutableStateOf("Dveloppeur Android") }
-
-                        Column {
-                            Text(
-                                text = "Post name",
-                                modifier = Modifier.padding(top = 20.dp, start = 20.dp),
-                                style = TextStyle(
-                                    color = colorResource(id = R.color.whatsapp),
-                                    fontFamily = FontFamily.Default,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-
-                            TextField(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 20.dp)
-                                    .padding(top = 10.dp)
-                                    .border(
-                                        width = 1.dp,
-                                        color = colorResource(id = R.color.whatsapp),
-                                        shape = RoundedCornerShape(30.dp)
-                                    )
-                                    .clip(shape = RoundedCornerShape(30.dp)),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent
-                                ),
-                                value = postName,
-                                onValueChange = {
-                                    postName = it
-                                    invitationViewModel.changePostName(it)
-                                },
-                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                            )
-                        }
-
-                        var descriptions by remember { mutableStateOf("Creer une application pour connecter les entreprises avec les candidats facilement.") }
-
-                        Column {
-                            Text(
-                                text = "Description",
-                                modifier = Modifier.padding(top = 10.dp, start = 20.dp),
-                                style = TextStyle(
-                                    color = colorResource(id = R.color.whatsapp),
-                                    fontFamily = FontFamily.Default,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-
-                            TextField(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 20.dp)
-                                    .padding(top = 10.dp)
-                                    .border(
-                                        width = 1.dp,
-                                        color = colorResource(id = R.color.whatsapp),
-                                        shape = RoundedCornerShape(30.dp)
-                                    )
-                                    .clip(shape = RoundedCornerShape(30.dp)),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent
-                                ),
-                                value = descriptions,
-                                onValueChange = {
-                                    descriptions = it
-                                    invitationViewModel.changeDescriptions(it)
-                                },
-                                textStyle = TextStyle(Color.Black, fontSize = 14.sp)
-                            )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.4f)
-                                .padding(top = 20.dp)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-
-                                    invitationViewModel.saveCompanyAnnouncement()
-                                    openAnnounceForm = false
-
-                                }
-                                .background(
-                                    color = colorResource(id = R.color.whatsapp),
-                                    shape = RoundedCornerShape(30.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Send",
-                                modifier = Modifier.padding(
-                                    vertical = 20.dp,
-                                    horizontal = 20.dp
-                                ),
-                                style = TextStyle(
-                                    color = Color.White,
-                                    fontFamily = FontFamily.Default,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-                        }
-                    }
-
-                }
-            }
-
         }
     }
 }

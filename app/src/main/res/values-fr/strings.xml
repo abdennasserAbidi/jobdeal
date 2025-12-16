@@ -214,7 +214,9 @@
 
     <string name="freelance_salary_text">Salaire freelance</string>
     <string name="salary_text">Salaire</string>
+    <string name="contract_description_text">Description du contrat</string>
     <string name="duration_text">Durée</string>
+    <string name="contract_detail_text">Detail du contrat</string>
 
     <string name="work_still_text">Je suis toujours dans ce rôle</string>
     <string name="companies_text">Entreprises</string>
@@ -294,6 +296,7 @@
     <string name="my_account_text">Mon Compte</string>
 
     <string name="invitations_text">Mes invitations</string>
+    <string name="invitation_content_text">Contenu de l\'invitation</string>
     <string name="navigate_invitations_text">Voir vos invitations</string>
     <string name="career_text">Carrière</string>
     <string name="navigate_career_text">Booseter mon carrière</string>

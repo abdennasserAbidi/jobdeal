@@ -1,6 +1,7 @@
 package com.example.myjob.feature.profile.test
 
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
@@ -325,20 +326,20 @@ fun CandidateProfileFormScreen(
                             profileViewModel.changeVisibilityDate(true)
                         },
                         onSubmit = {
-                            selectedTab += 1
                         },
                     )
 
                     1 -> ProfessionalForm(
                         profileViewModel = profileViewModel,
                         onDataChange = {
-                            selectedTab += 1
                         }
                     )
 
                     2 -> SkillsForm(
                         profileViewModel = profileViewModel,
-                        onDataChange = { selectedTab += 1 }
+                        onDataChange = {
+
+                        }
                     )
 
                     3 -> ExperienceForm(
@@ -383,7 +384,7 @@ fun CandidateProfileFormScreen(
         val saveCompletedState by profileViewModel.saveCompletedState.collectAsState()
         LaunchedEffect(saveCompletedState) {
             if (saveCompletedState == "saved successfully") {
-                navController.navigate(Screen.HomeScreen.route)
+                navController.navigate(Screen.UpdateDetailsScreen.route)
                 profileViewModel.clearComplete()
             }
         }
@@ -391,11 +392,11 @@ fun CandidateProfileFormScreen(
         val snackbarHostState = remember { SnackbarHostState() }
 
         val saveUserState by profileViewModel.saveUserState.collectAsState()
-        LaunchedEffect(Unit) {
+        LaunchedEffect(saveUserState) {
             if (saveUserState == "saved successfully") {
                 profileViewModel.triggerPersonalCheck(false)
-                /*selectedTab += 1
-                profileViewModel.clearPersoanlInfo()*/
+                selectedTab += 1
+                profileViewModel.clearPersoanlInfo()
             }
         }
 
@@ -403,17 +404,20 @@ fun CandidateProfileFormScreen(
         LaunchedEffect(saveCandidateProfessionalState) {
             if (saveCandidateProfessionalState == "saved successfully") {
                 profileViewModel.triggerProfessionalCheck(false)
-                /*selectedTab += 1
-                profileViewModel.clearProfessionalInfo()*/
+                selectedTab += 1
+                profileViewModel.clearProfessionalInfo()
             }
         }
 
         val saveExpState by profileViewModel.saveExpState.collectAsState()
+        Log.i("sdscccccccccc", "saveCandidateProfessionalState: $saveCandidateProfessionalState")
+        Log.i("sdscccccccccc", "saveUserState: $saveUserState")
+        Log.i("sdscccccccccc", "CandidateProfileFormScreen: $saveExpState")
         LaunchedEffect(saveExpState) {
             if (saveExpState == "saved successfully") {
                 profileViewModel.triggerExperienceCheck(false)
-                /*selectedTab += 1
-                profileViewModel.clearExpState()*/
+                selectedTab += 1
+                profileViewModel.clearExpState()
             }
         }
 
@@ -422,7 +426,7 @@ fun CandidateProfileFormScreen(
             if (saveEducationState == "saved successfully") {
                 profileViewModel.triggerEducationCheck(false)
                 profileViewModel.saveIsCompletedProfileCandidate()
-                profileViewModel.clearProfessionalInfo()
+                profileViewModel.clearEducationState()
             }
         }
 
@@ -487,18 +491,20 @@ fun CandidateProfileFormScreen(
                     }
 
                     "start" -> {
-                        profileViewModel.changeStartDateExperience(indexToChange, it)
+                        profileViewModel.changeStartDateExperience(indexToChange, profileViewModel.convertDate(it))
                         profileViewModel.changeEndDateExp(it)
                     }
 
                     "end" -> {
-                        profileViewModel.changeEndDateExperience(indexToChange, it)
+                        profileViewModel.changeEndDateExperience(indexToChange, profileViewModel.convertDate(it))
                         profileViewModel.changeEndDateExp(it)
                     }
                 }
-            }, onDismiss = {
+            },
+            onDismiss = {
                 profileViewModel.changeVisibilityDate(false)
-            })
+            }
+        )
 
         //EDUCATION
         AnimatedVisibility(
@@ -680,6 +686,7 @@ fun CandidateProfileFormScreen(
                 val names = allSubjects.map {
                     it.libelly
                 }
+
                 GenericSearch(
                     mListOfJobs = names,
                     onDismissRequest = {
