@@ -59,7 +59,13 @@ jobs:
 
       - name: Increment version
         run: |
-          FILE=app/build.gradle.kts
+          
+          FILE=./app/build.gradle.kts   # adjust to your path
+
+              if [ ! -f "$FILE" ]; then
+               echo "File not found: $FILE"
+               exit 1
+              fi
           
           VERSION_CODE=$(grep "versionCode =" $FILE | awk '{print $3}')
           VERSION_NAME=$(grep "versionName =" $FILE | sed 's/.*"//;s/"//')
