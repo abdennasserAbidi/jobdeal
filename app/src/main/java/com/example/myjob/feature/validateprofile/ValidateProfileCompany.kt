@@ -1,7 +1,11 @@
 package com.example.myjob.feature.validateprofile
 
+import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -14,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -25,33 +30,33 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.feature.profile.test.FormTextField
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,50 +70,123 @@ fun ValidateProfileCompany(
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
+    val user by validateProfileViewModel.user.collectAsState()
+    val isEmailValid by validateProfileViewModel.isEmailValid.collectAsState()
+
+    val interactionSource = remember { MutableInteractionSource() }
+
+    var numSecuritySocial by remember { mutableStateOf("") }
+    var docs by remember { mutableStateOf(mutableListOf("")) }
+    var documentList by remember { mutableStateOf(mutableListOf(Documents())) }
+
+    var activatedCheck by remember { mutableStateOf(false) }
+
+    var email by remember { mutableStateOf("") }
+    val emailVerified by remember { derivedStateOf { isEmailValid } }
+
+    val verificationSteps by validateProfileViewModel.verificationSteps.collectAsState()
+    var isRejected by remember { mutableStateOf(false) }
+
+    var indexSelected by remember { mutableStateOf(0) }
+    var docsVerify by remember { mutableStateOf(mutableListOf(false)) }
+
+    val imageUri = rememberSaveable { mutableStateOf<Uri?>(null) }
+
+    val filesList by validateProfileViewModel.filesList.collectAsState()
+
+    val lifecycleEvent = rememberLifecycleEvent()
+    LaunchedEffect(lifecycleEvent) {
+        if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+            validateProfileViewModel.getFiles()
+        }
+    }
+
+    LaunchedEffect(filesList) {
+        if (filesList.isNotEmpty()) {
+            documentList.clear()
+            filesList.map {
+                val document = Documents(
+                    name = validateProfileViewModel.getNameDocFromLink(it),
+                    url = it,
+                    type = validateProfileViewModel.getTypeDocFromLink(it)
+                )
+                documentList = (documentList + document).toMutableList()
+            }
+        }
+    }
+
+    val pickMediaLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            imageUri.value = uri
+            val listImageUri = GlobalEntries.listCompanyImageUri.toMutableList()
+            listImageUri.add(uri)
+
+            GlobalEntries.listCompanyImageUri = listImageUri
+
+            val fileName = validateProfileViewModel.imageInfo(context, uri)
+            val list = docs
+            list[indexSelected] = fileName
+            docs = list
+
+            documentList = (documentList - documentList[indexSelected]).toMutableList()
+            val document = Documents(
+                url = uri.path ?: "",
+                name = fileName,
+                type = validateProfileViewModel.getTypeDoc(fileName)
+            )
+            documentList.add(indexSelected, document)
+
+        } else {
+            // Handle the case where no media was selected
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = colorResource(id = R.color.whatsapp)
+                )
+                .padding(horizontal = 20.dp, vertical = 24.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = CenterVertically
+            ) {
+                IconButton(
+                    onClick = {
+                        navController.popBackStack()
+                    },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.2f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
 
-        // Top App Bar
-        TopAppBar(
-            title = {
                 Text(
                     text = stringResource(id = R.string.validate_profile_text),
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(start = 20.dp),
+                    color = Color.White
                 )
-            },
-            navigationIcon = {
-                IconButton(onClick = {
-                    navController.popBackStack()
-                }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = colorResource(id = R.color.whatsapp),
-                titleContentColor = Color.White,
-                navigationIconContentColor = Color.White
-            )
-        )
-
-        val user by validateProfileViewModel.user.collectAsState()
-        val isEmailValid by validateProfileViewModel.isEmailValid.collectAsState()
-
-        val interactionSource = remember { MutableInteractionSource() }
-
-        var numSecuritySocial by remember { mutableStateOf("") }
-        var docs by remember { mutableStateOf(mutableListOf("")) }
-
-        var activatedCheck by remember { mutableStateOf(false) }
-
-        var email by remember { mutableStateOf("") }
-        val emailVerified by remember { derivedStateOf { isEmailValid } }
-
-        val verificationSteps by validateProfileViewModel.verificationSteps.collectAsState()
-        var isRejected by remember { mutableStateOf(false) }
+            }
+        }
 
         when(verificationSteps.status) {
             VerificationStatus.PENDING_REVIEW.name -> {
@@ -147,6 +225,9 @@ fun ValidateProfileCompany(
 
                     FormTextField(
                         value = email,
+                        borderColor = if (activatedCheck && email.isEmpty()) Color.Red else colorResource(
+                            id = R.color.whatsapp
+                        ),
                         onValueChange = {
                             email = it
                             if (activatedCheck) validateProfileViewModel.validateEmail(it)
@@ -166,14 +247,17 @@ fun ValidateProfileCompany(
 
                             Text(
                                 modifier = Modifier.padding(top = 5.dp, start = 20.dp),
-                                text = if (emailVerified) "Valid First name" else stringResource(id = R.string.error_email),
-                                color = if (emailVerified) colorResource(id = R.color.whatsapp) else Color.Red
+                                text = stringResource(id = R.string.error_email),
+                                color = Color.Red
                             )
                         }
                     }
 
                     FormTextField(
                         value = numSecuritySocial,
+                        borderColor = if (activatedCheck && numSecuritySocial.isEmpty()) Color.Red else colorResource(
+                            id = R.color.whatsapp
+                        ),
                         onValueChange = {
                             numSecuritySocial = it
                         },
@@ -185,8 +269,7 @@ fun ValidateProfileCompany(
                         isRequired = true
                     )
 
-                    docs.mapIndexed { index, doc ->
-
+                    documentList.mapIndexed { index, doc ->
                         if (index > 0) {
                             Row(
                                 modifier = Modifier
@@ -196,9 +279,11 @@ fun ValidateProfileCompany(
                             ) {
 
                                 FormTextField(
-                                    value = doc,
+                                    value = doc.name,
+                                    borderColor = if (activatedCheck && doc.name.isEmpty()) Color.Red else colorResource(
+                                        id = R.color.whatsapp
+                                    ),
                                     onValueChange = {
-                                        docs[index] = it
                                     },
                                     label = stringResource(id = R.string.add_document_text),
                                     modifier = Modifier
@@ -206,10 +291,9 @@ fun ValidateProfileCompany(
                                         .padding(start = 20.dp),
                                     isRequired = true,
                                     readOnly = true,
-                                    focusChange = { isFocused ->
-                                        if (isFocused) {
-                                            selectImage.launch("*/*")
-                                        }
+                                    onClick = {
+                                        indexSelected = index
+                                        pickMediaLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                                     }
                                 )
 
@@ -223,18 +307,23 @@ fun ValidateProfileCompany(
                                             interactionSource = interactionSource,
                                             indication = null
                                         ) {
-                                            if (docs.size > 1)
+                                            if (docs.size > 1) {
                                                 docs = (docs - docs[index]).toMutableList()
+                                                documentList = (documentList - documentList[index]).toMutableList()
+                                                docsVerify =
+                                                    (docsVerify - docsVerify[index]).toMutableList()
+                                            }
                                         },
                                     contentDescription = ""
                                 )
                             }
                         } else {
                             FormTextField(
-                                value = doc,
-                                onValueChange = {
-                                    docs[index] = it
-                                },
+                                value = doc.name,
+                                borderColor = if (activatedCheck && doc.name.isEmpty()) Color.Red else colorResource(
+                                    id = R.color.whatsapp
+                                ),
+                                onValueChange = {},
                                 label = stringResource(id = R.string.add_document_text),
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -242,10 +331,9 @@ fun ValidateProfileCompany(
                                     .padding(top = 20.dp),
                                 isRequired = true,
                                 readOnly = true,
-                                focusChange = { isFocused ->
-                                    if (isFocused) {
-                                        selectImage.launch("*/*")
-                                    }
+                                onClick = {
+                                    indexSelected = index
+                                    pickMediaLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                                 }
                             )
                         }
@@ -261,6 +349,9 @@ fun ValidateProfileCompany(
                                     indication = null
                                 ) {
                                     docs = (docs + "").toMutableList()
+                                    val document = Documents()
+                                    documentList = (documentList + document).toMutableList()
+                                    docsVerify = (docsVerify + false).toMutableList()
                                 },
                             color = colorResource(id = R.color.whatsapp),
                             text = stringResource(id = R.string.add_document_text),
@@ -270,9 +361,17 @@ fun ValidateProfileCompany(
                     Button(
                         onClick = {
                             val s = validateProfileViewModel.validateEmail(email)
-                            if (!emailVerified) activatedCheck = true
+                            docs.mapIndexed { index, document ->
+                                if (document.isEmpty()) {
+                                    docsVerify[index] = true
+                                }
+                            }
+                            val isNoError = docsVerify.none { it }
+                            if (!isNoError || !emailVerified) {
+                                activatedCheck = true
+                            }
 
-                            if (s && numSecuritySocial.isNotEmpty()) {
+                            if (isNoError && s && numSecuritySocial.isNotEmpty()) {
                                 val validationProfileStatus = ValidationProfileStatus()
                                 validationProfileStatus.email = email
                                 validationProfileStatus.typeValidation = "company"
@@ -280,16 +379,16 @@ fun ValidateProfileCompany(
                                 validationProfileStatus.docs = docs
                                 validationProfileStatus.status = VerificationStatus.PENDING_REVIEW.name
 
-                                GlobalEntries.listImageUri.mapIndexed { index, uri ->
-                                    uri?.let { validateProfileViewModel.uploadDoc(context, it, index) }
+                                GlobalEntries.listCompanyImageUri.mapIndexed { index, uri ->
+                                    uri?.let { validateProfileViewModel.uploadDoc(context = context, it, index, documentList[index]) }
                                 }
                                 validateProfileViewModel.validate(validationProfileStatus)
-
                                 navController.popBackStack()
                             }
                         },
                         modifier = Modifier
-                            .fillMaxWidth(0.9f)
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
                             .padding(top = 20.dp),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -308,6 +407,9 @@ fun ValidateProfileCompany(
                 Column(modifier = Modifier.fillMaxWidth()) {
                     FormTextField(
                         value = email,
+                        borderColor = if (activatedCheck && email.isEmpty()) Color.Red else colorResource(
+                            id = R.color.whatsapp
+                        ),
                         onValueChange = {
                             email = it
                             if (activatedCheck) validateProfileViewModel.validateEmail(it)
@@ -327,14 +429,17 @@ fun ValidateProfileCompany(
 
                             Text(
                                 modifier = Modifier.padding(top = 5.dp, start = 20.dp),
-                                text = if (emailVerified) "Valid First name" else stringResource(id = R.string.error_email),
-                                color = if (emailVerified) colorResource(id = R.color.whatsapp) else Color.Red
+                                text = stringResource(id = R.string.error_email),
+                                color = Color.Red
                             )
                         }
                     }
 
                     FormTextField(
                         value = numSecuritySocial,
+                        borderColor = if (activatedCheck && numSecuritySocial.isEmpty()) Color.Red else colorResource(
+                            id = R.color.whatsapp
+                        ),
                         onValueChange = {
                             numSecuritySocial = it
                         },
@@ -346,8 +451,7 @@ fun ValidateProfileCompany(
                         isRequired = true
                     )
 
-                    docs.mapIndexed { index, doc ->
-
+                    documentList.mapIndexed { index, doc ->
                         if (index > 0) {
                             Row(
                                 modifier = Modifier
@@ -357,9 +461,11 @@ fun ValidateProfileCompany(
                             ) {
 
                                 FormTextField(
-                                    value = doc,
+                                    value = doc.name,
+                                    borderColor = if (activatedCheck && doc.name.isEmpty()) Color.Red else colorResource(
+                                        id = R.color.whatsapp
+                                    ),
                                     onValueChange = {
-                                        docs[index] = it
                                     },
                                     label = stringResource(id = R.string.add_document_text),
                                     modifier = Modifier
@@ -367,10 +473,9 @@ fun ValidateProfileCompany(
                                         .padding(start = 20.dp),
                                     isRequired = true,
                                     readOnly = true,
-                                    focusChange = { isFocused ->
-                                        if (isFocused) {
-                                            selectImage.launch("*/*")
-                                        }
+                                    onClick = {
+                                        indexSelected = index
+                                        pickMediaLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                                     }
                                 )
 
@@ -384,18 +489,23 @@ fun ValidateProfileCompany(
                                             interactionSource = interactionSource,
                                             indication = null
                                         ) {
-                                            if (docs.size > 1)
+                                            if (docs.size > 1) {
                                                 docs = (docs - docs[index]).toMutableList()
+                                                documentList = (documentList - documentList[index]).toMutableList()
+                                                docsVerify =
+                                                    (docsVerify - docsVerify[index]).toMutableList()
+                                            }
                                         },
                                     contentDescription = ""
                                 )
                             }
                         } else {
                             FormTextField(
-                                value = doc,
-                                onValueChange = {
-                                    docs[index] = it
-                                },
+                                value = doc.name,
+                                borderColor = if (activatedCheck && doc.name.isEmpty()) Color.Red else colorResource(
+                                    id = R.color.whatsapp
+                                ),
+                                onValueChange = {},
                                 label = stringResource(id = R.string.add_document_text),
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -403,10 +513,9 @@ fun ValidateProfileCompany(
                                     .padding(top = 20.dp),
                                 isRequired = true,
                                 readOnly = true,
-                                focusChange = { isFocused ->
-                                    if (isFocused) {
-                                        selectImage.launch("*/*")
-                                    }
+                                onClick = {
+                                    indexSelected = index
+                                    pickMediaLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                                 }
                             )
                         }
@@ -422,6 +531,9 @@ fun ValidateProfileCompany(
                                     indication = null
                                 ) {
                                     docs = (docs + "").toMutableList()
+                                    val document = Documents()
+                                    documentList = (documentList + document).toMutableList()
+                                    docsVerify = (docsVerify + false).toMutableList()
                                 },
                             color = colorResource(id = R.color.whatsapp),
                             text = stringResource(id = R.string.add_document_text),
@@ -431,9 +543,17 @@ fun ValidateProfileCompany(
                     Button(
                         onClick = {
                             val s = validateProfileViewModel.validateEmail(email)
-                            if (!emailVerified) activatedCheck = true
+                            docs.mapIndexed { index, document ->
+                                if (document.isEmpty()) {
+                                    docsVerify[index] = true
+                                }
+                            }
+                            val isNoError = docsVerify.none { it }
+                            if (!isNoError || !emailVerified) {
+                                activatedCheck = true
+                            }
 
-                            if (s && numSecuritySocial.isNotEmpty()) {
+                            if (isNoError && s && numSecuritySocial.isNotEmpty()) {
                                 val validationProfileStatus = ValidationProfileStatus()
                                 validationProfileStatus.email = email
                                 validationProfileStatus.typeValidation = "company"
@@ -441,16 +561,16 @@ fun ValidateProfileCompany(
                                 validationProfileStatus.docs = docs
                                 validationProfileStatus.status = VerificationStatus.PENDING_REVIEW.name
 
-                                GlobalEntries.listImageUri.mapIndexed { index, uri ->
-                                    uri?.let { validateProfileViewModel.uploadDoc(context, it, index) }
+                                GlobalEntries.listCompanyImageUri.mapIndexed { index, uri ->
+                                    uri?.let { validateProfileViewModel.uploadDoc(context = context, it, index, documentList[index]) }
                                 }
                                 validateProfileViewModel.validate(validationProfileStatus)
-
                                 navController.popBackStack()
                             }
                         },
                         modifier = Modifier
-                            .fillMaxWidth(0.9f)
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
                             .padding(top = 20.dp),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(

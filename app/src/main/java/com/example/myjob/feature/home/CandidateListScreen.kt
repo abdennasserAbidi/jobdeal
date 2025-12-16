@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -20,7 +21,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
@@ -50,7 +53,9 @@ import com.example.myjob.domain.entities.FilterType
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.candidates
+import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.feature.home.filter.flowHandling
+import com.example.myjob.feature.invitation.company.EnProcessForm
 import com.example.myjob.feature.navigation.Screen
 import kotlinx.coroutines.flow.update
 
@@ -62,6 +67,7 @@ fun CandidateListScreen(
     listSchools: MutableList<String>,
     listCountries: MutableList<String>,
     listCompany: MutableList<String>,
+    clearData: () -> Unit = {},
     changeIndexTab: () -> Unit,
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -77,6 +83,7 @@ fun CandidateListScreen(
     LaunchedEffect(lifecycle) {
         if (lifecycle == Lifecycle.Event.ON_RESUME) {
             changeIndexTab()
+            homeViewModel.getCurrent()
             homeViewModel.getUserToken()
         }
     }
@@ -84,6 +91,15 @@ fun CandidateListScreen(
     LaunchedEffect(fcmToken) {
         if (fcmToken.isEmpty()) {
             homeViewModel.updateToken()
+        }
+    }
+
+    val isRefreshing by GlobalEntries.isRefreshing.collectAsState()
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            homeViewModel.getCurrent()
+            GlobalEntries.isRefreshing.update { false }
+            Log.i("lklknjrjkrhgz", "home screen: gkelhgelhgealkg")
         }
     }
 
@@ -158,7 +174,6 @@ fun CandidateListScreen(
             GlobalEntries.isVisibleNav.update { true }
 
             homeViewModel.addToList(contractText, freelanceText)
-            //onResumed(0)
             if (GlobalEntries.isFromFilter) {
                 homeViewModel.validateFilter(GlobalEntries.criteriaModel)
                 GlobalEntries.isFromFilter = false
@@ -179,6 +194,22 @@ fun CandidateListScreen(
         }
     }
 
+    val invitation by homeViewModel.invitation.collectAsState()
+
+    var openFinishProcess by remember { mutableStateOf(false) }
+    var invitationModel by remember { mutableStateOf(InvitationModel()) }
+
+    if (openFinishProcess) {
+        EnProcessForm(invitationModel,
+            onDismissRequest = {
+                openFinishProcess = false
+            },
+            onConfirmation = {
+                homeViewModel.finishProcess(it)
+                openFinishProcess = false
+            })
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -190,28 +221,68 @@ fun CandidateListScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            // Top App Bar
-            TopAppBar(
-                title = {
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = colorResource(id = R.color.whatsapp)
+                    )
+                    .padding(horizontal = 20.dp, vertical = 24.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = stringResource(id = R.string.candidates_text),
+                        fontSize = 24.sp,
+                        color = White,
                         fontWeight = FontWeight.Bold
                     )
-                },
-                actions = {
-                    IconButton(onClick = { /* Handle notifications */ }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notifications")
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        IconButton(
+                            onClick = {
+                                navController.popBackStack()
+                            },
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.2f))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "Notifications",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        IconButton(
+                            onClick = {
+                                homeViewModel.logout()
+                                clearData()
+                                navController.navigate(Screen.LoginScreen.route)
+                            },
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.2f))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Logout,
+                                contentDescription = "Logout",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
-                    IconButton(onClick = { /* Handle menu */ }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorResource(id = R.color.whatsapp),
-                    titleContentColor = Color.White,
-                    actionIconContentColor = Color.White
-                )
-            )
+                }
+            }
 
             // Search and Filter Section
             Column(
@@ -236,6 +307,10 @@ fun CandidateListScreen(
                             }
                         }
                     },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = colorResource(id = R.color.whatsapp),
+                        focusedLabelColor = colorResource(id = R.color.whatsapp)
+                    ),
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true
                 )
@@ -324,7 +399,6 @@ fun CandidateListScreen(
                             salary = "${lastExperience.salary ?: 0} DT",
                             skills = emptyList()
                         )
-                        val statusInvitation = stringResource(id = R.string.holding)
 
                         CandidateCard(
                             user = user,
@@ -334,9 +408,16 @@ fun CandidateListScreen(
                                 navController.navigate(Screen.DetailScreen.route)
                             },
                             onSendInvitation = {
-
                                 candidateUser = user
                                 navController.navigate(Screen.SendInvitationScreen.route)
+                            },
+                            onSendMessage = { it ->
+                                candidateUser = it
+                                navController.navigate(Screen.SendMessageScreen.route)
+                            },
+                            onTerminateInvitation = {
+                                invitationModel = it
+                                openFinishProcess = true
                             }
                         )
 
@@ -347,7 +428,7 @@ fun CandidateListScreen(
                         }
 
                         Spacer(modifier = Modifier
-                            .height(50.dp)
+                            .height(20.dp)
                             .fillMaxWidth())
                     }
                     lazyPagingItems.apply {
@@ -390,6 +471,8 @@ fun CandidateListScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
+
+                Spacer(modifier = Modifier.height(50.dp))
             }
         }
 
@@ -477,13 +560,13 @@ fun CandidateListScreen(
                                 ) {
                                     filterOpen = false
                                     GlobalEntries.isVisibleNav.update { true }
-                                    Log.i("ljkljlkjkljlkgtr", "CandidateListScreen: $criteria")
                                     homeViewModel.validateFilter(criteria)
                                     homeViewModel.changeSelectionParentChoices(
                                         indexParent,
                                         titleParent,
                                         !isSelectedParent
                                     )
+                                    filterOpen = false
                                 }
                                 .background(
                                     color = colorResource(id = R.color.whatsapp),
@@ -492,8 +575,8 @@ fun CandidateListScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "See results",
-                                color = Color.White,
+                                text = stringResource(id = R.string.show_result_text),
+                                color = White,
                                 style = TextStyle(fontWeight = FontWeight.Bold),
                                 modifier = Modifier.padding(vertical = 20.dp)
                             )
@@ -526,7 +609,6 @@ fun CandidateListScreen(
 
                     LaunchedEffect(pickOption) {
                         if (pickOption) {
-                            Log.i("hahiwachbiki", "CandidateListScreen: $criteria")
                             homeViewModel.validateFilter(criteria)
                             pickOption = false
                         }

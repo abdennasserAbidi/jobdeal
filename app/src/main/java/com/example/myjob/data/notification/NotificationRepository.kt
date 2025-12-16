@@ -10,5 +10,6 @@ interface NotificationRepository {
     suspend fun sendNotification(base: NotificationMessage): Flow<Resource<UserResponse>>
     suspend fun verifyAccountCompany(id: Int): Flow<Resource<UserResponse>>
     suspend fun getCompaniesValidated(): Flow<Resource<List<String>>>
+    suspend fun getInstitutesValidated(): Flow<Resource<List<String>>>
 
 }

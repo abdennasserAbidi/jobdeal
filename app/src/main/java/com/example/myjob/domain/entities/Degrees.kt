@@ -15,6 +15,7 @@ val DEFAULT_DEGREE = listOf(
     Degrees(type = "Bac + 2", isSelected = false),
     Degrees(type = "Bac + 3", isSelected = false),
     Degrees(type = "Bac + 5", isSelected = false),
-    Degrees(type = "Doctorant", isSelected = false),
-    Degrees(type = "Master", isSelected = false)
+    Degrees(type = "Master", isSelected = false),
+    Degrees(type = "Ingénieur", isSelected = false),
+    Degrees(type = "Doctorant", isSelected = false)
 )

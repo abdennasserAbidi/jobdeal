@@ -2,6 +2,8 @@ package com.example.myjob.di
 
 import com.example.myjob.data.announcement.AnnouncementRepository
 import com.example.myjob.data.announcement.AnnouncementRepositoryImp
+import com.example.myjob.data.chat.ChatRepository
+import com.example.myjob.data.chat.ChatRepositoryImp
 import com.example.myjob.data.home.HomeRepository
 import com.example.myjob.data.home.HomeRepositoryImp
 import com.example.myjob.data.invitation.InvitationRepository
@@ -18,6 +20,8 @@ import com.example.myjob.local.source.LocalDataSource
 import com.example.myjob.local.source.LocalDataSourceImp
 import com.example.myjob.remote.source.announcement.AnnouncementDataSource
 import com.example.myjob.remote.source.announcement.AnnouncementDataSourceImp
+import com.example.myjob.remote.source.chat.ChatDataSource
+import com.example.myjob.remote.source.chat.ChatDataSourceImp
 import com.example.myjob.remote.source.home.HomeDataSource
 import com.example.myjob.remote.source.home.HomeDataSourceImp
 import com.example.myjob.remote.source.invitation.InvitationDataSource
@@ -59,6 +63,19 @@ abstract class RepositoryModule {
     @ViewModelScoped
     abstract fun provideHomeRepository(repository: HomeRepositoryImp): HomeRepository
 
+    ///////////////////////////////////////////////////////////////////////////
+    // CHAT
+    ///////////////////////////////////////////////////////////////////////////
+    @Binds
+    abstract fun provideChatDataSource(remoteDataSourceImp: ChatDataSourceImp): ChatDataSource
+
+    @Binds
+    @ViewModelScoped
+    abstract fun provideChatRepository(repository: ChatRepositoryImp): ChatRepository
+
+    ///////////////////////////////////////////////////////////////////////////
+    // INVITATION
+    ///////////////////////////////////////////////////////////////////////////
     @Binds
     abstract fun provideInvitationDataSource(remoteDataSourceImp: InvitationDataSourceImp): InvitationDataSource
 

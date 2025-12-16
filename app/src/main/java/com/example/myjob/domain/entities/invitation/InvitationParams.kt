@@ -13,7 +13,8 @@ data class InvitationParams(
 
 data class InvitationUser(
     var invitationModel: InvitationModel = InvitationModel(),
-    var user: User = User()
+    var userCandidate: User = User(),
+    var userCompany: User = User()
 )
 
 data class InvitationResponse(
@@ -21,6 +22,10 @@ data class InvitationResponse(
 )
 
 enum class InvitationStatus {
+    ON_HOLD, IN_PROCESS, HIRED, NOT_INTERESTED, REJECTED
+}
+
+enum class InvitationStatusFr {
     ON_HOLD, IN_PROCESS, HIRED, NOT_INTERESTED, REJECTED
 }
 
@@ -45,6 +50,7 @@ data class InvitationModel(
     var descriptionContract: String = if (typeContract == ContractType.FREELANCE.name) "Le contract sa sera per hour" else "Le contract sa sera en CDI",
     var disponibility: String = "",
     var tgm: String = "",
+    var duration: String? = "",
     var nbDaysPerWeek: String = "",
     var salary: String = "",
     var accepted: Boolean = false,

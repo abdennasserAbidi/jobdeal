@@ -104,7 +104,7 @@ fun DetailInvitationScreen(
                 )
 
                 Text(
-                    text = "My Invitations",
+                    text = "Invitations",
                     modifier = Modifier.align(Alignment.Center),
                     color = Color.White,
                     style = TextStyle(
@@ -229,6 +229,7 @@ fun DetailInvitationScreen(
 
             // Invitation Content Card
             InvitationContentCard(
+                status = "",
                 subject = invitation.message,
                 message = invitation.description
             )

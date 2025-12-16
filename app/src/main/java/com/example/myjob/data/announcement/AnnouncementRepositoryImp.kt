@@ -8,6 +8,8 @@ import com.example.myjob.base.GenericSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
+import com.example.myjob.domain.entities.announcement.CommentsPost
+import com.example.myjob.domain.entities.announcement.LikesPost
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.local.database.SharedPreference
 import com.example.myjob.remote.source.announcement.AnnouncementDataSource
@@ -19,6 +21,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import retrofit2.http.Query
 import javax.inject.Inject
 
 class AnnouncementRepositoryImp @Inject constructor(
@@ -41,6 +44,154 @@ class AnnouncementRepositoryImp @Inject constructor(
         }
     }
 
+    override suspend fun removeLike(
+        idAnnounce: Int,
+        idConnected: Int
+    ): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.removeLike(idAnnounce, idConnected)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+    override suspend fun checkUserLike(
+        idAnnounce: Int,
+        idConnected: Int
+    ): Flow<Resource<Boolean>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.checkUserLike(idAnnounce, idConnected)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // CANDIDATE
+    ///////////////////////////////////////////////////////////////////////////
+    override suspend fun checkUserLikeAllPost(idConnected: Int): Flow<Resource<List<Boolean>>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.checkUserLikeAllPost(idConnected)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun getNumberLikeAllPosts(idConnected: Int): Flow<Resource<List<Int>>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.getNumberLikeAllPosts(idConnected)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun getNumberCommentAllPosts(idConnected: Int): Flow<Resource<List<Int>>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.getNumberCommentAllPosts(idConnected)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // COMPANY
+    ///////////////////////////////////////////////////////////////////////////
+    override suspend fun checkUserLikeAllPostCompany(idConnected: Int): Flow<Resource<List<Boolean>>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.checkUserLikeAllPost(idConnected)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun getNumberLikeAllPostsCompany(idConnected: Int): Flow<Resource<List<Int>>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.getNumberLikeAllPosts(idConnected)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun getNumberCommentAllPostsCompany(idConnected: Int): Flow<Resource<List<Int>>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.getNumberLikeAllPosts(idConnected)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+    override suspend fun getCommentAllPostsCompany(idAnnounce: Int, idConnected: Int): Flow<Resource<List<CommentsPost>>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.getCommentAllPostsCompany(idAnnounce, idConnected)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+
+    override suspend fun addLikes(
+        idAnnounce: Int,
+        likesPost: LikesPost
+    ): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.addLikes(idAnnounce, likesPost)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+    override suspend fun addComment(
+        idAnnounce: Int,
+        commentsPost: CommentsPost
+    ): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.addComment(idAnnounce, commentsPost)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
     override suspend fun getCompanyAnnouncements(
         id: Int,
     ): Flow<Resource<PagingData<AnnouncementModel>>> = flow {
@@ -53,6 +204,31 @@ class AnnouncementRepositoryImp @Inject constructor(
 
                     val json = Gson().toJson(educations.content)
                     sharedPreference.putString("jsonAnnouncement", json)
+
+                    educations
+                }
+            }
+        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+        emitAll(
+            pager.map { pagingData ->
+                Resource(ResourceState.SUCCESS, pagingData, null)
+            }
+        )
+    }.catch { ex ->
+        emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
+
+    override suspend fun getAnnouncementsCandidate(): Flow<Resource<PagingData<AnnouncementModel>>> = flow {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            pagingSourceFactory = {
+                GenericSource { currentPage ->
+                    val educations =
+                        remoteDataSource.getAnnouncementsCandidate(pageNumber = currentPage)
+
+                    val json = Gson().toJson(educations.content)
+                    sharedPreference.putString("jsonCandidateAnnouncement", json)
 
                     educations
                 }

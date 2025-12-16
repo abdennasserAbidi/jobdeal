@@ -37,6 +37,7 @@ import com.example.myjob.common.GlobalEntries.notificationMessage
 import com.example.myjob.domain.entities.ContractType
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.feature.home.HomeViewModel
 import com.example.myjob.ui.theme.WhatsAppGreenSurface
 import com.example.myjob.ui.theme.WhatsAppLightGreen
@@ -84,6 +85,14 @@ fun SendInvitationCompany(
         }
     }
 
+    val invitationSent by homeViewModel.invitationSent.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(invitationSent) {
+        if (invitationSent) navController.popBackStack()
+        else Toast.makeText(context, "error", Toast.LENGTH_SHORT).show()
+    }
+
     var contractWorkOpen by remember { mutableStateOf(false) }
     var secondContractWorkOpen by remember { mutableStateOf(false) }
     val list = listOf(
@@ -113,7 +122,7 @@ fun SendInvitationCompany(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Send Invitation",
+                        text = stringResource(id = R.string.send_invitation_text),
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -178,19 +187,13 @@ fun SendInvitationCompany(
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-                val statusInvitation = stringResource(id = R.string.holding)
+                //val statusInvitation = stringResource(id = R.string.holding)
+                val statusInvitation = InvitationStatus.ON_HOLD.name
+                //val statusInvitation = stringResource(id = R.string.in_process_text)
 
                 val loadingState by homeViewModel.loadingState.collectAsState()
-                val invitationSent by homeViewModel.invitationSent.collectAsState()
 
                 val duration by homeViewModel.durationMission.collectAsState()
-
-                val context = LocalContext.current
-
-                LaunchedEffect(invitationSent) {
-                    if (invitationSent) navController.popBackStack()
-                    else Toast.makeText(context, "error", Toast.LENGTH_SHORT).show()
-                }
 
                 // Send Button
                 Button(
@@ -199,14 +202,20 @@ fun SendInvitationCompany(
                         val subjectNotEmpty = subject.isNotEmpty()
                         val messageNotEmpty = message.isNotEmpty()
 
-                        if (duration.isEmpty()) isErrorDuration = true
+                        var isAllGood = subjectNotEmpty && messageNotEmpty
+
+                        if (contractType == ContractType.FREELANCE) {
+                            if (duration.isEmpty()) isErrorDuration = true
+                            isAllGood = isAllGood && durationNotEmpty
+                        }
+
                         if (subject.isEmpty()) isErrorSubject = true
                         if (message.isEmpty()) isErrorMessage = true
 
-                        if (durationNotEmpty && subjectNotEmpty && messageNotEmpty) {
+                        if (isAllGood) {
                             homeViewModel.clearToken()
                             homeViewModel.getUserToken(user.id ?: -1)
-                            homeViewModel.matchCurrentProfile(user, statusInvitation, paymentTerms)
+                            homeViewModel.matchCurrentProfile(user, statusInvitation, paymentTerms, duration)
                         }
                     },
                     modifier = Modifier
@@ -227,7 +236,7 @@ fun SendInvitationCompany(
                             strokeWidth = 2.dp
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Sending...")
+                        Text(stringResource(id = R.string.sending_text))
                     } else {
                         Icon(
                             Icons.Default.Send,
@@ -236,7 +245,7 @@ fun SendInvitationCompany(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Send",
+                            stringResource(id = R.string.send_text),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -488,16 +497,13 @@ fun InvitationFormSection(
                     fontWeight = FontWeight.SemiBold
                 )
 
-                val isContract =
-                    user.preferredWorkType?.contains(stringResource(id = R.string.type1_text))
-                        ?: false
-                val isFreelance =
-                    user.preferredWorkType?.contains(stringResource(id = R.string.type2_text))
-                        ?: false
+                /*val isContract = user.preferredWorkType?.contains(stringResource(id = R.string.type1_text)) ?: false
+                val isFreelance = user.preferredWorkType?.contains(stringResource(id = R.string.type2_text)) ?: false*/
+                val isContract = (user.preferredWorkType?.contains("Contrat") ?: false) || (user.preferredWorkType?.contains("Contract") ?: false)
+                val isFreelance = user.preferredWorkType?.contains("Freelance") ?: false
                 val isBoth = isContract && isFreelance
 
                 if (isBoth) {
-
                     // Contract Type Selection
                     Text(
                         text = stringResource(id = R.string.post_type_text),
@@ -710,7 +716,8 @@ fun InvitationFormSection(
                         }
                     }
 
-                } else if (isContract) {
+                }
+                else if (isContract) {
 
                     ExposedDropdownMenuBox(
                         modifier = Modifier
@@ -802,7 +809,8 @@ fun InvitationFormSection(
                         )
                     }
 
-                } else {
+                }
+                else {
                     homeViewModel.changeTypeContract(stringResource(id = R.string.type2_text))
                     OutlinedTextField(
                         value = duration,
@@ -834,7 +842,7 @@ fun InvitationFormSection(
                 }
 
                 val placeHolder =
-                    if (contractType == ContractType.FREELANCE) "Le contract sa sera per hour"
+                    if (contractType == ContractType.FREELANCE) "Le contract sa sera par heure"
                     else "Le contract va commencer le 10/12/2025"
 
                 // Payment Terms

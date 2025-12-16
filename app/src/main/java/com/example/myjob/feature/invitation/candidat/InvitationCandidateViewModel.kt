@@ -177,7 +177,7 @@ class InvitationCandidateViewModel @Inject constructor(
     private val allInvitations: MutableStateFlow<List<InvitationModel>> =
         MutableStateFlow(emptyList())
 
-    private fun getInvitations() {
+    fun getInvitations() {
         viewModelScope.launch {
             val idUser = sharedPreference.getInt("idUser", -1)
             getAllInvitationsUseCase.execute(idUser).collect { res ->

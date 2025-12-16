@@ -58,8 +58,8 @@ open class BaseNetworkModuleFactory {
     fun buildRetrofitObject(
         okHttpClient: OkHttpClient
     ): Retrofit = Retrofit.Builder()
-        //.baseUrl("http://172.18.230.209:9090/")
-        .baseUrl("http://192.168.1.124:9090/")
+        .baseUrl("https://jobseeker-vy9q.onrender.com/")
+        //.baseUrl("https://10.127.72.209/")
         .client(okHttpClient)
         .addConverterFactory(GsonConverterFactory.create())
         .addCallAdapterFactory(ApiResultCallAdapterFactory()) // Add your custom adapter factory

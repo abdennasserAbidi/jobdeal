@@ -1,11 +1,13 @@
 package com.example.myjob.base
 
+import android.app.Activity
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Build
+import android.os.Bundle
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
@@ -28,6 +30,8 @@ import com.google.gson.Gson
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -68,6 +72,38 @@ class MyApp : Application(), Configuration.Provider {
         CoroutineScope(Dispatchers.Default).launch {
             generateSchoolList()
         }
+
+        registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+            override fun onActivityCreated(p0: Activity, p1: Bundle?) {
+                stateApp = StateApp.FOREGROUND
+            }
+
+            override fun onActivityStarted(p0: Activity) {
+                stateApp = StateApp.FOREGROUND
+
+            }
+
+            override fun onActivityResumed(p0: Activity) {
+                stateApp = StateApp.FOREGROUND
+            }
+
+            override fun onActivityPaused(p0: Activity) {
+                stateApp = StateApp.BACKGROUND
+            }
+
+            override fun onActivityStopped(p0: Activity) {
+                stateApp = StateApp.BACKGROUND
+            }
+
+            override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) {
+
+            }
+
+            override fun onActivityDestroyed(p0: Activity) {
+                stateApp = StateApp.KILLED
+            }
+
+        })
     }
 
     private fun showNotification() {
@@ -123,4 +159,7 @@ class MyApp : Application(), Configuration.Provider {
         }
     }
 
+    companion object {
+        var stateApp : StateApp = StateApp.KILLED
+    }
 }

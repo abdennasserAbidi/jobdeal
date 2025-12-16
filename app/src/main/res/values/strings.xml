@@ -16,6 +16,7 @@
     <string name="remove_document_text">Remove document</string>
     <string name="registration_number_text">Registration Number</string>
     <string name="confirm_password_text">Confirm password</string>
+    <string name="change_password_text">Change password</string>
     <string name="forgot_password_text">Forgot password?</string>
     <string name="login_text">Login</string>
     <string name="logout_text">Log out</string>
@@ -78,9 +79,11 @@
     <string name="item2">Invitations</string>
     <string name="item6">Notifications</string>
     <string name="item3">Search</string>
+    <string name="item7">Posts</string>
     <string name="item5">favorites</string>
     <string name="item4">Setting</string>
 
+    <string name="about_text">About</string>
     <string name="about_role_text">About your next role</string>
     <string name="availability_text">Availability</string>
     <string name="work_type_text">Preferred work types</string>
@@ -133,6 +136,7 @@
     <string name="disponibility3_text">In 3 months</string>
     <string name="disponibility4_text">More than 3 months</string>
 
+    <string name="opinion_text">What is your opinion</string>
     <string name="available_text">Available</string>
     <string name="in_process_text">In process</string>
     <string name="in_process_long_text">In process…</string>
@@ -141,6 +145,13 @@
     <string name="all_candidates_text">All Candidates</string>
     <string name="candidates_text">Candidates</string>
     <string name="search_candidates_text">Search candidates</string>
+    <string name="rejected_offer_text">You rejected this offer</string>
+
+    <string name="all_posts_text">All Posts</string>
+
+
+    <string name="message_rejected_offer_text">The candidate %1$s is Rejected : you should tell the reason</string>
+    <string name="message_accepted_offer_text">The candidate %1$s is Accepted</string>
 
     <string name="invitation_found_text">invitations found</string>
     <string name="phone_text">Phone</string>
@@ -155,6 +166,7 @@
     <string name="add_experience_text">Add Experience</string>
     <string name="location_text">Location</string>
     <string name="company_name_text">Company name</string>
+    <string name="put_company_name_text">Put the ccompany name</string>
 
     <string name="status_type_text">Status</string>
     <string name="employment_type_text">Employment type</string>
@@ -166,7 +178,7 @@
     <string name="type_formation_text">Formation</string>
     <string name="type_event_text">Event</string>
     <string name="contract_type_text">Contract type</string>
-
+    <string name="contract_detail_text">Contract details</string>
 
     <string name="entry_level_text">Entry Level (0–1 years)</string>
     <string name="junior_text">Junior (1–3 years)</string>
@@ -174,6 +186,7 @@
     <string name="senior_text">Senior (5–8 years)</string>
     <string name="lead_team_text">Lead/Principal (8+ years)</string>
     <string name="executive_text">Executive (10+ years)</string>
+    <string name="years_text">years</string>
 
     <string name="immediately_text">Available immediately</string>
     <string name="one_week_text">Available in 1 week</string>
@@ -207,6 +220,7 @@
 
     <string name="freelance_salary_text">Freelance salary</string>
     <string name="salary_text">Salary</string>
+    <string name="contract_description_text">Contract description</string>
     <string name="duration_text">Duration</string>
 
     <string name="work_still_text">I\'m still in this role</string>
@@ -218,9 +232,21 @@
     <string name="first_name_error">Invalid First name</string>
     <string name="last_name_error">Invalid First name</string>
     <string name="company_name_error">Invalid Company name</string>
+    <string name="password_error">Invalid password</string>
     <string name="confirm_password_error">Is not the same password</string>
     <string name="first_name_text">First name</string>
     <string name="last_name_text">Last name</string>
+
+    <string name="basic_text">Basic</string>
+    <string name="conversational_text">Conversational</string>
+    <string name="fluent_text">Fluent</string>
+    <string name="native_text">Native</string>
+
+    <string name="benefits_text">Verification Benefits</string>
+    <string name="badge_text">Stand out to employers with verified badge</string>
+    <string name="visibility_search_text">Higher profile visibility in search results</string>
+    <string name="build_trust_text">Build trust and credibility</string>
+    <string name="approvals_text">Faster application approvals</string>
 
     <string name="have_account_text">Already have an account?</string>
     <string name="log_in_text">Log in</string>
@@ -237,6 +263,7 @@
 
     <string name="profile_candidate_type_text">Candidate Profile</string>
     <string name="contact_information_text">Contact Information</string>
+    <string name="contact_text">Contact</string>
 
     <string name="my_resume_text">My Resume</string>
     <string name="upload_resume_text">Upload &amp; view your resumes</string>
@@ -270,12 +297,24 @@
     <string name="notification_text">Notifications</string>
     <string name="validate_text">Validation</string>
     <string name="validate_profile_text">Validate your profile</string>
+
+    <string name="posts_text">Posts</string>
+    <string name="posts_desc_text">See all posts</string>
+
+    <string name="discussion_text">Discussions</string>
+    <string name="discussion_desc_text">View your discussions</string>
+
+    <string name="post_action_text">Post</string>
+    <string name="posted_by_text">Posted by</string>
+    <string name="add_comment_hint_text">Add a comment…</string>
     <string name="terms_text">Terms and Conditions</string>
     <string name="confidentiality_text">Privacy Policy</string>
     <string name="my_account_text">My account</string>
+    <string name="complete_profile_text">Complete Profile</string>
 
 
     <string name="invitations_text">My invitations</string>
+    <string name="invitation_content_text">Invitation Content</string>
     <string name="navigate_invitations_text">View your invitations</string>
     <string name="career_text">Career</string>
     <string name="navigate_career_text">Boost my career</string>
@@ -291,7 +330,12 @@
     <string name="fee_text">Post details</string>
     <string name="post_type_text">Post type</string>
     <string name="send_text">Send</string>
+    <string name="sending_text">Sending…</string>
+    <string name="candidate_information_text">Candidate Information</string>
+    <string name="company_information_text">Company Information</string>
 
+    <string name="send_email_text">An email with a link has been sent. Click to reset your password.</string>
+    <string name="forget_password_intro_text">Enter your address mail to receive an email to reset your password.</string>
 
     <string name="intern_user_text">Intern</string>
     <string name="trainer_user_text">Trainer</string>
@@ -302,9 +346,14 @@
     <string name="on_hold_text">On hold</string>
     <string name="filter_status_text">Filter by Status</string>
 
+    <string name="type_change_text">Change type</string>
+
     <string name="other_text">Other</string>
+    <string name="pending_text">Pending</string>
 
-
+    <string name="like_text">Like</string>
+    <string name="comments_text">comments</string>
+    <string name="comment_action_text">Comment</string>
 
     <string name="reject_text">Reject</string>
     <string name="accept_text">Accept</string>
@@ -314,6 +363,7 @@
     <string name="hire_text">The company hired you</string>
     <string name="show_result_text">See results</string>
     <string name="refuse_text">the company rejected your candidature because :</string>
+    <string name="refuse_candidate_text">the candidate rejected your invitation</string>
 
     <string name="interview_text">Interview</string>
     <string name="interview_validation_text">Enter your email address to receive an email for an interview</string>

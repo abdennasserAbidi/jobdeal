@@ -78,7 +78,7 @@ fun EnProcessForm(
                 val whatsAppGreen = colorResource(id = R.color.whatsapp)
 
                 Text(
-                    text = "What is your opinion",
+                    text = stringResource(id = R.string.opinion_text),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -175,8 +175,8 @@ fun EnProcessForm(
                 }
 
                 val text = when (situationCandidate) {
-                    SituationCandidate.REJECTED -> "The candidate ${invitationModel.fullName} is Rejected : you should tell the reason"
-                    SituationCandidate.ACCEPTED -> "The candidate ${invitationModel.fullName} is Accepted"
+                    SituationCandidate.REJECTED -> stringResource(id = R.string.message_rejected_offer_text, invitationModel.fullName.toString())
+                    SituationCandidate.ACCEPTED -> stringResource(id = R.string.message_accepted_offer_text, invitationModel.fullName.toString())
                     else -> ""
                 }
 

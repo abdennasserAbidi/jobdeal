@@ -61,6 +61,7 @@ object GlobalEntries {
     var matchInvitation: () -> Unit = {}
     var isFromLogin = false
     var isFromSettings = false
+    var isRefreshing = MutableStateFlow(false)
     var isVisibleNav = MutableStateFlow(true)
     var isSubmitAction = MutableStateFlow(false)
     var isSubmitEducationAction = MutableStateFlow(false)
@@ -70,6 +71,7 @@ object GlobalEntries {
     var languageShared = MutableSharedFlow<String>()
     var stepShared = -1
     var listImageUri by mutableStateOf<List<Uri?>>(emptyList())
+    var listCompanyImageUri by mutableStateOf<List<Uri?>>(emptyList())
 
     @RequiresApi(Build.VERSION_CODES.O)
     var start: ZonedDateTime = ZonedDateTime.parse("2018-04-06T16:01:00.000+03:00")

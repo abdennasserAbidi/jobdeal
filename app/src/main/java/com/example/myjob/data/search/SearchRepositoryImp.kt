@@ -145,12 +145,12 @@ class SearchRepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
-    override suspend fun getUserFiltered(word: String): Flow<Resource<PagingData<User>>> = flow {
+    override suspend fun getUserFiltered(word: String, id: Int): Flow<Resource<PagingData<User>>> = flow {
         val pager = Pager(
             config = PagingConfig(pageSize = 10, prefetchDistance = 2),
             pagingSourceFactory = {
                 GenericSource { currentPage ->
-                    val users = remoteDataSource.getUserFiltered(word = word, pageNumber = currentPage)
+                    val users = remoteDataSource.getUserFiltered(word = word, id, pageNumber = currentPage)
                     val lang = sharedPreference.getString("lang", "") ?: ""
                     users.content.map {
                         val gender = it.sexe ?: ""
@@ -159,7 +159,7 @@ class SearchRepositoryImp @Inject constructor(
                         val situation = it.situation ?: ""
                         it.changeSituation(situation, lang)
 
-                        val availability = it.professionalStatus.availability ?: ""
+                        val availability = it.professionalStatus?.availability ?: ""
                         it.changeAvailability(availability, lang)
                     }
 

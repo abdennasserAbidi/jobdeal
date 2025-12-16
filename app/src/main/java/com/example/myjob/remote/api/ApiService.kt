@@ -11,15 +11,21 @@ import com.example.myjob.domain.entities.ProfessionalStatus
 import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
+import com.example.myjob.domain.entities.announcement.CommentsPost
+import com.example.myjob.domain.entities.announcement.LikesPost
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
-import com.example.myjob.domain.entities.invitation.InvitationResponse
 import com.example.myjob.domain.entities.invitation.InvitationUser
 import com.example.myjob.domain.entities.notification.NotificationMessage
 import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
+import com.example.myjob.domain.response.FilesResponse
 import com.example.myjob.domain.response.LoginResponse
+import com.example.myjob.domain.response.UploadResponse
 import com.example.myjob.domain.response.UserResponse
+import com.example.myjob.feature.messagerie.ChatMessage
+import com.example.myjob.feature.messagerie.Conversation
+import com.example.myjob.feature.messagerie.CreateConversationRequest
 import com.example.myjob.feature.validateprofile.ValidationProfileStatus
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
@@ -30,6 +36,7 @@ import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
@@ -46,6 +53,9 @@ ApiService {
     @GET("auth/getCompaniesValidated")
     suspend fun getCompaniesValidated(): List<String>
 
+    @GET("auth/getInstitutesValidated")
+    suspend fun getInstitutesValidated(): List<String>
+
     @POST("auth/updatetoken")
     suspend fun updateToken(
         @Query("id") id: Int,
@@ -60,7 +70,7 @@ ApiService {
     suspend fun saveUser(@Body user: User): ApiResult<LoginResponse>
 
     @POST("auth/login")
-    suspend fun authenticate(@Body user: User): ApiResult<LoginResponse>
+    suspend fun authenticate(@Body user: User): LoginResponse
 
     @POST("auth/verification")
     suspend fun verifyEmail(@Query("email") email: String): LoginResponse
@@ -150,6 +160,12 @@ ApiService {
     @POST("auth/sendInvitation")
     suspend fun sendInvitation(@Body invitationParams: InvitationParams): UserResponse
 
+    @POST("auth/deleteInvitation")
+    suspend fun deleteInvitation(
+        @Query("idInvitation") idInvitation: Int,
+        @Query("idInvitationFrom") idInvitationFrom: Int
+    ): UserResponse
+
     @POST("auth/finishProcess")
     suspend fun finishProcess(@Body invitationParams: InvitationParams): InvitationParams
 
@@ -195,6 +211,7 @@ ApiService {
     ///////////////////////////////////////////////////////////////////////////
     @POST("auth/updateCandidateProfessional")
     suspend fun updateCandidateProfessional(@Body user: ProfessionalStatus): UserResponse
+
     @POST("auth/updateCandidateSkills")
     suspend fun updateCandidateSkills(@Body user: CandidateSkills): UserResponse
 
@@ -252,6 +269,13 @@ ApiService {
     @POST("auth/uploadCV")
     suspend fun uploadFile(@Part file: MultipartBody.Part): UserResponse
 
+    @Multipart
+    @POST("auth/upload")
+    suspend fun upload(@Part image: MultipartBody.Part): UploadResponse
+
+    @GET("auth/getFiles")
+    suspend fun getFiles(@Query("id") id: Int): FilesResponse
+
     @POST("auth/validate-profile")
     suspend fun validateProfile(@Query("email") email: String): UserResponse
 
@@ -267,6 +291,7 @@ ApiService {
     @GET("auth/getUserFiltered")
     suspend fun getUserFiltered(
         @Query("word") word: String,
+        @Query("id") id: Int,
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
     ): GenericResponse<User>
@@ -293,9 +318,82 @@ ApiService {
         @Body announcementModel: AnnouncementModel
     ): UserResponse
 
+    @POST("auth/removeLike")
+    suspend fun removeLike(
+        @Query("idAnnounce") idAnnounce: Int,
+        @Query("idConnected") idConnected: Int
+    ): UserResponse
+
+    @GET("auth/checkUserLike")
+    suspend fun checkUserLike(
+        @Query("idAnnounce") idAnnounce: Int,
+        @Query("idConnected") idConnected: Int
+    ): Boolean
+
+    ///////////////////////////////////////////////////////////////////////////
+    // CANDIDATE
+    ///////////////////////////////////////////////////////////////////////////
+    @GET("auth/checkUserLikeAllPost")
+    suspend fun checkUserLikeAllPost(
+        @Query("idConnected") idConnected: Int
+    ): List<Boolean>
+
+    @GET("auth/getNumberLikeAllPosts")
+    suspend fun getNumberLikeAllPosts(
+        @Query("idConnected") idConnected: Int
+    ): List<Int>
+
+    @GET("auth/getNumberCommentAllPosts")
+    suspend fun getNumberCommentAllPosts(
+        @Query("idConnected") idConnected: Int
+    ): List<Int>
+
+    ///////////////////////////////////////////////////////////////////////////
+    // COMPANY
+    ///////////////////////////////////////////////////////////////////////////
+    @GET("auth/checkUserLikeAllPostCompany")
+    suspend fun checkUserLikeAllPostCompany(
+        @Query("idConnected") idConnected: Int
+    ): List<Boolean>
+
+    @GET("auth/getNumberLikeAllPostsCompany")
+    suspend fun getNumberLikeAllPostsCompany(
+        @Query("idConnected") idConnected: Int
+    ): List<Int>
+
+    @GET("auth/getNumberCommentAllPostsCompany")
+    suspend fun getNumberCommentAllPostsCompany(
+        @Query("idConnected") idConnected: Int
+    ): List<Int>
+
+    @GET("auth/getCommentAllPostsCompany")
+    suspend fun getCommentAllPostsCompany(
+        @Query("idAnnounce") idAnnounce: Int,
+        @Query("idConnected") idConnected: Int
+    ): List<CommentsPost>
+
+
+    @POST("auth/addLikes")
+    suspend fun addLikes(
+        @Query("idAnnounce") idAnnounce: Int,
+        @Body likesPost: LikesPost
+    ): UserResponse
+
+    @POST("auth/addComment")
+    suspend fun addComment(
+        @Query("idAnnounce") idAnnounce: Int,
+        @Body commentsPost: CommentsPost
+    ): UserResponse
+
     @GET("auth/getCompanyAnnouncements")
     suspend fun getCompanyAnnouncements(
         @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<AnnouncementModel>
+
+    @GET("auth/getAnnouncementsCandidate")
+    suspend fun getAnnouncementsCandidate(
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
     ): GenericResponse<AnnouncementModel>
@@ -309,4 +407,40 @@ ApiService {
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
     ): GenericResponse<NotificationModel>
+
+    ///////////////////////////////////////////////////////////////////////////
+    // REAL TIME CHAT
+    ///////////////////////////////////////////////////////////////////////////
+    @GET("conversations/{userId}")
+    suspend fun getUserConversations(@Path("userId") userId: String): List<Conversation>
+
+    @GET("auth/getConversation")
+    suspend fun getConversation(@Query("idSender") idSender: Int, @Query("idReceiver") idReceiver: Int): List<ChatMessage>
+
+    @POST("conversations")
+    suspend fun createConversation(@Body request: CreateConversationRequest): Conversation
+
+    @GET("conversations/find")
+    suspend fun findOrCreateConversation(
+        @Query("user1Id") user1Id: String,
+        @Query("user2Id") user2Id: String,
+        @Query("user1Name") user1Name: String,
+        @Query("user2Name") user2Name: String
+    ): Conversation
+
+    @GET("conversations/{conversationId}/messages")
+    suspend fun getMessages(
+        @Path("conversationId") conversationId: String,
+        @Query("limit") limit: Int = 50
+    ): List<ChatMessage>
+
+    @POST("messages")
+    suspend fun saveMessage(@Body message: ChatMessage): ChatMessage
+
+    @GET("auth/list_messages")
+    suspend fun retrieveMessages(
+        @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<ChatMessage>
 }

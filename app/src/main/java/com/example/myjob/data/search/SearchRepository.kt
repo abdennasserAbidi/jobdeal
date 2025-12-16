@@ -21,5 +21,5 @@ interface SearchRepository {
     ): Flow<Resource<UserResponse>>
 
     suspend fun getAllSearch(id: Int): Flow<Resource<PagingData<SearchHistory>>>
-    suspend fun getUserFiltered(word: String): Flow<Resource<PagingData<User>>>
+    suspend fun getUserFiltered(word: String, id: Int): Flow<Resource<PagingData<User>>>
 }

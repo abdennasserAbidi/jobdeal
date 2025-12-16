@@ -57,6 +57,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -68,6 +69,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
+import com.example.myjob.base.MyApp
 import com.example.myjob.common.CustomPhoneKit
 import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GlobalEntries
@@ -80,6 +82,7 @@ import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.FilterType
 import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.ProfessionalStatus
+import com.example.myjob.domain.entities.School
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.feature.invitation.candidat.FilterBottomSheet
 import com.example.myjob.feature.navigation.Screen
@@ -159,21 +162,6 @@ fun BasicInfoForm(
             val isFirstNameValid by profileViewModel.isFirstNameValid.collectAsState()
             val submitEnabled by remember { derivedStateOf { isFirstNameValid } }
 
-            val userAddress by profileViewModel.userAddress.collectAsState()
-            val isAddressValid by profileViewModel.isAddressValid.collectAsState()
-            val addressCheck by remember { derivedStateOf { isAddressValid } }
-
-            //activity sector
-            val title by profileViewModel.titleGeneric.collectAsState()
-            val countries = user.country ?: ""
-            val birthDateUser by profileViewModel.birthDateUser.collectAsState()
-            val titleGender = stringResource(id = R.string.sexe_text)
-            val titleSituation = stringResource(id = R.string.situation_text)
-            val titleWork = stringResource(id = R.string.employment_type_choice_text)
-            val phone by profileViewModel.phone.collectAsState()
-            val completePhone by profileViewModel.completePhone.collectAsState()
-            val bio by profileViewModel.bio.collectAsState()
-
             FormTextField(
                 value = userName,
                 borderColor = if (activatedCheck && !submitEnabled) Color.Red else colorResource(
@@ -183,46 +171,13 @@ fun BasicInfoForm(
                     if (activatedCheck) profileViewModel.validateFullName(it)
                     profileViewModel.changeUserName(it)
                 },
-                label = "Full Name",
+                label = stringResource(id = R.string.full_name_text),
                 isRequired = true
             )
 
-            val userEmail by profileViewModel.userEmail.collectAsState()
-            val isEmailValid by profileViewModel.isEmailValid.collectAsState()
-            val emailCheck by remember { derivedStateOf { isEmailValid } }
-
-            val isCheckPersonal by profileViewModel.isCheckPersonal.collectAsState()
-
-            LaunchedEffect(isCheckPersonal) {
-                if (isCheckPersonal) {
-                    val fullNameValidator = profileViewModel.validateFullName(userName)
-                    val addressValidator = profileViewModel.validateAddress(userAddress)
-                    val emailValidator = profileViewModel.validateEmail(userEmail ?: "")
-                    if (!fullNameValidator || !addressValidator || !emailValidator) {
-                        activatedCheck = true
-                    }
-
-                    if (fullNameValidator && addressValidator && emailValidator) {
-                        profileViewModel.saveUserPersonalInfo()
-                        profileViewModel.getInitialDetail()
-                    }
-                }
-            }
-
-            FormTextField(
-                value = userEmail ?: "",
-                borderColor = if (activatedCheck && !emailCheck) Color.Red else colorResource(
-                    id = R.color.whatsapp
-                ),
-                onValueChange = {
-                    if (activatedCheck) profileViewModel.validateEmail(it)
-                    profileViewModel.changeAddressMail(it)
-                },
-                label = "Email",
-                keyboardType = KeyboardType.Email,
-                leadingIcon = Icons.Default.Email,
-                isRequired = true
-            )
+            val userAddress by profileViewModel.userAddress.collectAsState()
+            val isAddressValid by profileViewModel.isAddressValid.collectAsState()
+            val addressCheck by remember { derivedStateOf { isAddressValid } }
 
             FormTextField(
                 value = userAddress,
@@ -238,9 +193,38 @@ fun BasicInfoForm(
                 isRequired = true
             )
 
+            //EMAIL
+            val userEmail by profileViewModel.userEmail.collectAsState()
+            var email by remember { mutableStateOf(GlobalEntries.user.email) }
+            val isEmailValid by profileViewModel.isEmailValid.collectAsState()
+            val emailCheck by remember { derivedStateOf { isEmailValid } }
+
+            FormTextField(
+                value = email ?: "",
+                borderColor = if (activatedCheck && !emailCheck) Color.Red else colorResource(
+                    id = R.color.whatsapp
+                ),
+                onValueChange = {
+                    email = it
+                    if (activatedCheck) profileViewModel.validateEmail(it)
+                    profileViewModel.changeAddressMail(it)
+                },
+                label = "Email",
+                keyboardType = KeyboardType.Email,
+                leadingIcon = Icons.Default.Email,
+                isRequired = true
+            )
+
+
+            //activity sector
+            val title by profileViewModel.titleGeneric.collectAsState()
+            val activitySectorCheck by remember { derivedStateOf { title.isNotEmpty() } }
+
             FormTextField(
                 value = title,
-                borderColor = colorResource(id = R.color.whatsapp),
+                borderColor = if (activatedCheck && !activitySectorCheck) Color.Red else colorResource(
+                    id = R.color.whatsapp
+                ),
                 onValueChange = {},
                 label = stringResource(id = R.string.activity_text),
                 isRequired = true,
@@ -251,11 +235,18 @@ fun BasicInfoForm(
             )
 
             //countries
+            val countries by profileViewModel.countryGeneric.collectAsState()
+            val countriesCheck by remember { derivedStateOf { countries.isNotEmpty() } }
+            Log.i("checkingAAA", "countries: $countries")
+            Log.i("checkingAAA", "countriesCheck: $countriesCheck")
+            Log.i("checkingAAA", "activatedCheck: $activatedCheck")
+
             FormTextField(
                 value = countries,
-                borderColor = colorResource(id = R.color.whatsapp),
+                borderColor = if (activatedCheck && !countriesCheck) Color.Red else colorResource(
+                    id = R.color.whatsapp
+                ),
                 onValueChange = {
-                    //docs[index] = it
                 },
                 label = stringResource(id = R.string.country_text),
                 isRequired = true,
@@ -266,9 +257,14 @@ fun BasicInfoForm(
             )
 
             //Date
+            val birthDateUser by profileViewModel.birthDateUser.collectAsState()
+            val birthDateUserCheck by remember { derivedStateOf { birthDateUser?.isNotEmpty() == true } }
+
             FormTextField(
                 value = birthDateUser ?: "",
-                borderColor = colorResource(id = R.color.whatsapp),
+                borderColor = if (activatedCheck && !birthDateUserCheck) Color.Red else colorResource(
+                    id = R.color.whatsapp
+                ),
                 onValueChange = {},
                 leadingIcon = Icons.Filled.CalendarMonth,
                 label = stringResource(id = R.string.birth_text),
@@ -280,9 +276,14 @@ fun BasicInfoForm(
             )
 
             //GENDER
+            val titleGender = stringResource(id = R.string.sexe_text)
+            val titleGenderCheck by remember { derivedStateOf { userGender?.isNotEmpty() == true } }
+
             FormTextField(
                 value = userGender ?: "",
-                borderColor = colorResource(id = R.color.whatsapp),
+                borderColor = if (activatedCheck && !titleGenderCheck) Color.Red else colorResource(
+                    id = R.color.whatsapp
+                ),
                 onValueChange = {},
                 leadingIcon = Icons.Filled.Person,
                 label = stringResource(id = R.string.sexe_text),
@@ -295,9 +296,14 @@ fun BasicInfoForm(
             )
 
             //Situation
+            val titleSituation = stringResource(id = R.string.situation_text)
+            val titleSituationCheck by remember { derivedStateOf { userSituation?.isNotEmpty() == true } }
+
             FormTextField(
                 value = userSituation ?: "",
-                borderColor = colorResource(id = R.color.whatsapp),
+                borderColor = if (activatedCheck && !titleSituationCheck) Color.Red else colorResource(
+                    id = R.color.whatsapp
+                ),
                 onValueChange = {},
                 leadingIcon = Icons.Filled.Person,
                 label = stringResource(id = R.string.situation_text),
@@ -310,9 +316,14 @@ fun BasicInfoForm(
             )
 
             //Type emploi
+            val titleWork = stringResource(id = R.string.employment_type_choice_text)
+            val titleWorkCheck by remember { derivedStateOf { userEmploymentTypeChoice?.isNotEmpty() == true } }
+
             FormTextField(
                 value = userEmploymentTypeChoice ?: "",
-                borderColor = colorResource(id = R.color.whatsapp),
+                borderColor = if (activatedCheck && !titleWorkCheck) Color.Red else colorResource(
+                    id = R.color.whatsapp
+                ),
                 onValueChange = {},
                 leadingIcon = Icons.Filled.Person,
                 label = stringResource(id = R.string.employment_type_choice_text),
@@ -325,6 +336,9 @@ fun BasicInfoForm(
             )
 
             //phone
+            val phone by profileViewModel.phone.collectAsState()
+            val completePhone by profileViewModel.completePhone.collectAsState()
+
             CustomPhoneKit(
                 modifier = Modifier.padding(top = 10.dp),
                 selectedCountry = selectedCountry,
@@ -339,8 +353,9 @@ fun BasicInfoForm(
                 }
             )
 
-
             // Bio
+            val bio by profileViewModel.bio.collectAsState()
+
             FormTextField(
                 value = bio,
                 onValueChange = {
@@ -351,6 +366,46 @@ fun BasicInfoForm(
                 maxLines = 5,
                 minLines = 3
             )
+
+            val isCheckPersonal by profileViewModel.isCheckPersonal.collectAsState()
+
+            LaunchedEffect(isCheckPersonal) {
+                if (isCheckPersonal) {
+                    val fullNameValidator = profileViewModel.validateFullName(userName)
+                    val addressValidator = profileViewModel.validateAddress(userAddress)
+                    val emailValidator = profileViewModel.validateEmail(userEmail ?: "")
+                    val activitySectorValidator = title.isNotEmpty()
+                    val countryValidator = countries.isNotEmpty()
+                    val birthDateUserValidator = birthDateUser?.isNotEmpty() == true
+                    val userGenderValidator = userGender?.isNotEmpty() == true
+                    val userSituationValidator = userSituation?.isNotEmpty() == true
+                    val userEmploymentTypeChoiceValidator =
+                        userEmploymentTypeChoice?.isNotEmpty() == true
+
+                    if (!fullNameValidator || !addressValidator || !emailValidator
+                        || !activitySectorValidator
+                        || !countryValidator
+                        || !birthDateUserValidator
+                        || !userGenderValidator
+                        || !userSituationValidator
+                        || !userEmploymentTypeChoiceValidator
+                    ) {
+                        activatedCheck = true
+                    }
+
+                    if (fullNameValidator && addressValidator && emailValidator
+                        && activitySectorValidator
+                        && countryValidator
+                        && birthDateUserValidator
+                        && userGenderValidator
+                        && userSituationValidator
+                        && userEmploymentTypeChoiceValidator
+                    ) {
+                        profileViewModel.saveUserPersonalInfo()
+                        profileViewModel.getInitialDetail()
+                    }
+                }
+            }
         }
     }
 
@@ -439,11 +494,11 @@ fun ProfessionalForm(
             experienceLevel?.ifEmpty { "" })
     }
 
-    val expLevel = GlobalEntries.user.professionalStatus.userExperience ?: ""
-    val availabilities = GlobalEntries.user.professionalStatus.availability ?: ""
-    val workTypes = GlobalEntries.user.professionalStatus.workType ?: ""
+    val expLevel = GlobalEntries.user.professionalStatus?.userExperience ?: ""
+    val availabilities = GlobalEntries.user.professionalStatus?.availability ?: ""
+    val workTypes = GlobalEntries.user.professionalStatus?.workType ?: ""
     var salaryPreferred by remember {
-        mutableStateOf(user.professionalStatus.preferredSalary ?: "")
+        mutableStateOf(user.professionalStatus?.preferredSalary ?: "")
     }
 
     val userMedium by profileViewModel.userMedium.collectAsState()
@@ -453,15 +508,15 @@ fun ProfessionalForm(
     val isSubmitProfessionalAction by GlobalEntries.isSubmitProfessionalAction.collectAsState()
 
     var hybridPreference by remember {
-        mutableStateOf(GlobalEntries.user.professionalStatus.hybridPreference)
+        mutableStateOf(GlobalEntries.user.professionalStatus?.hybridPreference)
     }
 
     var remotePreference by remember {
-        mutableStateOf(GlobalEntries.user.professionalStatus.remotePreference)
+        mutableStateOf(GlobalEntries.user.professionalStatus?.remotePreference)
     }
 
     var onSitePreference by remember {
-        mutableStateOf(GlobalEntries.user.professionalStatus.onSitePreference)
+        mutableStateOf(GlobalEntries.user.professionalStatus?.onSitePreference)
     }
 
     LaunchedEffect(isSubmitProfessionalAction) {
@@ -478,7 +533,10 @@ fun ProfessionalForm(
             }
 
             if (expValidator && availabilityValidator && workValidator && salaryValidator && workTypesValidator) {
-                profileViewModel.saveUserProfessionalInfo(GlobalEntries.user.professionalStatus)
+                GlobalEntries.user.professionalStatus?.let {
+                    profileViewModel.saveUserProfessionalInfo(it)
+                    GlobalEntries.isSubmitProfessionalAction.update { false }
+                }
             }
         }
     }
@@ -493,16 +551,16 @@ fun ProfessionalForm(
             onRemoteChange = {
                 profileViewModel.changePreferenceRemote(it)
                 remotePreference = it
-                GlobalEntries.user.professionalStatus.remotePreference = it
+                GlobalEntries.user.professionalStatus?.remotePreference = it
             },
             onHybridChange = {
                 hybridPreference = it
-                GlobalEntries.user.professionalStatus.hybridPreference = it
+                GlobalEntries.user.professionalStatus?.hybridPreference = it
                 profileViewModel.changePreferenceHybrid(it)
             },
             onOnSiteChange = {
                 onSitePreference = it
-                GlobalEntries.user.professionalStatus.onSitePreference = it
+                GlobalEntries.user.professionalStatus?.onSitePreference = it
                 profileViewModel.changePreferenceSite(it)
             }
         )
@@ -520,7 +578,7 @@ fun ProfessionalForm(
         val titleExpLevel = stringResource(id = R.string.experience_level_text)
         FormTextField(
             value = expLevel,
-            borderColor = if (activatedCheck && !expLevel.isNotEmpty()) Color.Red else colorResource(
+            borderColor = if (activatedCheck && expLevel.isEmpty()) Color.Red else colorResource(
                 id = R.color.whatsapp
             ),
             onValueChange = {},
@@ -578,7 +636,7 @@ fun ProfessionalForm(
                 if (activatedCheck) it.isNotEmpty()
                 profileViewModel.changePreferredSalary(it)
                 salaryPreferred = it
-                GlobalEntries.user.professionalStatus.preferredSalary = it
+                GlobalEntries.user.professionalStatus?.preferredSalary = it
             },
             label = stringResource(id = R.string.preferred_salary_text),
             keyboardType = KeyboardType.Number,
@@ -629,7 +687,7 @@ fun ProfessionalForm(
         globalList = availabilityOptions
         selectedItemGlobal = selectedAvailability ?: ""
         action = { name ->
-            GlobalEntries.user.professionalStatus.availability = name
+            GlobalEntries.user.professionalStatus?.availability = name
             profileViewModel.changeAvailability(name)
         }
     }
@@ -638,7 +696,7 @@ fun ProfessionalForm(
         globalList = workTypeOptions
         selectedItemGlobal = selectedWorkType ?: ""
         action = { name ->
-            GlobalEntries.user.professionalStatus.workType = name
+            GlobalEntries.user.professionalStatus?.workType = name
             profileViewModel.changeWorkType(name)
         }
     }
@@ -647,7 +705,7 @@ fun ProfessionalForm(
         globalList = experienceOptions
         selectedItemGlobal = selectedExperience ?: ""
         action = { name ->
-            GlobalEntries.user.professionalStatus.userExperience = name
+            GlobalEntries.user.professionalStatus?.userExperience = name
             profileViewModel.changeExperienceLevel(name)
         }
     }
@@ -698,7 +756,7 @@ fun SkillsForm(
 
         //val skills by profileViewModel.skills.collectAsState()
         var skills by remember {
-            mutableStateOf(GlobalEntries.user.candidateSkills.listSkills)
+            mutableStateOf(GlobalEntries.user.candidateSkills?.listSkills ?: mutableListOf())
         }
 
         // Skills Section
@@ -710,14 +768,14 @@ fun SkillsForm(
             onAddSkill = {
                 //skills.add(newSkill)
                 skills = (skills + newSkill).toMutableList()
-                GlobalEntries.user.candidateSkills.listSkills = skills
+                GlobalEntries.user.candidateSkills?.listSkills = skills
                 profileViewModel.addSkills(newSkill)
                 newSkill = ""
             },
             onRemoveSkill = { skill ->
                 //skills.remove(newSkill)
                 skills = (skills - skill).toMutableList()
-                GlobalEntries.user.candidateSkills.listSkills = skills
+                GlobalEntries.user.candidateSkills?.listSkills = skills
                 profileViewModel.removeSkills(skill)
             },
             placeholder = "e.g., Kotlin, React, Python..."
@@ -725,7 +783,7 @@ fun SkillsForm(
 
         //val certifications by profileViewModel.certifications.collectAsState()
         var certifications by remember {
-            mutableStateOf(GlobalEntries.user.candidateSkills.listCertification)
+            mutableStateOf(GlobalEntries.user.candidateSkills?.listCertification ?: mutableListOf())
         }
 
         // Certifications Section
@@ -736,13 +794,13 @@ fun SkillsForm(
             onNewSkillChange = { newCertification = it },
             onAddSkill = {
                 certifications = (certifications + newCertification).toMutableList()
-                GlobalEntries.user.candidateSkills.listCertification = certifications
+                GlobalEntries.user.candidateSkills?.listCertification = certifications
                 profileViewModel.addCertification(newCertification)
                 newCertification = ""
             },
             onRemoveSkill = { cert ->
                 certifications = (certifications - cert).toMutableList()
-                GlobalEntries.user.candidateSkills.listCertification = certifications
+                GlobalEntries.user.candidateSkills?.listCertification = certifications
                 profileViewModel.removeCertification(cert)
             },
             placeholder = "e.g., AWS Certified Developer..."
@@ -750,7 +808,7 @@ fun SkillsForm(
 
         //val languageSkills by profileViewModel.languageSkills.collectAsState()
         var languageSkills by remember {
-            mutableStateOf(GlobalEntries.user.candidateSkills.listLanguages)
+            mutableStateOf(GlobalEntries.user.candidateSkills?.listLanguages ?: mutableListOf())
         }
 
         // Languages Section
@@ -758,7 +816,7 @@ fun SkillsForm(
             languages = languageSkills.toMutableList(),
             onLanguagesChange = {
                 languageSkills = it.toMutableList()
-                GlobalEntries.user.candidateSkills.listLanguages = languageSkills
+                GlobalEntries.user.candidateSkills?.listLanguages = languageSkills
                 profileViewModel.addLanguageSkills(it)
             }
         )
@@ -770,8 +828,7 @@ fun ExperienceForm(
     profileViewModel: ProfileViewModel,
     onCompanyChange: (index: Int) -> Unit,
     onDateStartChange: (index: Int) -> Unit,
-    onDateEndChange: (index: Int) -> Unit,
-    onDataChange: (CandidateFormData) -> Unit
+    onDateEndChange: (index: Int) -> Unit
 ) {
 
     val experience: LazyPagingItems<Experience> =
@@ -785,6 +842,15 @@ fun ExperienceForm(
     }
 
     listExperience = user.experience ?: mutableListOf()
+
+    val listCompanies by profileViewModel.listCompanies.collectAsState()
+
+    val context = LocalContext.current
+    val app = context.applicationContext as MyApp
+    LaunchedEffect(listCompanies) {
+        app.listCompanies.removeLast()
+        if (!app.listCompanies.containsAll(listCompanies)) app.listCompanies.addAll(listCompanies.distinctBy { it })
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -815,10 +881,10 @@ fun ExperienceForm(
             Text(stringResource(id = R.string.add_experience_pro_text))
         }
 
-
         experiences.forEachIndexed { index, item ->
 
             WorkExperienceCard(
+                index = index,
                 experience = item,
                 profileViewModel = profileViewModel,
                 onExperienceTypeChange = {
@@ -874,7 +940,13 @@ fun ExperienceForm(
                     profileViewModel.removeExperience(item.id)
                 },
                 onSubmit = {
+                    item.companyName?.let {
+                        if (it.contains(",")) {
+                            profileViewModel.changeCompanyExperience(index, it.split(",")[1])
+                        }
+                    }
                     profileViewModel.saveExperiences(user.experience ?: mutableListOf())
+                    GlobalEntries.isSubmitAction.update { false }
                 }
             )
 
@@ -897,6 +969,23 @@ fun EducationFormSection(
     }
 
     listEducations = user.education ?: mutableListOf()
+
+
+    val listInstitutes by profileViewModel.listInstitutes.collectAsState()
+
+    val context = LocalContext.current
+    val app = context.applicationContext as MyApp
+    LaunchedEffect(listInstitutes) {
+        app.listSchools.removeLast()
+        val institutes = listInstitutes.map {
+            val school = School()
+            school.libelly = it
+            school
+        }
+        if (!app.listSchools.containsAll(institutes)) app.listSchools.addAll(institutes.distinctBy { it.libelly })
+    }
+
+
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -928,6 +1017,8 @@ fun EducationFormSection(
         // Education Items
         educations.forEachIndexed { index, education ->
             EducationCard(
+                index = index,
+                profileViewModel = profileViewModel,
                 education = education,
                 onChangeDegree = {
                     onChangeDegree(index)
@@ -942,7 +1033,13 @@ fun EducationFormSection(
                     profileViewModel.changeGradeEducation(index, it)
                 },
                 onSubmit = {
+                    education.schoolName?.let {
+                        if (it.contains(",")) {
+                            profileViewModel.changeInstitution(index, it.split(",")[1])
+                        }
+                    }
                     profileViewModel.saveEducations(user.education ?: mutableListOf())
+                    GlobalEntries.isSubmitEducationAction.update { false }
                 },
                 onRemove = {
                     educations = (educations - education).toMutableList()

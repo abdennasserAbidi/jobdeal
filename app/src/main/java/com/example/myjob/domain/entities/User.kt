@@ -2,6 +2,7 @@ package com.example.myjob.domain.entities
 
 import android.util.Log
 import android.view.View
+import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.feature.validateprofile.ValidationProfileStatus
 import com.google.gson.annotations.SerializedName
@@ -42,26 +43,27 @@ data class User(
     var preferredActivitySector: String? = "",
 
     var validationProfileStatus: ValidationProfileStatus = ValidationProfileStatus(),
-    var professionalStatus: ProfessionalStatus = ProfessionalStatus(),
-    var candidateSkills: CandidateSkills = CandidateSkills(),
+    var professionalStatus: ProfessionalStatus? = ProfessionalStatus(),
+    var candidateSkills: CandidateSkills? = CandidateSkills(),
 
     @SerializedName("experiences")
     var experience: MutableList<Experience>? = mutableListOf(),
     var education: MutableList<Educations>? = mutableListOf(),
+    var announces: MutableList<AnnouncementModel>? = mutableListOf(),
     //company
     val invitations: MutableList<InvitationModel>? = mutableListOf(),
     val listNum: MutableList<String>? = mutableListOf(),
     var companyName: String? = "",
     var phoneCompany: String? = "",
+    var companyAddress: String? = "13 Rue Sassi Bellil Borj el baccouch",
+    var companyActivitySector: String? = "Informatique",
     var numSecuritySocial: String? = "",
     var docs: List<String>? = mutableListOf(),
     var secondPhoneCompany: String? = "",
     var faxCompany: String? = "",
     var linkWebsite: String? = "",
     var linkLinkedIn: String? = "",
-    var companyActivitySector: String? = "",
     var companyDescription: String? = "",
-    var companyAddress: String? = "",
     var companySecondAddress: String? = "",
 ) {
 
@@ -222,25 +224,29 @@ data class User(
     }
 
     fun changeAvailability(name: String, lang: String): String {
-        professionalStatus.availability = if (lang == "French" || lang == "Français") {
-            when(name) {
-                "Now" -> "Maintenant"
-                "Less than 3 months" -> "Avant 3 mois"
-                "In 3 months" -> "Dans 3 mois"
-                "More than 3 months" -> "Après 3 mois"
-                else -> name
+        professionalStatus?.apply {
+            availability = if (lang == "French" || lang == "Français") {
+                when(name) {
+                    "Now" -> "Maintenant"
+                    "Less than 3 months" -> "Avant 3 mois"
+                    "In 3 months" -> "Dans 3 mois"
+                    "More than 3 months" -> "Après 3 mois"
+                    else -> name
+                }
+            } else {
+                when(name) {
+                    "Maintenant" -> "Now"
+                    "Avant 3 mois" -> "Less than 3 months"
+                    "Dans 3 mois" -> "In 3 months"
+                    "Après 3 mois" -> "More than 3 months"
+                    else -> name
+                }
             }
-        } else {
-            when(name) {
-                "Maintenant" -> "Now"
-                "Avant 3 mois" -> "Less than 3 months"
-                "Dans 3 mois" -> "In 3 months"
-                "Après 3 mois" -> "More than 3 months"
-                else -> name
-            }
+
+             availability ?: ""
         }
 
-        return professionalStatus.availability ?: ""
+        return ""
     }
 
     fun showUser(lang: String): Map<String, String> {
@@ -255,7 +261,7 @@ data class User(
         val nationalityValid = !nationality.isNullOrEmpty()
         val activitySectorValid = activitySector != null && activitySector != "Choose activity sector"
         val birthDateValid = birthDate != null && birthDate != "Choose Date"
-        val availabilityValid = !professionalStatus.availability.isNullOrEmpty()
+        val availabilityValid = true
         val rangeSalaryValid = !rangeSalary.isNullOrEmpty()
         val sexValid = !sexe.isNullOrEmpty()
         val situationValid = !situation.isNullOrEmpty()
@@ -310,7 +316,7 @@ data class User(
         if (sexValid) mapUser[listTag[6]] = sexe ?: ""
         if (situationValid) mapUser[listTag[7]] = situation ?: ""
 
-        if (availabilityValid) mapUser[listTag[8]] = professionalStatus.availability ?: ""
+        if (availabilityValid) mapUser[listTag[8]] = professionalStatus?.availability ?: ""
         if (rangeSalaryValid) mapUser[listTag[9]] = rangeSalary ?: ""
         if (preferredActivitySectorValid) mapUser[listTag[10]] = preferredActivitySector ?: ""
         if (preferredEmploymentTypeValid) mapUser[listTag[11]] = preferredEmploymentType ?: ""
@@ -333,7 +339,7 @@ data class User(
         val nationalityValid = !nationality.isNullOrEmpty()
         val activitySectorValid = activitySector != null && activitySector != "Choose activity sector"
         val birthDateValid = birthDate != null && birthDate != "Choose Date"
-        val availabilityValid = !professionalStatus.availability.isNullOrEmpty()
+        val availabilityValid = !professionalStatus?.availability.isNullOrEmpty()
         val rangeSalaryValid = !rangeSalary.isNullOrEmpty()
         val sexValid = !sexe.isNullOrEmpty()
         val situationValid = !situation.isNullOrEmpty()
@@ -383,7 +389,7 @@ data class User(
         if (nationalityValid) mapUser.add(Pair(listTag[5], nationality ?: ""))
         if (sexValid) mapUser.add(Pair(listTag[6], sexe ?: ""))
         if (situationValid) mapUser.add(Pair(listTag[7], situation ?: ""))
-        if (availabilityValid) mapUser.add(Pair(listTag[8], professionalStatus.availability ?: ""))
+        if (availabilityValid) mapUser.add(Pair(listTag[8], professionalStatus?.availability ?: ""))
         if (rangeSalaryValid) mapUser.add(Pair(listTag[9], rangeSalary ?: ""))
         if (preferredActivitySectorValid) mapUser.add(Pair(listTag[10], preferredActivitySector ?: ""))
         if (phoneValid) mapUser.add(Pair(listTag[11], phone ?: ""))
@@ -400,7 +406,7 @@ data class User(
         val countryValid = !country.isNullOrEmpty()
         val nationalityValid = !nationality.isNullOrEmpty()
         val birthDateValid = birthDate != null && birthDate != "Choose Date"
-        val availabilityValid = !professionalStatus.availability.isNullOrEmpty()
+        val availabilityValid = !professionalStatus?.availability.isNullOrEmpty()
         val rangeSalaryValid = !rangeSalary.isNullOrEmpty()
         val sexValid = !sexe.isNullOrEmpty()
         val situationValid = !situation.isNullOrEmpty()
@@ -421,7 +427,7 @@ data class User(
         if (countryValid) resume += "${country}, "
         if (preferredActivitySectorValid) resume += "$t preferred working in $preferredActivitySector, "
         if (rangeSalaryValid) resume += "$t wants a salary range between $rangeSalary, "
-        if (availabilityValid) resume += "$t is available ${professionalStatus.availability}, "
+        if (availabilityValid) resume += "$t is available ${professionalStatus?.availability}, "
         resume += "you can contact $t1 via $t2 email : $email "
         if (phoneValid) resume += "or on $t2 phone $phone"
 

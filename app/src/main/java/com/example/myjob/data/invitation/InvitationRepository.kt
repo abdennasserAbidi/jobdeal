@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 interface InvitationRepository {
     suspend fun getCompanyInvitations(id: Int): Flow<Resource<PagingData<InvitationModel>>>
     suspend fun sendInvitation(invitationParams: InvitationParams): Flow<Resource<UserResponse>>
+    suspend fun deleteInvitation(idInvitation: Int, idInvitationFrom: Int): Flow<Resource<UserResponse>>
     suspend fun finishProcess(invitationParams: InvitationParams): Flow<Resource<InvitationParams>>
     suspend fun acceptRejectInvitation(invitationParams: InvitationParams): Flow<Resource<UserResponse>>
     suspend fun getInvitationDetail(id: Int, idInvitation: Int): Flow<Resource<InvitationUser>>

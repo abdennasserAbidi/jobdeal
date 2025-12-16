@@ -31,7 +31,7 @@ class SubscriptionDataSourceImp @Inject constructor(
     override suspend fun resetPassword(token: String, newPassword: String): UserResponse =
         apiService.resetPassword(token, newPassword)
 
-    override suspend fun authenticate(user: User): ApiResult<LoginResponse> =
+    override suspend fun authenticate(user: User): LoginResponse =
         apiService.authenticate(user)
 
     override suspend fun verifyEmail(email: String): LoginResponse = apiService.verifyEmail(email)

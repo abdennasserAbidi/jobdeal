@@ -1,6 +1,7 @@
 package com.example.myjob.feature.profile.test
 
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
@@ -144,7 +145,6 @@ data class ProjectForm(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CandidateProfileFormScreen(
-    initialData: CandidateFormData = CandidateFormData(),
     navController: NavController,
     clearData: () -> Unit = {},
     list: List<NewCountry>,
@@ -153,10 +153,7 @@ fun CandidateProfileFormScreen(
     listSchools: MutableList<String>,
     listGrade: MutableList<String>,
     listCompany: MutableList<String>,
-    profileViewModel: ProfileViewModel = hiltViewModel(),
-    onBackClick: () -> Unit = {},
-    onSaveProfile: (CandidateFormData) -> Unit = {},
-    onSaveDraft: (CandidateFormData) -> Unit = {}
+    profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
 
 
@@ -169,7 +166,6 @@ fun CandidateProfileFormScreen(
 
     val degreeList by profileViewModel.degreeList.collectAsState()
 
-    var formData by remember { mutableStateOf(initialData) }
     var selectedTab by remember { mutableStateOf(0) }
     var showSaveDialog by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
@@ -206,8 +202,7 @@ fun CandidateProfileFormScreen(
     val listNames by profileViewModel.listNames.collectAsState()
     val listFlagLazy = profileViewModel.listFlag.collectAsLazyPagingItems()
     val listFlag = listFlagLazy.itemSnapshotList.items
-    val isFirstTime = GlobalEntries.user.firstTime ?: true
-    //val isFirstTime = GlobalEntries.user.isFirstTime ?: true
+    val isFirstTime = GlobalEntries.user.firstTimeUse ?: true
 
 
     val lifecycleEvent = rememberLifecycleEvent()
@@ -232,7 +227,7 @@ fun CandidateProfileFormScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Complete Profile",
+                            text = stringResource(id = R.string.complete_profile_text),
                             fontWeight = FontWeight.Bold
                         )
                     },
@@ -256,7 +251,7 @@ fun CandidateProfileFormScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Complete Profile",
+                            text = stringResource(id = R.string.complete_profile_text),
                             fontWeight = FontWeight.Bold
                         )
                     },
@@ -331,20 +326,20 @@ fun CandidateProfileFormScreen(
                             profileViewModel.changeVisibilityDate(true)
                         },
                         onSubmit = {
-                            selectedTab += 1
                         },
                     )
 
                     1 -> ProfessionalForm(
                         profileViewModel = profileViewModel,
                         onDataChange = {
-                            selectedTab += 1
                         }
                     )
 
                     2 -> SkillsForm(
                         profileViewModel = profileViewModel,
-                        onDataChange = { selectedTab += 1 }
+                        onDataChange = {
+
+                        }
                     )
 
                     3 -> ExperienceForm(
@@ -362,8 +357,7 @@ fun CandidateProfileFormScreen(
                             typeDate = "end"
                             indexToChange = it
                             profileViewModel.changeVisibilityDate(true)
-                        },
-                        onDataChange = { formData = it }
+                        }
                     )
 
                     4 -> EducationFormSection(
@@ -390,15 +384,19 @@ fun CandidateProfileFormScreen(
         val saveCompletedState by profileViewModel.saveCompletedState.collectAsState()
         LaunchedEffect(saveCompletedState) {
             if (saveCompletedState == "saved successfully") {
-                navController.navigate(Screen.HomeScreen.route)
+                navController.navigate(Screen.UpdateDetailsScreen.route)
+                profileViewModel.clearComplete()
             }
         }
+
+        val snackbarHostState = remember { SnackbarHostState() }
 
         val saveUserState by profileViewModel.saveUserState.collectAsState()
         LaunchedEffect(saveUserState) {
             if (saveUserState == "saved successfully") {
                 profileViewModel.triggerPersonalCheck(false)
                 selectedTab += 1
+                profileViewModel.clearPersoanlInfo()
             }
         }
 
@@ -407,14 +405,19 @@ fun CandidateProfileFormScreen(
             if (saveCandidateProfessionalState == "saved successfully") {
                 profileViewModel.triggerProfessionalCheck(false)
                 selectedTab += 1
+                profileViewModel.clearProfessionalInfo()
             }
         }
 
         val saveExpState by profileViewModel.saveExpState.collectAsState()
+        Log.i("sdscccccccccc", "saveCandidateProfessionalState: $saveCandidateProfessionalState")
+        Log.i("sdscccccccccc", "saveUserState: $saveUserState")
+        Log.i("sdscccccccccc", "CandidateProfileFormScreen: $saveExpState")
         LaunchedEffect(saveExpState) {
             if (saveExpState == "saved successfully") {
                 profileViewModel.triggerExperienceCheck(false)
                 selectedTab += 1
+                profileViewModel.clearExpState()
             }
         }
 
@@ -423,6 +426,7 @@ fun CandidateProfileFormScreen(
             if (saveEducationState == "saved successfully") {
                 profileViewModel.triggerEducationCheck(false)
                 profileViewModel.saveIsCompletedProfileCandidate()
+                profileViewModel.clearEducationState()
             }
         }
 
@@ -487,18 +491,20 @@ fun CandidateProfileFormScreen(
                     }
 
                     "start" -> {
-                        profileViewModel.changeStartDateExperience(indexToChange, it)
+                        profileViewModel.changeStartDateExperience(indexToChange, profileViewModel.convertDate(it))
                         profileViewModel.changeEndDateExp(it)
                     }
 
                     "end" -> {
-                        profileViewModel.changeEndDateExperience(indexToChange, it)
+                        profileViewModel.changeEndDateExperience(indexToChange, profileViewModel.convertDate(it))
                         profileViewModel.changeEndDateExp(it)
                     }
                 }
-            }, onDismiss = {
+            },
+            onDismiss = {
                 profileViewModel.changeVisibilityDate(false)
-            })
+            }
+        )
 
         //EDUCATION
         AnimatedVisibility(
@@ -680,6 +686,7 @@ fun CandidateProfileFormScreen(
                 val names = allSubjects.map {
                     it.libelly
                 }
+
                 GenericSearch(
                     mListOfJobs = names,
                     onDismissRequest = {
@@ -769,7 +776,6 @@ fun CandidateProfileFormScreen(
             onConfirm = {
                 isLoading = true
                 showSaveDialog = false
-                onSaveProfile(formData)
             },
             onDismiss = { showSaveDialog = false }
         )

@@ -16,14 +16,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Mail
+import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Card
@@ -42,7 +45,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -59,6 +61,7 @@ import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.HomeEntity
+import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.feature.navigation.Screen
 import kotlinx.coroutines.delay
 
@@ -69,12 +72,23 @@ fun ModernHomeScreen(
     clearData: () -> Unit = {}
 ) {
 
-    GlobalEntries.scheduleFileDownload(LocalContext.current, homeViewModel.getPDFName())
+    //GlobalEntries.scheduleFileDownload(LocalContext.current, homeViewModel.getPDFName())
 
     val listHomeEntity by homeViewModel.listHomeEntity.collectAsState()
     val fcmToken by homeViewModel.fcmToken.collectAsState()
 
     val invitations = homeViewModel.invitations.collectAsLazyPagingItems()
+    var count by remember { mutableStateOf(0) }
+
+    LaunchedEffect(invitations.itemCount) {
+        invitations.itemSnapshotList.map {
+            val status = it?.status ?: ""
+            if (status == InvitationStatus.ON_HOLD.name) {
+                count += 1
+            }
+        }
+    }
+
 
     val lifecycle = rememberLifecycleEvent()
     LaunchedEffect(lifecycle) {
@@ -125,7 +139,13 @@ fun ModernHomeScreen(
                         //navController.navigate(Screen.ProfileScreen.route)
                         navController.navigate(Screen.SearchWordScreen.route)
                     },
-                    invitationsCount = invitations.itemCount
+                    onPostClick = {
+                        navController.navigate(Screen.CandidatePostScreen.route)
+                    },
+                    onMessageClick = {
+                        navController.navigate(Screen.ListMessagesScreen.route)
+                    },
+                    invitationsCount = count
                 )
             }
         }
@@ -162,7 +182,8 @@ fun ModernHeader(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = userName.split(" ").mapNotNull { it.firstOrNull() }.take(2).joinToString(""),
+                        text = userName.split(" ").mapNotNull { it.firstOrNull() }.take(2)
+                            .joinToString(""),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -206,6 +227,8 @@ fun ModernHeader(
                     )
                 }
 
+                Spacer(modifier = Modifier.width(10.dp))
+
                 IconButton(
                     onClick = {
                         logout()
@@ -234,6 +257,8 @@ fun MainActionsGrid(
     onValidationClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onProfileClick: () -> Unit,
+    onPostClick: () -> Unit,
+    onMessageClick: () -> Unit,
     invitationsCount: Int
 ) {
     Column(
@@ -276,6 +301,38 @@ fun MainActionsGrid(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Second Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+
+            val postsItem = listHomeEntity[4]
+            ModernActionCard(
+                modifier = Modifier.weight(1f),
+                title = stringResource(id = postsItem.title),
+                subtitle = stringResource(id = postsItem.subTitle),
+                icon = Icons.Default.Public,
+                iconTint = Color(0xFF25D366),
+                backgroundColor = Color.White,
+                onClick = onPostClick
+            )
+
+            val settingsItem = listHomeEntity[5]
+
+            ModernActionCard(
+                modifier = Modifier.weight(1f),
+                title = stringResource(id = settingsItem.title),
+                subtitle = stringResource(id = settingsItem.subTitle),
+                icon = Icons.Default.Message,
+                iconTint = Color(0xFF25D366),
+                backgroundColor = Color.White,
+                onClick = onMessageClick
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Third Row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)

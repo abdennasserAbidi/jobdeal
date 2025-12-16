@@ -19,11 +19,11 @@ import androidx.compose.foundation.border
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.InsertInvitation
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.LocalPostOffice
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.InsertInvitation
-import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.LocalPostOffice
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -57,7 +57,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.example.myjob.base.MyApp
-import com.example.myjob.feature.home.CandidateListScreen
+import com.example.myjob.base.MyApp.Companion.stateApp
+import com.example.myjob.base.StateApp
 import com.example.myjob.common.FileReader
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.langState
@@ -74,14 +75,13 @@ import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.feature.favorites.CompanyFavorites
 import com.example.myjob.feature.forgotpassword.ForgotPasswordScreen
-import com.example.myjob.feature.home.HomeCandidate
+import com.example.myjob.feature.home.CandidateListScreen
 import com.example.myjob.feature.home.HomeCompany
 import com.example.myjob.feature.home.ModernHomeScreen
 import com.example.myjob.feature.home.detail.CandidateDetailScreen
-import com.example.myjob.feature.home.detail.DetailsScreen
 import com.example.myjob.feature.home.filter.FilterScreenUpdated
 import com.example.myjob.feature.home.filter.FilteredHome
-import com.example.myjob.feature.home.filter.SearchScreen
+import com.example.myjob.feature.invitation.candidat.InvitationCareerScreen
 import com.example.myjob.feature.invitation.candidat.InvitationScreen
 import com.example.myjob.feature.invitation.company.InvitationCompanyScreen
 import com.example.myjob.feature.invitation.company.SendInvitationCompany
@@ -89,9 +89,13 @@ import com.example.myjob.feature.invitation.detail.DetailInviScreen
 import com.example.myjob.feature.invitation.detail.DetailInvitationScreen
 import com.example.myjob.feature.login.LoginScreen
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
+import com.example.myjob.feature.messagerie.DiscussionScreen
+import com.example.myjob.feature.messagerie.ListMessageScreen
 import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.notification.NotificationScreen
 import com.example.myjob.feature.onboarding.OnBoardingScreen
+import com.example.myjob.feature.posts.CandidatePostScreen
+import com.example.myjob.feature.posts.PostScreen
 import com.example.myjob.feature.profile.AllCareer
 import com.example.myjob.feature.profile.AllEducation
 import com.example.myjob.feature.profile.CandidateProfile
@@ -101,11 +105,10 @@ import com.example.myjob.feature.profile.CountryCodeScreen
 import com.example.myjob.feature.profile.EducationForm
 import com.example.myjob.feature.profile.PersonalForm
 import com.example.myjob.feature.profile.ProfileScreen
-import com.example.myjob.feature.home.detail.test.CandidateCompleteProfileApp
-import com.example.myjob.feature.invitation.candidat.InvitationCareerScreen
-import com.example.myjob.feature.profile.test.CandidateProfileFormExec
+import com.example.myjob.feature.profile.test.CandidateProfileFormScreen
+import com.example.myjob.feature.profile.test.CompanyProfileFormScreen
+import com.example.myjob.feature.profile.test.UpdateDetailScreen
 import com.example.myjob.feature.setting.ModernSettingScreen
-import com.example.myjob.feature.setting.SettingScreen
 import com.example.myjob.feature.signup.SignUpScreen
 import com.example.myjob.feature.splash.SplashScreen
 import com.example.myjob.feature.validateprofile.InterviewValidationScreen
@@ -116,14 +119,19 @@ import com.example.myjob.local.database.SharedPreference
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import io.socket.client.IO
+import io.socket.client.Socket
+import io.socket.emitter.Emitter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.net.URISyntaxException
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -137,10 +145,17 @@ class MainActivity : ComponentActivity() {
     private var listCompany: MutableList<String> = mutableListOf()
     private var listCountries: MutableList<String> = mutableListOf()
 
-    //TODO("EVENNEMENT(céminaire, formation, foire) => annonces : forum(commentaire, like)")
-    //TODO("Annonce : emplacememnt dans la bottom bar instead of search")
+    //TODO("détail company invitation détail")
+    //TODO("ajouter company et institut a chaque fois on ne trouve pas dans la liste")
+    //TODO("détail user quand on complète le profile")
+    //TODO("add phone to company complete profile")
+    //TODO("share application")
+    //TODO("Filtrage du poste")
     //TODO("Notification")
+    //TODO("upload images")
+    //TODO("chat")
 
+    var mSocket: Socket? = null
     private var imageUri = mutableStateOf<Uri?>(null)
     private var textChanged = mutableStateOf("Scanned text will appear here..")
 
@@ -150,7 +165,6 @@ class MainActivity : ComponentActivity() {
             val list = listImageUri.toMutableList()
             list.add(uri)
             listImageUri
-            Log.i("jfeakhgealgk", ": $list")
         }
 
     lateinit var launcher: ActivityResultLauncher<Intent>
@@ -260,13 +274,29 @@ class MainActivity : ComponentActivity() {
         viewState.value = CountryPickerViewState(countries)
     }
 
+    suspend fun repeatEvery(duration: Long, block: suspend () -> Unit) {
+        while (true) {
+            block()
+            delay(duration)
+        }
+    }
+
     @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestNotificationPermission()
 
+        //setupSocket()
+
         fetchData()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val fiveMinutesInMillis: Long = 2 * 60 * 1000L
+            repeatEvery(fiveMinutesInMillis) {
+                GlobalEntries.isRefreshing.update { true }
+            }
+        }
 
         allSubjects = (applicationContext as MyApp).allSubjectList
 
@@ -319,10 +349,10 @@ class MainActivity : ComponentActivity() {
             )
 
             val settingsTab = TabBarItem(
-                title = stringResource(id = R.string.item3),
-                tag = "search_screen",
-                selectedIcon = Icons.Filled.Search,
-                unselectedIcon = Icons.Outlined.Search
+                title = stringResource(id = R.string.item7),
+                tag = "post_screen",
+                selectedIcon = Icons.Filled.LocalPostOffice,
+                unselectedIcon = Icons.Outlined.LocalPostOffice
             )
             val moreTab = TabBarItem(
                 title = stringResource(id = R.string.item4),
@@ -361,6 +391,7 @@ class MainActivity : ComponentActivity() {
                     startDestination = Screen.SplashScreen.route
                 ) {
 
+                    //SUBSCRIPTIONS
                     composable(route = Screen.SplashScreen.route) {
 
                         isVisibleNav = false
@@ -402,7 +433,7 @@ class MainActivity : ComponentActivity() {
                         route = Screen.ForgotPasswordScreen.route,
                         deepLinks = listOf(
                             navDeepLink {
-                                uriPattern = "http://app/{token}"
+                                uriPattern = "http://192.168.1.13/{token}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),
@@ -416,6 +447,19 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = false
                         val token = entry.arguments?.getString("token") ?: ""
                         ForgotPasswordScreen(navController = navController, token = token)
+                    }
+                    //END SUBSCRIPTION
+
+
+                    //INVITATION
+                    composable(route = Screen.InvitationCompanyScreen.route) {
+                        isVisibleNav = true
+                        InvitationCompanyScreen(
+                            navController = navController,
+                            changeIndexTab = {
+                                selectedTabIndex = 0
+                            }
+                        )
                     }
 
                     composable(
@@ -447,32 +491,53 @@ class MainActivity : ComponentActivity() {
                         DetailInviScreen(navController = navController)
                     }
 
+                    composable(route = Screen.SendInvitationScreen.route) {
+                        isVisibleNav = false
+                        //SendInvitationScreen(navController)
+                        SendInvitationCompany(navController)
+                    }
+
+                    composable(route = Screen.InvitationScreen.route) {
+                        if (role == "Candidate" || role == "Candidat") isVisibleNav = false
+                        InvitationScreen(navController = navController)
+                    }
+
+                    composable(route = Screen.InvitationBoostScreen.route) {
+                        if (role == "Candidate" || role == "Candidat") isVisibleNav = false
+                        InvitationCareerScreen(navController = navController)
+                    }
+                    //END INVITATION
+
+
+
                     /*composable(route = Screen.textRecognitionScreen.route) {
                         if (cameraPermissionState.status.isGranted) CameraScreen(navController = navController)
                         else NoPermissionScreen(cameraPermissionState::launchPermissionRequest)
                     }*/
 
-                    composable(route = Screen.ProfileScreen.route) {
+
+                    //MESSAGERIE
+                    composable(
+                        route = Screen.SendMessageScreen.route,
+                    ) {
                         isVisibleNav = false
-                        if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") CompanyProfile(
-                            navController
-                        )
-                        else CandidateProfile(navController)
+                        DiscussionScreen(navController, hideNavigation = {
+                            isVisibleNav = false
+                        })
                     }
 
-                    composable(route = Screen.FavoritesScreen.route) {
-                        isVisibleNav = true
-                        CompanyFavorites(navController)
+                    composable(
+                        route = Screen.ListMessagesScreen.route,
+                    ) {
+                        isVisibleNav = false
+                        ListMessageScreen(navController, hideNavigation = {
+                            isVisibleNav = false
+                        })
                     }
 
-                    composable(route = Screen.ValidationInterviewScreen.route) {
+                    composable(route = Screen.NotificationCompanyScreen.route) {
                         isVisibleNav = true
-                        InterviewValidationScreen(navController)
-                    }
-
-                    composable(route = Screen.CompanyProfileScreen.route) {
-                        isVisibleNav = true
-                        ProfileScreen(navController)
+                        NotificationScreen(navController)
                     }
 
                     composable(
@@ -484,20 +549,20 @@ class MainActivity : ComponentActivity() {
                             isVisibleNav = false
                         })
                     }
+                    //END MESSAGERIE
 
-                    composable(route = Screen.InvitationCompanyScreen.route) {
-                        isVisibleNav = true
-                        InvitationCompanyScreen(
+                    //VALIDATION
+                    composable(route = Screen.ValidateDocCandidateScreen.route) {
+                        isVisibleNav = false
+                        ValidateDocScreen(
                             navController = navController,
-                            changeIndexTab = {
-                                selectedTabIndex = 0
-                            }
+                            selectImage = selectImage
                         )
                     }
 
-                    composable(route = Screen.NotificationCompanyScreen.route) {
-                        isVisibleNav = true
-                        NotificationScreen(navController)
+                    composable(route = Screen.ValidateProfileCandidateScreen.route) {
+                        isVisibleNav = false
+                        ValidateProfileCandidate(navController)
                     }
 
                     composable(route = Screen.ValidateProfileCompanyScreen.route) {
@@ -512,19 +577,15 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    composable(route = Screen.ValidateDocCandidateScreen.route) {
-                        isVisibleNav = false
-                        ValidateDocScreen(
-                            navController = navController,
-                            selectImage = selectImage
-                        )
+                    composable(route = Screen.ValidationInterviewScreen.route) {
+                        isVisibleNav = true
+                        InterviewValidationScreen(navController)
                     }
+                    //END VALIDATION
 
-                    composable(route = Screen.ValidateProfileCandidateScreen.route) {
-                        isVisibleNav = false
-                        ValidateProfileCandidate(navController)
-                    }
 
+
+                    //HOME
                     composable(route = Screen.FilterScreen.route) {
                         isVisibleNav = false
                         FilterScreenUpdated(
@@ -534,12 +595,6 @@ class MainActivity : ComponentActivity() {
                             listCountries = listCountries,
                             listCompany = app.listCompanies
                         )
-                    }
-
-                    composable(route = Screen.SendInvitationScreen.route) {
-                        isVisibleNav = false
-                        //SendInvitationScreen(navController)
-                        SendInvitationCompany(navController)
                     }
 
                     composable(route = Screen.HomeScreen.route) {
@@ -557,26 +612,14 @@ class MainActivity : ComponentActivity() {
                                 listSchools = listSchools,
                                 listCountries = listCountries,
                                 listCompany = app.listCompanies,
+                                clearData = {
+                                    selectedTabIndex = 0
+                                },
                                 changeIndexTab = {
                                     selectedTabIndex = 0
                                 }
                             )
-
-                            /*HomeCompany(navController = navController,
-                                allSubjects = allSubjects,
-                                listSchools = listSchools,
-                                listCountries = listCountries,
-                                listCompany = listCompany,
-                                onResumed = { index ->
-                                    selectedTabIndex = index
-                                })*/
                         } else {
-                            /*HomeCandidate(
-                            navController,
-                            clearData = {
-                                selectedTabIndex = 0
-                            }
-                        )*/
                             ModernHomeScreen(
                                 navController = navController,
                                 clearData = {
@@ -591,25 +634,19 @@ class MainActivity : ComponentActivity() {
                         FilteredHome(navController)
                     }
 
-                    composable(route = Screen.SearchWordScreen.route) {
+                    composable(route = Screen.PostScreen.route) {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            GlobalEntries.isVisibleNav.collect {
+                                isVisibleNav = it
+                            }
+                        }
+
+                        PostScreen(navController = navController)
+                    }
+
+                    composable(route = Screen.CandidatePostScreen.route) {
                         isVisibleNav = false
-                        //SearchScreen(navController)
-                        //CandidateCompleteProfileApp()
-                        listCompany = app.listCompanies
-
-
-                        CandidateProfileFormExec(
-                            navController = navController,
-                            list = listCountry,
-                            allSubjects = allSubjects,
-                            listStudyField = studyField,
-                            listSchools = listSchools,
-                            listGrade = listCountries,
-                            listCompany = app.listCompanies,
-                            clearData = {
-                                selectedTabIndex = 0
-                            },
-                        )
+                        CandidatePostScreen(navController = navController)
                     }
 
                     composable(route = Screen.SettingScreen.route) {
@@ -655,17 +692,11 @@ class MainActivity : ComponentActivity() {
                                 selectedTabIndex = index
                             })
                     }
+                    //END HOME
 
-                    composable(route = Screen.InvitationScreen.route) {
-                        if (role == "Candidate" || role == "Candidat") isVisibleNav = false
-                        InvitationScreen(navController = navController)
-                    }
 
-                    composable(route = Screen.InvitationBoostScreen.route) {
-                        if (role == "Candidate" || role == "Candidat") isVisibleNav = false
-                        InvitationCareerScreen(navController = navController)
-                    }
 
+                    //PROFILE
                     composable(route = Screen.CareerScreen.route) {
                         isVisibleNav = false
                         AllCareer(navController = navController)
@@ -708,10 +739,112 @@ class MainActivity : ComponentActivity() {
                             listGrade = listCountries
                         )
                     }
+
+                    composable(route = Screen.ProfileScreen.route) {
+                        isVisibleNav = false
+                        if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") CompanyProfile(
+                            navController
+                        )
+                        else CandidateProfile(navController)
+                    }
+
+                    composable(route = Screen.FavoritesScreen.route) {
+                        isVisibleNav = true
+                        CompanyFavorites(navController)
+                    }
+
+                    composable(route = Screen.CompanyProfileScreen.route) {
+                        isVisibleNav = true
+                        ProfileScreen(navController)
+                    }
+
+                    composable(route = Screen.UpdateDetailsScreen.route) {
+                        isVisibleNav = false
+                        UpdateDetailScreen(navController)
+                    }
+
+                    //new
+                    composable(route = Screen.SearchWordScreen.route) {
+                        isVisibleNav = false
+                        //SearchScreen(navController)
+                        //CandidateCompleteProfileApp()
+                        app.listCompanies.add(stringResource(id = R.string.other_text))
+                        listCompany = app.listCompanies.distinctBy { it }.toMutableList()
+
+                        CandidateProfileFormScreen(
+                            navController = navController,
+                            list = listCountry,
+                            clearData = {
+                                selectedTabIndex = 0
+                            },
+                            allSubjects = allSubjects,
+                            listStudyField = studyField,
+                            listSchools = listSchools,
+                            listGrade = listCountries,
+                            listCompany = app.listCompanies
+                        )
+                    }
+
+                    composable(route = Screen.CompanyProfileForm.route) {
+                        isVisibleNav = false
+
+                        CompanyProfileFormScreen(
+                            navController = navController,
+                            clearData = {
+                                selectedTabIndex = 0
+                            }
+                        )
+                    }
+                    //END PROFILE
                 }
 
             }
         }
+    }
+
+    val onConnect = Emitter.Listener {
+        runOnUiThread {
+            Log.d("Socket.IO", "Connected to server")
+            mSocket?.emit("message", "Hello from Android!")
+        }
+    }
+
+    val onNewMessage = Emitter.Listener {
+        runOnUiThread {
+            val message = it.get(0) as String
+            Log.d("Socket.IO", "New message from server: $message")
+            // Update UI with the received message
+        }
+    }
+
+    val onDisconnect = Emitter.Listener {
+        runOnUiThread {
+            Log.d("Socket.IO", "Disconnected from server")
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mSocket?.disconnect()
+        mSocket?.off(Socket.EVENT_CONNECT, onConnect)
+        mSocket?.off(Socket.EVENT_DISCONNECT, onDisconnect)
+        mSocket?.off("message", onNewMessage)
+    }
+
+    private fun setupSocket() {
+        try {
+            mSocket =
+                IO.socket("http://YOUR_SERVER_IP:9092")
+        } catch (e: URISyntaxException) {
+            e.printStackTrace()
+        }
+
+        mSocket?.on(Socket.EVENT_CONNECT, onConnect)
+        mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
+        mSocket?.on("message", onNewMessage)
+
+
+        mSocket?.connect()
     }
 }
 

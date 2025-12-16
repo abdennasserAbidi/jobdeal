@@ -12,7 +12,7 @@ interface SubscriptionDataSource {
     suspend fun statusCandidateValidation(id: Int): ValidationProfileStatus
     suspend fun statusListCandidateValidation(id: Int): List<ValidationProfileStatus>
     suspend fun resetPassword(token: String, newPassword: String): UserResponse
-    suspend fun authenticate(user: User): ApiResult<LoginResponse>
+    suspend fun authenticate(user: User): LoginResponse
     suspend fun verifyEmail(email: String): LoginResponse
     suspend fun saveUser(user: User): ApiResult<LoginResponse>
 
