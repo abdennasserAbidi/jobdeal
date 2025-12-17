@@ -149,6 +149,13 @@
 
     <string name="all_posts_text">All Posts</string>
 
+    <string name="title_status_pending_invitation_text">Pending %1$s Reply</string>
+    <string name="title_status_hired_invitation_text">%1$s is hired</string>
+    <string name="title_status_process_invitation_text">%1$s is in process</string>
+    <string name="title_status_rejecting_invitation_text">Rejecting %1$s</string>
+    <string name="title_status_not_interested_invitation_text">%1$s is not interested</string>
+    <string name="title_date_sent_text">Sent on %1$s</string>
+    <string name="title_date_response_text">Reply</string>
 
     <string name="message_rejected_offer_text">The candidate %1$s is Rejected : you should tell the reason</string>
     <string name="message_accepted_offer_text">The candidate %1$s is Accepted</string>

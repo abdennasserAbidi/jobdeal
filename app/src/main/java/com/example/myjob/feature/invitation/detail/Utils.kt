@@ -81,12 +81,12 @@ fun InvitationStatusCard(
 
     val statusText = if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") {
         when (status) {
-            InvitationStatus.ON_HOLD.name -> "Pending ${userCandidate.fullName} Reply"
-            InvitationStatus.HIRED.name -> "${userCandidate.fullName} is hired"
-            InvitationStatus.IN_PROCESS.name -> "${userCandidate.fullName} is in process"
-            InvitationStatus.REJECTED.name -> "Rejecting ${userCandidate.fullName}"
-            InvitationStatus.NOT_INTERESTED.name -> "${userCandidate.fullName} not interested"
-            else -> "Pending ${userCandidate.fullName} Reply"
+            InvitationStatus.ON_HOLD.name -> stringResource(id = R.string.title_status_pending_invitation_text, userCandidate.fullName ?: "")
+            InvitationStatus.HIRED.name -> stringResource(id = R.string.title_status_hired_invitation_text, userCandidate.fullName ?: "")
+            InvitationStatus.IN_PROCESS.name -> stringResource(id = R.string.title_status_process_invitation_text, userCandidate.fullName ?: "")
+            InvitationStatus.REJECTED.name -> stringResource(id = R.string.title_status_rejecting_invitation_text, userCandidate.fullName ?: "")
+            InvitationStatus.NOT_INTERESTED.name -> stringResource(id = R.string.title_status_not_interested_invitation_text, userCandidate.fullName ?: "")
+            else -> stringResource(id = R.string.title_status_pending_invitation_text, userCandidate.fullName ?: "")
         }
     } else status
 
@@ -135,7 +135,7 @@ fun InvitationStatusCard(
                             color = statusColor
                         )
                         Text(
-                            text = "Sent on $sentDate",
+                            text = stringResource(id = R.string.title_date_sent_text, sentDate),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -147,7 +147,7 @@ fun InvitationStatusCard(
                         horizontalAlignment = Alignment.End
                     ) {
                         Text(
-                            text = "Response",
+                            text = stringResource(id = R.string.title_date_response_text),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

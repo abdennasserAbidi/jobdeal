@@ -3,16 +3,23 @@ package com.example.myjob.feature.invitation.company
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -93,76 +101,84 @@ fun InvitationCompanyScreen(
 
     Box(
         modifier = Modifier.fillMaxSize()
-
     ) {
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 66.dp)
-                .padding(horizontal = 16.dp)
-        ) {
+        if (invitations.itemCount > 0) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 66.dp)
+                    .padding(horizontal = 16.dp)
+            ) {
 
-            items(invitations.itemCount) { index ->
-                var item = invitations[index] ?: InvitationModel()
-                invitationModel = item
+                items(invitations.itemCount) { index ->
+                    var item = invitations[index] ?: InvitationModel()
+                    invitationModel = item
 
-                if (item.idInvitation == invitation.invitationModel.idInvitation)
-                    item = invitation.invitationModel
+                    if (item.idInvitation == invitation.invitationModel.idInvitation)
+                        item = invitation.invitationModel
 
-                CompanyInvitationCard(
-                    invitationModel = item,
-                    onClick = {
-                        GlobalEntries.idInvitation = item.idInvitation
-                        navController.navigate(Screen.NormalDetailInvitationScreen.route)
-                    },
-                    viewProfile = {
-                        userForCompany = User()
-                        userForCompany.id = it.idTo
-                        userForCompany.fullName = it.fullName
-                        navController.navigate(Screen.DetailScreen.route)
-                    },
-                    onTerminateInvitation = {
-                        openFinishProcess = true
-                    },
-                    onDeleteInvitation = {
+                    CompanyInvitationCard(
+                        invitationModel = item,
+                        onClick = {
+                            GlobalEntries.idInvitation = item.idInvitation
+                            navController.navigate(Screen.NormalDetailInvitationScreen.route)
+                        },
+                        viewProfile = {
+                            userForCompany = User()
+                            userForCompany.id = it.idTo
+                            userForCompany.fullName = it.fullName
+                            navController.navigate(Screen.DetailScreen.route)
+                        },
+                        onTerminateInvitation = {
+                            openFinishProcess = true
+                        },
+                        onDeleteInvitation = {
 
-                    }
-                )
-            }
-
-            invitations.apply {
-                when {
-                    loadState.refresh is LoadState.Loading -> {
-                        item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
-                    }
-
-                    loadState.refresh is LoadState.Error -> {
-                        val error = invitations.loadState.refresh as LoadState.Error
-                        item {
-                            ErrorMessage(
-                                modifier = Modifier.fillParentMaxSize(),
-                                message = error.error.localizedMessage ?: "",
-                                onClickRetry = { retry() })
                         }
-                    }
+                    )
+                }
 
-                    loadState.append is LoadState.Loading -> {
-                        item { LoadingNextPageItem(modifier = Modifier) }
-                    }
+                invitations.apply {
+                    when {
+                        loadState.refresh is LoadState.Loading -> {
+                            item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
+                        }
 
-                    loadState.append is LoadState.Error -> {
-                        val error = invitations.loadState.append as LoadState.Error
-                        item {
-                            ErrorMessage(
-                                modifier = Modifier,
-                                message = error.error.localizedMessage!!,
-                                onClickRetry = { retry() })
+                        loadState.refresh is LoadState.Error -> {
+                            val error = invitations.loadState.refresh as LoadState.Error
+                            item {
+                                ErrorMessage(
+                                    modifier = Modifier.fillParentMaxSize(),
+                                    message = error.error.localizedMessage ?: "",
+                                    onClickRetry = { retry() })
+                            }
+                        }
+
+                        loadState.append is LoadState.Loading -> {
+                            item { LoadingNextPageItem(modifier = Modifier) }
+                        }
+
+                        loadState.append is LoadState.Error -> {
+                            val error = invitations.loadState.append as LoadState.Error
+                            item {
+                                ErrorMessage(
+                                    modifier = Modifier,
+                                    message = error.error.localizedMessage!!,
+                                    onClickRetry = { retry() })
+                            }
                         }
                     }
                 }
             }
+        } else {
+            Text(
+                text = "There is no data",
+                modifier = Modifier.align(Alignment.Center)
+            )
         }
+
+
 
         Box(
             modifier = Modifier
@@ -177,19 +193,23 @@ fun InvitationCompanyScreen(
                     .fillMaxWidth()
                     .padding(vertical = 15.dp, horizontal = 15.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowBack,
-                    tint = Color.White,
+                IconButton(
+                    onClick = {
+                        navController.popBackStack()
+                    },
                     modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
                         .align(Alignment.CenterStart)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null
-                        ) {
-                            navController.popBackStack()
-                        },
-                    contentDescription = ""
-                )
+                        .background(Color.White.copy(alpha = 0.2f))
+                ) {
+                    androidx.compose.material3.Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
 
                 Text(
                     text = stringResource(id = R.string.invitations_text),

@@ -473,6 +473,13 @@ fun CandidateListScreen(
                 }
 
                 Spacer(modifier = Modifier.height(50.dp))
+            } else {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        text = "There is no data",
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
             }
         }
 
