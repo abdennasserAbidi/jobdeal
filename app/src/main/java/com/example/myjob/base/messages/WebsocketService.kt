@@ -1,4 +1,4 @@
-package com.example.myjob.base
+package com.example.myjob.base.messages
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

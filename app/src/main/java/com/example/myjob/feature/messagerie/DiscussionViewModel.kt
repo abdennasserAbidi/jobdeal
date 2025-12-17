@@ -7,8 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.example.myjob.base.ConnectionState
-import com.example.myjob.base.WebsocketService
-import com.example.myjob.base.WebsocketService.close
+import com.example.myjob.base.messages.StompChatService
+import com.example.myjob.base.messages.WebsocketService
+import com.example.myjob.base.messages.WebsocketService.close
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.chat.FindConversationUseCase
@@ -117,6 +118,7 @@ class DiscussionViewModel @Inject constructor(
 
     fun connect() {
         WebsocketService.connect("")
+        StompChatService.connect()
 
         viewModelScope.launch {
             WebsocketService.messages.collect { json ->
@@ -130,19 +132,20 @@ class DiscussionViewModel @Inject constructor(
     fun sendMessage(content: String) {
         val currentUserId = sharedPreference.getInt("idUser", 0)
         val message = ChatMessage(
-            userReceivedId = GlobalEntries.candidateUser.id ?: -1,
+            userReceivedId = GlobalEntries.otherUserId,
             userReceivedName = getUserName(GlobalEntries.candidateUser) ?: "",
             userConnectedId = currentUserId,
             userConnectedName = getUserName(GlobalEntries.user) ?: "",
             content = content
         )
 
-        WebsocketService.sendMessage(Gson().toJson(message))
+        StompChatService.sendMessage(Gson().toJson(message))
         messages = messages + message
     }
 
     override fun onCleared() {
         close()
+        StompChatService.disconnect()
         super.onCleared()
     }
 
