@@ -1,5 +1,8 @@
 # Commit Log
 
+- d9ccc58 Merge 3bd1f528109e8ed3e9d8234cecf9c14268542f98 into 264831798a47839218d8f8fb6aaee7479dbb1b70 (abdennasserAbidi)
+- 3bd1f52 cicd apk (Abdennasser)
+- 2648317 chore: update commit log (abdennasserAbidi)
 - bdc13b9 Merge d4f3cbb54f580d7ebf1b97d5f08b316bdd6d3bc8 into df5eb403633885534dbae94b727736a164dbd641 (abdennasserAbidi)
 - d4f3cbb cicd apk (Abdennasser)
 - df5eb40 chore: bump android version to 4 (abdennasserAbidi)
