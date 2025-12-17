@@ -48,6 +48,7 @@ fun CustomPhoneKit(
     modifier: Modifier,
     selectedCountry: NewCountry,
     defaultPhone: String,
+    hint: String = "",
     onClick: () -> Unit,
     onValueChanged: (phone: String) -> Unit
 ) {
@@ -138,7 +139,7 @@ fun CustomPhoneKit(
                             onValueChanged(input)
                         }
                     },
-                    placeholder = { Text(text = "Phone number") },
+                    placeholder = { Text(text = hint) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         keyboardType = KeyboardType.Number // Numeric keyboard

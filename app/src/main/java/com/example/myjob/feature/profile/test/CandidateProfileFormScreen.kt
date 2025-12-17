@@ -410,9 +410,6 @@ fun CandidateProfileFormScreen(
         }
 
         val saveExpState by profileViewModel.saveExpState.collectAsState()
-        Log.i("sdscccccccccc", "saveCandidateProfessionalState: $saveCandidateProfessionalState")
-        Log.i("sdscccccccccc", "saveUserState: $saveUserState")
-        Log.i("sdscccccccccc", "CandidateProfileFormScreen: $saveExpState")
         LaunchedEffect(saveExpState) {
             if (saveExpState == "saved successfully") {
                 profileViewModel.triggerExperienceCheck(false)

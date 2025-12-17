@@ -139,19 +139,6 @@ class DiscussionViewModel @Inject constructor(
 
         WebsocketService.sendMessage(Gson().toJson(message))
         messages = messages + message
-
-        /*viewModelScope.launch {
-            try {
-                // Save to backend
-                saveMessageUseCase.execute(message).collectLatest {
-
-                }
-                // Send via Socket.IO for real-time delivery
-                socketManager?.sendMessage(message)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }*/
     }
 
     override fun onCleared() {

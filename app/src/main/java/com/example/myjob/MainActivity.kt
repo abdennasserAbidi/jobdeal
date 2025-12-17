@@ -145,11 +145,7 @@ class MainActivity : ComponentActivity() {
     private var listCompany: MutableList<String> = mutableListOf()
     private var listCountries: MutableList<String> = mutableListOf()
 
-    //TODO("détail company invitation détail")
-    //TODO("ajouter company et institut a chaque fois on ne trouve pas dans la liste")
     //TODO("détail user quand on complète le profile")
-    //TODO("add phone to company complete profile")
-    //TODO("share application")
     //TODO("Filtrage du poste")
     //TODO("Notification")
     //TODO("upload images")

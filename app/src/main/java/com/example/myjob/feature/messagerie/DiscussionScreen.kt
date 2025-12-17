@@ -158,8 +158,7 @@ fun DiscussionScreen(
                     },
                     modifier = Modifier.weight(1f),
                     placeholder = { Text("Type a message...") },
-                    shape = RoundedCornerShape(24.dp),
-                    enabled = connectionState == ConnectionState.CONNECTED
+                    shape = RoundedCornerShape(24.dp)
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))

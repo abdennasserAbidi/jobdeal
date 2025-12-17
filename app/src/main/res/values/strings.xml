@@ -162,6 +162,8 @@
 
     <string name="invitation_found_text">invitations found</string>
     <string name="phone_text">Phone</string>
+    <string name="phone_number_text">Phone number</string>
+    <string name="extra_phone_number_text">Extra phone number</string>
 
     <string name="skipp_text">Skipp</string>
     <string name="next_text">Next</string>

@@ -20,7 +20,7 @@ object WebsocketService {
         val client = OkHttpClient()
 
         val request = Request.Builder()
-            .url("ws://YOUR_SERVER/ws?token=$token")
+            .url("wss://jobseeker-vy9q.onrender.com/ws")
             .build()
 
         webSocket = client.newWebSocket(request, object : WebSocketListener() {

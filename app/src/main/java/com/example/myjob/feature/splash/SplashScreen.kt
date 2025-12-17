@@ -1,5 +1,6 @@
 package com.example.myjob.feature.splash
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -109,9 +110,10 @@ fun SplashScreen(
                     GlobalEntries.isFromLogin = true
 
                     val token = splashViewModel.getToken()
-
                     if (isFinished) {
                         if (token.isNotEmpty()) {
+                            Log.i("rlkzhgzrlghzr", "SplashScreen: ${user.firstTimeUse}")
+
                             if (user.firstTimeUse == true) {
                                 if (user.role == "Candidate" || user.role == "Candidat")
                                     navController.navigate(Screen.SearchWordScreen.route)
