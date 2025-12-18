@@ -1,5 +1,6 @@
 package com.example.myjob.feature.messagerie
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -51,7 +52,7 @@ fun DiscussionScreen(
         if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
             hideNavigation()
             viewModel.connect()
-            viewModel.findConversations(GlobalEntries.candidateUser.id ?: -1)
+            viewModel.findConversations(GlobalEntries.otherUserId)
         }
     }
 
@@ -67,18 +68,6 @@ fun DiscussionScreen(
                 title = {
                     Column {
                         Text(conversationName)
-                        Text(
-                            text = when {
-                                connectionState != ConnectionState.CONNECTED -> "connecting..."
-                                typingUsers.isNotEmpty() -> "${typingUsers.first()} is typing..."
-                                else -> "online"
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (connectionState == ConnectionState.CONNECTED)
-                                Color.White.copy(alpha = 0.7f)
-                            else
-                                Color.Yellow
-                        )
                     }
                 },
                 navigationIcon = {
@@ -104,23 +93,6 @@ fun DiscussionScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Connection indicator
-            if (connectionState != ConnectionState.CONNECTED) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = Color.Yellow
-                ) {
-                    Text(
-                        text = when (connectionState) {
-                            ConnectionState.CONNECTING -> "Connecting..."
-                            ConnectionState.ERROR -> "Connection error. Retrying..."
-                            else -> "Disconnected"
-                        },
-                        modifier = Modifier.padding(8.dp),
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-            }
 
             // Messages List
             LazyColumn(
@@ -131,7 +103,7 @@ fun DiscussionScreen(
                 contentPadding = PaddingValues(16.dp)
             ) {
                 items(listMessages) { message ->
-                    val userId = GlobalEntries.candidateUser.id ?: -1
+                    val userId = GlobalEntries.otherUserId
 
                     MessageBubble(
                         message = message,
@@ -158,8 +130,7 @@ fun DiscussionScreen(
                     },
                     modifier = Modifier.weight(1f),
                     placeholder = { Text("Type a message...") },
-                    shape = RoundedCornerShape(24.dp),
-                    enabled = connectionState == ConnectionState.CONNECTED
+                    shape = RoundedCornerShape(24.dp)
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -245,13 +216,13 @@ fun MessageBubble(
                     color = if (isOwnMessage) Color.White else Color.Black
                 )
             }
-
-            Text(
+            Log.i("klgjhglkheagae", "MessageBubble: ${message.timestamp}")
+            /*Text(
                 text = timeFormat.format(Date(message.timestamp)),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-            )
+            )*/
         }
     }
 }

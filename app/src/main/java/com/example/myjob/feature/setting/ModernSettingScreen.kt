@@ -1,5 +1,7 @@
 package com.example.myjob.feature.setting
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -31,6 +33,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -64,9 +67,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
+import com.example.myjob.common.CustomPhoneKit
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.LanguageHelper
 import com.example.myjob.common.rememberLifecycleEvent
+import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.profile.test.FormTextField
 import com.example.myjob.feature.validateprofile.VerificationStatus
@@ -86,6 +91,7 @@ fun ModernSettingScreen(
     onLogoutClick: () -> Unit = {},
     settingViewModel: SettingViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
 
     val role by settingViewModel.role.collectAsState()
     val user by settingViewModel.user.collectAsState()
@@ -151,10 +157,18 @@ fun ModernSettingScreen(
                     onBackClick = {
                         navController.popBackStack()
                     },
-                    onEditClick = {
-                        if (role == "Candidate" || role == "Candidat")
-                            navController.navigate(Screen.SearchWordScreen.route)
-                        else showEditProfile = true
+                    onShareClick = {
+                        val appPackageName = context.packageName
+                        val shareBodyText = "Check out my app on Google Play: play.google.com"
+
+                        val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_SUBJECT, appPackageName)
+                            putExtra(Intent.EXTRA_TEXT, shareBodyText)
+                        }
+
+                        val shareChooserIntent = Intent.createChooser(sendIntent, null /* title */)
+                        context.startActivity(shareChooserIntent)
                     }
                 )
             }
@@ -162,6 +176,7 @@ fun ModernSettingScreen(
             // Language Selection
             item {
                 LanguageSection(
+                    context = context,
                     interactionSource = interactionSource,
                     settingViewModel = settingViewModel
                 )
@@ -197,11 +212,15 @@ fun ModernSettingScreen(
                     onTermsClick = onTermsClick,
                     onPrivacyClick = onPrivacyClick,
                     onMyAccountClick = {
-                        if (role == "Company" || role == "Entreprise") {
+                        if (role == "Candidate" || role == "Candidat")
+                            navController.navigate(Screen.SearchWordScreen.route)
+                        else showEditProfile = true
+
+                        /*if (role == "Company" || role == "Entreprise") {
                             showEditProfile = true
                         } else {
                             onMyAccountClick()
-                        }
+                        }*/
                     }
                 )
             }
@@ -240,7 +259,7 @@ fun ProfileHeaderSection(
     userName: String,
     isVerified: Boolean,
     onBackClick: () -> Unit,
-    onEditClick: () -> Unit
+    onShareClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -275,10 +294,10 @@ fun ProfileHeaderSection(
                     color = Color(0xFF1F2937)
                 )
 
-                IconButton(onClick = onEditClick) {
+                IconButton(onClick = onShareClick) {
                     Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit",
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Share",
                         tint = colorResource(id = R.color.whatsapp)
                     )
                 }
@@ -358,6 +377,7 @@ fun ProfileHeaderSection(
 
 @Composable
 fun LanguageSection(
+    context: Context,
     interactionSource: MutableInteractionSource,
     settingViewModel: SettingViewModel
 ) {
@@ -395,7 +415,6 @@ fun LanguageSection(
             Spacer(modifier = Modifier.height(16.dp))
 
 
-            val context = LocalContext.current
             val allLanguages by settingViewModel.allLanguages.collectAsState()
             val language by settingViewModel.language.collectAsState()
             var lc by remember { mutableStateOf(if (language == "English") "en" else "fr") }
@@ -430,7 +449,7 @@ fun LanguageSection(
                                 selected = index
                                 settingViewModel.changeLanguage(allLanguages[index])
                                 lc = "fr"
-                                    //if (allLanguages[index] == "English" || allLanguages[index] == "Anglais") "en" else "fr"
+                                //if (allLanguages[index] == "English" || allLanguages[index] == "Anglais") "en" else "fr"
 
                                 LanguageHelper.changeLanguage(context, lc)
                                 LanguageHelper.updateLanguage(context, lc)
@@ -648,8 +667,13 @@ fun EditProfileBottomSheet(
     var companyName by remember { mutableStateOf(user.companyName ?: "") }
     var activitySector by remember { mutableStateOf(user.companyActivitySector ?: "") }
     var description by remember { mutableStateOf(user.companyDescription ?: "") }
-    var phone by remember { mutableStateOf("+1 234 567 8900") }
-    var secondPhone by remember { mutableStateOf("") }
+
+    //phone
+    var showCountryPicker by remember { mutableStateOf(false) }
+    var selectedCountry by remember { mutableStateOf(NewCountry("tn", "Tunisia", 216)) }
+    var completePhone by remember { mutableStateOf(user.phoneCompany ?: "") }
+    var secondPhone by remember { mutableStateOf(user.secondPhoneCompany ?: "") }
+
     var address by remember { mutableStateOf(user.companyAddress ?: "") }
     var secondAddress by remember { mutableStateOf(user.companySecondAddress ?: "") }
 
@@ -779,22 +803,36 @@ fun EditProfileBottomSheet(
                     }
 
                     item {
-                        OutlinedTextField(
-                            value = phone,
-                            onValueChange = { phone = it },
-                            label = { Text("Phone*") },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                        CustomPhoneKit(
+                            modifier = Modifier.padding(top = 10.dp),
+                            selectedCountry = selectedCountry,
+                            defaultPhone = if (completePhone.contains(" ")) completePhone.split(" ")[1] else completePhone,
+                            hint = stringResource(id = R.string.phone_number_text),
+                            onClick = {
+                                showCountryPicker = true
+                            },
+                            onValueChanged = {
+                                val phoneComplete = "+${selectedCountry.code} $it"
+                                completePhone = phoneComplete
+                                settingViewModel.changeCompletePhone(phoneComplete)
+                            }
                         )
                     }
 
                     item {
-                        OutlinedTextField(
-                            value = secondPhone,
-                            onValueChange = { secondPhone = it },
-                            label = { Text("Extra Phone") },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                        CustomPhoneKit(
+                            modifier = Modifier.padding(top = 10.dp),
+                            selectedCountry = selectedCountry,
+                            defaultPhone = if (secondPhone.contains(" ")) secondPhone.split(" ")[1] else secondPhone,
+                            hint = stringResource(id = R.string.extra_phone_number_text),
+                            onClick = {
+                                showCountryPicker = true
+                            },
+                            onValueChanged = {
+                                val phoneComplete = "+${selectedCountry.code} $it"
+                                secondPhone = phoneComplete
+                                settingViewModel.changeSecondCompletePhone(phoneComplete)
+                            }
                         )
                     }
 
@@ -829,15 +867,3 @@ fun EditProfileBottomSheet(
         }
     }
 }
-
-/*
-@Preview(showBackground = true)
-@Composable
-fun PreviewModernSettingScreen() {
-    ModernSettingScreen(
-        userName = "John Doe",
-        isVerified = true,
-        currentLanguage = "English",
-        role = "Candidate"
-    )
-}*/

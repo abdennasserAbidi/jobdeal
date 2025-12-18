@@ -23,6 +23,8 @@ import androidx.navigation.NavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.otherUserId
+import com.example.myjob.common.GlobalEntries.otherUserName
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.Candidate
 import com.example.myjob.domain.entities.invitation.InvitationModel
@@ -200,6 +202,11 @@ fun CandidateDetailScreen(
                 },
                 sendMessage = {
                     GlobalEntries.candidateUser = it
+                    otherUserId = it.id ?: -1
+
+                    otherUserName = if (it.role == "Candidate" || it.role == "Candidat") it.fullName ?: ""
+                    else it.companyName ?: ""
+
                     navController.navigate(Screen.SendMessageScreen.route)
                 },
                 onTerminateInvitation = {

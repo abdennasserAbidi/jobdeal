@@ -73,6 +73,12 @@ object GlobalEntries {
     var listImageUri by mutableStateOf<List<Uri?>>(emptyList())
     var listCompanyImageUri by mutableStateOf<List<Uri?>>(emptyList())
 
+    ///////////////////////////////////////////////////////////////////////////
+    // MESSAGES
+    ///////////////////////////////////////////////////////////////////////////
+    var otherUserId = -1
+    var otherUserName = ""
+
     @RequiresApi(Build.VERSION_CODES.O)
     var start: ZonedDateTime = ZonedDateTime.parse("2018-04-06T16:01:00.000+03:00")
     var isVisibleNavigation = true

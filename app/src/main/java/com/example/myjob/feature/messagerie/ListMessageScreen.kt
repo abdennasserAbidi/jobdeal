@@ -26,7 +26,10 @@ import androidx.navigation.NavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.otherUserId
+import com.example.myjob.common.GlobalEntries.otherUserName
 import com.example.myjob.domain.entities.User
+import com.example.myjob.feature.navigation.Screen
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -103,6 +106,14 @@ fun ListMessageScreen(
                         interactionSource = interactionSource,
                         indication = null
                     ) {
+                        val isOwnUser = viewModel.isOwnMessage(item.userConnectedId)
+                        otherUserId = if (isOwnUser) item.userReceivedId
+                        else item.userConnectedId
+
+                        otherUserName = if (isOwnUser) item.userReceivedName
+                        else item.userConnectedName
+
+                        navController.navigate(Screen.SendMessageScreen.route)
                     }
                 ) {
                     

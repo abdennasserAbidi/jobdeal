@@ -24,6 +24,20 @@ class SettingViewModel @Inject constructor(
     private val getVerifiedCandidateStatusUseCase: GetVerifiedCandidateStatusUseCase
 ) : ViewModel() {
 
+    fun changeCompletePhone(search: String) {
+        user.update {
+            it.phoneCompany = search
+            it
+        }
+    }
+
+    fun changeSecondCompletePhone(search: String) {
+        user.update {
+            it.secondPhoneCompany = search
+            it
+        }
+    }
+
     val role = MutableStateFlow("")
     val username = MutableStateFlow("AA")
     val userFullName = MutableStateFlow("")

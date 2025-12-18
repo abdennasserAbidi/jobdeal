@@ -41,6 +41,8 @@ import com.example.myjob.R
 import com.example.myjob.common.GenericMultipleSearch
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.candidateUser
+import com.example.myjob.common.GlobalEntries.otherUserId
+import com.example.myjob.common.GlobalEntries.otherUserName
 import com.example.myjob.common.GlobalEntries.preferredRole
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
@@ -413,6 +415,10 @@ fun CandidateListScreen(
                             },
                             onSendMessage = { it ->
                                 candidateUser = it
+                                otherUserId = it.id ?: -1
+                                otherUserName = if (it.role == "Candidate" || it.role == "Candidat") it.fullName ?: ""
+                                else it.companyName ?: ""
+
                                 navController.navigate(Screen.SendMessageScreen.route)
                             },
                             onTerminateInvitation = {

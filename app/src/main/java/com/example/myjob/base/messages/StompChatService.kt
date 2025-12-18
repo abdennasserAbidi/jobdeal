@@ -1,0 +1,73 @@
+package com.example.myjob.base.messages
+
+import android.annotation.SuppressLint
+import android.util.Log
+import com.example.myjob.feature.messagerie.ChatMessage
+import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
+import ua.naiksoftware.stomp.Stomp
+import ua.naiksoftware.stomp.dto.LifecycleEvent
+
+object StompChatService {
+
+    private const val WS_URL =
+        "wss://jobseeker-vy9q.onrender.com/ws/websocket"
+
+    private val stompClient = Stomp.over(
+        Stomp.ConnectionProvider.OKHTTP,
+        WS_URL
+    )
+
+    private val _messages = MutableSharedFlow<String>()
+    val messages = _messages.asSharedFlow()
+
+    private val gson = Gson()
+
+    @SuppressLint("CheckResult")
+    fun connect() {
+        stompClient.connect()
+        stompClient.lifecycle().subscribe { event ->
+            when (event.type) {
+                LifecycleEvent.Type.OPENED ->
+                    Log.d("STOMP", "Connected")
+
+                LifecycleEvent.Type.ERROR ->
+                    Log.e("STOMP", "Error", event.exception)
+
+                LifecycleEvent.Type.CLOSED ->
+                    Log.d("STOMP", "Disconnected")
+
+                else -> {}
+            }
+        }
+
+        subscribePrivateMessages()
+    }
+
+    @SuppressLint("CheckResult")
+    private fun subscribePrivateMessages() {
+        stompClient.topic("/user/queue/messages")
+            .subscribe { msg ->
+                val chat = gson.fromJson(msg.payload, ChatMessage::class.java)
+                Log.d("CHAT", "Received: ${chat.content}")
+                CoroutineScope(Dispatchers.IO).launch {
+                    _messages.emit(chat.content)
+                }
+            }
+    }
+
+    fun sendMessage(message: String) {
+        stompClient.send(
+            "/app/chat.send",
+            message
+        ).subscribe()
+    }
+
+    fun disconnect() {
+        stompClient.disconnect()
+    }
+}

@@ -1,8 +1,6 @@
 package com.example.myjob.feature.invitation.detail
 
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,8 +51,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
-import com.example.myjob.domain.entities.Experience
-import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.feature.navigation.Screen
 
 @Composable
@@ -150,144 +146,146 @@ fun DetailInviScreen(
                     responseDate = invitation.dateEnd,
                     invitationModel = invitation,
                     userCandidate = userCandidate,
-                    onDeleteInvitation = {
-                        invitationDetailViewModel.deleteInvitation(it.idInvitation)
+                    viewProfile = {
+                        GlobalEntries.userForCompany = it
+                        navController.navigate(Screen.DetailScreen.route)
                     }
                 )
             }
 
+            if (GlobalEntries.role == "Candidat" || GlobalEntries.role == "Candidate") {
+                val name = userCompany.companyName ?: "Test Test"
 
-            val name = userCompany.companyName ?: "Test Test"
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 20.dp),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(8.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
-                    Text(
-                        text = stringResource(id = R.string.company_information_text),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        modifier = Modifier.padding(16.dp)
                     ) {
-                        // Initials Avatar
-                        Surface(
-                            modifier = Modifier.size(40.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            color = WhatsAppGreen
+                        Text(
+                            text = stringResource(id = R.string.company_information_text),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            val nickname = name.trim().ifEmpty { "Test Test" }.split(" ")
-                                .map { it.first() }.joinToString("")
-                            Box(
-                                contentAlignment = Alignment.Center
+                            // Initials Avatar
+                            Surface(
+                                modifier = Modifier.size(40.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                color = WhatsAppGreen
                             ) {
-                                Text(
-                                    text = nickname,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = name,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            userCompany.companyActivitySector?.let {
-                                if (it.isNotEmpty()) {
+                                val nickname = name.trim().ifEmpty { "Test Test" }.split(" ")
+                                    .map { it.first() }.joinToString("")
+                                Box(
+                                    contentAlignment = Alignment.Center
+                                ) {
                                     Text(
-                                        text = it,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        text = nickname,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
                                     )
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-                    }
+                            Spacer(modifier = Modifier.width(16.dp))
 
-                    // Info chips
-                    Row(
-                        modifier = Modifier.padding(top = 10.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        userCompany.email?.let {
-                            if (it.isNotEmpty()) {
-                                InfoChip(
-                                    icon = Icons.Default.Business,
-                                    text = it
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
                                 )
+
+                                userCompany.companyActivitySector?.let {
+                                    if (it.isNotEmpty()) {
+                                        Text(
+                                            text = it,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(8.dp))
                             }
                         }
 
-                        userCompany.country?.let {
-                            if (it.isNotEmpty()) {
-                                InfoChip(
-                                    icon = Icons.Default.Work,
-                                    text = it
-                                )
-                            }
-                        }
-
-                        Column {
-                            userCompany.companyAddress?.let {
+                        // Info chips
+                        Row(
+                            modifier = Modifier.padding(top = 10.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            userCompany.email?.let {
                                 if (it.isNotEmpty()) {
                                     InfoChip(
-                                        icon = Icons.Default.LocationOn,
+                                        icon = Icons.Default.Business,
                                         text = it
                                     )
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            userCompany.companySecondAddress?.let {
+                            userCompany.country?.let {
                                 if (it.isNotEmpty()) {
                                     InfoChip(
-                                        icon = Icons.Default.LocationOn,
+                                        icon = Icons.Default.Work,
                                         text = it
                                     )
                                 }
                             }
 
-                        }
-
-                        Column {
-                            userCompany.phoneCompany?.let {
-                                if (it.isNotEmpty()) {
-                                    InfoChip(
-                                        icon = Icons.Default.Phone,
-                                        text = it
-                                    )
+                            Column {
+                                userCompany.companyAddress?.let {
+                                    if (it.isNotEmpty()) {
+                                        InfoChip(
+                                            icon = Icons.Default.LocationOn,
+                                            text = it
+                                        )
+                                    }
                                 }
+
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                userCompany.companySecondAddress?.let {
+                                    if (it.isNotEmpty()) {
+                                        InfoChip(
+                                            icon = Icons.Default.LocationOn,
+                                            text = it
+                                        )
+                                    }
+                                }
+
                             }
 
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Column {
+                                userCompany.phoneCompany?.let {
+                                    if (it.isNotEmpty()) {
+                                        InfoChip(
+                                            icon = Icons.Default.Phone,
+                                            text = it
+                                        )
+                                    }
+                                }
 
-                            userCompany.secondPhoneCompany?.let {
-                                if (it.isNotEmpty()) {
-                                    InfoChip(
-                                        icon = Icons.Default.Phone,
-                                        text = it
-                                    )
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                userCompany.secondPhoneCompany?.let {
+                                    if (it.isNotEmpty()) {
+                                        InfoChip(
+                                            icon = Icons.Default.Phone,
+                                            text = it
+                                        )
+                                    }
                                 }
                             }
                         }

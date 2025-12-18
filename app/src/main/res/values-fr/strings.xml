@@ -145,6 +145,8 @@
     <string name="next_text">Suivant</string>
     <string name="salary_range_text">Marge salariale:</string>
     <string name="phone_text">Téléphone</string>
+    <string name="phone_number_text">Numéro de Téléphone</string>
+    <string name="extra_phone_number_text">Numéro de téléphone supplémentaire</string>
 
     <string name="categories_text">Categories</string>
 
