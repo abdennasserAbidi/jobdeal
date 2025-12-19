@@ -1,7 +1,11 @@
 package com.example.myjob.feature.messagerie
 
+import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,12 +15,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,10 +30,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
-import com.example.myjob.base.ConnectionState
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.rememberLifecycleEvent
-import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,13 +43,21 @@ fun DiscussionScreen(
     hideNavigation: () -> Unit = {}
 ) {
     val listMessages by viewModel.listMessages.collectAsState()
-    val typingUsers by viewModel.typingUsers.collectAsState()
-    val connectionState by viewModel.connectionState.collectAsState()
-
-    //SEND MESSAGE TO GlobalEntries.candidateUser
+    val messages = viewModel.messages
 
     var messageText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
+
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            val text = viewModel.readTextFromUri(context, it)
+            //onFilePicked(text)
+        }
+    }
+
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
@@ -104,10 +116,9 @@ fun DiscussionScreen(
             ) {
                 items(listMessages) { message ->
                     val userId = GlobalEntries.otherUserId
-
                     MessageBubble(
                         message = message,
-                        isOwnMessage = viewModel.isOwnMessage(userId)
+                        isOwnMessage = viewModel.isOwnMessage(message.userConnectedId)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -120,18 +131,32 @@ fun DiscussionScreen(
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedTextField(
-                    value = messageText,
-                    onValueChange = {
-                        messageText = it
-                        /*if (it.isNotEmpty()) {
-                            viewModel.sendTypingIndicator(true)
-                        }*/
-                    },
-                    modifier = Modifier.weight(1f),
-                    placeholder = { Text("Type a message...") },
-                    shape = RoundedCornerShape(24.dp)
-                )
+                Box(modifier = Modifier.weight(1f)) {
+                    OutlinedTextField(
+                        value = messageText,
+                        onValueChange = {
+                            messageText = it
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("Type a message...") },
+                        shape = RoundedCornerShape(24.dp)
+                    )
+
+                    IconButton(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .padding(end = 10.dp),
+                        onClick = {
+                            launcher.launch("*/*")
+                        }) {
+                        Icon(
+                            imageVector = Icons.Default.Link,
+                            tint = colorResource(id = R.color.whatsapp),
+                            contentDescription = ""
+                        )
+                    }
+
+                }
 
                 Spacer(modifier = Modifier.width(8.dp))
 
@@ -162,8 +187,7 @@ fun MessageBubble(
     message: ChatMessage,
     isOwnMessage: Boolean
 ) {
-    val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-
+    Log.i("jrhzjkerlkgz", "MessageBubble: $message")
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = if (isOwnMessage) Arrangement.End else Arrangement.Start
@@ -173,11 +197,12 @@ fun MessageBubble(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
+                    .background(colorResource(id = R.color.whatsapp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = message.userReceivedName.first().toString().uppercase(),
+                    text = GlobalEntries.otherUserName.ifEmpty { "Test Test" }.first().toString()
+                        .uppercase(),
                     color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
@@ -191,7 +216,7 @@ fun MessageBubble(
         ) {
             if (!isOwnMessage) {
                 Text(
-                    text = message.userReceivedName,
+                    text = GlobalEntries.otherUserName,
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray,
                     modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)
@@ -216,13 +241,6 @@ fun MessageBubble(
                     color = if (isOwnMessage) Color.White else Color.Black
                 )
             }
-            Log.i("klgjhglkheagae", "MessageBubble: ${message.timestamp}")
-            /*Text(
-                text = timeFormat.format(Date(message.timestamp)),
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-            )*/
         }
     }
 }

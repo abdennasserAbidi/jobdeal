@@ -1,5 +1,6 @@
 package com.example.myjob.feature.messagerie
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -98,54 +99,59 @@ fun ListMessageScreen(
 
             items(conversations.itemCount) { index ->
                 val item = conversations[index] ?: ChatMessage()
-
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp)
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null
-                    ) {
-                        val isOwnUser = viewModel.isOwnMessage(item.userConnectedId)
-                        otherUserId = if (isOwnUser) item.userReceivedId
-                        else item.userConnectedId
-
-                        otherUserName = if (isOwnUser) item.userReceivedName
-                        else item.userConnectedName
-
-                        navController.navigate(Screen.SendMessageScreen.route)
-                    }
-                ) {
-                    
-                    Row(
-                        modifier = Modifier.align(Alignment.CenterStart)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.25f)),
-                            contentAlignment = Alignment.Center
+                val isOwn = viewModel.isOwnMessage(item.userReceivedId)
+                if (item.userReceivedName.isNotEmpty()) {
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
                         ) {
-                            Text(
-                                text = item.userReceivedName.split(" ").mapNotNull { it.firstOrNull() }.take(2)
-                                    .joinToString(""),
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
-                        
-                        Text(text = item.userReceivedName)
-                    }
+                            val isOwnUser = viewModel.isOwnMessage(item.userConnectedId)
+                            otherUserId = if (isOwnUser) item.userReceivedId
+                            else item.userConnectedId
 
-                    Icon(
-                        imageVector = Icons.Default.ArrowForwardIos,
-                        modifier = Modifier.align(Alignment.CenterEnd),
-                        tint = colorResource(id = R.color.whatsapp),
-                        contentDescription = "Forward")
+                            otherUserName = if (isOwnUser) item.userReceivedName
+                            else item.userConnectedName
+
+                            navController.navigate(Screen.SendMessageScreen.route)
+                        }
+                    ) {
+
+                        Row(
+                            modifier = Modifier.align(Alignment.CenterStart),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(colorResource(id = R.color.whatsapp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = item.userReceivedName.split(" ").mapNotNull { it.firstOrNull() }.take(2)
+                                        .joinToString(""),
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(10.dp))
+
+                            Text(text = item.userReceivedName)
+                        }
+
+                        Icon(
+                            imageVector = Icons.Default.ArrowForwardIos,
+                            modifier = Modifier.align(Alignment.CenterEnd),
+                            tint = colorResource(id = R.color.whatsapp),
+                            contentDescription = "Forward")
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
-                Spacer(modifier = Modifier.height(12.dp))
             }
 
         }

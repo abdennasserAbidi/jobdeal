@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.dto.LifecycleEvent
+import ua.naiksoftware.stomp.dto.StompHeader
 
 object StompChatService {
 
@@ -22,14 +23,17 @@ object StompChatService {
         WS_URL
     )
 
-    private val _messages = MutableSharedFlow<String>()
+    private val _messages = MutableSharedFlow<ChatMessage>()
     val messages = _messages.asSharedFlow()
 
     private val gson = Gson()
 
     @SuppressLint("CheckResult")
-    fun connect() {
-        stompClient.connect()
+    fun connect(currentUserId: String) {
+        val headers = listOf(
+            StompHeader("user-id", currentUserId)
+        )
+        stompClient.connect(headers)
         stompClient.lifecycle().subscribe { event ->
             when (event.type) {
                 LifecycleEvent.Type.OPENED ->
@@ -55,7 +59,7 @@ object StompChatService {
                 val chat = gson.fromJson(msg.payload, ChatMessage::class.java)
                 Log.d("CHAT", "Received: ${chat.content}")
                 CoroutineScope(Dispatchers.IO).launch {
-                    _messages.emit(chat.content)
+                    _messages.emit(chat)
                 }
             }
     }

@@ -1,5 +1,8 @@
 package com.example.myjob.feature.messagerie
 
+import android.content.Context
+import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,6 +14,8 @@ import com.example.myjob.base.messages.StompChatService
 import com.example.myjob.base.messages.WebsocketService
 import com.example.myjob.base.messages.WebsocketService.close
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.otherUserId
+import com.example.myjob.common.GlobalEntries.otherUserName
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.chat.FindConversationUseCase
 import com.example.myjob.domain.usecase.chat.GetUserConversationsUseCase
@@ -39,6 +44,10 @@ class DiscussionViewModel @Inject constructor(
     private val getUserUseCase: GetUserUseCase,
     private val saveMessageUseCase: SaveMessageUseCase
 ) : ViewModel() {
+
+    fun readTextFromUri(context: Context, uri: Uri): String {
+        return context.contentResolver.openInputStream(uri)?.bufferedReader().use { it?.readText() ?: "" }
+    }
 
     var messages by mutableStateOf(listOf<ChatMessage>())
         private set
@@ -100,8 +109,9 @@ class DiscussionViewModel @Inject constructor(
                 val id = sharedPreference.getInt("idUser", 0)
                 val params = Pair(id, userId)
                 findConversationUseCase.execute(params).collectLatest { res ->
+                    val data = res.data ?: emptyList()
                     _listMessages.update {
-                        res.data ?: emptyList()
+                        data
                     }
                 }
             } catch (e: Exception) {
@@ -117,27 +127,38 @@ class DiscussionViewModel @Inject constructor(
     }
 
     fun connect() {
+        val id = sharedPreference.getInt("idUser", 0)
         WebsocketService.connect("")
-        StompChatService.connect()
+        StompChatService.connect("$id")
 
         viewModelScope.launch {
-            WebsocketService.messages.collect { json ->
-                val msg = Gson().fromJson(json, ChatMessage::class.java)
+            StompChatService.messages.collect { msg ->
                 messages = messages + msg
+                val list = _listMessages.value.toMutableList()
+                list.add(msg)
+                Log.i("jekagfea", "connect: $msg")
+                _listMessages.update {
+                    list
+                }
             }
         }
     }
 
-
     fun sendMessage(content: String) {
         val currentUserId = sharedPreference.getInt("idUser", 0)
         val message = ChatMessage(
-            userReceivedId = GlobalEntries.otherUserId,
+            userReceivedId = otherUserId,
             userReceivedName = getUserName(GlobalEntries.candidateUser) ?: "",
             userConnectedId = currentUserId,
             userConnectedName = getUserName(GlobalEntries.user) ?: "",
             content = content
         )
+
+        val list = _listMessages.value.toMutableList()
+        list.add(message)
+        _listMessages.update {
+            list
+        }
 
         StompChatService.sendMessage(Gson().toJson(message))
         messages = messages + message
