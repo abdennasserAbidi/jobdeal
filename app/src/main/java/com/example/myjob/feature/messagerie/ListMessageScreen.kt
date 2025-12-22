@@ -1,6 +1,5 @@
 package com.example.myjob.feature.messagerie
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -18,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,10 +24,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
-import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.otherUserId
 import com.example.myjob.common.GlobalEntries.otherUserName
-import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.navigation.Screen
 import java.util.*
 

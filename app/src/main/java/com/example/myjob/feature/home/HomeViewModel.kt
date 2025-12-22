@@ -156,6 +156,8 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             getUserUseCase.execute(id).collect {
                 it.data?.let { u ->
+                    Log.i("fcmTokenfreg", "id: $id")
+                    Log.i("fcmTokenfreg", "getUserToken: ${u.fcmToken}")
                     fcmToken.update { u.fcmToken ?: "" }
                 }
             }
@@ -168,6 +170,7 @@ class HomeViewModel @Inject constructor(
 
     fun sendNotification(title: String, message: String) {
         viewModelScope.launch {
+
             val notificationMessage = NotificationMessage(
                 recipientToken = fcmToken.value,
                 title = title,

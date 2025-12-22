@@ -111,7 +111,6 @@ fun ModernHomeScreen(
                 .background(Color(0xFFF5F7FA)),
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
-            // Modern Header with Gradient
             item {
                 ModernHeader {
                     homeViewModel.logout()

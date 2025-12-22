@@ -1,5 +1,6 @@
 package com.example.myjob.feature.invitation.company
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -214,6 +215,7 @@ fun SendInvitationCompany(
 
                         if (isAllGood) {
                             homeViewModel.clearToken()
+                            Log.i("the user received", "SendInvitationCompany: $user")
                             homeViewModel.getUserToken(user.id ?: -1)
                             homeViewModel.matchCurrentProfile(user, statusInvitation, paymentTerms, duration)
                         }

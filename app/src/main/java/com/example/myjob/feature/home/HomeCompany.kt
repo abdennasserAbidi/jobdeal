@@ -130,11 +130,11 @@ fun HomeCompany(
             GlobalEntries.user.companyName?.let {
                 val title = it
                 val message = "This company have sended you an invitaion "
-                homeViewModel.sendNotification(title, message)
+                //homeViewModel.sendNotification(title, message)
             } ?: run {
                 val title = GlobalEntries.user.fullName ?: ""
                 val message = "This company have sended you an invitaion "
-                homeViewModel.sendNotification(title, message)
+                //homeViewModel.sendNotification(title, message)
             }
 
         }

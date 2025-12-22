@@ -101,27 +101,7 @@ fun CandidateListScreen(
         if (isRefreshing) {
             homeViewModel.getCurrent()
             GlobalEntries.isRefreshing.update { false }
-            Log.i("lklknjrjkrhgz", "home screen: gkelhgelhgealkg")
         }
-    }
-
-    //TODO("for v2 we add collaboration type invitation")
-
-    val filteredCandidates = candidates.filter { candidate ->
-        val matchesSearch = candidate.name.contains(searchQuery, ignoreCase = true) ||
-                candidate.position.contains(searchQuery, ignoreCase = true) ||
-                candidate.company.contains(searchQuery, ignoreCase = true) ||
-                candidate.skills.any { it.contains(searchQuery, ignoreCase = true) }
-
-        val matchesFilter = when (selectedFilter) {
-            FilterType.ALL -> true
-            FilterType.INTERVIEWING -> candidate.status == CandidateStatus.INTERVIEWING
-            FilterType.HIRED -> candidate.status == CandidateStatus.HIRED
-            FilterType.NOT_INTERESTED -> candidate.status == CandidateStatus.NOT_INTERESTED
-            else -> candidate.status == CandidateStatus.NOT_INTERESTED
-        }
-
-        matchesSearch && matchesFilter
     }
 
     var filterOpen by remember { mutableStateOf(false) }
@@ -191,7 +171,7 @@ fun CandidateListScreen(
             GlobalEntries.user.companyName?.let {
                 val title = it
                 val message = "This company have sended you an invitaion "
-                homeViewModel.sendNotification(title, message)
+                //homeViewModel.sendNotification(title, message)
             }
         }
     }

@@ -231,9 +231,6 @@ fun CandidateDetailScreen(
             if (experiences.isNotEmpty())
                 ExperienceCard(experience = user.experience ?: mutableListOf())
 
-            // Projects Card
-            //ProjectsCard(projects = candidateProfile.projects)
-
             // Education Card
             val educations = user.education ?: mutableListOf()
             if (educations.isNotEmpty())
