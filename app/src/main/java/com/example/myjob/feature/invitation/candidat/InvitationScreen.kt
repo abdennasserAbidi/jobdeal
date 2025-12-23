@@ -112,14 +112,6 @@ fun InvitationScreen(
         invitationViewModel.validateFilter(filter)
     }
 
-    LaunchedEffect(fcmToken) {
-        if (fcmToken.isNotEmpty()) {
-            val title = GlobalEntries.user.fullName ?: ""
-            val message = "This candidate has $acceptRejectInvitation your invitaion"
-            invitationViewModel.sendNotification(title, message)
-        }
-    }
-
     val isRefreshing by GlobalEntries.isRefreshing.collectAsState()
     LaunchedEffect(isRefreshing) {
         if (isRefreshing) {

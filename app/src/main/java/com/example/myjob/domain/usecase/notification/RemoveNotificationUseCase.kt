@@ -1,23 +1,21 @@
 package com.example.myjob.domain.usecase.notification
 
-import androidx.paging.PagingData
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.usecase.FlowBaseUseCase
-import com.example.myjob.data.home.HomeRepository
 import com.example.myjob.data.notification.NotificationRepository
-import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.qualifiers.IoDispatcher
+import com.example.myjob.domain.response.UserResponse
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class GetNotificationsUseCase @Inject constructor(
+class RemoveNotificationUseCase @Inject constructor(
     private val repository: NotificationRepository,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
-) : FlowBaseUseCase<PagingData<NotificationModel>, Int>() {
+) : FlowBaseUseCase<UserResponse, Int>() {
 
-    override suspend fun buildRequest(params: Int?): Flow<Resource<PagingData<NotificationModel>>> {
-        return repository.getCompanyNotifications(params ?: 0).flowOn(dispatcher)
+    override suspend fun buildRequest(params: Int?): Flow<Resource<UserResponse>> {
+        return repository.removeNotification(params ?: -1).flowOn(dispatcher)
     }
 }

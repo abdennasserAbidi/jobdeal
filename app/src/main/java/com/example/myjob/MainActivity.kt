@@ -532,7 +532,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(route = Screen.NotificationCompanyScreen.route) {
-                        isVisibleNav = true
+                        isVisibleNav = !(role == "Candidate" || role == "Candidat")
                         NotificationScreen(navController)
                     }
 

@@ -92,7 +92,7 @@ fun InvitationCareerScreen(
         if (fcmToken.isNotEmpty()) {
             val title = GlobalEntries.user.fullName ?: ""
             val message = "This candidate has $acceptRejectInvitation your invitaion"
-            invitationViewModel.sendNotification(title, message)
+            //invitationViewModel.sendNotification(title, message)
         }
     }
 

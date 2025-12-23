@@ -21,11 +21,6 @@ class HomeDataSourceImp @Inject constructor(
     override suspend fun getAllUser(id: Int, pageNumber: Int): GenericResponse<User> =
         apiService.getAllUser(id, pageNumber = pageNumber)
 
-    override suspend fun getCompanyNotifications(
-        id: Int,
-        pageNumber: Int
-    ): GenericResponse<NotificationModel> = apiService.getCompanyNotifications(id, pageNumber)
-
     override suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): UserResponse =
         apiService.saveToFavorite(idUserConnected, candidateId)
 

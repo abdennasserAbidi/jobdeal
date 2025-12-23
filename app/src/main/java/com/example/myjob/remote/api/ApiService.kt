@@ -62,10 +62,6 @@ ApiService {
         @Query("token") token: String
     ): UserResponse
 
-
-    @POST("auth/sendnotification")
-    suspend fun sendNotification(@Body base: NotificationMessage): UserResponse
-
     @POST("auth/signup")
     suspend fun saveUser(@Body user: User): ApiResult<LoginResponse>
 
@@ -403,12 +399,25 @@ ApiService {
     ///////////////////////////////////////////////////////////////////////////
     // NOTIFICATION
     ///////////////////////////////////////////////////////////////////////////
-    @GET("auth/getCompanyNotifications")
+    @GET("auth/getNotifications")
     suspend fun getCompanyNotifications(
         @Query("id") id: Int,
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
     ): GenericResponse<NotificationModel>
+
+    @POST("auth/seenNotification")
+    suspend fun seenNotification(
+        @Query("idNotification") idNotification: Int
+    ): UserResponse
+
+    @POST("auth/removeNotification")
+    suspend fun removeNotification(
+        @Query("idNotification") idNotification: Int
+    ): UserResponse
+
+    @POST("auth/sendnotification")
+    suspend fun sendNotification(@Body base: NotificationMessage): UserResponse
 
     ///////////////////////////////////////////////////////////////////////////
     // REAL TIME CHAT
@@ -417,7 +426,10 @@ ApiService {
     suspend fun getUserConversations(@Path("userId") userId: String): List<Conversation>
 
     @GET("auth/getConversation")
-    suspend fun getConversation(@Query("idSender") idSender: Int, @Query("idReceiver") idReceiver: Int): List<ChatMessage>
+    suspend fun getConversation(
+        @Query("idSender") idSender: Int,
+        @Query("idReceiver") idReceiver: Int
+    ): List<ChatMessage>
 
     @POST("conversations")
     suspend fun createConversation(@Body request: CreateConversationRequest): Conversation

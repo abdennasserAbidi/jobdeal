@@ -11,8 +11,6 @@ import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
-import com.example.myjob.domain.response.FilesResponse
-import com.example.myjob.domain.response.UploadResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.local.database.SharedPreference
 import com.example.myjob.remote.source.home.HomeDataSource
@@ -31,33 +29,6 @@ class HomeRepositoryImp @Inject constructor(
     private val remoteDataSource: HomeDataSource,
     private val sharedPreference: SharedPreference
 ) : HomeRepository {
-
-    override suspend fun getCompanyNotifications(
-        id: Int,
-    ): Flow<Resource<PagingData<NotificationModel>>> = flow {
-        val pager = Pager(
-            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
-            pagingSourceFactory = {
-                GenericSource { currentPage ->
-                    val educations =
-                        remoteDataSource.getCompanyNotifications(id = id, pageNumber = currentPage)
-
-                    val json = Gson().toJson(educations.content)
-                    sharedPreference.putString("jsonNotification", json)
-
-                    educations
-                }
-            }
-        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
-
-        emitAll(
-            pager.map { pagingData ->
-                Resource(ResourceState.SUCCESS, pagingData, null)
-            }
-        )
-    }.catch { ex ->
-        emit(Resource(ResourceState.ERROR, null, ex.message))
-    }
 
     override suspend fun getAllUser(id: Int): Flow<Resource<PagingData<User>>> = flow {
         val pager = Pager(

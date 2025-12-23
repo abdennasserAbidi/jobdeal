@@ -112,11 +112,16 @@ fun ModernHomeScreen(
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             item {
-                ModernHeader {
-                    homeViewModel.logout()
-                    clearData()
-                    navController.navigate(Screen.LoginScreen.route)
-                }
+                ModernHeader(
+                    notification = {
+                        navController.navigate(Screen.NotificationCompanyScreen.route)
+                    },
+                    logout = {
+                        homeViewModel.logout()
+                        clearData()
+                        navController.navigate(Screen.LoginScreen.route)
+                    }
+                )
             }
 
             // Main Actions Grid
@@ -153,6 +158,7 @@ fun ModernHomeScreen(
 
 @Composable
 fun ModernHeader(
+    notification: () -> Unit,
     logout: () -> Unit
 ) {
     val userName = GlobalEntries.user.fullName ?: ""
@@ -211,7 +217,7 @@ fun ModernHeader(
             ) {
                 IconButton(
                     onClick = {
-
+                        notification()
                     },
                     modifier = Modifier
                         .size(40.dp)

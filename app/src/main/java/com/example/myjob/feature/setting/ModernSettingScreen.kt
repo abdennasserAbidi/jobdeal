@@ -188,7 +188,9 @@ fun ModernSettingScreen(
                     role = role,
                     interactionSource = interactionSource,
                     isVerified = verificationSteps.status == VerificationStatus.VERIFIED.name,
-                    onNotificationsClick = onNotificationsClick,
+                    onNotificationsClick = {
+                        navController.navigate(Screen.NotificationCompanyScreen.route)
+                    },
                     onValidateProfileClick = {
                         when (verificationSteps.status) {
                             VerificationStatus.PENDING_REVIEW.name -> {

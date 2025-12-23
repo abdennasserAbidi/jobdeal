@@ -165,17 +165,6 @@ fun CandidateListScreen(
         }
     }
 
-    LaunchedEffect(fcmToken) {
-        if (fcmToken.isNotEmpty()) {
-
-            GlobalEntries.user.companyName?.let {
-                val title = it
-                val message = "This company have sended you an invitaion "
-                //homeViewModel.sendNotification(title, message)
-            }
-        }
-    }
-
     val invitation by homeViewModel.invitation.collectAsState()
 
     var openFinishProcess by remember { mutableStateOf(false) }
@@ -229,17 +218,17 @@ fun CandidateListScreen(
                     ) {
                         IconButton(
                             onClick = {
-                                navController.popBackStack()
+                                navController.navigate(Screen.NotificationCompanyScreen.route)
                             },
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.2f))
+                                .background(White.copy(alpha = 0.2f))
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Notifications,
                                 contentDescription = "Notifications",
-                                tint = Color.White,
+                                tint = White,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -253,12 +242,12 @@ fun CandidateListScreen(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.2f))
+                                .background(White.copy(alpha = 0.2f))
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Logout,
                                 contentDescription = "Logout",
-                                tint = Color.White,
+                                tint = White,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -310,7 +299,7 @@ fun CandidateListScreen(
 
                         val title = stringResource(id = item.title)
 
-                        val textColor = if (selectedCat[index]) Color.White else Color.Black
+                        val textColor = if (selectedCat[index]) White else Color.Black
                         val color =
                             colorResource(id = if (selectedCat[index]) R.color.whatsapp else R.color.lighter_gray)
 
@@ -726,7 +715,7 @@ fun CandidateListScreen(
                         ) {
                             Text(
                                 text = stringResource(id = R.string.show_result_text),
-                                color = Color.White,
+                                color = White,
                                 style = TextStyle(fontWeight = FontWeight.Bold),
                                 modifier = Modifier.padding(vertical = 20.dp)
                             )

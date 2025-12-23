@@ -10,11 +10,6 @@ import com.example.myjob.domain.response.UserResponse
 import okhttp3.MultipartBody
 
 interface HomeDataSource {
-    suspend fun getCompanyNotifications(
-        id: Int,
-        pageNumber: Int
-    ): GenericResponse<NotificationModel>
-
     suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): UserResponse
     suspend fun getUser(id: Int): User
     suspend fun uploadFile(file: MultipartBody.Part): UserResponse
