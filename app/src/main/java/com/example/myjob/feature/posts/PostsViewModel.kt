@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.announcement.AnnouncementParams
 import com.example.myjob.domain.entities.announcement.CommentsPost
@@ -18,6 +19,7 @@ import com.example.myjob.domain.usecase.announcement.GetCandidateAnnouncementUse
 import com.example.myjob.domain.usecase.announcement.GetCommentPostCompanyUseCase
 import com.example.myjob.domain.usecase.announcement.GetNumberCommentAllPostsUseCase
 import com.example.myjob.domain.usecase.announcement.GetNumberLikeAllPostsUseCase
+import com.example.myjob.domain.usecase.announcement.GetPostUseCase
 import com.example.myjob.domain.usecase.announcement.RemoveLikeUseCase
 import com.example.myjob.domain.usecase.announcement.SaveAnnouncementUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
@@ -45,11 +47,26 @@ class PostsViewModel @Inject constructor(
     private val getCommentPostCompanyUseCase: GetCommentPostCompanyUseCase,
     private val addLikeUseCase: AddLikeUseCase,
     private val addCommentUseCase: AddCommentUseCase,
-    private val saveAnnouncementUseCase: SaveAnnouncementUseCase
+    private val saveAnnouncementUseCase: SaveAnnouncementUseCase,
+    private val getPostUseCase: GetPostUseCase
 ) : ViewModel() {
 
     init {
         getAnnouncementCandidate()
+    }
+
+    val post = MutableStateFlow(AnnouncementModel())
+
+    fun getPostById(idPost: Int, idCompany: Int) {
+        viewModelScope.launch {
+            getPostUseCase.execute(Pair(idPost, idCompany))
+                .collectLatest { res ->
+                    post.update {
+                        res.data ?: AnnouncementModel()
+                    }
+
+                }
+        }
     }
 
     private val _announcement: MutableStateFlow<PagingData<AnnouncementModel>> =
@@ -124,7 +141,7 @@ class PostsViewModel @Inject constructor(
 
 
     private var _posts = MutableStateFlow(emptyList<AnnouncementModel>())
-    val posts: StateFlow<List<AnnouncementModel>> get() =  _posts.asStateFlow()
+    val posts: StateFlow<List<AnnouncementModel>> get() = _posts.asStateFlow()
 
     val userConnectedId = MutableStateFlow(-1)
 
@@ -166,6 +183,18 @@ class PostsViewModel @Inject constructor(
                     _posts.update {
                         u.announces ?: emptyList()
                     }
+                }
+            }
+        }
+    }
+
+    val companyDetail = MutableStateFlow(User())
+
+    fun getCompanyDetail(idCompany: Int) {
+        viewModelScope.launch {
+            getUserUseCase.execute(idCompany).collect {
+                it.data?.let { u ->
+                    companyDetail.update { u }
                 }
             }
         }
@@ -289,7 +318,7 @@ class PostsViewModel @Inject constructor(
 
     val isLiked = MutableStateFlow(false)
     fun isNotLikedCandidate(listLike: List<LikesPost>): Boolean {
-         val isNotLike = listLike.none {
+        val isNotLike = listLike.none {
             it.idCandidate == sharedPreference.getInt("idUser", 0)
         }
 

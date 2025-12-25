@@ -58,7 +58,8 @@
 
                 <data
                     android:host="notification"
-                    android:scheme="myApp"
+                    android:scheme="myapp"
+                    android:pathPrefix="/"
                     tools:ignore="AppLinkUrlError"/>
 
             </intent-filter>

@@ -6,7 +6,6 @@ import com.example.myjob.domain.entities.announcement.CommentsPost
 import com.example.myjob.domain.entities.announcement.LikesPost
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.remote.api.ApiService
-import retrofit2.http.Query
 import javax.inject.Inject
 
 class AnnouncementDataSourceImp @Inject constructor(
@@ -17,6 +16,9 @@ class AnnouncementDataSourceImp @Inject constructor(
         idUserConnected: Int,
         announcementModel: AnnouncementModel
     ): UserResponse = apiService.makeAnnouncement(idUserConnected, announcementModel)
+
+    override suspend fun getAnnouncement(idAnnounce: Int, idCompany: Int): AnnouncementModel =
+        apiService.getAnnouncement(idAnnounce, idCompany)
 
     override suspend fun removeLike(
         idAnnounce: Int,
@@ -31,28 +33,32 @@ class AnnouncementDataSourceImp @Inject constructor(
         idConnected: Int
     ): Boolean = apiService.checkUserLike(idAnnounce, idConnected)
 
-    override suspend fun checkUserLikeAllPost(idConnected: Int
+    override suspend fun checkUserLikeAllPost(
+        idConnected: Int
     ): List<Boolean> = apiService.checkUserLikeAllPost(idConnected)
 
     override suspend fun getNumberLikeAllPosts(
         idConnected: Int
     ): List<Int> = apiService.getNumberLikeAllPosts(idConnected)
 
-    override suspend fun getNumberCommentAllPosts(idConnected: Int
+    override suspend fun getNumberCommentAllPosts(
+        idConnected: Int
     ): List<Int> = apiService.getNumberCommentAllPosts(idConnected)
 
     ///////////////////////////////////////////////////////////////////////////
     // COMPANY
     ///////////////////////////////////////////////////////////////////////////
 
-    override suspend fun checkUserLikeAllPostCompany(idConnected: Int
+    override suspend fun checkUserLikeAllPostCompany(
+        idConnected: Int
     ): List<Boolean> = apiService.checkUserLikeAllPostCompany(idConnected)
 
     override suspend fun getNumberLikeAllPostsCompany(
         idConnected: Int
     ): List<Int> = apiService.getNumberLikeAllPostsCompany(idConnected)
 
-    override suspend fun getNumberCommentAllPostsCompany(idConnected: Int
+    override suspend fun getNumberCommentAllPostsCompany(
+        idConnected: Int
     ): List<Int> = apiService.getNumberCommentAllPostsCompany(idConnected)
 
     override suspend fun getCommentAllPostsCompany(

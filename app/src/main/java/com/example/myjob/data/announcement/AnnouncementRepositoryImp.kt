@@ -43,6 +43,19 @@ class AnnouncementRepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
+    override suspend fun getAnnouncement(
+        idAnnounce: Int, idCompany: Int
+    ): Flow<Resource<AnnouncementModel>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.getAnnouncement(idAnnounce, idCompany)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
 
     override suspend fun removeLike(
         idAnnounce: Int,

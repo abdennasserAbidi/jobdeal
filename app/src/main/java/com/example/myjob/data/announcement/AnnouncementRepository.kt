@@ -14,6 +14,10 @@ interface AnnouncementRepository {
         announcementModel: AnnouncementModel
     ): Flow<Resource<UserResponse>>
 
+    suspend fun getAnnouncement(
+        idAnnounce: Int, idCompany: Int
+    ): Flow<Resource<AnnouncementModel>>
+
     suspend fun removeLike(
         idAnnounce: Int,
         idConnected: Int

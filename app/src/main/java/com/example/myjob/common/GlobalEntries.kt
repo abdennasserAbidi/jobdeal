@@ -39,6 +39,9 @@ object GlobalEntries {
     var idExp = 0
     var idStudy = 0
     var idInvitation = 0
+    var idAnnounce = 0
+    var isFromNotification = false
+    var idCompany = 0
     var listIdToRemove = mutableListOf<Int>()
     var listIdAccepted = mutableListOf<Int>()
     var listExperience = mutableListOf<Experience>()

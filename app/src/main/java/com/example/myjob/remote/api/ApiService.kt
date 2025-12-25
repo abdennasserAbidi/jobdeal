@@ -316,6 +316,12 @@ ApiService {
         @Body announcementModel: AnnouncementModel
     ): UserResponse
 
+    @GET("auth/getAnnouncement")
+    suspend fun getAnnouncement(
+        @Query("idAnnounce") idAnnounce: Int,
+        @Query("idCompany") idCompany: Int,
+    ): AnnouncementModel
+
     @POST("auth/removeLike")
     suspend fun removeLike(
         @Query("idAnnounce") idAnnounce: Int,

@@ -7,6 +7,8 @@ data class NotificationModel(
     var date: String? = "",
     var idSender: Int = 0,
     var idCompany: Int = 0,
+    var idInvitation: Int = -1,
+    var idPost: Int = -1,
     var idCandidate: Int = 0,
     var description: String = "Creer une application pour connecter les entreprises avec les candidats facilement.",
     var companyName: String = "",

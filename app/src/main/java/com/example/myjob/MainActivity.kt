@@ -34,6 +34,8 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +52,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -95,6 +98,7 @@ import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.notification.NotificationScreen
 import com.example.myjob.feature.onboarding.OnBoardingScreen
 import com.example.myjob.feature.posts.CandidatePostScreen
+import com.example.myjob.feature.posts.DetailPostScreen
 import com.example.myjob.feature.posts.PostScreen
 import com.example.myjob.feature.profile.AllCareer
 import com.example.myjob.feature.profile.AllEducation
@@ -277,6 +281,39 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private val newIntentListeners = mutableListOf<(Intent) -> Unit>()
+
+    lateinit var navController: NavController
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        for (listener in newIntentListeners) {
+            listener.invoke(intent)
+        }
+
+        Log.i("DeepLink", "onNewIntent: ${intent.extras}")
+
+        if (::navController.isInitialized) {
+
+            val idInvitation = intent.extras?.getString("idInvitation")
+            val idAnnounce = intent.extras?.getString("idAnnounce")
+            val idCompany = intent.extras?.getString("idCompany")
+
+            idInvitation?.let {
+                Log.i("DeepLink", "Navigating to: $it")
+                GlobalEntries.idInvitation = it.toInt()
+                navController.navigate(Screen.NormalDetailInvitationScreen.route)
+            }
+
+            idAnnounce?.let {
+                Log.i("DeepLink", "Navigating to: $it")
+                GlobalEntries.idAnnounce = it.toInt()
+                GlobalEntries.idCompany = idCompany?.toInt() ?: 0
+                navController.navigate(Screen.DetailPostScreen.route)
+            }
+        }
+    }
+
     @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -324,9 +361,33 @@ class MainActivity : ComponentActivity() {
             app.listCompanies.addAll(listCompany)
 
             var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
+            var startRoute by rememberSaveable { mutableStateOf(Screen.SplashScreen.route) }
 
             // creating our navController
-            var navController = rememberNavController()
+            navController = rememberNavController()
+
+            if (::navController.isInitialized) {
+                Log.i("DeepLink", "extras: ${intent.extras}")
+                Log.i("DeepLink", "getStringExtra: ${intent?.getStringExtra("idInvitation")}")
+                Log.i("DeepLink", "getStringExtra: ${intent?.getStringExtra("idAnnounce")}")
+
+                val idInvitation = intent?.getStringExtra("idInvitation")
+                val idAnnounce = intent?.getStringExtra("idAnnounce")
+                val idCompany = intent?.getStringExtra("idCompany")
+
+                idInvitation?.let {
+                    GlobalEntries.isFromNotification = true
+                    GlobalEntries.idInvitation = it.toInt()
+                    startRoute = Screen.NormalDetailInvitationScreen.route
+                }
+
+                idAnnounce?.let {
+                    GlobalEntries.isFromNotification = true
+                    GlobalEntries.idAnnounce = it.toInt()
+                    GlobalEntries.idCompany = idCompany?.toInt() ?: 0
+                    startRoute = Screen.DetailPostScreen.route
+                }
+            }
 
             var isVisibleNav by remember { mutableStateOf(true) }
 
@@ -383,8 +444,8 @@ class MainActivity : ComponentActivity() {
                 isVisibleNav = role == "Company" || role == "Entreprise"
 
                 NavHost(
-                    navController = navController,
-                    startDestination = Screen.SplashScreen.route
+                    navController = navController as NavHostController,
+                    startDestination = startRoute
                 ) {
 
                     //SUBSCRIPTIONS
@@ -462,7 +523,7 @@ class MainActivity : ComponentActivity() {
                         route = "${Screen.DetailInvitationScreen.route}/{idInvitation}",
                         deepLinks = listOf(
                             navDeepLink {
-                                uriPattern = "myApp://notification/{idInvitation}"
+                                uriPattern = "myapp://notification/{idInvitation}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),
@@ -473,6 +534,7 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = false
                         val arguments = it.arguments
                         arguments?.getString("idInvitation")?.let { idInvitation ->
+                            Log.i("DeepLink", "idInvitation: $idInvitation")
                             DetailInvitationScreen(
                                 navController = navController,
                                 idInvitation = idInvitation
@@ -643,6 +705,11 @@ class MainActivity : ComponentActivity() {
                     composable(route = Screen.CandidatePostScreen.route) {
                         isVisibleNav = false
                         CandidatePostScreen(navController = navController)
+                    }
+
+                    composable(route = Screen.DetailPostScreen.route) {
+                        isVisibleNav = false
+                        DetailPostScreen(navController = navController)
                     }
 
                     composable(route = Screen.SettingScreen.route) {

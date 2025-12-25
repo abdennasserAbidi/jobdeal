@@ -45,6 +45,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.ErrorMessage
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
 import com.example.myjob.domain.entities.notification.NotificationModel
@@ -63,7 +64,8 @@ fun NotificationScreen(
 
     LaunchedEffect(seenNotification) {
         if (seenNotification == "saved successfully") {
-            navController.navigate(Screen.PostScreen.route)
+            if (GlobalEntries.idAnnounce != -1) navController.navigate(Screen.DetailPostScreen.route)
+            else navController.navigate(Screen.NormalDetailInvitationScreen.route)
         }
     }
 
@@ -137,6 +139,10 @@ fun NotificationScreen(
                                         indication = null
                                     ) {
                                         isRead = true
+                                        GlobalEntries.isFromNotification = false
+                                        GlobalEntries.idInvitation = item.idInvitation
+                                        GlobalEntries.idAnnounce = item.idPost
+                                        GlobalEntries.idCompany = item.idCompany
                                         notificationViewModel.seenNotification(item.idNotification)
                                     }
                                     .background(

@@ -74,6 +74,7 @@ import com.example.myjob.common.PageLoader
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.announcement.CommentsPost
+import com.example.myjob.feature.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -176,7 +177,16 @@ fun CandidatePostScreen(
                     val item = announcementModel[index] ?: AnnouncementModel()
                     idAnnounceComment = item.idAnnounce
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth()
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                GlobalEntries.isFromNotification = false
+                                GlobalEntries.idAnnounce = item.idAnnounce
+                                GlobalEntries.idCompany = item.idCompany
+                                navController.navigate(Screen.DetailPostScreen.route)
+                            },
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = Color.White,

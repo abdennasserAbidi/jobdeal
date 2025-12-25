@@ -12,7 +12,7 @@ interface AnnouncementDataSource {
         idUserConnected: Int,
         announcementModel: AnnouncementModel
     ): UserResponse
-
+    suspend fun getAnnouncement(idAnnounce: Int, idCompany: Int): AnnouncementModel
     suspend fun removeLike(
         idAnnounce: Int,
         idConnected: Int

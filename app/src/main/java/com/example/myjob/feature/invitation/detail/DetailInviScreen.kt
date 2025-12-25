@@ -102,7 +102,10 @@ fun DetailInviScreen(
 
                 IconButton(
                     onClick = {
-                        navController.popBackStack()
+                        if (GlobalEntries.isFromNotification) {
+                            navController.popBackStack(Screen.HomeScreen.route, false)
+                            GlobalEntries.isFromNotification = false
+                        } else navController.popBackStack()
                     },
                     modifier = Modifier
                         .size(40.dp)

@@ -30,7 +30,12 @@ class PushNotificationService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
         // Respond to received messages
-        showNotification(notificationMessage.title, notificationMessage.body, message.data["idInvitation"])
+        showNotification(
+            notificationMessage.title, notificationMessage.body,
+            message.data["idInvitation"],
+            message.data["idAnnounce"],
+            message.data["idCompany"]
+        )
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -45,7 +50,13 @@ class PushNotificationService : FirebaseMessagingService() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun showNotification(title: String?, body: String?, idUser: String?) {
+    private fun showNotification(
+        title: String?,
+        body: String?,
+        idUser: String?,
+        idAnnounce: String?,
+        idCompany: String?
+    ) {
         val channelId = "channel_id"
         val channelName = "Default Channel"
 
@@ -55,16 +66,27 @@ class PushNotificationService : FirebaseMessagingService() {
         val flag =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
 
-        //data = "myApp://notification/$idUser".toUri()
-        val intent = Intent().apply {
-            action = Intent.ACTION_VIEW
-            data = "myApp://notification/$idUser".toUri()
+        val intent1 = Intent(Intent.ACTION_VIEW).apply {
+            data = Uri.parse("myapp://notification/$idUser")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 
-        val clickPendingIntent: PendingIntent = TaskStackBuilder.create(this).run {
-            addNextIntentWithParentStack(intent)
-            getPendingIntent(1, flag)
+        val targetIntent = Intent(this, MainActivity::class.java).apply {
+            // Add navigation data as extras
+            putExtra("idInvitation", idUser)
+            putExtra("idAnnounce", idAnnounce)
+            putExtra("idCompany", idCompany)
+            putExtra("ITEM_ID", "myapp://notification/$idUser")
+            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }
+
+        val pendingIntentFlags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            targetIntent,
+            pendingIntentFlags
+        )
 
         createNotificationChannel()
 
@@ -73,8 +95,8 @@ class PushNotificationService : FirebaseMessagingService() {
             .setContentText(body)
             .setSmallIcon(R.drawable.logo)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .addAction(0, "ACTION", clickPendingIntent)
-            .setContentIntent(clickPendingIntent)
+            .addAction(0, "ACTION", pendingIntent)
+            .setContentIntent(pendingIntent)
             .build()
 
         val notificationManager1 = getSystemService<NotificationManager>()!!
