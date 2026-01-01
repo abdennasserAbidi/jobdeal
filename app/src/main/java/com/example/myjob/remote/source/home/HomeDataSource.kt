@@ -6,12 +6,13 @@ import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.FilesResponse
 import com.example.myjob.domain.response.UploadResponse
+import com.example.myjob.domain.response.UserAuthResponse
 import com.example.myjob.domain.response.UserResponse
 import okhttp3.MultipartBody
 
 interface HomeDataSource {
     suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): UserResponse
-    suspend fun getUser(id: Int): User
+    suspend fun getUser(id: Int): UserAuthResponse
     suspend fun uploadFile(file: MultipartBody.Part): UserResponse
     suspend fun uploadFiles(file: MultipartBody.Part): UploadResponse
     suspend fun getFiles(id: Int): FilesResponse

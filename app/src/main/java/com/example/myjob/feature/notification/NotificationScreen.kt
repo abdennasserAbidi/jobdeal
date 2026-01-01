@@ -253,7 +253,12 @@ fun NotificationScreen(
 
                 }
             } else {
-
+                Text(
+                    text = "Vous n'avez pas notifications",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
             }
         }
 

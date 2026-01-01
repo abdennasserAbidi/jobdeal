@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -44,18 +45,19 @@ fun CustomDialog(
 ) {
 
     val color =
-        if (isSuccess) Color.Blue else colorResource(android.R.color.holo_red_dark)
-    val title = if (isSuccess) "Success" else "Error"
+        if (isSuccess) colorResource(R.color.whatsapp) else colorResource(android.R.color.holo_red_dark)
+    val title =
+        if (isSuccess) stringResource(id = R.string.success_dialog_text) else stringResource(id = R.string.error_dialog_text)
     val icon = if (isSuccess) Icons.Default.Check else Icons.Default.Info
     val interactionSource = remember { MutableInteractionSource() }
 
     Dialog(
         properties = DialogProperties(
-        dismissOnClickOutside = true,
-        dismissOnBackPress = false,
+            dismissOnClickOutside = true,
+            dismissOnBackPress = false,
         ), onDismissRequest = {
-        setShowDialog(false)
-    }) {
+            setShowDialog(false)
+        }) {
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = Color.White
@@ -76,9 +78,9 @@ fun CustomDialog(
                             .width(30.dp)
                             .height(30.dp)
                             .clickable(
-                    interactionSource = interactionSource,
-                    indication = null
-                ) { setShowDialog(false) }
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) { setShowDialog(false) }
                     )
 
                     Text(

@@ -889,10 +889,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun validateFilter(criteria: CriteriaModel) {
-        /*R.string.available_text
-        if (criteria.)*/
         viewModelScope.launch {
-            Log.i("ljkljlkjkljlkgtr", "frzfzffefe: $criteria")
 
             if (!criteria.checkEmpty()) {
                 searchUserUseCase.execute(criteria).collect { res ->

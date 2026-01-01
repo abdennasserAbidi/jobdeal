@@ -461,7 +461,8 @@ fun LoginScreen(
         if (isProgressing) {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center) {
+                contentAlignment = Alignment.Center)
+            {
 
                 Card(
                     modifier = Modifier

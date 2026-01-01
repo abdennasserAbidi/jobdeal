@@ -56,10 +56,15 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <action android:name="android.intent.action.VIEW" />
 
-                <data
-                    android:host="notification"
+                <!--<data
+                    android:host="jobdeal"
                     android:scheme="myapp"
                     android:pathPrefix="/"
+                    tools:ignore="AppLinkUrlError"/>-->
+
+                <data
+                    android:host="jobdeal"
+                    android:scheme="https"
                     tools:ignore="AppLinkUrlError"/>
 
             </intent-filter>

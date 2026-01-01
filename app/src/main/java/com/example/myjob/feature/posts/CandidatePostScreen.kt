@@ -100,6 +100,10 @@ fun CandidatePostScreen(
     var numberLikesUser by remember(numberLikes) { mutableStateOf(numberLikes) }
     var itemNumberLike by remember { mutableStateOf(0) }
 
+    val numberComment by postsViewModel.numberComment.collectAsState()
+    var numberCommentUser by remember(numberComment) { mutableStateOf(numberComment) }
+    var itemNumberComment by remember { mutableStateOf(0) }
+
     var idAnnounceComment by remember { mutableStateOf(0) }
 
     val lifecycleEvent = rememberLifecycleEvent()
@@ -108,6 +112,7 @@ fun CandidatePostScreen(
             isFirstTime = true
             postsViewModel.isAllPostLiked()
             postsViewModel.getPostNumberLikes()
+            postsViewModel.getNumberCommentAllPosts()
         }
     }
 
@@ -298,6 +303,10 @@ fun CandidatePostScreen(
                                         )
                                     }
 
+                                    if (isFirstTime) {
+                                        itemNumberComment = if (numberCommentUser.isNotEmpty()) numberCommentUser[index] else 0
+                                    }
+
                                     // Comment Button
                                     Row(
                                         modifier = Modifier
@@ -305,9 +314,11 @@ fun CandidatePostScreen(
                                                 interactionSource = interactionSource,
                                                 indication = null
                                             ) {
+                                                postsViewModel.getPostCommentsCompany(item.idAnnounce)
                                                 selectedPost = item.comments ?: mutableListOf()
-                                                if (selectedPost.size > 0)
-                                                    showComments = !showComments
+                                                showComments = !showComments
+                                                /*if (itemNumberComment > 0)
+                                                    showComments = !showComments*/
                                             }
                                             .padding(8.dp),
                                         verticalAlignment = Alignment.CenterVertically
@@ -320,7 +331,7 @@ fun CandidatePostScreen(
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = "${item.comments?.size}",
+                                            text = "$itemNumberComment",
                                             style = MaterialTheme.typography.bodySmall,
                                             color = Color.Gray
                                         )
@@ -344,6 +355,55 @@ fun CandidatePostScreen(
                             }
 
                             Spacer(modifier = Modifier.height(8.dp))
+
+                            HorizontalDivider(
+                                modifier = Modifier.fillMaxWidth(),
+                                thickness = 1.dp
+                            )
+
+                            var commentText by remember { mutableStateOf("") }
+
+                            // Add Comment Input
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                OutlinedTextField(
+                                    value = commentText,
+                                    onValueChange = { commentText = it },
+                                    modifier = Modifier.weight(1f),
+                                    placeholder = { Text(stringResource(id = R.string.add_comment_hint_text)) },
+                                    shape = RoundedCornerShape(24.dp),
+                                    textStyle = MaterialTheme.typography.bodyMedium
+                                )
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                IconButton(
+                                    onClick = {
+                                        if (commentText.isNotBlank()) {
+
+                                            postsViewModel.addComment(item.idAnnounce, commentText, GlobalEntries.user.fullName ?: "")
+                                            selectedPost.add(
+                                                CommentsPost(
+                                                    idCandidate = userConnectedId,
+                                                    userName = GlobalEntries.user.fullName ?: ""
+                                                )
+                                            )
+                                            itemNumberComment += 1
+                                            commentText = ""
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        Icons.Default.Send,
+                                        contentDescription = "Send comment",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
 
                         }
                     }

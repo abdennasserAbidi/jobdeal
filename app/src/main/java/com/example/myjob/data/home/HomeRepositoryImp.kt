@@ -125,23 +125,26 @@ class HomeRepositoryImp @Inject constructor(
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.getUser(id)
+            val user = data.user ?: User()
+            val message = data.message ?: ""
 
-            val lang = sharedPreference.getString("lang", "") ?: ""
+            if (message.isNotEmpty()) {
+                emit(Resource(ResourceState.ERROR, null, message))
+            } else {
+                val lang = sharedPreference.getString("lang", "") ?: ""
 
-            val gender = data.sexe ?: ""
-            data.changeSex(gender, lang)
+                val gender = user.sexe ?: ""
+                user.changeSex(gender, lang)
 
-            val situation = data.situation ?: ""
-            data.changeSituation(situation, lang)
+                val situation = user.situation ?: ""
+                user.changeSituation(situation, lang)
 
-            /*val availability = data.professionalStatus.availability ?: ""
-            data.changeAvailability(availability, lang)*/
+                /*val availability = data.professionalStatus.availability ?: ""
+                data.changeAvailability(availability, lang)*/
 
-            Log.i("zlmezlmlezm", "SUCCESS: $data")
-
-
-            // Emit data
-            emit(Resource(ResourceState.SUCCESS, data, null))
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, user, null))
+            }
         } catch (ex: Exception) {
             // Emit error
             Log.i("zlmezlmlezm", "ERROR: ${ex.message}")

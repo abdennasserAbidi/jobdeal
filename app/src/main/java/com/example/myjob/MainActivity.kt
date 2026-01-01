@@ -295,6 +295,15 @@ class MainActivity : ComponentActivity() {
 
         if (::navController.isInitialized) {
 
+            val data: Uri? = intent.data
+
+            data?.let {
+                val token = data.getQueryParameter("token") ?: ""
+                if (token.isNotEmpty()) GlobalEntries.tokenForgetPassword = token
+                Log.i("DeepLink", "main activity: $token")
+                navController.navigate(Screen.ForgotPasswordScreen.route)
+            }
+
             val idInvitation = intent.extras?.getString("idInvitation")
             val idAnnounce = intent.extras?.getString("idAnnounce")
             val idCompany = intent.extras?.getString("idCompany")
@@ -490,7 +499,7 @@ class MainActivity : ComponentActivity() {
                         route = Screen.ForgotPasswordScreen.route,
                         deepLinks = listOf(
                             navDeepLink {
-                                uriPattern = "http://192.168.1.13/{token}"
+                                uriPattern = "https://jobdeal?token={token}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),
@@ -503,7 +512,9 @@ class MainActivity : ComponentActivity() {
                     ) { entry ->
                         isVisibleNav = false
                         val token = entry.arguments?.getString("token") ?: ""
-                        ForgotPasswordScreen(navController = navController, token = token)
+                        if (token.isNotEmpty()) GlobalEntries.tokenForgetPassword = token
+                        Log.i("DeepLink", "main activity  2: $token")
+                        ForgotPasswordScreen(navController = navController)
                     }
                     //END SUBSCRIPTION
 
@@ -514,7 +525,7 @@ class MainActivity : ComponentActivity() {
                         InvitationCompanyScreen(
                             navController = navController,
                             changeIndexTab = {
-                                selectedTabIndex = 0
+                                selectedTabIndex = 1
                             }
                         )
                     }
@@ -523,7 +534,7 @@ class MainActivity : ComponentActivity() {
                         route = "${Screen.DetailInvitationScreen.route}/{idInvitation}",
                         deepLinks = listOf(
                             navDeepLink {
-                                uriPattern = "myapp://notification/{idInvitation}"
+                                uriPattern = "https://jobdeal/{idInvitation}"
                                 action = Intent.ACTION_VIEW
                             }
                         ),
@@ -534,7 +545,6 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = false
                         val arguments = it.arguments
                         arguments?.getString("idInvitation")?.let { idInvitation ->
-                            Log.i("DeepLink", "idInvitation: $idInvitation")
                             DetailInvitationScreen(
                                 navController = navController,
                                 idInvitation = idInvitation

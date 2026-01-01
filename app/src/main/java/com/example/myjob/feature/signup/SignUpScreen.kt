@@ -26,14 +26,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Card
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -48,6 +53,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.graphics.Color.Companion.Red
@@ -72,12 +78,10 @@ import com.example.myjob.common.CustomDialog
 import com.example.myjob.feature.home.filter.flowHandling
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
-import com.example.myjob.feature.profile.test.CustomRectangleTab
 import com.example.myjob.feature.profile.test.FormTextField
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,11 +102,8 @@ fun SignUpScreen(
         LocalConfiguration.current.screenHeightDp.dp.toPx().toInt()
     }
 
-    var typeUserOpen by remember { mutableStateOf(false) }
     var roleWorkOpen by remember { mutableStateOf(false) }
     var secondRoleWorkOpen by remember { mutableStateOf(false) }
-
-    var preferenceWorkOpen by remember { mutableStateOf(false) }
 
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val selectedCategories by viewModel.selectedCat.collectAsState()
@@ -111,7 +112,6 @@ fun SignUpScreen(
     val selectedRole by viewModel.selectedRole.collectAsState()
 
 
-    val isSamePassword by viewModel.confirmPassword.collectAsState()
     val isFirstNameValid by viewModel.isFirstNameValid.collectAsState()
     val isLastNameValid by viewModel.isLastNameValid.collectAsState()
     val isEmailValid by viewModel.isEmailValid.collectAsState()
@@ -120,7 +120,6 @@ fun SignUpScreen(
     val isCompanyNameValid by viewModel.isCompanyNameValid.collectAsState()
 
     var selectedIndex by remember { mutableStateOf(0) }
-    var selectedType by remember { mutableStateOf("") }
 
     var activatedCheckCompanyName by remember { mutableStateOf(false) }
     var activatedCheckEmail by remember { mutableStateOf(false) }
@@ -153,11 +152,8 @@ fun SignUpScreen(
     var showDialog by remember { mutableStateOf(false) }
 
     val saveUserRes by viewModel.saveUserRes.collectAsState()
-    val token by viewModel.token.collectAsState()
 
     var error by remember { mutableStateOf("") }
-
-    var itemRes by remember { mutableStateOf("") }
 
     val listCompanies by viewModel.listCompanies.collectAsState()
 
@@ -191,16 +187,15 @@ fun SignUpScreen(
         }
     }
 
-    //gmail
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(key1 = Unit) {
         if (googleAuthUiClient.getSignedInUser() != null) {
-            //onDirect()
+            Log.i("feklzhgzg", "SignUpScreen: ${googleAuthUiClient.getSignedInUser()}")
         }
     }
 
-    val launcher = rememberLauncherForActivityResult(
+    /*val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult(),
         onResult = { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -208,12 +203,13 @@ fun SignUpScreen(
                     val signInResult = googleAuthUiClient.signInWithIntent(
                         intent = result.data ?: return@launch
                     )
-                    val user = signInResult.data
+                    val userData = signInResult.data
+                    Log.i("feklzhgzg", "SignUpScreen: $userData")
                     viewModel.onSignInResult(signInResult)
                 }
             }
         }
-    )
+    )*/
 
     LaunchedEffect(key1 = state.isSignInSuccessful) {
         if (state.isSignInSuccessful) {
@@ -278,24 +274,16 @@ fun SignUpScreen(
                         stringResource(id = R.string.choose_candidate_text)
                     )
 
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        CustomRectangleTab(
-                            items = listRole,
-                            modifier = Modifier.padding(top = 10.dp),
-                            selectedItemIndex = selectedIndex,
-                            onClick = {
-                                selectedIndex = it
-                                viewModel.changeRole(listRole[it])
-                                viewModel.changeRoleIndex(it)
-                            }
-                        )
-                    }
+                    RoleSection(
+                        listRole = listRole,
+                        interactionSource = interactionSource,
+                        onClick = {
+                            selectedIndex = it
+                            viewModel.changeRole(listRole[it])
+                            viewModel.changeRoleIndex(it)
+                        }
+                    )
+
                 }
 
                 if (selectedIndex == 1) {
@@ -686,7 +674,6 @@ fun SignUpScreen(
                                     indication = null
                                 ) {
                                     roleWorkOpen = false
-
                                 }
                                 .background(
                                     color = colorResource(id = R.color.whatsapp),
@@ -795,6 +782,87 @@ fun SignUpScreen(
             }
         }
     }
+}
 
+@Composable
+fun RoleSection(
+    listRole: List<String>,
+    interactionSource: MutableInteractionSource,
+    onClick: (Int) -> Unit = {}
+) {
+    androidx.compose.material3.Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    tint = Color(0xFF25D366),
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = stringResource(id = R.string.choose_role_text),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF1F2937)
+                )
+            }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            var selected by remember { mutableStateOf(0) }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                listRole.forEachIndexed { index, lang ->
+                    val isSelected = index == selected
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                if (isSelected)
+                                    colorResource(id = R.color.whatsapp)
+                                else
+                                    Color(0xFFF3F4F6)
+                            )
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                selected = index
+                                onClick(index)
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = lang,
+                            fontSize = 14.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected)
+                                Color(0xFFF3F4F6)
+                            else
+                                Color(0xFF6B7280)
+                        )
+                    }
+                }
+            }
+        }
+    }
 }

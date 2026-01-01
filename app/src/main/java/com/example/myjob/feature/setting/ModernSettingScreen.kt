@@ -167,7 +167,7 @@ fun ModernSettingScreen(
                             putExtra(Intent.EXTRA_TEXT, shareBodyText)
                         }
 
-                        val shareChooserIntent = Intent.createChooser(sendIntent, null /* title */)
+                        val shareChooserIntent = Intent.createChooser(sendIntent, null)
                         context.startActivity(shareChooserIntent)
                     }
                 )

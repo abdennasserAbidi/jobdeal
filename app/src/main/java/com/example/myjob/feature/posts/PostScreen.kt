@@ -1,6 +1,5 @@
 package com.example.myjob.feature.posts
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -183,7 +182,7 @@ fun PostScreen(
                     .background(
                         color = colorResource(id = R.color.whatsapp)
                     )
-                    .padding(horizontal = 20.dp, vertical = 24.dp)
+                    .padding(horizontal = 20.dp, vertical = 14.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -216,75 +215,81 @@ fun PostScreen(
                     )
 
                     IconButton(
+                        modifier = Modifier.size(40.dp),
                         onClick = {
                             showAddButton = false
                             openAnnounceForm = true
                             GlobalEntries.isVisibleNav.update {
                                 false
                             }
-                        },
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.2f))
+                        }
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Add",
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp)
+                            tint = Color.White
                         )
                     }
                 }
             }
 
-            val lazyListState = rememberLazyListState()
-            LazyColumn(
-                state = lazyListState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 20.dp)
-            ) {
-                itemsIndexed(
-                    items = allPost,
-                    key = { _, item ->
-                        item.idAnnounce
-                    }
-                ) { index, item ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color.White,
-                            contentColor = Color.White
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp)
+            if (allPost.isNotEmpty()) {
+                val lazyListState = rememberLazyListState()
+                LazyColumn(
+                    state = lazyListState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 20.dp)
+                ) {
+                    itemsIndexed(
+                        items = allPost,
+                        key = { _, item ->
+                            item.idAnnounce
+                        }
+                    ) { index, item ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.White,
+                                contentColor = Color.White
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
                         ) {
-                            // Header Row - Name, Position and Status
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                            Column(
+                                modifier = Modifier.padding(16.dp)
                             ) {
-                                // Name and Position
-                                Column(
-                                    modifier = Modifier.weight(1f)
+                                // Header Row - Name, Position and Status
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(
-                                        text = item.title,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        maxLines = 1,
-                                        color = Color.Black,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
+                                    // Name and Position
+                                    Column(
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text(
+                                            text = item.title,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            maxLines = 1,
+                                            color = Color.Black,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+
+                                        Text(
+                                            text = "${stringResource(id = R.string.posted_by_text)} ${item.companyName}",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.Black,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
 
                                     Text(
-                                        text = "${stringResource(id = R.string.posted_by_text)} ${item.companyName}",
+                                        text = item.date ?: "",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = Color.Black,
                                         maxLines = 1,
@@ -292,197 +297,196 @@ fun PostScreen(
                                     )
                                 }
 
+                                Spacer(modifier = Modifier.height(12.dp))
+
                                 Text(
-                                    text = item.date ?: "",
+                                    text = item.description,
+                                    modifier = Modifier.fillMaxWidth(),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = Color.Black,
-                                    maxLines = 1,
+                                    maxLines = 3,
                                     overflow = TextOverflow.Ellipsis
                                 )
-                            }
 
-                            Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
 
-                            Text(
-                                text = item.description,
-                                modifier = Modifier.fillMaxWidth(),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Black,
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Box(modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.CenterEnd) {
-
-                                Row(
-                                    modifier = Modifier.wrapContentWidth()
-                                ) {
-                                    postsViewModel.isNotLikedCandidate(
-                                        item.likes ?: mutableListOf()
-                                    )
-
-                                    if (isFirstTime) {
-                                        isItemLiked = if (isAllPostLikedUser.isNotEmpty()) isAllPostLikedUser[index] else false
-                                        itemNumberLike = if (numberLikesUser.isNotEmpty()) numberLikesUser[index] else 0
-                                    }
+                                Box(modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.CenterEnd) {
 
                                     Row(
-                                        modifier = Modifier
-                                            .clickable(
-                                                interactionSource = interactionSource,
-                                                indication = null
-                                            ) {
-                                                isFirstTime = false
-                                                if (isItemLiked) {
-                                                    postsViewModel.disLikePost(item.idAnnounce)
-                                                    if (itemNumberLike > 0) itemNumberLike -= 1
-                                                    isItemLiked = false
-                                                } else {
-                                                    postsViewModel.likePost(item.idAnnounce)
-                                                    itemNumberLike += 1
-                                                    isItemLiked = true
+                                        modifier = Modifier.wrapContentWidth()
+                                    ) {
+                                        postsViewModel.isNotLikedCandidate(
+                                            item.likes ?: mutableListOf()
+                                        )
+
+                                        if (isFirstTime) {
+                                            isItemLiked = if (isAllPostLikedUser.isNotEmpty()) isAllPostLikedUser[index] else false
+                                            itemNumberLike = if (numberLikesUser.isNotEmpty()) numberLikesUser[index] else 0
+                                        }
+
+                                        Row(
+                                            modifier = Modifier
+                                                .clickable(
+                                                    interactionSource = interactionSource,
+                                                    indication = null
+                                                ) {
+                                                    isFirstTime = false
+                                                    if (isItemLiked) {
+                                                        postsViewModel.disLikePost(item.idAnnounce)
+                                                        if (itemNumberLike > 0) itemNumberLike -= 1
+                                                        isItemLiked = false
+                                                    } else {
+                                                        postsViewModel.likePost(item.idAnnounce)
+                                                        itemNumberLike += 1
+                                                        isItemLiked = true
+                                                    }
                                                 }
-                                            }
-                                            .padding(8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            imageVector = if (isItemLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                            contentDescription = "Like",
-                                            tint = if (isItemLiked) Color.Red else Color.Gray,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(
-                                            text = "$itemNumberLike",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = Color.Gray
-                                        )
-                                    }
+                                                .padding(8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                imageVector = if (isItemLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                                contentDescription = "Like",
+                                                tint = if (isItemLiked) Color.Red else Color.Gray,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = "$itemNumberLike",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = Color.Gray
+                                            )
+                                        }
 
-                                    if (isFirstTime) {
-                                        itemNumberComment = if (numberCommentUser.isNotEmpty()) numberCommentUser[index] else 0
-                                    }
+                                        if (isFirstTime) {
+                                            itemNumberComment = if (numberCommentUser.isNotEmpty()) numberCommentUser[index] else 0
+                                        }
 
-                                    // Comment Button
-                                    Row(
-                                        modifier = Modifier
-                                            .clickable(
-                                                interactionSource = interactionSource,
-                                                indication = null
-                                            ) {
-                                                postsViewModel.getPostCommentsCompany(item.idAnnounce)
-                                                selectedPost = item.comments ?: mutableListOf()
-                                                if (itemNumberComment > 0)
+                                        // Comment Button
+                                        Row(
+                                            modifier = Modifier
+                                                .clickable(
+                                                    interactionSource = interactionSource,
+                                                    indication = null
+                                                ) {
+                                                    postsViewModel.getPostCommentsCompany(item.idAnnounce)
+                                                    selectedPost = item.comments ?: mutableListOf()
                                                     showComments = !showComments
-                                            }
-                                            .padding(8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.ChatBubbleOutline,
-                                            contentDescription = "Comment",
-                                            tint = Color.Gray,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(
-                                            text = "$itemNumberComment",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = Color.Gray
-                                        )
-                                    }
-
-                                    // Share Button
-                                    Row(
-                                        modifier = Modifier
-                                            .clickable { /* Share action */ }
-                                            .padding(8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Share,
-                                            contentDescription = "Share",
-                                            tint = Color.Gray,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
-                                }
-
-                            }
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            /*HorizontalDivider(
-                                modifier = Modifier.fillMaxWidth(),
-                                thickness = 1.dp
-                            )
-
-                            var commentText by remember { mutableStateOf("") }
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                OutlinedTextField(
-                                    value = commentText,
-                                    onValueChange = { commentText = it },
-                                    modifier = Modifier.weight(1f),
-                                    placeholder = { Text(stringResource(id = R.string.add_comment_hint_text)) },
-                                    shape = RoundedCornerShape(24.dp),
-                                    textStyle = MaterialTheme.typography.bodyMedium,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = colorResource(id = R.color.whatsapp),
-                                        focusedLabelColor = colorResource(id = R.color.whatsapp)
-                                    )
-                                )
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                IconButton(
-                                    onClick = {
-                                        if (commentText.isNotBlank()) {
-
-                                            val username =
-                                                if (GlobalEntries.user.role == "Candidate" || GlobalEntries.user.role == "Candidat")
-                                                    GlobalEntries.user.fullName else GlobalEntries.user.companyName
-
-                                            postsViewModel.addComment(
-                                                item.idAnnounce,
-                                                commentText,
-                                                username ?: ""
+                                                    /*if (itemNumberComment > 0)
+                                                        showComments = !showComments*/
+                                                }
+                                                .padding(8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.ChatBubbleOutline,
+                                                contentDescription = "Comment",
+                                                tint = Color.Gray,
+                                                modifier = Modifier.size(20.dp)
                                             )
-
-                                            isFirstTime = false
-                                            itemNumberComment += 1
-
-                                            selectedPost.add(
-                                                CommentsPost(
-                                                    idCandidate = userConnectedId,
-                                                    userName = username
-                                                )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = "$itemNumberComment",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = Color.Gray
                                             )
-                                            commentText = ""
+                                        }
+
+                                        // Share Button
+                                        Row(
+                                            modifier = Modifier
+                                                .clickable { /* Share action */ }
+                                                .padding(8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Share,
+                                                contentDescription = "Share",
+                                                tint = Color.Gray,
+                                                modifier = Modifier.size(20.dp)
+                                            )
                                         }
                                     }
-                                ) {
-                                    Icon(
-                                        Icons.Default.Send,
-                                        contentDescription = "Send comment",
-                                        tint = colorResource(id = R.color.whatsapp)
-                                    )
+
                                 }
-                            }*/
 
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                HorizontalDivider(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    thickness = 1.dp
+                                )
+
+                                var commentText by remember { mutableStateOf("") }
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    OutlinedTextField(
+                                        value = commentText,
+                                        onValueChange = { commentText = it },
+                                        modifier = Modifier.weight(1f),
+                                        placeholder = { Text(stringResource(id = R.string.add_comment_hint_text)) },
+                                        shape = RoundedCornerShape(24.dp),
+                                        textStyle = MaterialTheme.typography.bodyMedium,
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = colorResource(id = R.color.whatsapp),
+                                            focusedLabelColor = colorResource(id = R.color.whatsapp)
+                                        )
+                                    )
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    IconButton(
+                                        onClick = {
+                                            if (commentText.isNotBlank()) {
+
+                                                postsViewModel.addComment(
+                                                    item.idAnnounce,
+                                                    commentText,
+                                                    GlobalEntries.user.companyName ?: ""
+                                                )
+
+                                                isFirstTime = false
+                                                itemNumberComment += 1
+
+                                                selectedPost.add(
+                                                    CommentsPost(
+                                                        idCandidate = userConnectedId,
+                                                        userName = GlobalEntries.user.companyName ?: ""
+                                                    )
+                                                )
+                                                commentText = ""
+                                            }
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Send,
+                                            contentDescription = "Send comment",
+                                            tint = colorResource(id = R.color.whatsapp)
+                                        )
+                                    }
+                                }
+
+                            }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                }
+            } else {
+                Box(modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "nothing to show",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp,
+                        color = colorResource(id = R.color.whatsapp)
+                    )
                 }
             }
 
@@ -825,6 +829,7 @@ fun CommentItem(comment: CommentsPost) {
                 .background(MaterialTheme.colorScheme.secondaryContainer),
             contentAlignment = Alignment.Center
         ) {
+
             Text(
                 text = comment.userName?.first().toString(),
                 style = MaterialTheme.typography.bodyMedium,

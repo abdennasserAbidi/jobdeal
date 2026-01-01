@@ -63,6 +63,7 @@ fun InvitationStatusCard(
     responseDate: String?,
     invitationModel: InvitationModel,
     userCandidate: User = User(),
+    userCompany: User = User(),
     viewProfile: (User) -> Unit = {},
     onTerminateInvitation: (InvitationModel) -> Unit = {},
     onRejectInvitation: (InvitationModel) -> Unit = {},
@@ -87,7 +88,16 @@ fun InvitationStatusCard(
             InvitationStatus.NOT_INTERESTED.name -> stringResource(id = R.string.title_status_not_interested_invitation_text, userCandidate.fullName ?: "")
             else -> stringResource(id = R.string.title_status_pending_invitation_text, userCandidate.fullName ?: "")
         }
-    } else status
+    } else {
+        when (status) {
+            InvitationStatus.ON_HOLD.name -> stringResource(id = R.string.title_status_pending_invitation_candidate_text, userCompany.companyName ?: "")
+            InvitationStatus.HIRED.name -> stringResource(id = R.string.title_status_hired_invitation_candidate_text, userCompany.companyName ?: "")
+            InvitationStatus.IN_PROCESS.name -> stringResource(id = R.string.title_status_process_invitation_candidate_text, userCompany.companyName ?: "")
+            InvitationStatus.REJECTED.name -> stringResource(id = R.string.title_status_rejecting_invitation_candidate_text, userCompany.companyName ?: "")
+            InvitationStatus.NOT_INTERESTED.name -> stringResource(id = R.string.title_status_not_interested_invitation_candidate_text, userCompany.companyName ?: "")
+            else -> stringResource(id = R.string.title_status_pending_invitation_candidate_text, userCompany.companyName ?: "")
+        }
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),

@@ -15,8 +15,10 @@ import ua.naiksoftware.stomp.dto.StompHeader
 
 object StompChatService {
 
-    private const val WS_URL =
-        "wss://jobseeker-vy9q.onrender.com/ws/websocket"
+    /*private const val WS_URL =
+        "wss://jobseeker-vy9q.onrender.com/ws/websocket"*/
+
+    private const val WS_URL = "http://10.0.2.2:9090/ws"
 
     private val stompClient = Stomp.over(
         Stomp.ConnectionProvider.OKHTTP,

@@ -15,8 +15,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
@@ -134,21 +137,26 @@ fun CandidateDetailScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        TopAppBar(
-            title = {
-                Text(
-                    text = stringResource(id = R.string.profile_candidate_type_text),
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            navigationIcon = {
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(color = colorResource(id = R.color.whatsapp))
+        ) {
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 15.dp, horizontal = 15.dp)
+            ) {
                 IconButton(
                     onClick = {
                         navController.popBackStack()
                     },
                     modifier = Modifier
-                        .size(28.dp)
+                        .size(40.dp)
                         .clip(CircleShape)
+                        .align(Alignment.CenterStart)
                         .background(Color.White.copy(alpha = 0.2f))
                 ) {
                     androidx.compose.material.Icon(
@@ -158,34 +166,19 @@ fun CandidateDetailScreen(
                         modifier = Modifier.size(20.dp)
                     )
                 }
-            },
-            actions = {
-                IconButton(
-                    onClick = {
-                        isSaved = !isSaved
-                        onSaveCandidate()
-                    }
-                ) {
-                    Icon(
-                        if (isSaved) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                        contentDescription = "Save",
-                        tint = if (isSaved) WhatsAppGreen else Color.White
+
+                Text(
+                    text = stringResource(id = R.string.profile_candidate_type_text),
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.White,
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontFamily = FontFamily.Default,
+                        fontWeight = FontWeight.Medium
                     )
-                }
-                IconButton(onClick = { /* Handle share */ }) {
-                    Icon(Icons.Default.Share, contentDescription = "Share")
-                }
-                IconButton(onClick = { /* Handle more options */ }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "More")
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = colorResource(id = R.color.whatsapp),
-                titleContentColor = Color.White,
-                navigationIconContentColor = Color.White,
-                actionIconContentColor = Color.White
-            )
-        )
+                )
+            }
+        }
 
         Column(
             modifier = Modifier
@@ -204,8 +197,9 @@ fun CandidateDetailScreen(
                     GlobalEntries.candidateUser = it
                     otherUserId = it.id ?: -1
 
-                    otherUserName = if (it.role == "Candidate" || it.role == "Candidat") it.fullName ?: ""
-                    else it.companyName ?: ""
+                    otherUserName =
+                        if (it.role == "Candidate" || it.role == "Candidat") it.fullName ?: ""
+                        else it.companyName ?: ""
 
                     navController.navigate(Screen.SendMessageScreen.route)
                 },

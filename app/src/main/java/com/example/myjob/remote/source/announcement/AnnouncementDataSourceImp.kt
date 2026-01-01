@@ -39,11 +39,11 @@ class AnnouncementDataSourceImp @Inject constructor(
 
     override suspend fun getNumberLikeAllPosts(
         idConnected: Int
-    ): List<Int> = apiService.getNumberLikeAllPosts(idConnected)
+    ): List<Int> = apiService.getNumberLikeAllPosts()
 
     override suspend fun getNumberCommentAllPosts(
         idConnected: Int
-    ): List<Int> = apiService.getNumberCommentAllPosts(idConnected)
+    ): List<Int> = apiService.getNumberCommentAllPosts()
 
     ///////////////////////////////////////////////////////////////////////////
     // COMPANY

@@ -167,6 +167,13 @@
     <string name="title_date_response_text">Répondu le</string>
     <string name="opinion_text">Quel est votre avis?</string>
 
+    <!--Candidate-->
+    <string name="title_status_pending_invitation_candidate_text">%1$s vous a envoyé une invitation</string>
+    <string name="title_status_hired_invitation_candidate_text">%1$s vous a embauché</string>
+    <string name="title_status_process_invitation_candidate_text">vous etes en procèss avec %1$s</string>
+    <string name="title_status_rejecting_invitation_candidate_text">%1$s a Réfusé votre candidature</string>
+    <string name="title_status_not_interested_invitation_candidate_text">Vous n\'etes pas intéressé</string>
+
     <!--career form-->
     <string name="experience_text">Experience</string>
     <string name="add_experience_text">Ajouter Experience</string>
@@ -239,8 +246,10 @@
     <string name="last_name_error">Nom est invalid</string>
     <string name="password_error">Mot de passe est invalid</string>
     <string name="change_password_text">Changer mot de passe</string>
+    <string name="send_reset_password_email_text">Courriel de réinitialisation du mot de passe envoyé</string>
     <string name="company_name_error">Nom de l\'entreprise est invalid</string>
     <string name="confirm_password_error">Ce n\'est pas le même mot de passe</string>
+    <string name="forgot_password_title_text">Mot de passe oublié</string>
     <string name="first_name_text">Prénom</string>
     <string name="last_name_text">Nom</string>
 
@@ -261,6 +270,7 @@
 
     <string name="manage_profiles_text">Gérer Profils</string>
     <string name="choose_language_text">Choisir langue</string>
+    <string name="choose_role_text">Choisir role</string>
     <string name="language_text">langue</string>
     <string name="change_language_text">Changer</string>
 
@@ -381,5 +391,6 @@
     <string name="candidates_text">Candidats</string>
     <string name="search_candidates_text">Rechercher des candidats</string>
 
-
+    <string name="error_dialog_text">Erreur</string>
+    <string name="success_dialog_text">Succès</string>
 </resources>

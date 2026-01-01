@@ -155,7 +155,7 @@ class AnnouncementRepositoryImp @Inject constructor(
     override suspend fun getNumberCommentAllPostsCompany(idConnected: Int): Flow<Resource<List<Int>>> = flow {
         try {
             // Get data from RemoteDataSource
-            val data = remoteDataSource.getNumberLikeAllPosts(idConnected)
+            val data = remoteDataSource.getNumberCommentAllPostsCompany(idConnected)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {

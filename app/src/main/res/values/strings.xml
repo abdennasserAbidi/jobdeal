@@ -17,7 +17,9 @@
     <string name="registration_number_text">Registration Number</string>
     <string name="confirm_password_text">Confirm password</string>
     <string name="change_password_text">Change password</string>
+    <string name="send_reset_password_email_text">Password reset email sent</string>
     <string name="forgot_password_text">Forgot password?</string>
+    <string name="forgot_password_title_text">Forgot password</string>
     <string name="login_text">Login</string>
     <string name="logout_text">Log out</string>
     <string name="or_text">Or Login with</string>
@@ -157,6 +159,13 @@
     <string name="title_date_sent_text">Sent on %1$s</string>
     <string name="title_date_response_text">Reply</string>
 
+    <!--Candidate-->
+    <string name="title_status_pending_invitation_candidate_text">%1$s sent you an invitation</string>
+    <string name="title_status_hired_invitation_candidate_text">%1$s hired you</string>
+    <string name="title_status_process_invitation_candidate_text">Your are in process with %1$s</string>
+    <string name="title_status_rejecting_invitation_candidate_text">%1$s rejected your candidature</string>
+    <string name="title_status_not_interested_invitation_candidate_text">You are not interested</string>
+
     <string name="message_rejected_offer_text">The candidate %1$s is Rejected : you should tell the reason</string>
     <string name="message_accepted_offer_text">The candidate %1$s is Accepted</string>
 
@@ -267,6 +276,7 @@
 
     <string name="manage_profiles_text">Manage Profiles</string>
     <string name="choose_language_text">Choose language</string>
+    <string name="choose_role_text">Choose role</string>
     <string name="language_text">language</string>
     <string name="change_language_text">Change</string>
 
@@ -394,4 +404,8 @@
     <string name="video_intro_text">Video Introduction</string>
     <string name="video_explanation_text">Record a video introduction</string>
     <string name="technical_skills_text">Technical Skills</string>
+
+
+    <string name="error_dialog_text">Error</string>
+    <string name="success_dialog_text">Success</string>
 </resources>

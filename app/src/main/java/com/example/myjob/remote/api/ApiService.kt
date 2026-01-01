@@ -22,6 +22,7 @@ import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.FilesResponse
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UploadResponse
+import com.example.myjob.domain.response.UserAuthResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.feature.messagerie.ChatMessage
 import com.example.myjob.feature.messagerie.Conversation
@@ -71,9 +72,8 @@ ApiService {
     @POST("auth/verification")
     suspend fun verifyEmail(@Query("email") email: String): LoginResponse
 
-    @FormUrlEncoded
-    @POST("/auth/forgot-password")
-    suspend fun forgotPassword(@Field("email") email: String): UserResponse
+    @POST("auth/forgot-password")
+    suspend fun forgotPassword(@Query("email") email: String): UserResponse
 
     @POST("/auth/validate-profile-candidate")
     suspend fun validateCandidateProfile(@Body validationProfileStatus: ValidationProfileStatus): UserResponse
@@ -261,7 +261,7 @@ ApiService {
     ): UserResponse
 
     @GET("auth/getUser")
-    suspend fun getUser(@Query("id") id: Int): User
+    suspend fun getUser(@Query("id") id: Int): UserAuthResponse
 
     @Multipart
     @POST("auth/uploadCV")
@@ -343,14 +343,10 @@ ApiService {
     ): List<Boolean>
 
     @GET("auth/getNumberLikeAllPosts")
-    suspend fun getNumberLikeAllPosts(
-        @Query("idConnected") idConnected: Int
-    ): List<Int>
+    suspend fun getNumberLikeAllPosts(): List<Int>
 
     @GET("auth/getNumberCommentAllPosts")
-    suspend fun getNumberCommentAllPosts(
-        @Query("idConnected") idConnected: Int
-    ): List<Int>
+    suspend fun getNumberCommentAllPosts(): List<Int>
 
     ///////////////////////////////////////////////////////////////////////////
     // COMPANY

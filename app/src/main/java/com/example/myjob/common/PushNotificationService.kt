@@ -67,7 +67,7 @@ class PushNotificationService : FirebaseMessagingService() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
 
         val intent1 = Intent(Intent.ACTION_VIEW).apply {
-            data = Uri.parse("myapp://notification/$idUser")
+            data = Uri.parse("myapp://jobdeal/$idUser")
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 

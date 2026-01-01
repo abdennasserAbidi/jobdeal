@@ -51,6 +51,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.feature.navigation.Screen
 
 @Composable
@@ -89,7 +90,6 @@ fun DetailInviScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
                 .background(color = colorResource(id = R.color.whatsapp)),
             contentAlignment = Alignment.Center
         ) {
@@ -143,15 +143,39 @@ fun DetailInviScreen(
 
             Box {
                 // Status Card
+                val statusInvitations by invitationDetailViewModel.statusInvitations.collectAsState()
+                val item = invitation.status ?: ""
+                val statusCandidate = if (item != InvitationStatus.ON_HOLD.name)
+                    item else statusInvitations
+
                 InvitationStatusCard(
-                    status = invitation.status ?: "",
+                    status = statusCandidate,
                     sentDate = invitation.date ?: "",
                     responseDate = invitation.dateEnd,
                     invitationModel = invitation,
                     userCandidate = userCandidate,
+                    userCompany = userCompany,
                     viewProfile = {
                         GlobalEntries.userForCompany = it
                         navController.navigate(Screen.DetailScreen.route)
+                    },
+                    onAcceptInvitation = {
+                        it.status = InvitationStatus.IN_PROCESS.name
+                        invitationDetailViewModel.acceptRejectInvitation(it)
+
+                        invitationDetailViewModel.clearToken()
+                        invitationDetailViewModel.getUserToken(it.idCompany)
+                        //acceptRejectInvitation = "accept"
+                    },
+                    onRejectInvitation = {
+                        it.status = InvitationStatus.NOT_INTERESTED.name
+                        invitationDetailViewModel.acceptRejectInvitation(it)
+
+                        invitationDetailViewModel.clearToken()
+                        invitationDetailViewModel.getUserToken(it.idCompany)
+                        //acceptRejectInvitation = "refuse"
+                    },
+                    onTerminateInvitation = {
                     }
                 )
             }

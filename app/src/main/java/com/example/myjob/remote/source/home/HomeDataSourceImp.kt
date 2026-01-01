@@ -6,6 +6,7 @@ import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.FilesResponse
 import com.example.myjob.domain.response.UploadResponse
+import com.example.myjob.domain.response.UserAuthResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.remote.api.ApiService
 import okhttp3.MultipartBody
@@ -24,7 +25,7 @@ class HomeDataSourceImp @Inject constructor(
     override suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): UserResponse =
         apiService.saveToFavorite(idUserConnected, candidateId)
 
-    override suspend fun getUser(id: Int): User = apiService.getUser(id)
+    override suspend fun getUser(id: Int): UserAuthResponse = apiService.getUser(id)
     override suspend fun uploadFile(file: MultipartBody.Part): UserResponse =
         apiService.uploadFile(file)
     override suspend fun uploadFiles(file: MultipartBody.Part): UploadResponse =

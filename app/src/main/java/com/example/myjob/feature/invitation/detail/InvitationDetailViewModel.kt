@@ -6,8 +6,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries.idInvitation
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.entities.invitation.InvitationModel
+import com.example.myjob.domain.entities.invitation.InvitationParams
 import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.domain.entities.invitation.InvitationUser
+import com.example.myjob.domain.usecase.home.GetUserUseCase
+import com.example.myjob.domain.usecase.invitation.AcceptRejectInvitationUseCase
 import com.example.myjob.domain.usecase.invitation.DeleteInvitationUseCase
 import com.example.myjob.domain.usecase.invitation.GetDetailInvitationUseCase
 import com.example.myjob.local.database.SharedPreference
@@ -22,8 +26,50 @@ import javax.inject.Inject
 class InvitationDetailViewModel @Inject constructor(
     private val sharedPreference: SharedPreference,
     private val getDetailInvitationUseCase: GetDetailInvitationUseCase,
-    private val deleteInvitationUseCase: DeleteInvitationUseCase
+    private val deleteInvitationUseCase: DeleteInvitationUseCase,
+    private val getUserUseCase: GetUserUseCase,
+    private val acceptRejectInvitationUseCase: AcceptRejectInvitationUseCase
 ) : ViewModel() {
+
+    ///////////////////////////////////////////////////////////////////////////
+    // ACCEPT AND REJECT INVITATION
+    ///////////////////////////////////////////////////////////////////////////
+    private val _statusInvitations: MutableStateFlow<String> =
+        MutableStateFlow(InvitationStatus.ON_HOLD.name)
+    val statusInvitations: MutableStateFlow<String> get() = _statusInvitations
+
+    fun acceptRejectInvitation(invitation: InvitationModel) {
+        val invitationParams = InvitationParams()
+        invitationParams.idConnected = invitation.idCompany
+        invitationParams.invitationModel = invitation
+        viewModelScope.launch {
+            acceptRejectInvitationUseCase.execute(invitationParams).collect { res ->
+                when (res.status) {
+                    ResourceState.SUCCESS -> {
+                        _statusInvitations.update {
+                            res.data?.message ?: InvitationStatus.ON_HOLD.name
+                        }
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    val fcmToken = MutableStateFlow("")
+    fun clearToken() {
+        fcmToken.update { "" }
+    }
+
+    fun getUserToken(id: Int? = sharedPreference.getInt("idUser", -1)) {
+        viewModelScope.launch {
+            getUserUseCase.execute(id).collect {
+                it.data?.let { u ->
+                    fcmToken.update { u.fcmToken ?: "" }
+                }
+            }
+        }
+    }
 
     private val _invitations = MutableStateFlow(value = InvitationUser())
     val invitations: StateFlow<InvitationUser> get() = _invitations
@@ -41,8 +87,10 @@ class InvitationDetailViewModel @Inject constructor(
                 .collect { res ->
                     if (res.status == ResourceState.SUCCESS) {
 
-                        val i = res.data?: InvitationUser()
-                        val withStatus = i.invitationModel.copy(status = i.invitationModel.status ?: InvitationStatus.ON_HOLD.name)
+                        val i = res.data ?: InvitationUser()
+                        val withStatus = i.invitationModel.copy(
+                            status = i.invitationModel.status ?: InvitationStatus.ON_HOLD.name
+                        )
 
                         i.invitationModel = withStatus
 

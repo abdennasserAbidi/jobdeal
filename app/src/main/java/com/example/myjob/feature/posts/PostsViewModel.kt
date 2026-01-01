@@ -1,5 +1,6 @@
 package com.example.myjob.feature.posts
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -18,6 +19,7 @@ import com.example.myjob.domain.usecase.announcement.GetAnnouncementUseCase
 import com.example.myjob.domain.usecase.announcement.GetCandidateAnnouncementUseCase
 import com.example.myjob.domain.usecase.announcement.GetCommentPostCompanyUseCase
 import com.example.myjob.domain.usecase.announcement.GetNumberCommentAllPostsUseCase
+import com.example.myjob.domain.usecase.announcement.GetNumberCommentCompanyUseCase
 import com.example.myjob.domain.usecase.announcement.GetNumberLikeAllPostsUseCase
 import com.example.myjob.domain.usecase.announcement.GetPostUseCase
 import com.example.myjob.domain.usecase.announcement.RemoveLikeUseCase
@@ -44,6 +46,7 @@ class PostsViewModel @Inject constructor(
     private val checkUserLikeAllPostsUseCase: CheckUserLikeAllPostsUseCase,
     private val getNumberLikeAllPostsUseCase: GetNumberLikeAllPostsUseCase,
     private val getNumberCommentAllPostsUseCase: GetNumberCommentAllPostsUseCase,
+    private val getNumberCommentCompanyUseCase: GetNumberCommentCompanyUseCase,
     private val getCommentPostCompanyUseCase: GetCommentPostCompanyUseCase,
     private val addLikeUseCase: AddLikeUseCase,
     private val addCommentUseCase: AddCommentUseCase,
@@ -234,6 +237,17 @@ class PostsViewModel @Inject constructor(
         }
     }
 
+    val numberComment = MutableStateFlow(emptyList<Int>())
+    fun getNumberCommentAllPosts() {
+        viewModelScope.launch {
+            val idConnected = sharedPreference.getInt("idUser", 0)
+            getNumberCommentAllPostsUseCase.execute(idConnected).collectLatest { res ->
+                Log.i("gjkrzhgjrzbg", "getPostNumberCommentCompany: ${res.data}")
+                numberComment.update { res.data ?: emptyList() }
+            }
+        }
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // COMPANY
     ///////////////////////////////////////////////////////////////////////////
@@ -252,16 +266,18 @@ class PostsViewModel @Inject constructor(
         viewModelScope.launch {
             val idConnected = sharedPreference.getInt("idUser", 0)
             getNumberLikeAllPostsUseCase.execute(idConnected).collectLatest { res ->
+                Log.i("fklzghllzgrjljgzr", "getPostNumberLikesCompany: ${res.data}")
                 numberLikesCompany.update { res.data ?: emptyList() }
             }
         }
     }
 
     val numberCommentCompany = MutableStateFlow(emptyList<Int>())
+
     fun getPostNumberCommentCompany() {
         viewModelScope.launch {
             val idConnected = sharedPreference.getInt("idUser", 0)
-            getNumberCommentAllPostsUseCase.execute(idConnected).collectLatest { res ->
+            getNumberCommentCompanyUseCase.execute(idConnected).collectLatest { res ->
                 numberCommentCompany.update { res.data ?: emptyList() }
             }
         }

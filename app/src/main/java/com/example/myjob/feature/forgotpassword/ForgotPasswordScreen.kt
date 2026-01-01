@@ -3,35 +3,28 @@ package com.example.myjob.feature.forgotpassword
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,7 +35,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.colorResource
@@ -51,35 +43,45 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.CustomDialog
+import com.example.myjob.common.GlobalEntries.tokenForgetPassword
 import com.example.myjob.domain.entities.ResetPasswordParam
 import com.example.myjob.feature.profile.test.FormTextField
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForgotPasswordScreen(
     navController: NavController,
-    viewModel: ForgotPasswordViewModel = hiltViewModel(),
-    token: String = ""
+    viewModel: ForgotPasswordViewModel = hiltViewModel()
 ) {
-
-    Log.i("testscreen", "ForgotPasswordScreen: $token")
 
     val message by viewModel.message.collectAsState()
     var isProgressing by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
+
+    var showDialog by remember { mutableStateOf(false) }
+
+    val token = tokenForgetPassword
+    Log.i("DeepLink", "token: $token")
+
+    if (showDialog) {
+        isProgressing = false
+        CustomDialog(isSuccess = false, message = message) {
+            showDialog = false
+            isProgressing = false
+        }
+    }
+
+    LaunchedEffect(message) {
+        if (message.contains("User not found with email:")) {
+            showDialog = true
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -106,9 +108,9 @@ fun ForgotPasswordScreen(
                     )
                 }
 
-                val title = if (token.isNotEmpty()) "Change password"
-                else if (message.isNotEmpty()) "Password reset email sent"
-                else "Forgot password"
+                val title = if (token.isNotEmpty()) stringResource(id = R.string.change_password_text)
+                else if (message.isNotEmpty()) stringResource(id = R.string.send_reset_password_email_text)
+                else stringResource(id = R.string.forgot_password_title_text)
 
                 Text(
                     text = title,
@@ -246,7 +248,8 @@ fun ForgotPasswordScreen(
                             }
                         },
                         modifier = Modifier
-                            .fillMaxWidth(0.9f)
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
                             .padding(top = 20.dp),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -259,7 +262,7 @@ fun ForgotPasswordScreen(
                         )
                     }
 
-                } else if (message.isNotEmpty()) {
+                } else if (message.isNotEmpty() && !message.contains("User not found with email:")) {
                     //second
                     isProgressing = false
                     viewModel.clearValidity()
@@ -361,7 +364,6 @@ fun ForgotPasswordScreen(
                                 val emailValidator = viewModel.validateEmail(email)
 
                                 if (!emailVerified) activatedCheck = true
-
                                 if (emailValidator) {
                                     isProgressing = true
                                     viewModel.forgotPasswordUseCase(email)
@@ -387,16 +389,35 @@ fun ForgotPasswordScreen(
             }
 
             if (isProgressing) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .padding(16.dp)
-                        .align(Alignment.Center),
-                    color = Color.Blue,
-                    strokeWidth = 8.dp,
-                    trackColor = Color.LightGray,
-                    strokeCap = StrokeCap.Round
-                )
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center) {
+
+                    Card(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .background(shape = RoundedCornerShape(30.dp), color = Color.White),
+                        elevation = 15.dp,
+                        shape = RoundedCornerShape(30.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(150.dp)
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .padding(20.dp),
+                                color = colorResource(id = R.color.whatsapp),
+                                strokeWidth = 8.dp,
+                                trackColor = Color.LightGray,
+                                strokeCap = StrokeCap.Round
+                            )
+                        }
+                    }
+                }
             }
         }
 

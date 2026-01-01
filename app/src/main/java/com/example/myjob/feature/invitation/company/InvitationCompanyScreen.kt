@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
@@ -178,20 +179,17 @@ fun InvitationCompanyScreen(
             )
         }
 
-
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .background(color = colorResource(id = R.color.whatsapp)),
-            contentAlignment = Alignment.Center
+                .background(
+                    color = colorResource(id = R.color.whatsapp)
+                )
+                .padding(horizontal = 20.dp, vertical = 14.dp)
         ) {
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 15.dp, horizontal = 15.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
                     onClick = {
@@ -200,7 +198,6 @@ fun InvitationCompanyScreen(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .align(Alignment.CenterStart)
                         .background(Color.White.copy(alpha = 0.2f))
                 ) {
                     androidx.compose.material3.Icon(
@@ -213,13 +210,10 @@ fun InvitationCompanyScreen(
 
                 Text(
                     text = stringResource(id = R.string.invitations_text),
-                    modifier = Modifier.align(Alignment.Center),
-                    color = Color.White,
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        fontFamily = FontFamily.Default,
-                        fontWeight = FontWeight.Medium
-                    )
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(start = 20.dp),
+                    color = Color.White
                 )
             }
         }
