@@ -164,6 +164,7 @@
     <string name="title_status_rejecting_invitation_text">Réfuser %1$s</string>
     <string name="title_status_not_interested_invitation_text">%1$s n\'est pas intéressé</string>
     <string name="title_date_sent_text">Envoyé le %1$s</string>
+    <string name="title_date_posted_text">Publié le %1$s</string>
     <string name="title_date_response_text">Répondu le</string>
     <string name="opinion_text">Quel est votre avis?</string>
 
@@ -233,6 +234,7 @@
     <string name="contract_description_text">Description du contrat</string>
     <string name="duration_text">Durée</string>
     <string name="contract_detail_text">Detail du contrat</string>
+    <string name="other_detail_text">Autres détails</string>
 
     <string name="work_still_text">Je suis toujours dans ce rôle</string>
     <string name="companies_text">Entreprises</string>
@@ -243,6 +245,7 @@
     <string name="choose_candidate_text">Candidat</string>
 
     <string name="first_name_error">Prénom est invalid</string>
+    <string name="type_annonce_error">Vous devez choisir un type</string>
     <string name="last_name_error">Nom est invalid</string>
     <string name="password_error">Mot de passe est invalid</string>
     <string name="change_password_text">Changer mot de passe</string>
@@ -277,6 +280,7 @@
     <string name="profile_candidate_type_text">Profil Candidat</string>
 
     <string name="my_resume_text">Mon CV</string>
+    <string name="announce_text">Annonces</string>
     <string name="upload_resume_text">Télécharger &amp; voir ton CV</string>
 
     <string name="required_field_text">ce champ est obligatoire</string>
@@ -316,6 +320,7 @@
 
     <string name="invitations_text">Mes invitations</string>
     <string name="invitation_content_text">Contenu de l\'invitation</string>
+    <string name="post_content_text">Contenu de la publication</string>
     <string name="navigate_invitations_text">Voir vos invitations</string>
     <string name="career_text">Carrière</string>
     <string name="navigate_career_text">Booseter mon carrière</string>
@@ -350,6 +355,7 @@
     <string name="filter_status_text">Filtrer par statut</string>
     <string name="all_candidates_text">Tous les Candidats</string>
     <string name="all_posts_text">Tous les Annonces</string>
+    <string name="select_posts_text">Select type de l\'announce</string>
     <string name="in_process_long_text">En cours de traitement…</string>
     <string name="invitation_found_text">invitations trouvées</string>
 
@@ -393,4 +399,8 @@
 
     <string name="error_dialog_text">Erreur</string>
     <string name="success_dialog_text">Succès</string>
+
+    <string name="invitation_send_info_text">Invitation envoyée!</string>
+    <string name="done_info_text">OK</string>
+    <string name="invitation_desc_info_text">Votre invitation à l\'entretien a bien été envoyée à %1$s. Cette personne recevra un email contenant tous les détails..</string>
 </resources>

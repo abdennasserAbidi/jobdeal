@@ -1,5 +1,6 @@
 package com.example.myjob.feature.posts
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -32,6 +33,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -76,6 +78,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
+import com.example.myjob.common.CustomDialog
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
@@ -95,6 +98,7 @@ fun PostScreen(
 
     val posts by postsViewModel.posts.collectAsState()
     var allPost by remember { mutableStateOf(emptyList<AnnouncementModel>()) }
+    var selectedItemPost by remember { mutableStateOf(AnnouncementModel()) }
 
     val announcementModel by postsViewModel.announcementModel.collectAsState()
     val userConnectedId by postsViewModel.userConnectedId.collectAsState()
@@ -107,7 +111,9 @@ fun PostScreen(
     var showComments by remember { mutableStateOf(false) }
     var selectedPost by remember { mutableStateOf(mutableListOf<CommentsPost>()) }
     var showFilterSheet by remember { mutableStateOf(false) }
+    var showSearchSheet by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf(PostType.ALL) }
+    var selectedSearch by remember { mutableStateOf(PostType.ALL) }
 
     var postName by remember { mutableStateOf(announcementModel.title) }
     var descriptions by remember { mutableStateOf(announcementModel.description) }
@@ -140,6 +146,9 @@ fun PostScreen(
     var itemNumberComment by remember { mutableStateOf(0) }
 
     val commentsCompany by postsViewModel.commentsCompany.collectAsState()
+    val deleteStatus by postsViewModel.deleteStatus.collectAsState()
+
+    var showDialog by remember { mutableStateOf(false) }
     /*var numberCommentUser by remember(numberCommentCompany) { mutableStateOf(numberCommentCompany) }
     var itemNumberComment by remember { mutableStateOf(0) }*/
 
@@ -155,10 +164,22 @@ fun PostScreen(
 
     LaunchedEffect(annoucementStatus) {
         if (annoucementStatus == "saved successfully") {
-            val announce = AnnouncementModel()
-            announce.title = postName
-            announce.description = descriptions
-            allPost = (allPost + announce).toMutableList()
+            announcementModel.companyName = GlobalEntries.user.companyName ?: ""
+            allPost = (allPost + announcementModel).toMutableList()
+        }
+    }
+
+    if (showDialog) {
+        CustomDialog(isSuccess = false, message = deleteStatus) {
+            showDialog = false
+        }
+    }
+
+    LaunchedEffect(deleteStatus) {
+        if (deleteStatus == "deleted successfully") {
+            allPost = (allPost - selectedItemPost).toMutableList()
+        } else if (deleteStatus.isNotEmpty()) {
+            showDialog = true
         }
     }
 
@@ -233,7 +254,45 @@ fun PostScreen(
                 }
             }
 
+            // Filter Row
+            val allPostsText = stringResource(id = R.string.all_posts_text)
+            val internshipText = stringResource(id = R.string.internship_text)
+            val eventText = stringResource(id = R.string.type_event_text)
+            val formationText = stringResource(id = R.string.type_formation_text)
+
+            FilterChip(
+                onClick = { showSearchSheet = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .padding(top = 20.dp)
+                    .padding(horizontal = 20.dp),
+                label = {
+                    Text(
+                        text = when (selectedSearch) {
+                            PostType.ALL -> allPostsText
+                            PostType.INTERNSHIP -> internshipText
+                            PostType.EVENT -> eventText
+                            PostType.WORKSHOP -> formationText
+                        }
+                    )
+                },
+                selected = false,
+                trailingIcon = {
+                    androidx.compose.material.Icon(
+                        Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Filter",
+                        modifier = Modifier.size(18.dp)
+                    )
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = WhatsAppLightGreen,
+                    selectedLabelColor = WhatsAppDarkGreen
+                )
+            )
+
             if (allPost.isNotEmpty()) {
+
                 val lazyListState = rememberLazyListState()
                 LazyColumn(
                     state = lazyListState,
@@ -248,6 +307,7 @@ fun PostScreen(
                             item.idAnnounce
                         }
                     ) { index, item ->
+                        postsViewModel.getPostCommentsCompany(item.idAnnounce)
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
@@ -261,14 +321,12 @@ fun PostScreen(
                                 modifier = Modifier.padding(16.dp)
                             ) {
                                 // Header Row - Name, Position and Status
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                Box(
+                                    modifier = Modifier.fillMaxWidth()
                                 ) {
                                     // Name and Position
                                     Column(
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.align(Alignment.CenterStart)
                                     ) {
                                         Text(
                                             text = item.title,
@@ -288,13 +346,21 @@ fun PostScreen(
                                         )
                                     }
 
-                                    Text(
-                                        text = item.date ?: "",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = Color.Black,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
+                                    IconButton(
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .align(Alignment.CenterEnd),
+                                        onClick = {
+                                            selectedItemPost = item
+                                            postsViewModel.deleteCompanyAnnouncement(item.idAnnounce)
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            tint = Color.Red,
+                                            modifier = Modifier.size(20.dp),
+                                            contentDescription = "delete"
+                                        )
+                                    }
                                 }
 
                                 Spacer(modifier = Modifier.height(12.dp))
@@ -310,19 +376,33 @@ fun PostScreen(
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                Box(modifier = Modifier.fillMaxWidth(),
-                                    contentAlignment = Alignment.CenterEnd) {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+
+                                    Text(
+                                        text = item.date ?: "",
+                                        modifier = Modifier.align(Alignment.CenterStart),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Black,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
 
                                     Row(
-                                        modifier = Modifier.wrapContentWidth()
+                                        modifier = Modifier
+                                            .wrapContentWidth()
+                                            .align(Alignment.CenterEnd)
                                     ) {
                                         postsViewModel.isNotLikedCandidate(
                                             item.likes ?: mutableListOf()
                                         )
 
                                         if (isFirstTime) {
-                                            isItemLiked = if (isAllPostLikedUser.isNotEmpty()) isAllPostLikedUser[index] else false
-                                            itemNumberLike = if (numberLikesUser.isNotEmpty()) numberLikesUser[index] else 0
+                                            isItemLiked =
+                                                if (isAllPostLikedUser.isNotEmpty() && index < isAllPostLikedUser.size) isAllPostLikedUser[index] else false
+                                            itemNumberLike =
+                                                if (numberLikesUser.isNotEmpty() && index < numberLikesUser.size) numberLikesUser[index] else 0
                                         }
 
                                         Row(
@@ -360,7 +440,8 @@ fun PostScreen(
                                         }
 
                                         if (isFirstTime) {
-                                            itemNumberComment = if (numberCommentUser.isNotEmpty()) numberCommentUser[index] else 0
+                                            itemNumberComment =
+                                                if (numberCommentUser.isNotEmpty() && index < numberCommentUser.size) numberCommentUser[index] else 0
                                         }
 
                                         // Comment Button
@@ -370,7 +451,6 @@ fun PostScreen(
                                                     interactionSource = interactionSource,
                                                     indication = null
                                                 ) {
-                                                    postsViewModel.getPostCommentsCompany(item.idAnnounce)
                                                     selectedPost = item.comments ?: mutableListOf()
                                                     showComments = !showComments
                                                     /*if (itemNumberComment > 0)
@@ -457,7 +537,8 @@ fun PostScreen(
                                                 selectedPost.add(
                                                     CommentsPost(
                                                         idCandidate = userConnectedId,
-                                                        userName = GlobalEntries.user.companyName ?: ""
+                                                        userName = GlobalEntries.user.companyName
+                                                            ?: ""
                                                     )
                                                 )
                                                 commentText = ""
@@ -479,8 +560,10 @@ fun PostScreen(
                     }
                 }
             } else {
-                Box(modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
                         text = "nothing to show",
                         fontWeight = FontWeight.Bold,
@@ -624,7 +707,8 @@ fun PostScreen(
                     ) {
 
                         // Filter Row
-                        val allPostsText = stringResource(id = R.string.all_posts_text)
+                        //val allPostsText = stringResource(id = R.string.all_posts_text)
+                        val allPostsText = stringResource(id = R.string.select_posts_text)
                         val internshipText = stringResource(id = R.string.internship_text)
                         val eventText = stringResource(id = R.string.type_event_text)
                         val formationText = stringResource(id = R.string.type_formation_text)
@@ -639,7 +723,7 @@ fun PostScreen(
                             label = {
                                 Text(
                                     text = when (selectedFilter) {
-                                        PostType.ALL -> allPostsText
+                                        PostType.ALL -> stringResource(id = R.string.all_posts_text)
                                         PostType.INTERNSHIP -> internshipText
                                         PostType.EVENT -> eventText
                                         PostType.WORKSHOP -> formationText
@@ -659,6 +743,17 @@ fun PostScreen(
                                 selectedLabelColor = WhatsAppDarkGreen
                             )
                         )
+
+                        val validator = postType.isEmpty() || postType == PostType.ALL.name || postType == allPostsText
+                        if(activatedCheck && validator) {
+
+                            Text(
+                                modifier = Modifier.padding(top = 5.dp),
+                                text = stringResource(id = R.string.type_annonce_error),
+                                color = Color.Red
+                            )
+                            
+                        }
 
                         FormTextField(
                             value = postName,
@@ -698,13 +793,15 @@ fun PostScreen(
 
                         Button(
                             onClick = {
+                                val postTypeValidator =
+                                    postType.isNotEmpty() && postType != PostType.ALL.name && postType != allPostsText
                                 val postTitleValidator = postName.isNotEmpty()
                                 val postDescriptionValidator = descriptions.isNotEmpty()
-                                if (!postTitleValidator || !postDescriptionValidator) {
+                                if (!postTitleValidator || !postDescriptionValidator || !postTypeValidator) {
                                     activatedCheck = true
                                 }
 
-                                if (postTitleValidator && postDescriptionValidator) {
+                                if (postTitleValidator && postDescriptionValidator && postTypeValidator) {
                                     postsViewModel.saveCompanyAnnouncement()
                                     openAnnounceForm = false
                                     showAddButton = true
@@ -747,6 +844,21 @@ fun PostScreen(
                     postType = filter.name
                     postsViewModel.changePostType(postType)
                     showFilterSheet = false
+                }
+            )
+        }
+    }
+
+    if (showSearchSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showSearchSheet = false }
+        ) {
+            FilterPostBottomSheet(
+                selectedFilter = selectedSearch,
+                onFilterSelected = { filter ->
+                    selectedSearch = filter
+                    postsViewModel.getFilteredAnnounceCompany(filter.name)
+                    showSearchSheet = false
                 }
             )
         }

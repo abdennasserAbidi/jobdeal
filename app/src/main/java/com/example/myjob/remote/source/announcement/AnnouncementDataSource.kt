@@ -4,14 +4,24 @@ import com.example.myjob.base.GenericResponse
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.announcement.CommentsPost
 import com.example.myjob.domain.entities.announcement.LikesPost
+import com.example.myjob.domain.response.AnnounceResponse
 import com.example.myjob.domain.response.UserResponse
-import retrofit2.http.Query
 
 interface AnnouncementDataSource {
     suspend fun makeAnnouncement(
         idUserConnected: Int,
         announcementModel: AnnouncementModel
     ): UserResponse
+    suspend fun findAnnounceCompany(type: String, idCompany: Int): AnnounceResponse
+    suspend fun findAnnounceCandidate(
+        type: String,
+        pageNumber: Int
+    ): GenericResponse<AnnouncementModel>
+    suspend fun deletePostCompany(
+        idAnnounce: Int,
+        idConnected: Int
+    ): UserResponse
+
     suspend fun getAnnouncement(idAnnounce: Int, idCompany: Int): AnnouncementModel
     suspend fun removeLike(
         idAnnounce: Int,
@@ -39,8 +49,7 @@ interface AnnouncementDataSource {
     suspend fun getNumberLikeAllPostsCompany(idConnected: Int): List<Int>
     suspend fun getNumberCommentAllPostsCompany(idConnected: Int): List<Int>
     suspend fun getCommentAllPostsCompany(
-        idAnnounce: Int,
-        idConnected: Int
+        idAnnounce: Int
     ): List<CommentsPost>
 
     suspend fun addLikes(

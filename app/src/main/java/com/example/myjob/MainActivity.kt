@@ -149,11 +149,9 @@ class MainActivity : ComponentActivity() {
     private var listCompany: MutableList<String> = mutableListOf()
     private var listCountries: MutableList<String> = mutableListOf()
 
-    //TODO("détail user quand on complète le profile")
     //TODO("Filtrage du poste")
-    //TODO("Notification")
+    //TODO("détail du poste")
     //TODO("upload images")
-    //TODO("chat")
 
     var mSocket: Socket? = null
     private var imageUri = mutableStateOf<Uri?>(null)

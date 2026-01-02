@@ -165,6 +165,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             stateToken.update { ResourceState.LOADING }
             isProgressing.update { true }
+            errorText.update { "" }
             loginUseCase.execute(user).collect { res ->
 
                 stateToken.update { res.status }
@@ -180,7 +181,6 @@ class LoginViewModel @Inject constructor(
                     token.update { sharedPreferences.getString("token", "") ?: "" }
 
                     tokenNotEmpty.update { token.value.isNotEmpty() }
-                    Log.i("kgklzjgekgkeg", "data: ${res.data}")
 
                     login.update { res.data ?: LoginResponse() }
 
@@ -191,7 +191,7 @@ class LoginViewModel @Inject constructor(
                         else DialogState("IDLE")
                     }
 
-                    errorText.update { res.data?.messageError ?: "" }
+                    errorText.update { res.message ?: "" }
                     login.update { LoginResponse(messageError = res.message) }
                 }
             }

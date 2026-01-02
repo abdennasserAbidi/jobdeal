@@ -1,5 +1,6 @@
 package com.example.myjob.data.announcement
 
+import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -10,6 +11,7 @@ import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.announcement.CommentsPost
 import com.example.myjob.domain.entities.announcement.LikesPost
+import com.example.myjob.domain.response.AnnounceResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.local.database.SharedPreference
 import com.example.myjob.remote.source.announcement.AnnouncementDataSource
@@ -36,6 +38,62 @@ class AnnouncementRepositoryImp @Inject constructor(
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.makeAnnouncement(idUserConnected, announcementModel)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun findAnnounceCompany(type: String, idCompany: Int): Flow<Resource<AnnounceResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.findAnnounceCompany(type, idCompany)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun findAnnounceCandidate(
+        type: String,
+    ): Flow<Resource<PagingData<AnnouncementModel>>> = flow {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            pagingSourceFactory = {
+                GenericSource { currentPage ->
+                    val educations =
+                        remoteDataSource.findAnnounceCandidate(type = type, pageNumber = currentPage)
+
+                    val json = Gson().toJson(educations.content)
+                    sharedPreference.putString("jsonAnnouncementCandidateSearch", json)
+
+                    educations
+                }
+            }
+        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+        emitAll(
+            pager.map { pagingData ->
+                Resource(ResourceState.SUCCESS, pagingData, null)
+            }
+        )
+    }.catch { ex ->
+        emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
+
+
+
+    override suspend fun deletePostCompany(
+        idAnnounce: Int,
+        idConnected: Int
+    ): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.deletePostCompany(idAnnounce, idConnected)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {
@@ -163,10 +221,10 @@ class AnnouncementRepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
-    override suspend fun getCommentAllPostsCompany(idAnnounce: Int, idConnected: Int): Flow<Resource<List<CommentsPost>>> = flow {
+    override suspend fun getCommentAllPostsCompany(idAnnounce: Int): Flow<Resource<List<CommentsPost>>> = flow {
         try {
             // Get data from RemoteDataSource
-            val data = remoteDataSource.getCommentAllPostsCompany(idAnnounce, idConnected)
+            val data = remoteDataSource.getCommentAllPostsCompany(idAnnounce)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {
@@ -237,12 +295,14 @@ class AnnouncementRepositoryImp @Inject constructor(
             config = PagingConfig(pageSize = 10, prefetchDistance = 2),
             pagingSourceFactory = {
                 GenericSource { currentPage ->
+                    Log.i("klzkghkerzgzr", "currentPage: $currentPage")
                     val educations =
                         remoteDataSource.getAnnouncementsCandidate(pageNumber = currentPage)
-
+                    Log.i("klzkghkerzgzr", "getAnnouncementsCandidate: ${educations.content}")
                     val json = Gson().toJson(educations.content)
                     sharedPreference.putString("jsonCandidateAnnouncement", json)
-
+                    sharedPreference.putInt("jsonCandidateAnnounceSize", educations.content.size)
+                    Log.i("klzkghkerzgzr", "size: ${educations.content.size}")
                     educations
                 }
             }

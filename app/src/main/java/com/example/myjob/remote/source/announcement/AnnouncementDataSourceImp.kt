@@ -4,6 +4,7 @@ import com.example.myjob.base.GenericResponse
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.announcement.CommentsPost
 import com.example.myjob.domain.entities.announcement.LikesPost
+import com.example.myjob.domain.response.AnnounceResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.remote.api.ApiService
 import javax.inject.Inject
@@ -16,6 +17,21 @@ class AnnouncementDataSourceImp @Inject constructor(
         idUserConnected: Int,
         announcementModel: AnnouncementModel
     ): UserResponse = apiService.makeAnnouncement(idUserConnected, announcementModel)
+
+    override suspend fun findAnnounceCompany(
+        type: String,
+        idCompany: Int
+    ): AnnounceResponse = apiService.findAnnounceCompany(type, idCompany)
+
+    override suspend fun findAnnounceCandidate(
+        type: String,
+        pageNumber: Int
+    ): GenericResponse<AnnouncementModel> = apiService.findAnnounceCandidate(type, pageNumber)
+
+    override suspend fun deletePostCompany(
+        idAnnounce: Int,
+        idConnected: Int
+    ): UserResponse = apiService.deletePostCompany(idAnnounce, idConnected)
 
     override suspend fun getAnnouncement(idAnnounce: Int, idCompany: Int): AnnouncementModel =
         apiService.getAnnouncement(idAnnounce, idCompany)
@@ -62,9 +78,8 @@ class AnnouncementDataSourceImp @Inject constructor(
     ): List<Int> = apiService.getNumberCommentAllPostsCompany(idConnected)
 
     override suspend fun getCommentAllPostsCompany(
-        idAnnounce: Int,
-        idConnected: Int
-    ): List<CommentsPost> = apiService.getCommentAllPostsCompany(idAnnounce, idConnected)
+        idAnnounce: Int
+    ): List<CommentsPost> = apiService.getCommentAllPostsCompany(idAnnounce)
 
     override suspend fun addLikes(
         idAnnounce: Int,

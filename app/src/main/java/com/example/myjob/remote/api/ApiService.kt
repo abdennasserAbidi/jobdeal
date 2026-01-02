@@ -18,6 +18,7 @@ import com.example.myjob.domain.entities.invitation.InvitationParams
 import com.example.myjob.domain.entities.invitation.InvitationUser
 import com.example.myjob.domain.entities.notification.NotificationMessage
 import com.example.myjob.domain.entities.notification.NotificationModel
+import com.example.myjob.domain.response.AnnounceResponse
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.FilesResponse
 import com.example.myjob.domain.response.LoginResponse
@@ -316,6 +317,25 @@ ApiService {
         @Body announcementModel: AnnouncementModel
     ): UserResponse
 
+    @GET("auth/findAnnounceCompany")
+    suspend fun findAnnounceCompany(
+        @Query("type") type: String,
+        @Query("idCompany") idCompany: Int,
+    ): AnnounceResponse
+
+    @GET("auth/findAnnounceCandidate")
+    suspend fun findAnnounceCandidate(
+        @Query("type") type: String,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<AnnouncementModel>
+
+    @POST("auth/deletePostCompany")
+    suspend fun deletePostCompany(
+        @Query("idAnnounce") idAnnounce: Int,
+        @Query("idConnected") idConnected: Int,
+    ): UserResponse
+
     @GET("auth/getAnnouncement")
     suspend fun getAnnouncement(
         @Query("idAnnounce") idAnnounce: Int,
@@ -368,8 +388,7 @@ ApiService {
 
     @GET("auth/getCommentAllPostsCompany")
     suspend fun getCommentAllPostsCompany(
-        @Query("idAnnounce") idAnnounce: Int,
-        @Query("idConnected") idConnected: Int
+        @Query("idAnnounce") idAnnounce: Int
     ): List<CommentsPost>
 
 

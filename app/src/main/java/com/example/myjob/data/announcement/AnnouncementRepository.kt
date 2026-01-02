@@ -5,6 +5,7 @@ import com.example.myjob.base.reources.Resource
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.announcement.CommentsPost
 import com.example.myjob.domain.entities.announcement.LikesPost
+import com.example.myjob.domain.response.AnnounceResponse
 import com.example.myjob.domain.response.UserResponse
 import kotlinx.coroutines.flow.Flow
 
@@ -12,6 +13,16 @@ interface AnnouncementRepository {
     suspend fun makeAnnouncement(
         idUserConnected: Int,
         announcementModel: AnnouncementModel
+    ): Flow<Resource<UserResponse>>
+    suspend fun findAnnounceCompany(type: String, idCompany: Int): Flow<Resource<AnnounceResponse>>
+
+    suspend fun findAnnounceCandidate(
+        type: String,
+    ): Flow<Resource<PagingData<AnnouncementModel>>>
+
+    suspend fun deletePostCompany(
+        idAnnounce: Int,
+        idConnected: Int
     ): Flow<Resource<UserResponse>>
 
     suspend fun getAnnouncement(
@@ -40,7 +51,7 @@ interface AnnouncementRepository {
     suspend fun checkUserLikeAllPostCompany(idConnected: Int): Flow<Resource<List<Boolean>>>
     suspend fun getNumberLikeAllPostsCompany(idConnected: Int): Flow<Resource<List<Int>>>
     suspend fun getNumberCommentAllPostsCompany(idConnected: Int): Flow<Resource<List<Int>>>
-    suspend fun getCommentAllPostsCompany(idAnnounce: Int, idConnected: Int): Flow<Resource<List<CommentsPost>>>
+    suspend fun getCommentAllPostsCompany(idAnnounce: Int): Flow<Resource<List<CommentsPost>>>
 
     suspend fun addLikes(
         idAnnounce: Int,

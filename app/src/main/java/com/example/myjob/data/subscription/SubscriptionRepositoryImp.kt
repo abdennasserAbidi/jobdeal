@@ -11,8 +11,10 @@ import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.feature.validateprofile.ValidationProfileStatus
 import com.example.myjob.local.database.SharedPreference
 import com.example.myjob.remote.source.subscription.SubscriptionDataSource
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import retrofit2.HttpException
 import javax.inject.Inject
 
 class SubscriptionRepositoryImp @Inject constructor(
@@ -46,21 +48,12 @@ class SubscriptionRepositoryImp @Inject constructor(
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {
-            // Emit error
-            emit(Resource(ResourceState.ERROR, null, ex.message))
+            if (ex is HttpException) {
+                val errorBodyString = ex.response()?.errorBody()?.string()
+                val loginResponse = Gson().fromJson(errorBodyString, LoginResponse::class.java)
+                emit(Resource(ResourceState.ERROR, null, loginResponse.messageError))
+            } else emit(Resource(ResourceState.ERROR, null, ex.message))
         }
-        
-        /*when (val apiResult: ApiResult<LoginResponse> = remoteDataSource.authenticate(user)) {
-            is ApiResult.Success -> {
-                val data = apiResult.data
-                emit(Resource(ResourceState.SUCCESS, data, null))
-            }
-
-            is ApiResult.Error -> {
-                val errorMessage = apiResult.message
-                emit(Resource(ResourceState.ERROR, null, errorMessage))
-            }
-        }*/
     }
 
     override suspend fun verifyEmail(email: String): Flow<Resource<LoginResponse>> = flow {

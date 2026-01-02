@@ -135,7 +135,7 @@ class HomeViewModel @Inject constructor(
     // NOTIFICATION
     ///////////////////////////////////////////////////////////////////////////
 
-    val invitationSent = MutableStateFlow(false)
+    val invitationSent = MutableStateFlow("")
     val idUserTo = MutableStateFlow(-1)
     val fcmToken = MutableStateFlow("")
 
@@ -805,12 +805,14 @@ class HomeViewModel @Inject constructor(
 
                     ResourceState.ERROR -> {
                         loadingState.update { false }
-                        invitationSent.update { false }
                     }
 
                     ResourceState.SUCCESS -> {
                         loadingState.update { false }
-                        invitationSent.update { true }
+
+                        invitationSent.update {
+                            res.data?.message ?: ""
+                        }
                         idUserTo.update { user.id ?: -1 }
                         getCurrent()
                     }

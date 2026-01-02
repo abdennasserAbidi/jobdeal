@@ -123,8 +123,8 @@ fun LoginScreen(
         }
     }
 
-    LaunchedEffect(login.messageError?.isNotEmpty()) {
-        if (login.messageError?.isNotEmpty() == true) {
+    LaunchedEffect(errorText) {
+        if (errorText.isNotEmpty() && login.messageError?.isNotEmpty() == true) {
             showDialog = true
             errorLogin = login.messageError.toString()
         }

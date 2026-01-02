@@ -150,6 +150,7 @@
     <string name="rejected_offer_text">You rejected this offer</string>
 
     <string name="all_posts_text">All Posts</string>
+    <string name="select_posts_text">Select type announce</string>
 
     <string name="title_status_pending_invitation_text">Pending %1$s Reply</string>
     <string name="title_status_hired_invitation_text">%1$s is hired</string>
@@ -157,6 +158,7 @@
     <string name="title_status_rejecting_invitation_text">Rejecting %1$s</string>
     <string name="title_status_not_interested_invitation_text">%1$s is not interested</string>
     <string name="title_date_sent_text">Sent on %1$s</string>
+    <string name="title_date_posted_text">Posted %1$s</string>
     <string name="title_date_response_text">Reply</string>
 
     <!--Candidate-->
@@ -197,6 +199,7 @@
     <string name="type_event_text">Event</string>
     <string name="contract_type_text">Contract type</string>
     <string name="contract_detail_text">Contract details</string>
+    <string name="other_detail_text">Other details</string>
 
     <string name="entry_level_text">Entry Level (0–1 years)</string>
     <string name="junior_text">Junior (1–3 years)</string>
@@ -248,7 +251,8 @@
     <string name="choose_candidate_text">Candidate</string>
     <string name="choose_type_warning">Must choose user type</string>
     <string name="first_name_error">Invalid First name</string>
-    <string name="last_name_error">Invalid First name</string>
+    <string name="type_annonce_error">Must select type</string>
+    <string name="last_name_error">Invalid Last name</string>
     <string name="company_name_error">Invalid Company name</string>
     <string name="password_error">Invalid password</string>
     <string name="confirm_password_error">Is not the same password</string>
@@ -284,6 +288,7 @@
     <string name="contact_information_text">Contact Information</string>
     <string name="contact_text">Contact</string>
 
+    <string name="announce_text">Announces</string>
     <string name="my_resume_text">My Resume</string>
     <string name="upload_resume_text">Upload &amp; view your resumes</string>
 
@@ -334,6 +339,7 @@
 
     <string name="invitations_text">My invitations</string>
     <string name="invitation_content_text">Invitation Content</string>
+    <string name="post_content_text">Post Content</string>
     <string name="navigate_invitations_text">View your invitations</string>
     <string name="career_text">Career</string>
     <string name="navigate_career_text">Boost my career</string>
@@ -408,4 +414,8 @@
 
     <string name="error_dialog_text">Error</string>
     <string name="success_dialog_text">Success</string>
+
+    <string name="invitation_send_info_text">Invitation Sent!</string>
+    <string name="done_info_text">Done</string>
+    <string name="invitation_desc_info_text">Your interview invitation has been successfully sent to %1$s. They will receive an email with all the details.</string>
 </resources>

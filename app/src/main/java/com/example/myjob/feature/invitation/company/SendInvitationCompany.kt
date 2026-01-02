@@ -22,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -90,8 +91,11 @@ fun SendInvitationCompany(
     val context = LocalContext.current
 
     LaunchedEffect(invitationSent) {
-        if (invitationSent) navController.popBackStack()
-        else Toast.makeText(context, "error", Toast.LENGTH_SHORT).show()
+        isLoading = false
+        if (invitationSent == "saved successfully") {
+            showSuccessDialog = true
+            //navController.popBackStack()
+        } else if (invitationSent.isNotEmpty()) Toast.makeText(context, "error", Toast.LENGTH_SHORT).show()
     }
 
     var contractWorkOpen by remember { mutableStateOf(false) }
@@ -214,8 +218,8 @@ fun SendInvitationCompany(
                         if (message.isEmpty()) isErrorMessage = true
 
                         if (isAllGood) {
+                            isLoading = true
                             homeViewModel.clearToken()
-                            Log.i("the user received", "SendInvitationCompany: $user")
                             homeViewModel.getUserToken(user.id ?: -1)
                             homeViewModel.matchCurrentProfile(user, statusInvitation, paymentTerms, duration)
                         }
@@ -307,19 +311,44 @@ fun SendInvitationCompany(
             )
         }
 
-    }
-
-    // Handle loading state
-    LaunchedEffect(isLoading) {
         if (isLoading) {
-            delay(2000) // Simulate API call
-            isLoading = false
-            showSuccessDialog = true
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center)
+            {
+
+                androidx.compose.material.Card(
+                    modifier = Modifier
+                        .size(150.dp)
+                        .background(shape = RoundedCornerShape(30.dp), color = Color.White),
+                    elevation = 15.dp,
+                    shape = RoundedCornerShape(30.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(150.dp)
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .padding(20.dp),
+                            color = colorResource(id = R.color.whatsapp),
+                            strokeWidth = 8.dp,
+                            trackColor = Color.LightGray,
+                            strokeCap = StrokeCap.Round
+                        )
+                    }
+                }
+            }
         }
+
     }
 
     // Success Dialog
     if (showSuccessDialog) {
+        isLoading = false
         SuccessDialog(
             candidateName = user.fullName ?: "",
             onDismiss = {
@@ -896,7 +925,7 @@ fun SuccessDialog(
         },
         title = {
             Text(
-                text = "Invitation Sent!",
+                text = stringResource(id = R.string.invitation_send_info_text),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
@@ -905,7 +934,7 @@ fun SuccessDialog(
         },
         text = {
             Text(
-                text = "Your interview invitation has been successfully sent to $candidateName. They will receive an email with all the details.",
+                text = stringResource(id = R.string.invitation_desc_info_text, candidateName),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -921,7 +950,7 @@ fun SuccessDialog(
                     contentColor = Color.White
                 )
             ) {
-                Text("Done")
+                Text(stringResource(id = R.string.done_info_text))
             }
         },
         shape = RoundedCornerShape(16.dp)
