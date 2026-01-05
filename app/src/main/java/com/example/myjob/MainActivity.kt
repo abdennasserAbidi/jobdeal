@@ -8,8 +8,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresExtension
 import androidx.compose.animation.AnimatedVisibility
@@ -34,8 +32,6 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,12 +56,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.example.myjob.base.MyApp
-import com.example.myjob.base.MyApp.Companion.stateApp
-import com.example.myjob.base.StateApp
 import com.example.myjob.common.FileReader
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.langState
-import com.example.myjob.common.GlobalEntries.listImageUri
 import com.example.myjob.common.default
 import com.example.myjob.common.loadJSONFromAsset
 import com.example.myjob.common.phonekit.toCountryList
@@ -136,7 +129,6 @@ import kotlinx.coroutines.launch
 import java.net.URISyntaxException
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -149,23 +141,11 @@ class MainActivity : ComponentActivity() {
     private var listCompany: MutableList<String> = mutableListOf()
     private var listCountries: MutableList<String> = mutableListOf()
 
-    //TODO("Filtrage du poste")
-    //TODO("détail du poste")
     //TODO("upload images")
 
     var mSocket: Socket? = null
     private var imageUri = mutableStateOf<Uri?>(null)
     private var textChanged = mutableStateOf("Scanned text will appear here..")
-
-    private val selectImage =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            imageUri.value = uri
-            val list = listImageUri.toMutableList()
-            list.add(uri)
-            listImageUri
-        }
-
-    lateinit var launcher: ActivityResultLauncher<Intent>
 
 
     private val googleAuthUiClient by lazy {
@@ -374,10 +354,6 @@ class MainActivity : ComponentActivity() {
             navController = rememberNavController()
 
             if (::navController.isInitialized) {
-                Log.i("DeepLink", "extras: ${intent.extras}")
-                Log.i("DeepLink", "getStringExtra: ${intent?.getStringExtra("idInvitation")}")
-                Log.i("DeepLink", "getStringExtra: ${intent?.getStringExtra("idAnnounce")}")
-
                 val idInvitation = intent?.getStringExtra("idInvitation")
                 val idAnnounce = intent?.getStringExtra("idAnnounce")
                 val idCompany = intent?.getStringExtra("idCompany")
@@ -621,8 +597,7 @@ class MainActivity : ComponentActivity() {
                     composable(route = Screen.ValidateDocCandidateScreen.route) {
                         isVisibleNav = false
                         ValidateDocScreen(
-                            navController = navController,
-                            selectImage = selectImage
+                            navController = navController
                         )
                     }
 
@@ -635,7 +610,6 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = false
                         ValidateProfileCompany(
                             navController,
-                            selectImage = selectImage,
                             addCompanyToList = {
                                 listCompany.add("jobs")
 

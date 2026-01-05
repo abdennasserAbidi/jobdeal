@@ -270,7 +270,10 @@ ApiService {
 
     @Multipart
     @POST("auth/upload")
-    suspend fun upload(@Part image: MultipartBody.Part): UploadResponse
+    suspend fun upload(
+        @Query("idUser") idUser: Int,
+        @Part image: MultipartBody.Part
+    ): UploadResponse
 
     @GET("auth/getFiles")
     suspend fun getFiles(@Query("id") id: Int): FilesResponse

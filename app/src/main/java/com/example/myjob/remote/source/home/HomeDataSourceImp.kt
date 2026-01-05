@@ -28,8 +28,8 @@ class HomeDataSourceImp @Inject constructor(
     override suspend fun getUser(id: Int): UserAuthResponse = apiService.getUser(id)
     override suspend fun uploadFile(file: MultipartBody.Part): UserResponse =
         apiService.uploadFile(file)
-    override suspend fun uploadFiles(file: MultipartBody.Part): UploadResponse =
-        apiService.upload(file)
+    override suspend fun uploadFiles(idUser: Int, file: MultipartBody.Part): UploadResponse =
+        apiService.upload(idUser, file)
     override suspend fun getFiles(id: Int): FilesResponse = apiService.getFiles(id)
 
     override suspend fun validateProfile(email: String): UserResponse =

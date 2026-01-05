@@ -1,7 +1,6 @@
 package com.example.myjob.data.subscription
 
 import android.util.Log
-import com.example.myjob.local.source.LocalDataSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.network.ApiResult
@@ -10,6 +9,7 @@ import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.feature.validateprofile.ValidationProfileStatus
 import com.example.myjob.local.database.SharedPreference
+import com.example.myjob.local.source.LocalDataSource
 import com.example.myjob.remote.source.subscription.SubscriptionDataSource
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
@@ -86,8 +86,11 @@ class SubscriptionRepositoryImp @Inject constructor(
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {
-            // Emit error
-            emit(Resource(ResourceState.ERROR, null, ex.message))
+            if (ex is HttpException) {
+                val errorBodyString = ex.response()?.errorBody()?.string()
+                val loginResponse = Gson().fromJson(errorBodyString, UserResponse::class.java)
+                emit(Resource(ResourceState.ERROR, null, loginResponse.message))
+            } else emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
 

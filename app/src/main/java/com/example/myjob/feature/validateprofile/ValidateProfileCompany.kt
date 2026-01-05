@@ -62,7 +62,6 @@ import com.example.myjob.feature.profile.test.FormTextField
 @Composable
 fun ValidateProfileCompany(
     navController: NavController,
-    selectImage: ActivityResultLauncher<String>,
     addCompanyToList: () -> Unit = {},
     validateProfileViewModel: ValidateProfileViewModel = hiltViewModel()
 ) {

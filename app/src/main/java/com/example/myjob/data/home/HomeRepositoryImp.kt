@@ -164,10 +164,10 @@ class HomeRepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
-    override suspend fun uploadFiles(file: MultipartBody.Part): Flow<Resource<String>> = flow {
+    override suspend fun uploadFiles(idUser: Int, file: MultipartBody.Part): Flow<Resource<String>> = flow {
         try {
             // Get data from RemoteDataSource
-            val data = remoteDataSource.uploadFiles(file)
+            val data = remoteDataSource.uploadFiles(idUser, file)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data.imageURL, null))
         } catch (ex: Exception) {

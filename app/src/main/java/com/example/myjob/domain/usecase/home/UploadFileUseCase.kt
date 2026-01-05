@@ -16,15 +16,18 @@ import javax.inject.Inject
 class UploadFileUseCase @Inject constructor(
     private val repository: HomeRepository,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
-) : FlowBaseUseCase<String, MultipartBody.Part>() {
+) : FlowBaseUseCase<String, Pair<Int, MultipartBody.Part>>() {
 
-    override suspend fun buildRequest(params: MultipartBody.Part?): Flow<Resource<String>> {
+    override suspend fun buildRequest(params: Pair<Int, MultipartBody.Part>?): Flow<Resource<String>> {
         val emptyFile = File("default_name.pdf")  // This can be any dummy file
         val emptyRequestBody: RequestBody =
             RequestBody.create("application/pdf".toMediaTypeOrNull(), emptyFile)
         val defaultValue =
             MultipartBody.Part.createFormData("file", "default_name.pdf", emptyRequestBody)
 
-        return repository.uploadFiles(params ?: defaultValue).flowOn(dispatcher)
+        return repository.uploadFiles(
+            params?.first ?: -1,
+            params?.second ?: defaultValue
+        ).flowOn(dispatcher)
     }
 }

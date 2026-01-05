@@ -74,7 +74,7 @@ object GlobalEntries {
     var langState = MutableStateFlow("Français")
     var languageShared = MutableSharedFlow<String>()
     var stepShared = -1
-    var listImageUri by mutableStateOf<List<Uri?>>(emptyList())
+    var listImageUri by mutableStateOf<MutableList<Pair<String, Uri>>>(mutableListOf())
     var listCompanyImageUri by mutableStateOf<List<Uri?>>(emptyList())
 
     ///////////////////////////////////////////////////////////////////////////

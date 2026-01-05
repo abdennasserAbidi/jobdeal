@@ -95,7 +95,9 @@ class InterviewValidationViewModel @Inject constructor(
         } ?: ""
     }
 
-    fun getTypeDoc(imageName: String): String {
+    fun getTypeDoc(name: String): String {
+        val uri: Uri = Uri.parse(name)
+        val imageName = uri.lastPathSegment ?: ""
         if (imageName.isNotEmpty() && imageName.contains(".")) {
             return imageName.split(".")[1]
         }
@@ -103,10 +105,9 @@ class InterviewValidationViewModel @Inject constructor(
     }
 
     fun getNameDocFromLink(imageName: String): String {
-        if (imageName.isNotEmpty() && imageName.contains("/upload/")) {
-            return imageName.split("/upload/")[1]
-        }
-        return ""
+        // Convert string to Uri
+        val uri: Uri = Uri.parse(imageName)
+        return uri.lastPathSegment ?: ""
     }
 
     fun getTypeDocFromLink(imageName: String): String {
@@ -189,8 +190,10 @@ class InterviewValidationViewModel @Inject constructor(
             val idUser = sharedPreference.getInt("idUser", -1)
             validation.id = idUser
             sendMailVerificationUseCase.execute(validation).collect { res ->
-                messageEmailed.update {
-                    res.data?.message ?: ""
+                if (res.status == ResourceState.SUCCESS) {
+                    messageEmailed.update { res.data?.message ?: "" }
+                } else if (res.status == ResourceState.ERROR) {
+                    messageEmailed.update { res.message ?: "" }
                 }
             }
         }
@@ -240,8 +243,10 @@ class InterviewValidationViewModel @Inject constructor(
             MultipartBody.Part.createFormData("image", expectedName, requestBody)
 
         viewModelScope.launch {
+            val idUser = sharedPreference.getInt("idUser", -1)
+            val params = Pair(idUser, multipartBody)
 
-            uploadFileUseCase.execute(multipartBody).collect { res ->
+            uploadFileUseCase.execute(params).collect { res ->
                 when (res.status) {
                     ResourceState.SUCCESS -> {
                         uploadMessage.update {
@@ -255,6 +260,10 @@ class InterviewValidationViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    init {
+        getFiles()
     }
 
     /*init {

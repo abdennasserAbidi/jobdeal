@@ -63,6 +63,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.myjob.R
+import com.example.myjob.common.CustomDialog
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.feature.profile.test.FormTextField
@@ -74,7 +75,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun ValidateDocScreen(
     navController: NavController,
-    selectImage: ActivityResultLauncher<String>,
     viewModel: InterviewValidationViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
@@ -82,29 +82,78 @@ fun ValidateDocScreen(
 
     val user by viewModel.user.collectAsState()
     val filesList by viewModel.filesList.collectAsState()
+
     val interactionSource = remember { MutableInteractionSource() }
 
     var docs by remember { mutableStateOf(mutableListOf("")) }
     var documentList by remember { mutableStateOf(mutableListOf(Documents())) }
 
+    var showDialog by remember { mutableStateOf(false) }
+    var isSuccess by remember { mutableStateOf(false) }
+
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
-            viewModel.getFiles()
+            //viewModel.getFiles()
+        }
+    }
+
+    val message by viewModel.message.collectAsState()
+
+    if (showDialog) {
+        CustomDialog(isSuccess = isSuccess, message = message) {
+            showDialog = false
+            navController.popBackStack()
+        }
+    }
+
+    LaunchedEffect(message) {
+        if (message == "your docs has uploaded") {
+            //viewModel.changeDocs(docs)
+            GlobalEntries.listImageUri.mapIndexed { index, document ->
+                if (index < documentList.size) {
+                    viewModel.uploadDoc(context = context, document.second, index, documentList[index])
+                }
+            }
+        }
+    }
+
+    val uploadMessage by viewModel.uploadMessage.collectAsState()
+    LaunchedEffect(uploadMessage) {
+        if (uploadMessage.contains("http")) {
+            GlobalEntries.stepShared = 0
+            navController.popBackStack()
         }
     }
 
     LaunchedEffect(filesList) {
         if (filesList.isNotEmpty()) {
-            documentList.clear()
+            GlobalEntries.listImageUri.clear()
             filesList.map {
                 val document = Documents(
                     name = viewModel.getNameDocFromLink(it),
                     url = it,
                     type = viewModel.getTypeDocFromLink(it)
                 )
-                documentList = (documentList + document).toMutableList()
+                //documentList = (documentList + document).toMutableList()
+                val uri: Uri = Uri.parse(it)
+                GlobalEntries.listImageUri = (GlobalEntries.listImageUri + Pair(it, uri)).toMutableList()
             }
+        }
+    }
+
+    LaunchedEffect(GlobalEntries.listImageUri) {
+        //documentList.clear()
+        Log.i("tgrklhrhrhlrt", "documentList: $documentList")
+        Log.i("tgrklhrhrhlrt", "listImageUri: ${GlobalEntries.listImageUri}")
+        GlobalEntries.listImageUri.map {
+            val fileName = viewModel.imageInfo(context, it.second)
+            val document = Documents(
+                url = it.first,
+                name = fileName,
+                type = viewModel.getTypeDoc(fileName)
+            )
+            documentList.add(document)
         }
     }
 
@@ -119,24 +168,14 @@ fun ValidateDocScreen(
     ) { uri: Uri? ->
         if (uri != null) {
             imageUri.value = uri
-            val listImageUri = GlobalEntries.listImageUri.toMutableList()
-            listImageUri.add(uri)
-
-            GlobalEntries.listImageUri = listImageUri
+            GlobalEntries.listImageUri = (GlobalEntries.listImageUri + Pair(uri.path ?: "", uri)).toMutableList()
 
             val fileName = viewModel.imageInfo(context, uri)
-            docs = (docs - docs[indexSelected]).toMutableList()
-            docs.add(indexSelected, fileName)
+            /*docs = (docs - docs[indexSelected]).toMutableList()
+            docs.add(indexSelected, fileName)*/
 
-            documentList = (documentList - documentList[indexSelected]).toMutableList()
-            val document = Documents(
-                url = uri.path ?: "",
-                name = fileName,
-                type = viewModel.getTypeDoc(fileName)
-            )
-            documentList.add(indexSelected, document)
 
-            Log.i("gjzgklehgklz", "ValidateDocScreen: $documentList")
+
         } else {
             // Handle the case where no media was selected
         }
@@ -188,9 +227,10 @@ fun ValidateDocScreen(
 
                 IconButton(
                     onClick = {
-                        docs = (docs + "").toMutableList()
+                        //docs = (docs + "").toMutableList()
                         val document = Documents()
-                        documentList = (documentList + document).toMutableList()
+                        //documentList = (documentList + document).toMutableList()
+                        GlobalEntries.listImageUri = (GlobalEntries.listImageUri + Pair("", Uri.parse(""))).toMutableList()
                         docsVerify = (docsVerify + false).toMutableList()
                     },
                     modifier = Modifier
@@ -242,7 +282,7 @@ fun ValidateDocScreen(
                                 indication = null
                             ) {
 
-                                docs = (docs - doc.name).toMutableList()
+                                //docs = (docs - doc.name).toMutableList()
                                 documentList = (documentList - documentList[index]).toMutableList()
                                 docsVerify = (docsVerify - docsVerify[index]).toMutableList()
                             },
@@ -253,26 +293,10 @@ fun ValidateDocScreen(
             }
         }
 
-        val uploadMessage by viewModel.uploadMessage.collectAsState()
-        LaunchedEffect(uploadMessage) {
-            if (uploadMessage.contains("http")) {
-                GlobalEntries.stepShared = 0
-
-                val validationProfileStatus = ValidationProfileStatus()
-                validationProfileStatus.typeValidation = "doc"
-                validationProfileStatus.docs = docs
-                validationProfileStatus.documents = documentList
-                validationProfileStatus.status = VerificationStatus.PENDING_REVIEW.name
-                viewModel.validate(validationProfileStatus)
-
-                navController.popBackStack()
-            }
-        }
-
         Button(
             onClick = {
-                docs.mapIndexed { index, document ->
-                    if (document.isEmpty()) {
+                documentList.mapIndexed { index, document ->
+                    if (document.name.isEmpty()) {
                         docsVerify[index] = true
                     }
                 }
@@ -282,12 +306,13 @@ fun ValidateDocScreen(
                 }
 
                 if (isNoError) {
-                    viewModel.changeDocs(docs)
-                    GlobalEntries.listImageUri.mapIndexed { index, document ->
-                        document?.let {
-                            viewModel.uploadDoc(context = context, it, index, documentList[index])
-                        }
-                    }
+
+                    val validationProfileStatus = ValidationProfileStatus()
+                    validationProfileStatus.typeValidation = "doc"
+                    validationProfileStatus.docs = docs
+                    validationProfileStatus.documents = documentList
+                    validationProfileStatus.status = VerificationStatus.PENDING_REVIEW.name
+                    viewModel.validate(validationProfileStatus)
                 }
             },
             modifier = Modifier
@@ -304,15 +329,18 @@ fun ValidateDocScreen(
             )
         }
 
+        Log.e("IMAGE_ERROR", "documentList : $documentList")
+
         LazyRow {
             itemsIndexed(
                 items = documentList
             ) { index, doc ->
+                Log.e("IMAGE_ERROR", "Image failed to load: ${doc.url}")
+                doc.url
                 if (doc.url.isNotEmpty()) {
-                    Log.i("kllljffrrrrrrr", "url: ${doc.url}")
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data("https://res.cloudinary.com/dds7p6ltm/image/upload/document89")
+                            .data("https://res.cloudinary.com/dds7p6ltm/image/upload/v1767527341/document74.jpg")
                             .crossfade(true)
                             .build(),
                         //model = doc.url,
@@ -320,7 +348,7 @@ fun ValidateDocScreen(
                         modifier = Modifier.size(100.dp),
                         contentScale = ContentScale.Crop,
                         onError = { error ->
-                            Log.e("IMAGE_ERROR", "Image failed to load: $error")
+                            Log.e("IMAGE_ERROR", "Image failed to load: ${error.result.throwable.message ?: "Unknown error"}")
                         }
                     )
                 }

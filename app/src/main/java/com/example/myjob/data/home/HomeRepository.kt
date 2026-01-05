@@ -15,7 +15,7 @@ interface HomeRepository {
     suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): Flow<Resource<UserResponse>>
     suspend fun getUser(id: Int): Flow<Resource<User>>
     suspend fun uploadFile(file: MultipartBody.Part): Flow<Resource<String>>
-    suspend fun uploadFiles(file: MultipartBody.Part): Flow<Resource<String>>
+    suspend fun uploadFiles(idUser: Int, file: MultipartBody.Part): Flow<Resource<String>>
     suspend fun getFiles(id: Int): Flow<Resource<List<String>>>
     suspend fun validateProfile(email: String): Flow<Resource<String>>
     suspend fun verifyExisting(fileName: String): Flow<Resource<FileExistingResponse>>

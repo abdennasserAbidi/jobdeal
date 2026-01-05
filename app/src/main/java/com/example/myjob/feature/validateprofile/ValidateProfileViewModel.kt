@@ -134,7 +134,10 @@ class ValidateProfileViewModel @Inject constructor(
             MultipartBody.Part.createFormData("file", expectedName, requestBody)
 
         viewModelScope.launch {
-            uploadFileUseCase.execute(multipartBody).collect { res ->
+            val idUser = sharedPreference.getInt("idUser", -1)
+            val params = Pair(idUser, multipartBody)
+
+            uploadFileUseCase.execute(params).collect { res ->
                 when (res.status) {
                     ResourceState.SUCCESS -> {
                         uploadMessage.update {
