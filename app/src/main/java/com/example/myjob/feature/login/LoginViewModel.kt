@@ -122,6 +122,8 @@ class LoginViewModel @Inject constructor(
             }
         }
 
+        login(user)
+
         _state.update {
             it.copy(
                 isSignInSuccessful = result.data != null,
@@ -170,6 +172,7 @@ class LoginViewModel @Inject constructor(
 
                 stateToken.update { res.status }
                 isProgressing.update { false }
+
                 if (res.status == ResourceState.SUCCESS) {
                     sharedPreferences.putString("token", res.data?.token ?: "")
                     sharedPreferences.putString("role", res.data?.user?.role ?: "")

@@ -165,14 +165,20 @@ fun LoginScreen(
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult(),
         onResult = { result ->
+            Log.i("klfzefhgzr", "login: ${result.resultCode}")
+
+            lifecycleScope.launch {
+                val signInResult = googleAuthUiClient.signInWithIntent(
+                    intent = result.data ?: return@launch
+                )
+                val userGmail = signInResult.data
+                Log.i("klfzefhgzr", "login: $userGmail")
+
+                viewModel.onSignInResult(signInResult)
+            }
+
             if (result.resultCode == Activity.RESULT_OK) {
-                lifecycleScope.launch {
-                    val signInResult = googleAuthUiClient.signInWithIntent(
-                        intent = result.data ?: return@launch
-                    )
-                    val userGmail = signInResult.data
-                    viewModel.onSignInResult(signInResult)
-                }
+
             }
         }
     )

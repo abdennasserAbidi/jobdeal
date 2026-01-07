@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="web_client_id">591487668503-v640lm0980suq35baa1onfv51sukg2kr.apps.googleusercontent.com</string>
-    <string name="onboarding_title_one">Connectez-vous avec des professionnels du monde entier à tout moment et en tout lieu</string>
+    <string name="web_client_id">961199447674-99ng5076akklpv91lv3blc4tlpvhv336.apps.googleusercontent.com</string>
+    <string name="web_client_id1">591487668503-v640lm0980suq35baa1onfv51sukg2kr.apps.googleusercontent.com</string>    <string name="onboarding_title_one">Connectez-vous avec des professionnels du monde entier à tout moment et en tout lieu</string>
     <string name="onboarding_title_two">Sortez du cycle de la recherche d emploi</string>
     <string name="onboarding_title_three">Faites-vous découvrir par les professionnels du secteur</string>
     <string name="start_app">Commencer</string>

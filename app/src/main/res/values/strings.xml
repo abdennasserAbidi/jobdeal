@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">Jobdealer</string>
-    <string name="web_client_id">591487668503-v640lm0980suq35baa1onfv51sukg2kr.apps.googleusercontent.com</string>
+    <string name="web_client_id">961199447674-99ng5076akklpv91lv3blc4tlpvhv336.apps.googleusercontent.com</string>
+    <string name="web_client_id1">591487668503-v640lm0980suq35baa1onfv51sukg2kr.apps.googleusercontent.com</string>
     <string name="onboarding_title_one">Connect with professionals worldwide anytime, anywhere</string>
     <string name="onboarding_title_two">Break free from the job search loop</string>
     <string name="onboarding_title_three">Get discovered by industry professionals</string>
