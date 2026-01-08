@@ -3,10 +3,8 @@ package com.example.myjob.feature.validateprofile
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -19,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -28,15 +25,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -56,7 +50,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toFile
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
@@ -67,9 +60,6 @@ import com.example.myjob.common.CustomDialog
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.feature.profile.test.FormTextField
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,21 +70,21 @@ fun ValidateDocScreen(
     val scrollState = rememberScrollState()
     val context = LocalContext.current
 
-    val user by viewModel.user.collectAsState()
-    val filesList by viewModel.filesList.collectAsState()
+    val filesLists by viewModel.filesList.collectAsState()
+    var filesList by remember(filesLists) { mutableStateOf(
+        filesLists.ifEmpty { listOf("") }
+    ) }
 
     val interactionSource = remember { MutableInteractionSource() }
 
-    var docs by remember { mutableStateOf(mutableListOf("")) }
-    var documentList by remember { mutableStateOf(mutableListOf(Documents())) }
-
     var showDialog by remember { mutableStateOf(false) }
     var isSuccess by remember { mutableStateOf(false) }
+    var activatedCheck by remember { mutableStateOf(false) }
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
-            //viewModel.getFiles()
+            viewModel.getFiles()
         }
     }
 
@@ -110,9 +100,15 @@ fun ValidateDocScreen(
     LaunchedEffect(message) {
         if (message == "your docs has uploaded") {
             //viewModel.changeDocs(docs)
-            GlobalEntries.listImageUri.mapIndexed { index, document ->
-                if (index < documentList.size) {
-                    viewModel.uploadDoc(context = context, document.second, index, documentList[index])
+            filesList.mapIndexed { index, path ->
+                if (path.isNotEmpty()) {
+                    val fileName = viewModel.imageInfo(context, viewModel.fromPathToUri(path))
+                    val document = Documents(
+                        url = path,
+                        name = fileName,
+                        type = viewModel.getTypeDoc(fileName)
+                    )
+                    viewModel.uploadDoc(context = context, viewModel.fromPathToUri(path), index, document)
                 }
             }
         }
@@ -126,41 +122,6 @@ fun ValidateDocScreen(
         }
     }
 
-    LaunchedEffect(filesList) {
-        if (filesList.isNotEmpty()) {
-            GlobalEntries.listImageUri.clear()
-            filesList.map {
-                val document = Documents(
-                    name = viewModel.getNameDocFromLink(it),
-                    url = it,
-                    type = viewModel.getTypeDocFromLink(it)
-                )
-                //documentList = (documentList + document).toMutableList()
-                val uri: Uri = Uri.parse(it)
-                GlobalEntries.listImageUri = (GlobalEntries.listImageUri + Pair(it, uri)).toMutableList()
-            }
-        }
-    }
-
-    LaunchedEffect(GlobalEntries.listImageUri) {
-        //documentList.clear()
-        Log.i("tgrklhrhrhlrt", "documentList: $documentList")
-        Log.i("tgrklhrhrhlrt", "listImageUri: ${GlobalEntries.listImageUri}")
-        GlobalEntries.listImageUri.map {
-            val fileName = viewModel.imageInfo(context, it.second)
-            val document = Documents(
-                url = it.first,
-                name = fileName,
-                type = viewModel.getTypeDoc(fileName)
-            )
-            documentList.add(document)
-        }
-    }
-
-    var indexSelected by remember { mutableStateOf(0) }
-    var docsVerify by remember { mutableStateOf(mutableListOf(false)) }
-    var activatedCheck by remember { mutableStateOf(false) }
-
     val imageUri = rememberSaveable { mutableStateOf<Uri?>(null) }
 
     val pickMediaLauncher = rememberLauncherForActivityResult(
@@ -170,11 +131,7 @@ fun ValidateDocScreen(
             imageUri.value = uri
             GlobalEntries.listImageUri = (GlobalEntries.listImageUri + Pair(uri.path ?: "", uri)).toMutableList()
 
-            val fileName = viewModel.imageInfo(context, uri)
-            /*docs = (docs - docs[indexSelected]).toMutableList()
-            docs.add(indexSelected, fileName)*/
-
-
+            filesList = (filesList + (uri.path ?: "")).toMutableList()
 
         } else {
             // Handle the case where no media was selected
@@ -227,11 +184,7 @@ fun ValidateDocScreen(
 
                 IconButton(
                     onClick = {
-                        //docs = (docs + "").toMutableList()
-                        val document = Documents()
-                        //documentList = (documentList + document).toMutableList()
-                        GlobalEntries.listImageUri = (GlobalEntries.listImageUri + Pair("", Uri.parse(""))).toMutableList()
-                        docsVerify = (docsVerify + false).toMutableList()
+                        filesList = (filesList + "").toMutableList()
                     },
                     modifier = Modifier
                         .size(40.dp)
@@ -249,10 +202,10 @@ fun ValidateDocScreen(
         }
 
         //docs
-        documentList.mapIndexed { index, doc ->
+        filesList.mapIndexed { index, doc ->
             FormTextField(
-                value = doc.name,
-                borderColor = if (activatedCheck && doc.name.isEmpty()) Color.Red else colorResource(
+                value = doc,
+                borderColor = if (activatedCheck && doc.isEmpty()) Color.Red else colorResource(
                     id = R.color.whatsapp
                 ),
                 onValueChange = {
@@ -266,7 +219,6 @@ fun ValidateDocScreen(
                 isRequired = true,
                 readOnly = true,
                 onClick = {
-                    indexSelected = index
                     pickMediaLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 }
             )
@@ -281,10 +233,7 @@ fun ValidateDocScreen(
                                 interactionSource = interactionSource,
                                 indication = null
                             ) {
-
-                                //docs = (docs - doc.name).toMutableList()
-                                documentList = (documentList - documentList[index]).toMutableList()
-                                docsVerify = (docsVerify - docsVerify[index]).toMutableList()
+                                filesList = (filesList - filesList[index]).toMutableList()
                             },
                         color = Color.Red,
                         text = stringResource(id = R.string.remove_document_text),
@@ -295,25 +244,28 @@ fun ValidateDocScreen(
 
         Button(
             onClick = {
-                documentList.mapIndexed { index, document ->
-                    if (document.name.isEmpty()) {
-                        docsVerify[index] = true
-                    }
-                }
-                val isNoError = docsVerify.none { it }
-                if (!isNoError) {
-                    activatedCheck = true
+
+                val listDoc = mutableListOf<String>()
+                val listDocuments = mutableListOf<Documents>()
+                filesList.mapIndexed { index, path ->
+                    val fileName = viewModel.imageInfo(context, viewModel.fromPathToUri(path))
+                    val type = viewModel.getTypeDoc(fileName)
+
+                    val document = Documents(
+                        name = fileName,
+                        type = type
+                    )
+
+                    listDoc.add(fileName)
+                    listDocuments.add(document)
                 }
 
-                if (isNoError) {
-
-                    val validationProfileStatus = ValidationProfileStatus()
-                    validationProfileStatus.typeValidation = "doc"
-                    validationProfileStatus.docs = docs
-                    validationProfileStatus.documents = documentList
-                    validationProfileStatus.status = VerificationStatus.PENDING_REVIEW.name
-                    viewModel.validate(validationProfileStatus)
-                }
+                val validationProfileStatus = ValidationProfileStatus()
+                validationProfileStatus.typeValidation = "doc"
+                validationProfileStatus.docs = listDoc
+                validationProfileStatus.documents = listDocuments
+                validationProfileStatus.status = VerificationStatus.PENDING_REVIEW.name
+                viewModel.validate(validationProfileStatus)
             },
             modifier = Modifier
                 .fillMaxWidth(0.9f)
@@ -329,21 +281,24 @@ fun ValidateDocScreen(
             )
         }
 
-        Log.e("IMAGE_ERROR", "documentList : $documentList")
+        Log.e("IMAGE_ERROR", "documentList : $filesList")
 
         LazyRow {
             itemsIndexed(
-                items = documentList
+                items = filesList
             ) { index, doc ->
-                Log.e("IMAGE_ERROR", "Image failed to load: ${doc.url}")
-                doc.url
-                if (doc.url.isNotEmpty()) {
+                Log.e("IMAGE_ERROR", "Image failed to load: $doc")
+
+
+                doc.split("/upload/")
+
+
+                if (doc.isNotEmpty()) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data("https://res.cloudinary.com/dds7p6ltm/image/upload/v1767527341/document74.jpg")
                             .crossfade(true)
                             .build(),
-                        //model = doc.url,
                         contentDescription = null,
                         modifier = Modifier.size(100.dp),
                         contentScale = ContentScale.Crop,

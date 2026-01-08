@@ -3,6 +3,7 @@ package com.example.myjob.feature.validateprofile
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myjob.base.reources.ResourceState
@@ -87,6 +88,10 @@ class ValidateProfileViewModel @Inject constructor(
         }
     }
 
+    fun fromPathToUri(path: String): Uri {
+        return path.toUri()
+    }
+
     val isEmailValid = MutableStateFlow(false)
 
     fun changeUserEmail(email: String) {
@@ -158,8 +163,10 @@ class ValidateProfileViewModel @Inject constructor(
             val idUser = sharedPreference.getInt("idUser", -1)
             validation.id = idUser
             sendMailVerificationUseCase.execute(validation).collect { res ->
-                messageEmailed.update {
-                    res.data?.message ?: ""
+                if (res.status == ResourceState.SUCCESS) {
+                    messageEmailed.update { res.data?.message ?: "" }
+                } else if (res.status == ResourceState.ERROR) {
+                    messageEmailed.update { res.message ?: "" }
                 }
             }
         }

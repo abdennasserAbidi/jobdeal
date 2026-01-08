@@ -33,6 +33,7 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import javax.inject.Inject
+import androidx.core.net.toUri
 
 @HiltViewModel
 class InterviewValidationViewModel @Inject constructor(
@@ -104,9 +105,13 @@ class InterviewValidationViewModel @Inject constructor(
         return ""
     }
 
+    fun fromPathToUri(path: String): Uri {
+        return path.toUri()
+    }
+
     fun getNameDocFromLink(imageName: String): String {
         // Convert string to Uri
-        val uri: Uri = Uri.parse(imageName)
+        val uri: Uri = imageName.toUri()
         return uri.lastPathSegment ?: ""
     }
 
@@ -262,9 +267,9 @@ class InterviewValidationViewModel @Inject constructor(
         }
     }
 
-    init {
+    /*init {
         getFiles()
-    }
+    }*/
 
     /*init {
 
