@@ -9,11 +9,13 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.map
 import com.example.myjob.base.ConnectionState
 import com.example.myjob.base.messages.StompChatService
 import com.example.myjob.base.messages.WebsocketService
 import com.example.myjob.base.messages.WebsocketService.close
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.candidateUser
 import com.example.myjob.common.GlobalEntries.otherUserId
 import com.example.myjob.common.GlobalEntries.otherUserName
 import com.example.myjob.domain.entities.User
@@ -74,6 +76,7 @@ class DiscussionViewModel @Inject constructor(
         viewModelScope.launch {
             getUserUseCase.execute(id).collect {
                 it.data?.let { u ->
+                    candidateUser = u
                     _user.update { u }
                 }
             }
@@ -90,6 +93,11 @@ class DiscussionViewModel @Inject constructor(
             try {
                 val id = sharedPreference.getInt("idUser", 0)
                 getUserConversationsUseCase.execute(id).collectLatest { res ->
+
+                    res.data?.map {
+                        it.userConnectedName
+                    }
+
                     _conversations.update {
                         res.data ?: PagingData.empty()
                     }
@@ -146,6 +154,7 @@ class DiscussionViewModel @Inject constructor(
 
     fun sendMessage(content: String) {
         val currentUserId = sharedPreference.getInt("idUser", 0)
+        Log.i("receivedUser", "sendMessage: ${GlobalEntries.candidateUser}")
         val message = ChatMessage(
             userReceivedId = otherUserId,
             userReceivedName = getUserName(GlobalEntries.candidateUser) ?: "",

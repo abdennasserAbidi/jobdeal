@@ -311,28 +311,6 @@ class HomeViewModel @Inject constructor(
 
     val availabilities = MutableStateFlow(emptyList<Availabilities>())
     val selectedAvailability = MutableStateFlow(listOf(false, false, false, false, false, false))
-    fun clearSelectionAvailability() {
-        val availability = availabilities.value.toMutableList()
-        for (i in 0 until availability.size) {
-            availability[i].isSelected = false
-        }
-        availabilities.update {
-            availability
-        }
-
-        val selectedAvailabilities = selectedAvailability.value.toMutableList()
-        for (i in 0 until selectedAvailabilities.size) {
-            selectedAvailabilities[i] = false
-        }
-        selectedAvailability.update {
-            selectedAvailabilities
-        }
-
-        criteria.update {
-            it.disponibility = mutableListOf()
-            it
-        }
-    }
 
     fun changeSelectionAvailability(index: Int, title: String, isSelected: Boolean) {
         val availability = availabilities.value.toMutableList()
@@ -348,24 +326,13 @@ class HomeViewModel @Inject constructor(
             selectedAvailabilities
         }
 
-        val listDisponibility = criteria.value.disponibility
 
-        if (isSelected) {
-            availability.map {
-                if (it.titleString.isNotEmpty() && !listDisponibility.contains(it.titleString)) listDisponibility.add(
-                    it.titleString
-                )
-            }
-        } else {
-            availability.map {
-                if (it.titleString.isNotEmpty() && listDisponibility.contains(it.titleString)) listDisponibility.remove(
-                    it.titleString
-                )
-            }
-        }
+        val list = criteria.value.disponibility
+        if (isSelected && !list.contains(title))
+            list.add(title) else list.remove(title)
 
         criteria.update {
-            it.disponibility = listDisponibility
+            it.disponibility = list
             it
         }
     }
@@ -373,54 +340,34 @@ class HomeViewModel @Inject constructor(
     val selectedExperience = MutableStateFlow(emptyList<ExperienceChoices>())
     val selectedExp = MutableStateFlow(listOf(false, false, false, false, false, false))
 
-    fun clearSelectionExp() {
+    fun changeSelectionExp(index: Int, title: String, isSelected: Boolean) {
+
         val availability = selectedExperience.value.toMutableList()
-        for (i in 0 until availability.size) {
-            availability[i].isSelected = false
-        }
+        availability[index].titleString = title
+        availability[index].isSelected = isSelected
         selectedExperience.update {
             availability
         }
 
         val selectedAvailabilities = selectedExp.value.toMutableList()
-        for (i in 0 until selectedAvailabilities.size) {
-            selectedAvailabilities[i] = false
-        }
+        selectedAvailabilities[index] = isSelected
         selectedExp.update {
             selectedAvailabilities
         }
 
+        val list = criteria.value.experiences
+        if (isSelected && !list.contains(title))
+            list.add(title) else list.remove(title)
+
         criteria.update {
-            it.experiences = mutableListOf()
+            it.experiences = list
             it
         }
+
     }
 
     val selectedCategory = MutableStateFlow(emptyList<CategoryChoices>())
     val selectedCat = MutableStateFlow(listOf(false, false))
-
-    fun clearSelectionCategories() {
-        val availability = selectedCategory.value.toMutableList()
-        for (i in 0 until availability.size) {
-            availability[i].isSelected = false
-        }
-        selectedCategory.update {
-            availability
-        }
-
-        val selectedAvailabilities = selectedCat.value.toMutableList()
-        for (i in 0 until selectedAvailabilities.size) {
-            selectedAvailabilities[i] = false
-        }
-        selectedCat.update {
-            selectedAvailabilities
-        }
-
-        criteria.update {
-            it.categories = mutableListOf()
-            it
-        }
-    }
 
     fun changeSelectionCategory(index: Int, title: String, isSelected: Boolean) {
         val availability = selectedCategory.value.toMutableList()
@@ -437,16 +384,8 @@ class HomeViewModel @Inject constructor(
         }
 
         val list = criteria.value.categories
-
-        if (isSelected) {
-            availability.map {
-                if (it.titleString.isNotEmpty() && !list.contains(it.titleString)) list.add(it.titleString)
-            }
-        } else {
-            availability.map {
-                if (it.titleString.isNotEmpty() && list.contains(it.titleString)) list.remove(it.titleString)
-            }
-        }
+        if (isSelected && !list.contains(title))
+            list.add(title) else list.remove(title)
 
         criteria.update {
             it.categories = list
@@ -482,65 +421,10 @@ class HomeViewModel @Inject constructor(
 
     }
 
-    fun changeSelectionExp(index: Int, title: String, isSelected: Boolean) {
 
-        val availability = selectedExperience.value.toMutableList()
-        availability[index].titleString = title
-        availability[index].isSelected = isSelected
-        selectedExperience.update {
-            availability
-        }
-
-        val selectedAvailabilities = selectedExp.value.toMutableList()
-        selectedAvailabilities[index] = isSelected
-        selectedExp.update {
-            selectedAvailabilities
-        }
-
-        val list = criteria.value.experiences
-
-        if (isSelected) {
-            availability.map {
-                if (it.titleString.isNotEmpty() && !list.contains(it.titleString)) list.add(it.titleString)
-            }
-        } else {
-            availability.map {
-                if (it.titleString.isNotEmpty() && list.contains(it.titleString)) list.remove(it.titleString)
-            }
-        }
-
-        criteria.update {
-            it.experiences = list
-            it
-        }
-
-    }
 
     val selectedTypeContract = MutableStateFlow(emptyList<ContractTypeChoices>())
     val selectedType = MutableStateFlow(listOf(false, false, false, false, false, false))
-
-    fun clearSelectionContract() {
-        val availability = selectedTypeContract.value.toMutableList()
-        for (i in 0 until availability.size) {
-            availability[i].isSelected = false
-        }
-        selectedTypeContract.update {
-            availability
-        }
-
-        val selectedAvailabilities = selectedType.value.toMutableList()
-        for (i in 0 until selectedAvailabilities.size) {
-            selectedAvailabilities[i] = false
-        }
-        selectedType.update {
-            selectedAvailabilities
-        }
-
-        criteria.update {
-            it.typeContract = mutableListOf()
-            it
-        }
-    }
 
     private fun changeSelectionContract(index: Int, title: String, isSelected: Boolean) {
         val availability = selectedTypeContract.value.toMutableList()
@@ -621,9 +505,7 @@ class HomeViewModel @Inject constructor(
             it.sex = list
             it
         }
-
     }
-
 
     fun changeActivitySector(list: List<String>) {
 
@@ -891,6 +773,8 @@ class HomeViewModel @Inject constructor(
     }
 
     fun validateFilter(criteria: CriteriaModel) {
+        Log.i("ljkljlkjkljlkgtr", "aeeeeee: $criteria")
+
         viewModelScope.launch {
 
             if (!criteria.checkEmpty()) {

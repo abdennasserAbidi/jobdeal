@@ -141,6 +141,10 @@ class MainActivity : ComponentActivity() {
     private var listCompany: MutableList<String> = mutableListOf()
     private var listCountries: MutableList<String> = mutableListOf()
 
+    //TODO("send message get notification")
+    //TODO("notification check")
+    //TODO("search with experience in home company")
+    //TODO("validation account review")
     //TODO("upload images")
 
     var mSocket: Socket? = null
@@ -608,13 +612,7 @@ class MainActivity : ComponentActivity() {
 
                     composable(route = Screen.ValidateProfileCompanyScreen.route) {
                         isVisibleNav = false
-                        ValidateProfileCompany(
-                            navController,
-                            addCompanyToList = {
-                                listCompany.add("jobs")
-
-                            }
-                        )
+                        ValidateProfileCompany(navController)
                     }
 
                     composable(route = Screen.ValidationInterviewScreen.route) {

@@ -24,6 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
+import com.example.myjob.common.GlobalEntries.candidateUser
 import com.example.myjob.common.GlobalEntries.otherUserId
 import com.example.myjob.common.GlobalEntries.otherUserName
 import com.example.myjob.feature.navigation.Screen
@@ -95,8 +96,7 @@ fun ListMessageScreen(
 
             items(conversations.itemCount) { index ->
                 val item = conversations[index] ?: ChatMessage()
-                val isOwn = viewModel.isOwnMessage(item.userReceivedId)
-                if (item.userReceivedName.isNotEmpty()) {
+                if (!viewModel.isOwnMessage(item.userConnectedId)) {
                     Box(modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 10.dp)
@@ -107,6 +107,8 @@ fun ListMessageScreen(
                             val isOwnUser = viewModel.isOwnMessage(item.userConnectedId)
                             otherUserId = if (isOwnUser) item.userReceivedId
                             else item.userConnectedId
+
+                            viewModel.getUserById(item.userConnectedId)
 
                             otherUserName = if (isOwnUser) item.userReceivedName
                             else item.userConnectedName
@@ -127,7 +129,7 @@ fun ListMessageScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = item.userReceivedName.split(" ").mapNotNull { it.firstOrNull() }.take(2)
+                                    text = item.userConnectedName.split(" ").mapNotNull { it.firstOrNull() }.take(2)
                                         .joinToString(""),
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
@@ -137,7 +139,7 @@ fun ListMessageScreen(
 
                             Spacer(modifier = Modifier.width(10.dp))
 
-                            Text(text = item.userReceivedName)
+                            Text(text = item.userConnectedName)
                         }
 
                         Icon(

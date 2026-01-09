@@ -85,10 +85,6 @@ class PostsViewModel @Inject constructor(
         }
     }
 
-    fun getCommentsForCandidate() {
-
-    }
-
     private val _announcement: MutableStateFlow<PagingData<AnnouncementModel>> =
         MutableStateFlow(value = PagingData.empty())
     val announcement: MutableStateFlow<PagingData<AnnouncementModel>> get() = _announcement
@@ -327,7 +323,7 @@ class PostsViewModel @Inject constructor(
             }
         }
     }
-
+    //Candidate
     val numberComment = MutableStateFlow(emptyList<Int>())
     fun getNumberCommentAllPosts() {
         viewModelScope.launch {

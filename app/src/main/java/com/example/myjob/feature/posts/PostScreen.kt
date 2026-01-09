@@ -149,8 +149,6 @@ fun PostScreen(
     val deleteStatus by postsViewModel.deleteStatus.collectAsState()
 
     var showDialog by remember { mutableStateOf(false) }
-    /*var numberCommentUser by remember(numberCommentCompany) { mutableStateOf(numberCommentCompany) }
-    var itemNumberComment by remember { mutableStateOf(0) }*/
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {

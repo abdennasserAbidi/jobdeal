@@ -135,6 +135,7 @@ fun LoginScreen(
     }
 
     LaunchedEffect(token) {
+        Log.i("ofzkjghzjgkrhgkzrg", "LoginScreen: $token")
         isProgressing = false
         if (token.isNotEmpty()) {
             viewModel.isFromLogin(true)

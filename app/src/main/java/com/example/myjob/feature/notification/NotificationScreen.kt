@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -222,7 +223,7 @@ fun NotificationScreen(
                             }
 
                             loadState.refresh is LoadState.Error -> {
-                                val error = notifications.refresh() as LoadState.Error
+                                val error = loadState.refresh as LoadState.Error
                                 item {
                                     ErrorMessage(
                                         modifier = Modifier.fillParentMaxSize(),
@@ -236,11 +237,11 @@ fun NotificationScreen(
                             }
 
                             loadState.append is LoadState.Error -> {
-                                val error = notifications.loadState.append as LoadState.Error
+                                val error = loadState.append as LoadState.Error
                                 item {
                                     ErrorMessage(
                                         modifier = Modifier,
-                                        message = error.error.localizedMessage!!,
+                                        message = error.error.localizedMessage ?: "",
                                         onClickRetry = { retry() })
                                 }
                             }

@@ -46,6 +46,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -356,7 +357,7 @@ fun CandidatePostScreen(
                                         }
 
                                         if (isFirstTime) {
-                                            itemNumberComment = if (numberCommentUser.isNotEmpty()) numberCommentUser[index] else 0
+                                            itemNumberComment = if (numberCommentUser.isNotEmpty() && index < numberCommentUser.size) numberCommentUser[index] else 0
                                         }
 
                                         // Comment Button
@@ -428,7 +429,11 @@ fun CandidatePostScreen(
                                         modifier = Modifier.weight(1f),
                                         placeholder = { Text(stringResource(id = R.string.add_comment_hint_text)) },
                                         shape = RoundedCornerShape(24.dp),
-                                        textStyle = MaterialTheme.typography.bodyMedium
+                                        textStyle = MaterialTheme.typography.bodyMedium,
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = colorResource(id = R.color.whatsapp),
+                                            focusedLabelColor = colorResource(id = R.color.whatsapp)
+                                        )
                                     )
 
                                     Spacer(modifier = Modifier.width(8.dp))
@@ -438,21 +443,26 @@ fun CandidatePostScreen(
                                             if (commentText.isNotBlank()) {
 
                                                 postsViewModel.addComment(item.idAnnounce, commentText, GlobalEntries.user.fullName ?: "")
+
+                                                itemNumberComment += 1
+                                                isFirstTime = false
+
                                                 val c = CommentsPost(
                                                     idCandidate = userConnectedId,
                                                     text = commentText,
                                                     userName = GlobalEntries.user.fullName ?: ""
                                                 )
                                                 selectedPost = (selectedPost + c).toMutableList()
-                                                itemNumberComment += 1
+
                                                 commentText = ""
+
                                             }
                                         }
                                     ) {
                                         Icon(
                                             Icons.Default.Send,
                                             contentDescription = "Send comment",
-                                            tint = MaterialTheme.colorScheme.primary
+                                            tint = colorResource(id = R.color.whatsapp)
                                         )
                                     }
                                 }
@@ -559,7 +569,8 @@ fun CandidatePostScreen(
 
                             IconButton(
                                 modifier = Modifier
-                                    .size(30.dp)
+                                    .size(50.dp)
+                                    .padding(end = 20.dp)
                                     .align(Alignment.CenterEnd),
                                 onClick = {
                                     showComments = false

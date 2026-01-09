@@ -163,6 +163,7 @@ fun DiscussionScreen(
                 FloatingActionButton(
                     onClick = {
                         if (messageText.isNotBlank()) {
+
                             viewModel.sendMessage(messageText)
                             //viewModel.sendTypingIndicator(false)
                             messageText = ""

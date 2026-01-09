@@ -376,15 +376,6 @@ fun ValidateProfileCompany(
             else -> {
                 Column(modifier = Modifier.fillMaxWidth()) {
 
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 40.dp),
-                        text = stringResource(id = R.string.verification_rejected_info_text),
-                        color = Color.Red
-                    )
-
                     FormTextField(
                         value = email,
                         borderColor = if (activatedCheck && email.isEmpty()) Color.Red else colorResource(
