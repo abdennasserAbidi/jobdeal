@@ -18,7 +18,7 @@ object StompChatService {
     /*private const val WS_URL =
         "wss://jobseeker-vy9q.onrender.com/ws/websocket"*/
 
-    private const val WS_URL = "http://72.61.102.178:9090/ws"
+    private const val WS_URL = "http://72.61.102.178:9095/ws"
 
     private val stompClient = Stomp.over(
         Stomp.ConnectionProvider.OKHTTP,
