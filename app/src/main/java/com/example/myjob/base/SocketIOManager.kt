@@ -13,7 +13,7 @@ import org.json.JSONObject
 import java.net.URISyntaxException
 
 class SocketIOManager(
-    private val serverUrl: String = "http://10.0.2.2:9092",
+    private val serverUrl: String = "http://72.61.102.178:9092",
     private val userId: String
 ) {
     private var socket: Socket? = null

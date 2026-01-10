@@ -447,6 +447,53 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // FIRST PHONE COMPANY
+    ///////////////////////////////////////////////////////////////////////////
+    var completePhoneCompany = MutableStateFlow("")
+    var phoneCompany = MutableStateFlow("")
+
+    fun changePhoneCompany(search: String) {
+        phoneCompany.update {
+            search
+        }
+    }
+
+    fun changeCompletePhoneCompany(search: String) {
+        completePhoneCompany.update {
+            search
+        }
+
+        user.update {
+            it.phoneCompany = search
+            it
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // SECOND PHONE COMPANY
+    ///////////////////////////////////////////////////////////////////////////
+    var completeSecondPhoneCompany = MutableStateFlow("")
+    var secondPhoneCompany = MutableStateFlow("")
+
+    fun changeSecondPhoneCompany(search: String) {
+        secondPhoneCompany.update {
+            search
+        }
+    }
+
+    fun changeCompleteSecondPhoneCompany(search: String) {
+        completeSecondPhoneCompany.update {
+            search
+        }
+
+        user.update {
+            it.secondPhoneCompany = search
+            it
+        }
+    }
+
+
     var bio = MutableStateFlow("")
 
     fun changeBio(search: String) {

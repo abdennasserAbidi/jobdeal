@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -41,8 +42,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.base.MyApp
+import com.example.myjob.common.CustomPhoneKit
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.rememberLifecycleEvent
+import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.profile.ProfileViewModel
 
@@ -58,10 +61,12 @@ fun CompanyProfileFormScreen(
     var companyName by remember { mutableStateOf(user.companyName ?: "") }
     var activitySector by remember { mutableStateOf(user.companyActivitySector ?: "") }
     var description by remember { mutableStateOf(user.companyDescription ?: "") }
-    var phone by remember { mutableStateOf("+1 234 567 8900") }
     var secondPhone by remember { mutableStateOf("") }
     var address by remember { mutableStateOf(user.companyAddress ?: "") }
     var secondAddress by remember { mutableStateOf(user.companySecondAddress ?: "") }
+    var showCountryPicker by remember { mutableStateOf(false) }
+    var showSecondCountryPicker by remember { mutableStateOf(false) }
+
     val isFirstTime = GlobalEntries.user.firstTimeUse ?: true
 
     val lifecycleEvent = rememberLifecycleEvent()
@@ -223,16 +228,49 @@ fun CompanyProfileFormScreen(
                 }
 
                 item {
-                    OutlinedTextField(
-                        value = phone,
-                        onValueChange = { phone = it },
-                        label = { Text("Phone*") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
+
+                    //phone
+                    val phone by profileViewModel.phoneCompany.collectAsState()
+                    val completePhone by profileViewModel.completePhoneCompany.collectAsState()
+                    var selectedCountry by remember { mutableStateOf(NewCountry("tn", "Tunisia", 216)) }
+
+                    CustomPhoneKit(
+                        modifier = Modifier.padding(top = 10.dp),
+                        selectedCountry = selectedCountry,
+                        defaultPhone = if (completePhone.contains(" ")) completePhone.split(" ")[1] else completePhone,
+                        onClick = {
+                            showCountryPicker = true
+                        },
+                        onValueChanged = {
+                            val phoneComplete = "+${selectedCountry.code} $it"
+                            profileViewModel.changePhoneCompany(it)
+                            profileViewModel.changeCompletePhoneCompany(phoneComplete)
+                        }
                     )
+
                 }
 
                 item {
+
+                    val secondPhoneCompany by profileViewModel.secondPhoneCompany.collectAsState()
+                    val completeSecondPhoneCompany by profileViewModel.completeSecondPhoneCompany.collectAsState()
+                    var selectedSecondCountry by remember { mutableStateOf(NewCountry("tn", "Tunisia", 216)) }
+
+                    CustomPhoneKit(
+                        modifier = Modifier.padding(top = 10.dp),
+                        selectedCountry = selectedSecondCountry,
+                        defaultPhone = if (completeSecondPhoneCompany.contains(" ")) completeSecondPhoneCompany.split(" ")[1] else completeSecondPhoneCompany,
+                        onClick = {
+                            showSecondCountryPicker = true
+                        },
+                        onValueChanged = {
+                            val phoneComplete = "+${selectedSecondCountry.code} $it"
+                            profileViewModel.changePhoneCompany(it)
+                            profileViewModel.changeCompletePhoneCompany(phoneComplete)
+                        }
+                    )
+
+
                     OutlinedTextField(
                         value = secondPhone,
                         onValueChange = { secondPhone = it },
