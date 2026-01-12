@@ -57,7 +57,7 @@ fun DiscussionScreen(
     val listMessages by viewModel.listMessages.collectAsState()
     val messages = viewModel.messages
 
-    var selectedUri by remember { mutableStateOf("".toUri()) }
+    var isFirstTime by remember { mutableStateOf(true) }
     var listUri by remember { mutableStateOf(mutableListOf<Uri>()) }
 
     var messageText by remember { mutableStateOf("") }
@@ -68,7 +68,7 @@ fun DiscussionScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            selectedUri = it
+            isFirstTime = false
             listUri.add(it)
             val text = viewModel.readTextFromUri(context, it)
             //onFilePicked(text)
@@ -79,6 +79,7 @@ fun DiscussionScreen(
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+            isFirstTime = true
             hideNavigation()
             viewModel.connect()
             viewModel.findConversations(GlobalEntries.otherUserId)
@@ -118,7 +119,9 @@ fun DiscussionScreen(
         }
     ) { paddingValues ->
 
-        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)) {
 
             // Messages List
             LazyColumn(
@@ -129,6 +132,7 @@ fun DiscussionScreen(
                 items(listMessages) { message ->
                     val userId = GlobalEntries.otherUserId
                     MessageBubble(
+                        isFirstTime = isFirstTime,
                         listUri = listUri,
                         message = message,
                         isOwnMessage = viewModel.isOwnMessage(message.userConnectedId)
@@ -138,7 +142,8 @@ fun DiscussionScreen(
             }
 
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .align(Alignment.BottomCenter)
             ) {
                 LazyRow(modifier = Modifier.fillMaxWidth()) {
@@ -150,7 +155,8 @@ fun DiscussionScreen(
                                 .crossfade(true)
                                 .build(),
                             contentDescription = null,
-                            modifier = Modifier.height(120.dp)
+                            modifier = Modifier
+                                .height(120.dp)
                                 .width(60.dp),
                             contentScale = ContentScale.Crop,
                             onError = { error ->
@@ -249,11 +255,11 @@ fun DiscussionScreen(
 
 @Composable
 fun MessageBubble(
+    isFirstTime: Boolean,
     listUri: List<Uri>,
     message: ChatMessage,
     isOwnMessage: Boolean
 ) {
-    Log.i("jrhzjkerlkgz", "MessageBubble: $message")
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = if (isOwnMessage) Arrangement.End else Arrangement.Start
@@ -304,14 +310,35 @@ fun MessageBubble(
 
                 Column {
                     Box {
-                        listUri.map {
-                            Image(
-                                painter = rememberAsyncImagePainter(model = it),
-                                contentDescription = "Selected image",
-                                modifier = Modifier
-                                    .height(120.dp)
-                                    .width(60.dp)
-                            )
+                        if (!isFirstTime) {
+                            listUri.map {
+                                Image(
+                                    painter = rememberAsyncImagePainter(model = it),
+                                    contentDescription = "Selected image",
+                                    modifier = Modifier
+                                        .height(200.dp)
+                                        .width(100.dp)
+                                        .padding(10.dp)
+                                )
+                            }
+                        } else {
+                            message.documents.map { item ->
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(item)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .height(200.dp)
+                                        .width(100.dp)
+                                        .padding(10.dp),
+                                    contentScale = ContentScale.Crop,
+                                    onError = { error ->
+                                        Log.e("IMAGE_ERROR", "Image failed to load: ${error.result.throwable.message ?: "Unknown error"}")
+                                    }
+                                )
+                            }
                         }
                     }
 

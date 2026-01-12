@@ -10,6 +10,8 @@
     <string name="welcome">Bienvenue!</string>
     <string name="sub_title_welcome">Connectez-vous à votre compte existant</string>
     <string name="error_email">Email est invalid</string>
+    <string name="to_present">jusqu\'à présent</string>
+    <string name="upload_doc_empty">devrez avoir un document</string>
     <string name="error_work_type">Il faut choisir type de travail</string>
     <string name="password_text">Mot de passe</string>
     <string name="add_document_text">Ajouter document</string>

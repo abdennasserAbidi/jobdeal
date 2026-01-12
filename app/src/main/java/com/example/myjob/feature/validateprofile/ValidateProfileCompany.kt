@@ -273,8 +273,7 @@ fun ValidateProfileCompany(
                                 borderColor = if (activatedCheck && doc.isEmpty()) Color.Red else colorResource(
                                     id = R.color.whatsapp
                                 ),
-                                onValueChange = {
-                                },
+                                onValueChange = {},
                                 label = stringResource(id = R.string.add_document_text),
                                 modifier = Modifier
                                     .weight(0.85f)
@@ -297,9 +296,22 @@ fun ValidateProfileCompany(
                                             interactionSource = interactionSource,
                                             indication = null
                                         ) {
-                                            filesList = (filesList - filesList[index]).toMutableList()
+                                            filesList =
+                                                (filesList - filesList[index]).toMutableList()
                                         },
                                     contentDescription = ""
+                                )
+                            }
+                        }
+                        Log.i("fjzkgrhzrjgzg", "activatedCheck: $activatedCheck")
+
+                        if (activatedCheck) {
+                            Log.i("fjzkgrhzrjgzg", "ValidateProfileCompany: $doc")
+                            if (doc.isEmpty()) {
+                                Text(
+                                    modifier = Modifier.padding(top = 5.dp, start = 20.dp),
+                                    text = stringResource(id = R.string.upload_doc_empty),
+                                    color = Color.Red
                                 )
                             }
                         }
@@ -439,7 +451,12 @@ fun ValidateProfileCompany(
                                 },
                                 label = stringResource(id = R.string.add_document_text),
                                 modifier = Modifier
-                                    .weight(0.85f)
+                                    .then(
+                                        if (index != 0) Modifier.weight(0.85f)
+                                        else Modifier
+                                            .weight(1f)
+                                            .padding(end = 20.dp)
+                                    )
                                     .padding(start = 20.dp),
                                 isRequired = true,
                                 readOnly = true,
@@ -459,7 +476,8 @@ fun ValidateProfileCompany(
                                             interactionSource = interactionSource,
                                             indication = null
                                         ) {
-                                            filesList = (filesList - filesList[index]).toMutableList()
+                                            filesList =
+                                                (filesList - filesList[index]).toMutableList()
                                         },
                                     contentDescription = ""
                                 )

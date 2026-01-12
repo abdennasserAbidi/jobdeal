@@ -10,6 +10,8 @@
     <string name="welcome">Welcome!</string>
     <string name="sub_title_welcome">Login to your existing account</string>
     <string name="error_email">Invalid email</string>
+    <string name="to_present">to present</string>
+    <string name="upload_doc_empty">should upload document</string>
     <string name="error_work_type">You should select work type</string>
     <string name="error_password">Must contain uppercase and number</string>
     <string name="password_text">Password</string>

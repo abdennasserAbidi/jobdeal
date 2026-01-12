@@ -44,6 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -159,7 +160,7 @@ fun CandidateHeaderCard(
                     QuickInfoItem(
                         icon = Icons.Default.LocationOn,
                         label = stringResource(id = R.string.location_text),
-                        value = lastContractExperience.place ?: ""
+                        value = lastContractExperience.place ?: "N'est pas précisé"
                     )
                 }
             }
@@ -788,6 +789,13 @@ fun ExperienceItem(experience: Experience) {
                     color = WhatsAppGreen,
                     fontWeight = FontWeight.Medium
                 )
+
+                Text(
+                    text = experience.description ?: "n'est pas précisé",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Black,
+                    fontWeight = FontWeight.Medium
+                )
             }
 
             val start = experience.dateStart ?: ""
@@ -802,7 +810,7 @@ fun ExperienceItem(experience: Experience) {
                     if (end.isNotEmpty()) {
                         duration += " - $end"
                     }
-                } else duration += " to present"
+                } else duration += " ${stringResource(R.string.to_present)}"
             }
 
             Text(
