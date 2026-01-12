@@ -146,7 +146,12 @@ class MainActivity : ComponentActivity() {
     //TODO("handling chat with files and images")
     //TODO("search with experience in home company")
     //TODO("validation account review")
-    //TODO("upload images")
+
+    //TODO("invitations candidates : real time with pull to refresh")
+    //TODO("notifications : real time with pull to refresh and check remove")
+
+    //TODO("list of candidates : pull to refresh : show refresh button after x time")
+    //TODO("list of posts : pull to refresh : show refresh button after x time")
 
     var mSocket: Socket? = null
     private var imageUri = mutableStateOf<Uri?>(null)

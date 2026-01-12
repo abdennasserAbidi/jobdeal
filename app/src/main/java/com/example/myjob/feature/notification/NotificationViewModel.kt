@@ -9,10 +9,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.filter
 import androidx.paging.map
+import com.example.myjob.base.messages.StompNotificationService
+import com.example.myjob.base.messages.WebsocketService
 import com.example.myjob.base.reources.ResourceState
-import com.example.myjob.domain.entities.NotificationBody
-import com.example.myjob.domain.entities.SendMessageDto
-import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.usecase.notification.GetNotificationsUseCase
 import com.example.myjob.domain.usecase.notification.RemoveNotificationUseCase
@@ -20,8 +19,12 @@ import com.example.myjob.domain.usecase.notification.SeenNotificationUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -89,7 +92,7 @@ class NotificationViewModel @Inject constructor(
 
     private val _notifications: MutableStateFlow<PagingData<NotificationModel>> =
         MutableStateFlow(value = PagingData.empty())
-    val notifications: MutableStateFlow<PagingData<NotificationModel>> get() = _notifications
+    //val notifications: MutableStateFlow<PagingData<NotificationModel>> get() = _notifications
 
     private fun getNotifications() {
         val idConnected = sharedPreference.getInt("idUser", -1)
@@ -121,7 +124,7 @@ class NotificationViewModel @Inject constructor(
                             notif.idNotification != updates
                         }
                     }.collect { data ->
-                        notifications.update { data }
+                        _notifications.update { data }
                     }
 
 
@@ -130,7 +133,31 @@ class NotificationViewModel @Inject constructor(
         }
     }
 
+    val _newNotifications: StateFlow<PagingData<NotificationModel>> = merge(
+        _notifications,
+        StompNotificationService.messages.map {
+            PagingData.from(listOf(it))
+        }
+    ).stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        PagingData.empty()
+    )
+
+    val notifications: StateFlow<PagingData<NotificationModel>> get() = _newNotifications
+
+    fun connect() {
+        val id = sharedPreference.getInt("idUser", 0)
+        WebsocketService.connect("")
+        StompNotificationService.connect("$id")
+    }
+
+    override fun onCleared() {
+        StompNotificationService.disconnect()
+    }
+
     init {
+        connect()
         getNotifications()
     }
 

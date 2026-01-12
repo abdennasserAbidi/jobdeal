@@ -5,8 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.filter
-import androidx.paging.map
 import com.example.myjob.R
+import com.example.myjob.base.messages.StompInvitationService
+import com.example.myjob.base.messages.WebsocketService
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.InvitationChoices
 import com.example.myjob.domain.entities.InvitationFilter
@@ -24,7 +25,12 @@ import com.example.myjob.local.database.SharedPreference
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -121,28 +127,6 @@ class InvitationCandidateViewModel @Inject constructor(
         else removeTypeContract(title)
     }
 
-    init {
-
-        val list = listOf(
-            InvitationChoices(title = R.string.type1_text, isSelected = false),
-            InvitationChoices(title = R.string.type2_text, isSelected = false),
-            InvitationChoices(title = R.string.intern_user_text, isSelected = false),
-            InvitationChoices(title = R.string.event_user_text, isSelected = false),
-            InvitationChoices(title = R.string.trainer_user_text, isSelected = false)
-        )
-
-        invitationChoices.update { list }
-
-        val selectedCat = MutableList(list.size) {
-            false
-        }
-
-        selectionChoices.update { selectedCat }
-
-        getInvitations()
-        getOtherInvitations()
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     // ACCEPT AND REJECT INVITATION
     ///////////////////////////////////////////////////////////////////////////
@@ -173,7 +157,7 @@ class InvitationCandidateViewModel @Inject constructor(
 
     private val _invitations: MutableStateFlow<PagingData<InvitationModel>> =
         MutableStateFlow(value = PagingData.empty())
-    val invitations: MutableStateFlow<PagingData<InvitationModel>> get() = _invitations
+    //val invitations: MutableStateFlow<PagingData<InvitationModel>> get() = _invitations
     private val allInvitations: MutableStateFlow<List<InvitationModel>> =
         MutableStateFlow(emptyList())
 
@@ -334,5 +318,53 @@ class InvitationCandidateViewModel @Inject constructor(
 
             }
         }
+    }
+
+    val _newInvitations: StateFlow<PagingData<InvitationModel>> = merge(
+        _invitations,
+        StompInvitationService.messages.map {
+            Log.i("fzejhgrzg", ": $it")
+            PagingData.from(listOf(it))
+        }
+    ).stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        PagingData.empty()
+    )
+
+    val invitations: StateFlow<PagingData<InvitationModel>> get() = _newInvitations
+
+    fun connect() {
+        val id = sharedPreference.getInt("idUser", 0)
+        WebsocketService.connect("")
+        StompInvitationService.connect("$id")
+    }
+
+    override fun onCleared() {
+        StompInvitationService.disconnect()
+    }
+
+    init {
+
+        connect()
+
+        val list = listOf(
+            InvitationChoices(title = R.string.type1_text, isSelected = false),
+            InvitationChoices(title = R.string.type2_text, isSelected = false),
+            InvitationChoices(title = R.string.intern_user_text, isSelected = false),
+            InvitationChoices(title = R.string.event_user_text, isSelected = false),
+            InvitationChoices(title = R.string.trainer_user_text, isSelected = false)
+        )
+
+        invitationChoices.update { list }
+
+        val selectedCat = MutableList(list.size) {
+            false
+        }
+
+        selectionChoices.update { selectedCat }
+
+        getInvitations()
+        getOtherInvitations()
     }
 }
