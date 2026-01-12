@@ -1,14 +1,18 @@
 package com.example.myjob.feature.messagerie
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,18 +26,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Yellow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.rememberLifecycleEvent
+import com.example.myjob.feature.validateprofile.Documents
 import java.util.*
 
+@SuppressLint("MutableCollectionMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiscussionScreen(
@@ -45,6 +57,9 @@ fun DiscussionScreen(
     val listMessages by viewModel.listMessages.collectAsState()
     val messages = viewModel.messages
 
+    var selectedUri by remember { mutableStateOf("".toUri()) }
+    var listUri by remember { mutableStateOf(mutableListOf<Uri>()) }
+
     var messageText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
@@ -53,6 +68,8 @@ fun DiscussionScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
+            selectedUri = it
+            listUri.add(it)
             val text = viewModel.readTextFromUri(context, it)
             //onFilePicked(text)
         }
@@ -100,23 +117,19 @@ fun DiscussionScreen(
             )
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
 
             // Messages List
             LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxSize(),
                 state = listState,
                 contentPadding = PaddingValues(16.dp)
             ) {
                 items(listMessages) { message ->
                     val userId = GlobalEntries.otherUserId
                     MessageBubble(
+                        listUri = listUri,
                         message = message,
                         isOwnMessage = viewModel.isOwnMessage(message.userConnectedId)
                     )
@@ -124,59 +137,110 @@ fun DiscussionScreen(
                 }
             }
 
-            // Input Field
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier.fillMaxWidth()
+                    .align(Alignment.BottomCenter)
             ) {
-                Box(modifier = Modifier.weight(1f)) {
-                    OutlinedTextField(
-                        value = messageText,
-                        onValueChange = {
-                            messageText = it
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Type a message...") },
-                        shape = RoundedCornerShape(24.dp)
-                    )
+                LazyRow(modifier = Modifier.fillMaxWidth()) {
+                    itemsIndexed(listUri) { _, item ->
 
-                    IconButton(
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .padding(end = 10.dp),
-                        onClick = {
-                            launcher.launch("*/*")
-                        }) {
-                        Icon(
-                            imageVector = Icons.Default.Link,
-                            tint = colorResource(id = R.color.whatsapp),
-                            contentDescription = ""
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(item)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = null,
+                            modifier = Modifier.height(120.dp)
+                                .width(60.dp),
+                            contentScale = ContentScale.Crop,
+                            onError = { error ->
+                                Log.e("IMAGE_ERROR", "Image failed to load: ${error.result.throwable.message ?: "Unknown error"}")
+                            }
                         )
-                    }
 
+                        /*Image(
+                            painter = rememberAsyncImagePainter(model = item),
+                            contentDescription = "Selected image",
+                            modifier = Modifier
+                                .height(120.dp)
+                                .width(60.dp)
+                        )*/
+
+                        Spacer(modifier = Modifier.width(10.dp))
+                    }
                 }
 
-                Spacer(modifier = Modifier.width(8.dp))
-
-                FloatingActionButton(
-                    onClick = {
-                        if (messageText.isNotBlank()) {
-
-                            viewModel.sendMessage(messageText)
-                            //viewModel.sendTypingIndicator(false)
-                            messageText = ""
-                        }
-                    },
-                    modifier = Modifier.size(56.dp),
-                    containerColor = colorResource(id = R.color.whatsapp)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "Send",
-                        tint = Color.White
-                    )
+
+                    Box(modifier = Modifier.weight(1f)) {
+                        OutlinedTextField(
+                            value = messageText,
+                            onValueChange = {
+                                messageText = it
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Type a message...") },
+                            shape = RoundedCornerShape(24.dp)
+                        )
+
+                        IconButton(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(end = 10.dp),
+                            onClick = {
+                                launcher.launch("*/*")
+                            }) {
+                            Icon(
+                                imageVector = Icons.Default.Link,
+                                tint = colorResource(id = R.color.whatsapp),
+                                contentDescription = ""
+                            )
+                        }
+
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    val uploadMessage by viewModel.uploadMessage.collectAsState()
+                    LaunchedEffect(uploadMessage) {
+                        if (uploadMessage.contains("http")) {
+                            listUri = mutableListOf()
+                        }
+                    }
+
+                    val listMessages by viewModel.listMessages.collectAsState()
+                    LaunchedEffect(listMessages) {
+                        listUri.map { uri ->
+                            val document = Documents(
+                                url = uri.path ?: "",
+                                name = "",
+                                type = ""
+                            )
+                            viewModel.uploadDoc(context = context, uri, -1, document)
+                        }
+                    }
+
+                    FloatingActionButton(
+                        onClick = {
+                            if (messageText.isNotBlank()) {
+                                viewModel.sendMessage(messageText)
+                                messageText = ""
+                            }
+                        },
+                        modifier = Modifier.size(56.dp),
+                        containerColor = colorResource(id = R.color.whatsapp)
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.Send,
+                            contentDescription = "Send",
+                            tint = Color.White
+                        )
+                    }
                 }
             }
         }
@@ -185,6 +249,7 @@ fun DiscussionScreen(
 
 @Composable
 fun MessageBubble(
+    listUri: List<Uri>,
     message: ChatMessage,
     isOwnMessage: Boolean
 ) {
@@ -236,11 +301,26 @@ fun MessageBubble(
                 else
                     MaterialTheme.colorScheme.surfaceVariant
             ) {
-                Text(
-                    text = message.content,
-                    modifier = Modifier.padding(12.dp),
-                    color = if (isOwnMessage) Color.White else Color.Black
-                )
+
+                Column {
+                    Box {
+                        listUri.map {
+                            Image(
+                                painter = rememberAsyncImagePainter(model = it),
+                                contentDescription = "Selected image",
+                                modifier = Modifier
+                                    .height(120.dp)
+                                    .width(60.dp)
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = message.content,
+                        modifier = Modifier.padding(12.dp),
+                        color = if (isOwnMessage) Color.White else Color.Black
+                    )
+                }
             }
         }
     }

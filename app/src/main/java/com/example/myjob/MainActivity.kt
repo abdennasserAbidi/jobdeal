@@ -144,7 +144,6 @@ class MainActivity : ComponentActivity() {
     //TODO("when click notification for announce i get all empty field")
     //TODO("when click notification for invitation accept it crashs")
     //TODO("handling chat with files and images")
-    //TODO("search with experience in home company")
     //TODO("validation account review")
 
     var mSocket: Socket? = null

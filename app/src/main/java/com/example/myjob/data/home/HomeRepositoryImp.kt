@@ -11,6 +11,7 @@ import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
+import com.example.myjob.domain.response.UploadResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.local.database.SharedPreference
 import com.example.myjob.remote.source.home.HomeDataSource
@@ -168,6 +169,17 @@ class HomeRepositoryImp @Inject constructor(
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.uploadFiles(idUser, file)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data.imageURL, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+    override suspend fun uploadChat(idFrom: Int, idTo: Int, file: MultipartBody.Part): Flow<Resource<String>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.uploadChat(idFrom, idTo, file)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data.imageURL, null))
         } catch (ex: Exception) {

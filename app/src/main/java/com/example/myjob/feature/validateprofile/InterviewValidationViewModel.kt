@@ -97,7 +97,7 @@ class InterviewValidationViewModel @Inject constructor(
     }
 
     fun getTypeDoc(name: String): String {
-        val uri: Uri = Uri.parse(name)
+        val uri: Uri = name.toUri()
         val imageName = uri.lastPathSegment ?: ""
         if (imageName.isNotEmpty() && imageName.contains(".")) {
             return imageName.split(".")[1]

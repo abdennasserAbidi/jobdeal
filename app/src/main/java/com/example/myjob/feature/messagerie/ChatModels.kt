@@ -10,6 +10,7 @@ data class ChatMessage(
     val userConnectedId: Int = 0,
     val userConnectedName: String = "",
     val content: String = "",
+    val listDocuments: List<String> = emptyList(),
     val timestamp: String = "",
     val type: MessageType = MessageType.CHAT
 )

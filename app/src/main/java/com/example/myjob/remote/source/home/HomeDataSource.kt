@@ -15,6 +15,7 @@ interface HomeDataSource {
     suspend fun getUser(id: Int): UserAuthResponse
     suspend fun uploadFile(file: MultipartBody.Part): UserResponse
     suspend fun uploadFiles(idUser: Int, file: MultipartBody.Part): UploadResponse
+    suspend fun uploadChat(idFrom: Int, idTo: Int, file: MultipartBody.Part): UploadResponse
     suspend fun getFiles(id: Int): FilesResponse
     suspend fun validateProfile(email: String): UserResponse
     suspend fun verifyExisting(fileName: String): FileExistingResponse

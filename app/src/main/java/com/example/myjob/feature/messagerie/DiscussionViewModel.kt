@@ -14,15 +14,19 @@ import com.example.myjob.base.ConnectionState
 import com.example.myjob.base.messages.StompChatService
 import com.example.myjob.base.messages.WebsocketService
 import com.example.myjob.base.messages.WebsocketService.close
+import com.example.myjob.base.reources.ResourceState
+import com.example.myjob.common.FileReader
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.candidateUser
 import com.example.myjob.common.GlobalEntries.otherUserId
-import com.example.myjob.common.GlobalEntries.otherUserName
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.chat.FindConversationUseCase
 import com.example.myjob.domain.usecase.chat.GetUserConversationsUseCase
 import com.example.myjob.domain.usecase.chat.SaveMessageUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
+import com.example.myjob.domain.usecase.home.UploadFileChatUseCase
+import com.example.myjob.domain.usecase.home.UploadFileUseCase
+import com.example.myjob.feature.validateprofile.Documents
 import com.example.myjob.local.database.SharedPreference
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,7 +38,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody
 import okhttp3.WebSocket
 import javax.inject.Inject
 
@@ -44,11 +51,12 @@ class DiscussionViewModel @Inject constructor(
     private val getUserConversationsUseCase: GetUserConversationsUseCase,
     private val findConversationUseCase: FindConversationUseCase,
     private val getUserUseCase: GetUserUseCase,
-    private val saveMessageUseCase: SaveMessageUseCase
+    private val uploadFileUseCase: UploadFileChatUseCase
 ) : ViewModel() {
 
     fun readTextFromUri(context: Context, uri: Uri): String {
-        return context.contentResolver.openInputStream(uri)?.bufferedReader().use { it?.readText() ?: "" }
+        return context.contentResolver.openInputStream(uri)?.bufferedReader()
+            .use { it?.readText() ?: "" }
     }
 
     var messages by mutableStateOf(listOf<ChatMessage>())
@@ -152,12 +160,45 @@ class DiscussionViewModel @Inject constructor(
         }
     }
 
+    var uploadMessage = MutableStateFlow("")
+
+    fun uploadDoc(context: Context, fileUri: Uri, index: Int, documents: Documents) {
+        val file = FileReader.getFile(context, fileUri)
+
+        val requestBody: RequestBody =
+            RequestBody.create("application/*".toMediaTypeOrNull(), file)
+
+        val expectedName = "document${documents.id}"
+        val multipartBody: MultipartBody.Part =
+            MultipartBody.Part.createFormData("image", expectedName, requestBody)
+
+        viewModelScope.launch {
+            val idFrom = sharedPreference.getInt("idUser", -1)
+            val idTo = otherUserId
+            val params = Triple(idFrom, idTo,  multipartBody)
+
+            uploadFileUseCase.execute(params).collect { res ->
+                when (res.status) {
+                    ResourceState.SUCCESS -> {
+                        uploadMessage.update {
+                            res.data ?: ""
+                        }
+                    }
+
+                    else -> {
+                        uploadMessage.update { "" }
+                    }
+                }
+            }
+        }
+    }
+
     fun sendMessage(content: String) {
         val currentUserId = sharedPreference.getInt("idUser", 0)
-        Log.i("receivedUser", "sendMessage: ${GlobalEntries.candidateUser}")
+        Log.i("receivedUser", "sendMessage: $candidateUser")
         val message = ChatMessage(
             userReceivedId = otherUserId,
-            userReceivedName = getUserName(GlobalEntries.candidateUser) ?: "",
+            userReceivedName = getUserName(candidateUser) ?: "",
             userConnectedId = currentUserId,
             userConnectedName = getUserName(GlobalEntries.user) ?: "",
             content = content
