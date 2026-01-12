@@ -16,11 +16,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.ExperimentalMaterialApi
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -52,6 +56,7 @@ import com.example.myjob.common.PageLoader
 import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.feature.navigation.Screen
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun NotificationScreen(
     navController: NavController,
@@ -61,6 +66,14 @@ fun NotificationScreen(
     val interactionSource = remember { MutableInteractionSource() }
 
     val notifications = notificationViewModel.notifications.collectAsLazyPagingItems()
+
+    val refreshing = notifications.loadState.refresh is LoadState.Loading
+
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = refreshing,
+        onRefresh = { notifications.refresh() }
+    )
+
     val seenNotification by notificationViewModel.seenNotification.collectAsState()
 
     LaunchedEffect(seenNotification) {
@@ -70,45 +83,200 @@ fun NotificationScreen(
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(pullRefreshState)
     ) {
 
-        Box(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(color = colorResource(id = R.color.whatsapp))
-                .padding(horizontal = 20.dp, vertical = 24.dp)
+                .fillMaxSize()
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = colorResource(id = R.color.whatsapp))
+                    .padding(horizontal = 20.dp, vertical = 24.dp)
+            )
+            {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(
-                        onClick = {
-                            navController.popBackStack()
-                        },
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.2f))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp)
+                        IconButton(
+                            onClick = {
+                                navController.popBackStack()
+                            },
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.2f))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        Text(
+                            text = stringResource(id = R.string.notification_text),
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
                     }
+                }
+            }
 
+            Spacer(modifier = Modifier.height(5.dp))
+
+            AnimatedContent(targetState = notifications.itemCount > 0, label = "") {
+                if (it) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(notifications.itemCount) { index ->
+                            val item = notifications[index] ?: NotificationModel()
+                            var isRead by remember { mutableStateOf(item.read) }
+                            val data = notificationViewModel.getSenderData(item)
+                            var textName = ""
+                            if (data.first != -1) {
+                                textName = data.second.split(" ").mapNotNull { text ->
+                                    text.firstOrNull()
+                                }.take(2).joinToString("")
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable(
+                                            interactionSource = interactionSource,
+                                            indication = null
+                                        ) {
+                                            isRead = true
+                                            GlobalEntries.isFromNotification = false
+                                            GlobalEntries.idInvitation = item.idInvitation
+                                            GlobalEntries.idAnnounce = item.idPost
+                                            GlobalEntries.idCompany = item.idCompany
+                                            notificationViewModel.seenNotification(item.idNotification)
+                                        }
+                                        .background(
+                                            if (isRead) Color.Transparent else Color(0xFF25D366).copy(
+                                                alpha = 0.1f
+                                            )
+                                        )
+                                ) {
+
+                                    Box(modifier = Modifier.fillMaxWidth()) {
+                                        Row(
+                                            modifier = Modifier
+                                                .align(Alignment.CenterStart)
+                                                .padding(horizontal = 10.dp, vertical = 20.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(40.dp)
+                                                    .clip(CircleShape)
+                                                    .background(colorResource(id = R.color.whatsapp)),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = textName,
+                                                    fontSize = 18.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color.White
+                                                )
+                                            }
+
+                                            Column(
+                                                modifier = Modifier.padding(start = 10.dp)
+                                            ) {
+                                                Text(
+                                                    text = data.second,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+
+                                                Spacer(modifier = Modifier.height(5.dp))
+
+                                                Text(text = item.description)
+                                            }
+                                        }
+
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            modifier = Modifier
+                                                .align(Alignment.CenterEnd)
+                                                .padding(end = 10.dp)
+                                                .clickable(
+                                                    interactionSource = interactionSource,
+                                                    indication = null
+                                                ) {
+                                                    notificationViewModel.removeNotification(item.idNotification)
+                                                },
+                                            tint = Color.Red,
+                                            contentDescription = "delete"
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(10.dp))
+
+                                    HorizontalDivider(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        thickness = 1.dp
+                                    )
+
+                                }
+                            }
+
+                        }
+                        notifications.apply {
+                            when {
+                                loadState.refresh is LoadState.Loading -> {
+                                    item { PageLoader(Modifier.fillParentMaxSize()) }
+                                }
+
+                                loadState.refresh is LoadState.Error -> {
+                                    val error = loadState.refresh as LoadState.Error
+                                    item {
+                                        ErrorMessage(
+                                            modifier = Modifier.fillParentMaxSize(),
+                                            message = error.error.localizedMessage ?: "",
+                                            onClickRetry = { retry() })
+                                    }
+                                }
+
+                                loadState.append is LoadState.Loading -> {
+                                    item { LoadingNextPageItem(modifier = Modifier) }
+                                }
+
+                                loadState.append is LoadState.Error -> {
+                                    val error = loadState.append as LoadState.Error
+                                    item {
+                                        ErrorMessage(
+                                            modifier = Modifier,
+                                            message = error.error.localizedMessage ?: "",
+                                            onClickRetry = { retry() })
+                                    }
+                                }
+
+                                else -> {
+
+                                }
+                            }
+                        }
+                    }
+                } else {
                     Text(
-                        text = stringResource(id = R.string.notification_text),
+                        text = "Vous n'avez pas notifications",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -117,151 +285,11 @@ fun NotificationScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(5.dp))
-
-        AnimatedContent(targetState = notifications.itemCount > 0, label = "") {
-            if (it) {
-                LazyColumn {
-                    items(notifications.itemCount) { index ->
-                        val item = notifications[index] ?: NotificationModel()
-                        var isRead by remember { mutableStateOf(item.read) }
-                        val data = notificationViewModel.getSenderData(item)
-                        var textName = ""
-                        if (data.first != -1) {
-                            textName = data.second.split(" ").mapNotNull { text ->
-                                text.firstOrNull()
-                            }.take(2).joinToString("")
-
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null
-                                    ) {
-                                        isRead = true
-                                        GlobalEntries.isFromNotification = false
-                                        GlobalEntries.idInvitation = item.idInvitation
-                                        GlobalEntries.idAnnounce = item.idPost
-                                        GlobalEntries.idCompany = item.idCompany
-                                        notificationViewModel.seenNotification(item.idNotification)
-                                    }
-                                    .background(
-                                        if (isRead) Color.Transparent else Color(0xFF25D366).copy(
-                                            alpha = 0.1f
-                                        )
-                                    )
-                            ) {
-
-                                Box(modifier = Modifier.fillMaxWidth()) {
-                                    Row(
-                                        modifier = Modifier
-                                            .align(Alignment.CenterStart)
-                                            .padding(horizontal = 10.dp, vertical = 20.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(40.dp)
-                                                .clip(CircleShape)
-                                                .background(colorResource(id = R.color.whatsapp)),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(
-                                                text = textName,
-                                                fontSize = 18.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Color.White
-                                            )
-                                        }
-
-                                        Column(
-                                            modifier = Modifier.padding(start = 10.dp)
-                                        ) {
-                                            Text(
-                                                text = data.second,
-                                                fontWeight = FontWeight.Bold
-                                            )
-
-                                            Spacer(modifier = Modifier.height(5.dp))
-
-                                            Text(text = item.description)
-                                        }
-                                    }
-
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        modifier = Modifier
-                                            .align(Alignment.CenterEnd)
-                                            .padding(end = 10.dp)
-                                            .clickable(
-                                                interactionSource = interactionSource,
-                                                indication = null
-                                            ) {
-                                                notificationViewModel.removeNotification(item.idNotification)
-                                            },
-                                        tint = Color.Red,
-                                        contentDescription = "delete"
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                HorizontalDivider(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    thickness = 1.dp
-                                )
-
-                            }
-                        }
-
-                    }
-                    notifications.apply {
-                        when {
-                            loadState.refresh is LoadState.Loading -> {
-                                item { PageLoader(Modifier.fillParentMaxSize()) }
-                            }
-
-                            loadState.refresh is LoadState.Error -> {
-                                val error = loadState.refresh as LoadState.Error
-                                item {
-                                    ErrorMessage(
-                                        modifier = Modifier.fillParentMaxSize(),
-                                        message = error.error.localizedMessage ?: "",
-                                        onClickRetry = { retry() })
-                                }
-                            }
-
-                            loadState.append is LoadState.Loading -> {
-                                item { LoadingNextPageItem(modifier = Modifier) }
-                            }
-
-                            loadState.append is LoadState.Error -> {
-                                val error = loadState.append as LoadState.Error
-                                item {
-                                    ErrorMessage(
-                                        modifier = Modifier,
-                                        message = error.error.localizedMessage ?: "",
-                                        onClickRetry = { retry() })
-                                }
-                            }
-
-                            else -> {
-
-                            }
-                        }
-                    }
-
-                }
-            } else {
-                Text(
-                    text = "Vous n'avez pas notifications",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-        }
+        PullRefreshIndicator(
+            refreshing = refreshing,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
 
     }
 }

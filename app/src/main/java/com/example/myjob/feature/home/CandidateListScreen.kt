@@ -26,11 +26,15 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -88,7 +92,9 @@ import com.example.myjob.feature.invitation.company.EnProcessForm
 import com.example.myjob.feature.navigation.Screen
 import kotlinx.coroutines.flow.update
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+    ExperimentalMaterialApi::class
+)
 @Composable
 fun CandidateListScreen(
     navController: NavController,
@@ -107,7 +113,6 @@ fun CandidateListScreen(
     val interactionSource = remember { MutableInteractionSource() }
 
     val fcmToken by homeViewModel.fcmToken.collectAsState()
-
     val lifecycle = rememberLifecycleEvent()
     LaunchedEffect(lifecycle) {
         if (lifecycle == Lifecycle.Event.ON_RESUME) {
@@ -193,6 +198,14 @@ fun CandidateListScreen(
     }
 
     val invitation by homeViewModel.invitation.collectAsState()
+    val lazyPagingItems = homeViewModel.user.collectAsLazyPagingItems()
+
+    val refreshing = lazyPagingItems.loadState.refresh is LoadState.Loading
+
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = refreshing,
+        onRefresh = { lazyPagingItems.refresh() }
+    )
 
     var openFinishProcess by remember { mutableStateOf(false) }
     var invitationModel by remember { mutableStateOf(InvitationModel()) }
@@ -211,6 +224,7 @@ fun CandidateListScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .pullRefresh(pullRefreshState)
             .background(MaterialTheme.colorScheme.background)
     ) {
 
@@ -372,9 +386,8 @@ fun CandidateListScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            val lazyPagingItems = homeViewModel.user.collectAsLazyPagingItems()
-
             if (lazyPagingItems.itemCount > 0) {
+
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(horizontal = 16.dp),
@@ -475,6 +488,7 @@ fun CandidateListScreen(
                 }
 
                 Spacer(modifier = Modifier.height(50.dp))
+
             } else {
                 Box(modifier = Modifier.fillMaxSize()) {
                     Text(
@@ -484,6 +498,12 @@ fun CandidateListScreen(
                 }
             }
         }
+
+        PullRefreshIndicator(
+            refreshing = refreshing,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
 
         AnimatedVisibility(
             visible = filterOpen,

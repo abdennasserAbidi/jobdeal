@@ -23,10 +23,14 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -78,7 +82,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun InvitationScreen(
     navController: NavController,
@@ -86,6 +90,14 @@ fun InvitationScreen(
 ) {
 
     val invitations = invitationViewModel.invitations.collectAsLazyPagingItems()
+
+    val refreshing = invitations.loadState.refresh is LoadState.Loading
+
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = refreshing,
+        onRefresh = { invitations.refresh() }
+    )
+
 
     val invitationChoices by invitationViewModel.invitationChoices.collectAsState()
     val selectionChoices by invitationViewModel.selectionChoices.collectAsState()
@@ -120,7 +132,11 @@ fun InvitationScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(pullRefreshState)
+    ) {
 
         Column(modifier = Modifier.fillMaxWidth()) {
 
@@ -268,80 +284,95 @@ fun InvitationScreen(
 
             val statusInvitations by invitationViewModel.statusInvitations.collectAsState()
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 20.dp)
-            ) {
+            if (invitations.itemCount > 0) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 20.dp)
+                ) {
 
-                items(invitations.itemCount) { index ->
-                    val item = invitations[index] ?: InvitationModel()
-                    val statusCandidate = if (item.status != InvitationStatus.ON_HOLD.name)
-                        item.status else statusInvitations
+                    items(invitations.itemCount) { index ->
+                        val item = invitations[index] ?: InvitationModel()
+                        val statusCandidate = if (item.status != InvitationStatus.ON_HOLD.name)
+                            item.status else statusInvitations
 
-                    InvitationCard(
-                        statusInvitations = statusCandidate ?: "",
-                        invitationModel = item,
-                        onClick = {
-                            GlobalEntries.idInvitation = item.idInvitation
-                            navController.navigate(Screen.NormalDetailInvitationScreen.route)
-                        },
-                        onAcceptInvitation = {
-                            item.status = InvitationStatus.IN_PROCESS.name
-                            invitationViewModel.acceptRejectInvitation(item)
+                        InvitationCard(
+                            statusInvitations = statusCandidate ?: "",
+                            invitationModel = item,
+                            onClick = {
+                                GlobalEntries.idInvitation = item.idInvitation
+                                navController.navigate(Screen.NormalDetailInvitationScreen.route)
+                            },
+                            onAcceptInvitation = {
+                                item.status = InvitationStatus.IN_PROCESS.name
+                                invitationViewModel.acceptRejectInvitation(item)
 
-                            invitationViewModel.clearToken()
-                            invitationViewModel.getUserToken(item.idCompany)
-                            acceptRejectInvitation = "accept"
-                        },
-                        onRejectInvitation = {
-                            item.status = InvitationStatus.NOT_INTERESTED.name
-                            invitationViewModel.acceptRejectInvitation(item)
+                                invitationViewModel.clearToken()
+                                invitationViewModel.getUserToken(item.idCompany)
+                                acceptRejectInvitation = "accept"
+                            },
+                            onRejectInvitation = {
+                                item.status = InvitationStatus.NOT_INTERESTED.name
+                                invitationViewModel.acceptRejectInvitation(item)
 
-                            invitationViewModel.clearToken()
-                            invitationViewModel.getUserToken(item.idCompany)
-                            acceptRejectInvitation = "refuse"
-                        }
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                }
-
-                invitations.apply {
-                    when {
-                        loadState.refresh is LoadState.Loading -> {
-                            item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
-                        }
-
-                        loadState.refresh is LoadState.Error -> {
-                            val error = invitations.loadState.refresh as LoadState.Error
-                            item {
-                                ErrorMessage(
-                                    modifier = Modifier.fillParentMaxSize(),
-                                    message = error.error.localizedMessage ?: "",
-                                    onClickRetry = { retry() })
+                                invitationViewModel.clearToken()
+                                invitationViewModel.getUserToken(item.idCompany)
+                                acceptRejectInvitation = "refuse"
                             }
-                        }
+                        )
 
-                        loadState.append is LoadState.Loading -> {
-                            item { LoadingNextPageItem(modifier = Modifier) }
-                        }
+                        Spacer(modifier = Modifier.height(10.dp))
 
-                        loadState.append is LoadState.Error -> {
-                            val error = invitations.loadState.append as LoadState.Error
-                            item {
-                                ErrorMessage(
-                                    modifier = Modifier,
-                                    message = error.error.localizedMessage!!,
-                                    onClickRetry = { retry() })
+                    }
+
+                    invitations.apply {
+                        when {
+                            loadState.refresh is LoadState.Loading -> {
+                                item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
+                            }
+
+                            loadState.refresh is LoadState.Error -> {
+                                val error = invitations.loadState.refresh as LoadState.Error
+                                item {
+                                    ErrorMessage(
+                                        modifier = Modifier.fillParentMaxSize(),
+                                        message = error.error.localizedMessage ?: "",
+                                        onClickRetry = { retry() })
+                                }
+                            }
+
+                            loadState.append is LoadState.Loading -> {
+                                item { LoadingNextPageItem(modifier = Modifier) }
+                            }
+
+                            loadState.append is LoadState.Error -> {
+                                val error = invitations.loadState.append as LoadState.Error
+                                item {
+                                    ErrorMessage(
+                                        modifier = Modifier,
+                                        message = error.error.localizedMessage!!,
+                                        onClickRetry = { retry() })
+                                }
                             }
                         }
                     }
                 }
+            } else {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        text = "There is no data",
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
             }
         }
+
+        PullRefreshIndicator(
+            refreshing = refreshing,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
     }
 
     // Filter Bottom Sheet
