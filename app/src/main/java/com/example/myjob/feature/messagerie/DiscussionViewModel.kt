@@ -25,6 +25,7 @@ import com.example.myjob.domain.usecase.chat.GetUserConversationsUseCase
 import com.example.myjob.domain.usecase.chat.SaveMessageUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.domain.usecase.home.UploadFileChatUseCase
+import com.example.myjob.domain.usecase.home.UploadFileDirectUseCase
 import com.example.myjob.domain.usecase.home.UploadFileUseCase
 import com.example.myjob.feature.validateprofile.Documents
 import com.example.myjob.local.database.SharedPreference
@@ -51,7 +52,8 @@ class DiscussionViewModel @Inject constructor(
     private val getUserConversationsUseCase: GetUserConversationsUseCase,
     private val findConversationUseCase: FindConversationUseCase,
     private val getUserUseCase: GetUserUseCase,
-    private val uploadFileUseCase: UploadFileChatUseCase
+    private val uploadFileUseCase: UploadFileChatUseCase,
+    private val uploadFileDirectUseCase: UploadFileDirectUseCase,
 ) : ViewModel() {
 
     fun readTextFromUri(context: Context, uri: Uri): String {
@@ -180,6 +182,60 @@ class DiscussionViewModel @Inject constructor(
             uploadFileUseCase.execute(params).collect { res ->
                 when (res.status) {
                     ResourceState.SUCCESS -> {
+                        uploadMessage.update {
+                            res.data ?: ""
+                        }
+                    }
+
+                    else -> {
+                        uploadMessage.update { "" }
+                    }
+                }
+            }
+        }
+    }
+
+    fun uploadListDoc(context: Context, list: List<Uri>) {
+
+        val listImages = mutableListOf<MultipartBody.Part>()
+
+        list.map { fileUri ->
+            val document = Documents(url = fileUri.path ?: "")
+
+            val file = FileReader.getFile(context, fileUri)
+
+            val requestBody: RequestBody =
+                RequestBody.create("application/*".toMediaTypeOrNull(), file)
+
+            val expectedName = "document${document.id}"
+            val multipartBody: MultipartBody.Part =
+                MultipartBody.Part.createFormData("image", expectedName, requestBody)
+
+            listImages.add(multipartBody)
+        }
+
+        viewModelScope.launch {
+            val idFrom = sharedPreference.getInt("idUser", -1)
+            val idTo = otherUserId
+            val params = Triple(idFrom, idTo,  listImages)
+
+            uploadFileDirectUseCase.execute(params).collect { res ->
+                when (res.status) {
+                    ResourceState.SUCCESS -> {
+                        val chatModel = ChatMessage(
+                            userConnectedId = idFrom,
+                            userConnectedName = getUserName(GlobalEntries.user) ?: "",
+                            userReceivedId = idTo,
+                            userReceivedName = getUserName(candidateUser) ?: "",
+                            documents = list.map { it.path ?: "" }
+                        )
+
+                        val list = _listMessages.value.toMutableList()
+                        list.add(chatModel)
+                        _listMessages.update {
+                            list
+                        }
+
                         uploadMessage.update {
                             res.data ?: ""
                         }

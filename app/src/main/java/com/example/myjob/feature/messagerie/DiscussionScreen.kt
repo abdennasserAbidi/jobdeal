@@ -236,6 +236,8 @@ fun DiscussionScreen(
                             if (messageText.isNotBlank()) {
                                 viewModel.sendMessage(messageText)
                                 messageText = ""
+                            } else {
+                                viewModel.uploadListDoc(context = context, listUri)
                             }
                         },
                         modifier = Modifier.size(56.dp),

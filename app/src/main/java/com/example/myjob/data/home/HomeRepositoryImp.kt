@@ -187,6 +187,18 @@ class HomeRepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
+
+    override suspend fun uploadDirect(idFrom: Int, idTo: Int, file: List<MultipartBody.Part>): Flow<Resource<String>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.uploadDirect(idFrom, idTo, file)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data.imageURL, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
     override suspend fun getFiles(id: Int): Flow<Resource<List<String>>> = flow {
         try {
             // Get data from RemoteDataSource

@@ -17,6 +17,7 @@ interface HomeRepository {
     suspend fun uploadFile(file: MultipartBody.Part): Flow<Resource<String>>
     suspend fun uploadFiles(idUser: Int, file: MultipartBody.Part): Flow<Resource<String>>
     suspend fun uploadChat(idFrom: Int, idTo: Int, file: MultipartBody.Part): Flow<Resource<String>>
+    suspend fun uploadDirect(idFrom: Int, idTo: Int, file: List<MultipartBody.Part>): Flow<Resource<String>>
     suspend fun getFiles(id: Int): Flow<Resource<List<String>>>
     suspend fun validateProfile(email: String): Flow<Resource<String>>
     suspend fun verifyExisting(fileName: String): Flow<Resource<FileExistingResponse>>

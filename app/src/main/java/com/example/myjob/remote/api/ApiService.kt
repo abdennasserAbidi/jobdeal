@@ -283,6 +283,14 @@ ApiService {
         @Part image: MultipartBody.Part
     ): UploadResponse
 
+    @Multipart
+    @POST("auth/uploadDirect")
+    suspend fun uploadDirect(
+        @Query("idFrom") idFrom: Int,
+        @Query("idTo") idTo: Int,
+        @Part image: List<MultipartBody.Part>
+    ): UploadResponse
+
     @GET("auth/getFiles")
     suspend fun getFiles(@Query("id") id: Int): FilesResponse
 

@@ -10,6 +10,10 @@ import com.example.myjob.domain.response.UserAuthResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.remote.api.ApiService
 import okhttp3.MultipartBody
+import retrofit2.http.Multipart
+import retrofit2.http.POST
+import retrofit2.http.Part
+import retrofit2.http.Query
 import javax.inject.Inject
 
 class HomeDataSourceImp @Inject constructor(
@@ -32,6 +36,9 @@ class HomeDataSourceImp @Inject constructor(
         apiService.upload(idUser, file)
     override suspend fun uploadChat(idFrom: Int, idTo: Int, file: MultipartBody.Part): UploadResponse =
         apiService.uploadChat(idFrom, idTo, file)
+
+    override suspend fun uploadDirect(idFrom: Int, idTo: Int, file: List<MultipartBody.Part>): UploadResponse =
+        apiService.uploadDirect(idFrom, idTo, file)
     override suspend fun getFiles(id: Int): FilesResponse = apiService.getFiles(id)
 
     override suspend fun validateProfile(email: String): UserResponse =
