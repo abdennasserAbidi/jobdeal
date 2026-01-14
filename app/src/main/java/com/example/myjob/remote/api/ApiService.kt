@@ -49,7 +49,14 @@ ApiService {
 
     @POST("auth/verifyAccountCompany")
     suspend fun verifyAccountCompany(
-        @Query("id") id: Int
+        @Query("id") id: Int,
+        @Query("isAccepted") isAccepted: Boolean,
+    ): UserResponse
+
+    @POST("auth/verifyAccountCandidate")
+    suspend fun verifyAccountCandidate(
+        @Query("id") id: Int,
+        @Query("isAccepted") isAccepted: Boolean,
     ): UserResponse
 
     @GET("auth/getCompaniesValidated")

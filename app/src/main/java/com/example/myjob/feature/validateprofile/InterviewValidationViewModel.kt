@@ -34,6 +34,8 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import javax.inject.Inject
 import androidx.core.net.toUri
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 
 @HiltViewModel
 class InterviewValidationViewModel @Inject constructor(
@@ -154,9 +156,11 @@ class InterviewValidationViewModel @Inject constructor(
     }
 
     fun updateStepsStatus(list: List<StepStatus>, index: Int, step: String) {
-
         val stepVerification = when(step) {
             VerificationStatus.PENDING_REVIEW.name -> VerificationStatus.PENDING_REVIEW
+            VerificationStatus.VERIFIED.name -> VerificationStatus.VERIFIED
+            VerificationStatus.REJECTED.name -> VerificationStatus.REJECTED
+            VerificationStatus.IN_PROGRESS.name -> VerificationStatus.IN_PROGRESS
             else -> VerificationStatus.NOT_STARTED
         }
 
@@ -238,68 +242,48 @@ class InterviewValidationViewModel @Inject constructor(
     var uploadMessage = MutableStateFlow("")
 
     fun uploadDoc(context: Context, fileUri: Uri, index: Int, documents: Documents) {
-        val file = FileReader.getFile(context, fileUri) // Helper function to convert URI to File
+        try {
+            val file = FileReader.getFile(context, fileUri)
 
-        val requestBody: RequestBody =
-            RequestBody.create("application/*".toMediaTypeOrNull(), file)
+            val requestBody1: RequestBody =
+                RequestBody.create("application/*".toMediaTypeOrNull(), file)
 
-        val expectedName = "document${documents.id}"
-        val multipartBody: MultipartBody.Part =
-            MultipartBody.Part.createFormData("image", expectedName, requestBody)
+            val contentResolver = context.contentResolver
+            val mimeType = contentResolver.getType(fileUri) ?: "application/octet-stream"
 
-        viewModelScope.launch {
-            val idUser = sharedPreference.getInt("idUser", -1)
-            val params = Pair(idUser, multipartBody)
+            val inputStream = contentResolver.openInputStream(fileUri)
+                ?: throw IllegalStateException("Cannot open input stream")
 
-            uploadFileUseCase.execute(params).collect { res ->
-                when (res.status) {
-                    ResourceState.SUCCESS -> {
-                        uploadMessage.update {
-                            res.data ?: ""
+            val requestBody = inputStream.use { stream ->
+                stream.readBytes()
+                    .toRequestBody(mimeType.toMediaType())
+            }
+
+
+            val expectedName = "document${documents.id}"
+            val multipartBody: MultipartBody.Part =
+                MultipartBody.Part.createFormData("image", expectedName, requestBody)
+
+            viewModelScope.launch {
+                val idUser = sharedPreference.getInt("idUser", -1)
+                val params = Pair(idUser, multipartBody)
+
+                uploadFileUseCase.execute(params).collect { res ->
+                    when (res.status) {
+                        ResourceState.SUCCESS -> {
+                            uploadMessage.update {
+                                res.data ?: ""
+                            }
                         }
-                    }
 
-                    else -> {
-                        uploadMessage.update { "" }
+                        else -> {
+                            uploadMessage.update { "" }
+                        }
                     }
                 }
             }
+        } catch (ex: Exception) {
+            Log.i("rerreererer", "uploadDoc: ${ex.message}")
         }
     }
-
-    /*init {
-        getFiles()
-    }*/
-
-    /*init {
-
-        val list = listOf(
-            StepStatus(
-                VerificationStep.ID_DOCUMENT,
-                VerificationStatus.NOT_STARTED,
-                "ID Document",
-                "Upload a government-issued ID (optional)",
-                Icons.Default.Badge,
-                isRequired = false
-            ),
-            StepStatus(
-                VerificationStep.WORK_EMAIL,
-                VerificationStatus.NOT_STARTED,
-                "Interview",
-                "Verify after interviewing",
-                Icons.Default.Work,
-                isRequired = false
-            ),
-            StepStatus(
-                VerificationStep.VIDEO_INTRO,
-                VerificationStatus.NOT_STARTED,
-                "Video Introduction",
-                "Record a 30-second video introduction",
-                Icons.Default.VideoCall,
-                isRequired = false
-            )
-        )
-
-        getVerifiedCandidateStatus(list)
-    }*/
 }

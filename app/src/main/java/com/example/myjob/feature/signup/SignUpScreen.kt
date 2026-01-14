@@ -75,6 +75,7 @@ import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.base.MyApp
 import com.example.myjob.common.CustomDialog
+import com.example.myjob.common.GlobalEntries.emailGoogleAccount
 import com.example.myjob.feature.home.filter.flowHandling
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
@@ -137,7 +138,9 @@ fun SignUpScreen(
     var companyName by remember { mutableStateOf(user.companyName ?: "") }
     val companyNameVerified by remember { derivedStateOf { isCompanyNameValid } }
 
-    var email by remember { mutableStateOf(user.email ?: "") }
+    Log.i("emailGoogleAccount", "SignUpScreen: $emailGoogleAccount")
+
+    var email by remember { mutableStateOf(emailGoogleAccount) }
     val emailVerified by remember { derivedStateOf { isEmailValid } }
 
     var password by remember { mutableStateOf(user.password ?: "") }

@@ -62,6 +62,7 @@ import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.CustomDialog
+import com.example.myjob.common.GlobalEntries.emailGoogleAccount
 import com.example.myjob.common.hideKeyboard
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
@@ -78,8 +79,7 @@ fun LoginScreen(
     navController: NavController,
     viewModel: LoginViewModel = hiltViewModel(),
     lifecycleScope: LifecycleCoroutineScope,
-    googleAuthUiClient: GoogleAuthUiClient,
-    onDirect: () -> Unit
+    googleAuthUiClient: GoogleAuthUiClient
 ) {
 
     val context = LocalContext.current
@@ -120,6 +120,11 @@ fun LoginScreen(
         CustomDialog(isSuccess = false, message = errorLogin) {
             showDialog = false
             isProgressing = false
+            if (addPassword) {
+                viewModel.clearText()
+                navController.navigate(Screen.SignupScreen.route)
+                addPassword = false
+            }
         }
     }
 
@@ -135,7 +140,6 @@ fun LoginScreen(
     }
 
     LaunchedEffect(token) {
-        Log.i("ofzkjghzjgkrhgkzrg", "LoginScreen: $token")
         isProgressing = false
         if (token.isNotEmpty()) {
             viewModel.isFromLogin(true)
@@ -150,10 +154,11 @@ fun LoginScreen(
 
     LaunchedEffect(verificationText) {
         if (verificationText == "Email already exist") {
-            onDirect()
+            navController.navigate(Screen.HomeScreen.route)
         } else if (verificationText.isNotEmpty()) {
             addPassword = true
-            viewModel.clearText()
+            showDialog = true
+            errorLogin = "Il n'y a pas de compte associé a cet email"
         }
     }
 
@@ -173,8 +178,7 @@ fun LoginScreen(
                     intent = result.data ?: return@launch
                 )
                 val userGmail = signInResult.data
-                Log.i("klfzefhgzr", "login: $userGmail")
-
+                emailGoogleAccount = userGmail?.email ?: ""
                 viewModel.onSignInResult(signInResult)
             }
 
@@ -209,258 +213,251 @@ fun LoginScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        if (addPassword) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())) {
 
-            AddPassword(viewModel = viewModel) {
-                addPassword = false
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Text(
+                    text = stringResource(id = R.string.welcome),
+                    modifier = Modifier.padding(top = 50.dp),
+                    style = TextStyle(
+                        color = colorResource(id = R.color.whatsapp),
+                        fontFamily = FontFamily.Default,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+
+                Text(
+                    text = stringResource(id = R.string.sub_title_welcome),
+                    modifier = Modifier.padding(top = 5.dp),
+                    style = TextStyle(
+                        color = Color.Black,
+                        fontFamily = FontFamily.Default,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Normal
+                    )
+                )
             }
-        } else {
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())) {
 
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+            FormTextField(
+                value = email,
+                onValueChange = {
+                    email = it
+                    if (activatedCheck) viewModel.validateEmail(it)
+                    viewModel.changeUserEmail(it)
+                },
+                label = "Email",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 40.dp),
+                isRequired = true
+            )
+
+            if (activatedCheck) {
+                if (email.isEmpty() || !emailVerified) {
+                    Log.i("submitEnabled", "SignUpScreen: $emailVerified")
 
                     Text(
-                        text = stringResource(id = R.string.welcome),
-                        modifier = Modifier.padding(top = 50.dp),
-                        style = TextStyle(
-                            color = colorResource(id = R.color.whatsapp),
-                            fontFamily = FontFamily.Default,
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-
-                    Text(
-                        text = stringResource(id = R.string.sub_title_welcome),
-                        modifier = Modifier.padding(top = 5.dp),
-                        style = TextStyle(
-                            color = Color.Black,
-                            fontFamily = FontFamily.Default,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Normal
-                        )
+                        modifier = Modifier.padding(top = 5.dp, start = 20.dp),
+                        text = if (emailVerified) "Valid First name" else stringResource(id = R.string.error_email),
+                        color = if (emailVerified) colorResource(id = R.color.whatsapp) else Color.Red
                     )
                 }
+            }
 
-                FormTextField(
-                    value = email,
-                    onValueChange = {
-                        email = it
-                        if (activatedCheck) viewModel.validateEmail(it)
-                        viewModel.changeUserEmail(it)
-                    },
-                    label = "Email",
+            FormTextField(
+                value = password,
+                onValueChange = {
+                    password = it
+                    if (activatedCheck) viewModel.validatePassword(it)
+                    viewModel.changeUserPassword(it)
+                },
+                label = stringResource(id = R.string.password_text),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 20.dp),
+                isRequired = true,
+                isPassword = true
+            )
+
+            if (activatedCheck) {
+                if (password.isEmpty() || !passwordVerified) {
+
+                    Text(
+                        modifier = Modifier.padding(top = 5.dp, start = 20.dp),
+                        text = stringResource(id = R.string.error_password),
+                        color = Color.Red
+                    )
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 5.dp)
+                    .padding(horizontal = 20.dp)
+            ) {
+                Text(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 40.dp),
-                    isRequired = true
+                        .align(Alignment.CenterEnd)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            navController.navigate(Screen.ForgotPasswordScreen.route)
+                        },
+                    text = stringResource(id = R.string.forgot_password_text),
+                    textDecoration = TextDecoration.Underline,
+                    color = Color.Blue
                 )
+            }
 
-                if (activatedCheck) {
-                    if (email.isEmpty() || !emailVerified) {
-                        Log.i("submitEnabled", "SignUpScreen: $emailVerified")
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-                        Text(
-                            modifier = Modifier.padding(top = 5.dp, start = 20.dp),
-                            text = if (emailVerified) "Valid First name" else stringResource(id = R.string.error_email),
-                            color = if (emailVerified) colorResource(id = R.color.whatsapp) else Color.Red
-                        )
-                    }
-                }
+                Button(
+                    onClick = {
+                        val s = viewModel.validateEmail(email)
+                        val p = viewModel.validatePassword(password)
 
-                FormTextField(
-                    value = password,
-                    onValueChange = {
-                        password = it
-                        if (activatedCheck) viewModel.validatePassword(it)
-                        viewModel.changeUserPassword(it)
+                        val activity = context as? Activity
+                        if (!emailVerified || !passwordVerified) activatedCheck = true
+
+                        if (s && p) {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                isProgressing = true
+                                activity?.hideKeyboard()
+                                delay(1000L)
+                                viewModel.login(user)
+                            }
+                        }
                     },
-                    label = stringResource(id = R.string.password_text),
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
+                        .fillMaxWidth(0.9f)
                         .padding(top = 20.dp),
-                    isRequired = true,
-                    isPassword = true
-                )
-
-                if (activatedCheck) {
-                    if (password.isEmpty() || !passwordVerified) {
-
-                        Text(
-                            modifier = Modifier.padding(top = 5.dp, start = 20.dp),
-                            text = stringResource(id = R.string.error_password),
-                            color = Color.Red
-                        )
-                    }
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 5.dp)
-                        .padding(horizontal = 20.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorResource(id = R.color.whatsapp)
+                    )
                 ) {
                     Text(
+                        stringResource(id = R.string.login_text),
+                        modifier = Modifier.padding(vertical = 5.dp)
+                    )
+                }
+
+                Row(
+                    Modifier
+                        .padding(top = 25.dp)
+                        .fillMaxWidth(0.8f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
                         modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                navController.navigate(Screen.ForgotPasswordScreen.route)
-                            },
-                        text = stringResource(id = R.string.forgot_password_text),
+                            .height(2.dp)
+                            .weight(1f)
+                            .background(Color.LightGray)
+                    ) {}
+
+                    Text(
+                        text = stringResource(id = R.string.or_text),
+                        modifier = Modifier.weight(1f),
+                        color = Color.Gray,
+                        style = TextStyle(
+                            textAlign = TextAlign.Center
+                        )
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .height(2.dp)
+                            .weight(1f)
+                            .background(Color.LightGray)
+                    ) {}
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .padding(top = 25.dp)
+                        .border(
+                            1.dp,
+                            Color.LightGray,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .animateContentSize(
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = LinearOutSlowInEasing
+                            )
+                        )
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            lifecycleScope.launch {
+                                val signInIntentSender = googleAuthUiClient.signIn()
+                                launcher.launch(
+                                    IntentSenderRequest
+                                        .Builder(
+                                            signInIntentSender ?: return@launch
+                                        )
+                                        .build()
+                                )
+                            }
+                        }
+                        .background(
+                            color = Color.Transparent,
+                            shape = RoundedCornerShape(8.dp)
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_google_logo),
+                        contentDescription = "Google Button",
+                        tint = Color.Unspecified
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Text(
+                        text = stringResource(id = R.string.google_signin_text),
+                        modifier = Modifier.padding(vertical = 20.dp),
+                    )
+                }
+
+                Row(
+                    modifier = Modifier
+                        .padding(top = 20.dp)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            navController.navigate(Screen.SignupScreen.route)
+                        },
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = stringResource(id = R.string.sign_up_hint))
+                    Text(
+                        modifier = Modifier.padding(start = 5.dp),
+                        text = stringResource(id = R.string.sign_up_text),
                         textDecoration = TextDecoration.Underline,
                         color = Color.Blue
                     )
-                }
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    Button(
-                        onClick = {
-                            val s = viewModel.validateEmail(email)
-                            val p = viewModel.validatePassword(password)
-
-                            val activity = context as? Activity
-                            if (!emailVerified || !passwordVerified) activatedCheck = true
-
-                            if (s && p) {
-                                CoroutineScope(Dispatchers.Main).launch {
-                                    isProgressing = true
-                                    activity?.hideKeyboard()
-                                    delay(1000L)
-                                    viewModel.login(user)
-                                }
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                            .padding(top = 20.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(id = R.color.whatsapp)
-                        )
-                    ) {
-                        Text(
-                            stringResource(id = R.string.login_text),
-                            modifier = Modifier.padding(vertical = 5.dp)
-                        )
-                    }
-
-                    Row(
-                        Modifier
-                            .padding(top = 25.dp)
-                            .fillMaxWidth(0.8f),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .height(2.dp)
-                                .weight(1f)
-                                .background(Color.LightGray)
-                        ) {}
-
-                        Text(
-                            text = stringResource(id = R.string.or_text),
-                            modifier = Modifier.weight(1f),
-                            color = Color.Gray,
-                            style = TextStyle(
-                                textAlign = TextAlign.Center
-                            )
-                        )
-
-                        Box(
-                            modifier = Modifier
-                                .height(2.dp)
-                                .weight(1f)
-                                .background(Color.LightGray)
-                        ) {}
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                            .padding(top = 25.dp)
-                            .border(
-                                1.dp,
-                                Color.LightGray,
-                                RoundedCornerShape(8.dp)
-                            )
-                            .animateContentSize(
-                                animationSpec = tween(
-                                    durationMillis = 300,
-                                    easing = LinearOutSlowInEasing
-                                )
-                            )
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                lifecycleScope.launch {
-                                    val signInIntentSender = googleAuthUiClient.signIn()
-                                    launcher.launch(
-                                        IntentSenderRequest
-                                            .Builder(
-                                                signInIntentSender ?: return@launch
-                                            )
-                                            .build()
-                                    )
-                                }
-                            }
-                            .background(
-                                color = Color.Transparent,
-                                shape = RoundedCornerShape(8.dp)
-                            ),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_google_logo),
-                            contentDescription = "Google Button",
-                            tint = Color.Unspecified
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Text(
-                            text = stringResource(id = R.string.google_signin_text),
-                            modifier = Modifier.padding(vertical = 20.dp),
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .padding(top = 20.dp)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                navController.navigate(Screen.SignupScreen.route)
-                            },
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = stringResource(id = R.string.sign_up_hint))
-                        Text(
-                            modifier = Modifier.padding(start = 5.dp),
-                            text = stringResource(id = R.string.sign_up_text),
-                            textDecoration = TextDecoration.Underline,
-                            color = Color.Blue
-                        )
-                    }
                 }
             }
         }

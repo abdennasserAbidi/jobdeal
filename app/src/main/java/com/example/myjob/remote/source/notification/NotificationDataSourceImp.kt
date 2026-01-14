@@ -25,8 +25,11 @@ class NotificationDataSourceImp @Inject constructor(
     override suspend fun sendNotification(base: NotificationMessage): UserResponse =
         apiService.sendNotification(base)
 
-    override suspend fun verifyAccountCompany(id: Int): UserResponse =
-        apiService.verifyAccountCompany(id)
+    override suspend fun verifyAccountCompany(id: Int, isAccepted: Boolean): UserResponse =
+        apiService.verifyAccountCompany(id, isAccepted)
+
+    override suspend fun verifyAccountCandidate(id: Int, isAccepted: Boolean): UserResponse =
+        apiService.verifyAccountCandidate(id, isAccepted)
 
     override suspend fun getCompaniesValidated(): List<String> =
         apiService.getCompaniesValidated()

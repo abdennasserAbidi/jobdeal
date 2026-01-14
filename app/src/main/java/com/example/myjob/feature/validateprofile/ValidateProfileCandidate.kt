@@ -63,7 +63,8 @@ fun ValidateProfileCandidate(
 
     val completedSteps = verificationSteps.count { it.status == VerificationStatus.VERIFIED }
     val requiredSteps = verificationSteps.count { it.isRequired }
-    val requiredCompleted = verificationSteps.count { it.isRequired && it.status == VerificationStatus.VERIFIED }
+    val requiredCompleted =
+        verificationSteps.count { it.isRequired && it.status == VerificationStatus.VERIFIED }
     val isFullyVerified = requiredCompleted == requiredSteps
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -139,8 +140,11 @@ fun ValidateProfileCandidate(
                     VerificationStepCard(
                         stepStatus = step,
                         onClick = {
-                            when(index) {
-                                0 -> navController.navigate(Screen.ValidateDocCandidateScreen.route)
+                            when (index) {
+                                0 -> {
+                                    if (step.status == VerificationStatus.REJECTED || step.status == VerificationStatus.NOT_STARTED)
+                                        navController.navigate(Screen.ValidateDocCandidateScreen.route)
+                                }
                                 //1 -> navController.navigate(Screen.ValidationInterviewScreen.route)
                                 1 -> Log.i("", "ValidateProfileCandidate: fzkghrzg")
                                 else -> Log.i("", "ValidateProfileCandidate: fzkghrzg")

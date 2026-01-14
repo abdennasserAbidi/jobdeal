@@ -222,7 +222,7 @@ class DiscussionViewModel @Inject constructor(
             uploadFileDirectUseCase.execute(params).collect { res ->
                 when (res.status) {
                     ResourceState.SUCCESS -> {
-                        val chatModel = ChatMessage(
+                        /*val chatModel = ChatMessage(
                             userConnectedId = idFrom,
                             userConnectedName = getUserName(GlobalEntries.user) ?: "",
                             userReceivedId = idTo,
@@ -234,7 +234,7 @@ class DiscussionViewModel @Inject constructor(
                         list.add(chatModel)
                         _listMessages.update {
                             list
-                        }
+                        }*/
 
                         uploadMessage.update {
                             res.data ?: ""

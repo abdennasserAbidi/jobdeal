@@ -102,11 +102,24 @@ class NotificationRepositoryImp @Inject constructor(
             }
         }
 
-    override suspend fun verifyAccountCompany(id: Int): Flow<Resource<UserResponse>> =
+    override suspend fun verifyAccountCompany(id: Int, isAccepted: Boolean): Flow<Resource<UserResponse>> =
         flow {
             try {
                 // Get data from RemoteDataSource
-                val data = remoteDataSource.verifyAccountCompany(id)
+                val data = remoteDataSource.verifyAccountCompany(id,isAccepted)
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
+        }
+
+    override suspend fun verifyAccountCandidate(id: Int, isAccepted: Boolean): Flow<Resource<UserResponse>> =
+        flow {
+            try {
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.verifyAccountCandidate(id,isAccepted)
                 // Emit data
                 emit(Resource(ResourceState.SUCCESS, data, null))
             } catch (ex: Exception) {

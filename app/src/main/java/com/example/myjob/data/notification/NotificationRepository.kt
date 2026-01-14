@@ -13,7 +13,8 @@ interface NotificationRepository {
     suspend fun removeNotification(id: Int): Flow<Resource<UserResponse>>
     suspend fun updateToken(id: Int, token: String): Flow<Resource<UserResponse>>
     suspend fun sendNotification(base: NotificationMessage): Flow<Resource<UserResponse>>
-    suspend fun verifyAccountCompany(id: Int): Flow<Resource<UserResponse>>
+    suspend fun verifyAccountCompany(id: Int, isAccepted: Boolean): Flow<Resource<UserResponse>>
+    suspend fun verifyAccountCandidate(id: Int, isAccepted: Boolean): Flow<Resource<UserResponse>>
     suspend fun getCompaniesValidated(): Flow<Resource<List<String>>>
     suspend fun getInstitutesValidated(): Flow<Resource<List<String>>>
 

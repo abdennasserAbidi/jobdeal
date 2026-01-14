@@ -116,7 +116,8 @@ class ValidateProfileViewModel @Inject constructor(
     fun validateCompany() {
         viewModelScope.launch {
             val idUser = sharedPreference.getInt("idUser", -1)
-            verificationCompanyUseCase.execute(idUser).collect {
+            val params = Pair(idUser, true)
+            verificationCompanyUseCase.execute(params).collect {
 
             }
         }

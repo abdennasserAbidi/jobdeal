@@ -13,9 +13,12 @@ import javax.inject.Inject
 class VerificationCompanyUseCase @Inject constructor(
     private val repository: NotificationRepository,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
-) : FlowBaseUseCase<UserResponse, Int>() {
+) : FlowBaseUseCase<UserResponse, Pair<Int, Boolean>>() {
 
-    override suspend fun buildRequest(params: Int?): Flow<Resource<UserResponse>> {
-        return repository.verifyAccountCompany(params ?: -1).flowOn(dispatcher)
+    override suspend fun buildRequest(params: Pair<Int, Boolean>?): Flow<Resource<UserResponse>> {
+        return repository.verifyAccountCompany(
+            params?.first ?: -1,
+            params?.second ?: false
+        ).flowOn(dispatcher)
     }
 }

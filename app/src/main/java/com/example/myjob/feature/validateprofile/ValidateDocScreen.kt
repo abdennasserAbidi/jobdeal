@@ -131,7 +131,13 @@ fun ValidateDocScreen(
             imageUri.value = uri
             GlobalEntries.listImageUri = (GlobalEntries.listImageUri + Pair(uri.path ?: "", uri)).toMutableList()
 
-            filesList = (filesList + (uri.path ?: "")).toMutableList()
+            filesList = if (filesList.contains("")) {
+                filesList.mapIndexed { index, value ->
+                    if (index == 0) uri.path ?: value else value
+                }
+            } else {
+                (filesList + (uri.path ?: "")).toMutableList()
+            }
 
         } else {
             // Handle the case where no media was selected
@@ -283,7 +289,7 @@ fun ValidateDocScreen(
 
         Log.e("IMAGE_ERROR", "documentList : $filesList")
 
-        LazyRow {
+        /*LazyRow {
             itemsIndexed(
                 items = filesList
             ) { index, doc ->
@@ -308,7 +314,7 @@ fun ValidateDocScreen(
                     )
                 }
             }
-        }
+        }*/
 
     }
 }

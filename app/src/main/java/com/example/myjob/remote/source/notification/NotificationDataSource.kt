@@ -15,7 +15,8 @@ interface NotificationDataSource {
     suspend fun removeNotification(id: Int):UserResponse
     suspend fun updateToken(id: Int, token: String): UserResponse
     suspend fun sendNotification(base: NotificationMessage): UserResponse
-    suspend fun verifyAccountCompany(id: Int): UserResponse
+    suspend fun verifyAccountCompany(id: Int, isAccepted: Boolean): UserResponse
+    suspend fun verifyAccountCandidate(id: Int, isAccepted: Boolean): UserResponse
     suspend fun getCompaniesValidated(): List<String>
     suspend fun getInstitutesValidated(): List<String>
 }

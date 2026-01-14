@@ -150,7 +150,6 @@ class MainActivity : ComponentActivity() {
     private var imageUri = mutableStateOf<Uri?>(null)
     private var textChanged = mutableStateOf("Scanned text will appear here..")
 
-
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
             context = applicationContext,
@@ -288,6 +287,11 @@ class MainActivity : ComponentActivity() {
             val idInvitation = intent.extras?.getString("idInvitation")
             val idAnnounce = intent.extras?.getString("idAnnounce")
             val idCompany = intent.extras?.getString("idCompany")
+            val validation = intent.extras?.getString("validation")
+
+            validation?.let {
+                navController.navigate(Screen.ValidateProfileCandidateScreen.route)
+            }
 
             idInvitation?.let {
                 Log.i("DeepLink", "Navigating to: $it")
@@ -360,6 +364,11 @@ class MainActivity : ComponentActivity() {
                 val idInvitation = intent?.getStringExtra("idInvitation")
                 val idAnnounce = intent?.getStringExtra("idAnnounce")
                 val idCompany = intent?.getStringExtra("idCompany")
+                val validation = intent?.getStringExtra("validation")
+
+                validation?.let {
+                    startRoute = Screen.ValidateProfileCandidateScreen.route
+                }
 
                 idInvitation?.let {
                     GlobalEntries.isFromNotification = true
@@ -457,9 +466,7 @@ class MainActivity : ComponentActivity() {
                             navController = navController,
                             lifecycleScope = lifecycleScope,
                             googleAuthUiClient = googleAuthUiClient
-                        ) {
-                            navController.navigate(Screen.galleryScreen.route)
-                        }
+                        )
                     }
 
                     composable(route = Screen.SignupScreen.route) {

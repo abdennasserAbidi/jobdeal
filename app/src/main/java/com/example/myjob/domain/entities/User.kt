@@ -24,7 +24,7 @@ data class User(
     var role: String? = "Company",
     var candidate: Boolean? = false,
     var company: Boolean? = true,
-    var email: String? = "abidi.baha@gmail.com",
+    var email: String? = "",
     var preferredWorkType: MutableList<String>? = mutableListOf(),
     var workPreferences: MutableList<String>? = mutableListOf(),
     var fullName: String? = "$firstName $lastName",

@@ -55,6 +55,7 @@ object GlobalEntries {
     var userCandidate = User()
     var userForCompany = User()
     var language = "Français"
+    var emailGoogleAccount = ""
     var preferredRole = "Holding"
     var preferredRoles = mutableListOf<String>()
     var notificationMessage = NotificationMessage()
