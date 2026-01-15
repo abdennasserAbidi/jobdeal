@@ -17,6 +17,7 @@ import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.domain.entities.notification.NotificationMessage
 import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.domain.usecase.invitation.AcceptRejectInvitationUseCase
+import com.example.myjob.domain.usecase.invitation.DeleteInvitationUseCase
 import com.example.myjob.domain.usecase.invitation.GetAllInvitationsUseCase
 import com.example.myjob.domain.usecase.invitation.GetFilteredInvitationsUseCase
 import com.example.myjob.domain.usecase.invitation.GetOtherInvitationsUseCase
@@ -24,10 +25,12 @@ import com.example.myjob.domain.usecase.notification.SendNotificationsUseCase
 import com.example.myjob.local.database.SharedPreference
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
@@ -43,6 +46,7 @@ class InvitationCandidateViewModel @Inject constructor(
     private val getFilteredInvitationsUseCase: GetFilteredInvitationsUseCase,
     private val acceptRejectInvitationUseCase: AcceptRejectInvitationUseCase,
     private val getUserUseCase: GetUserUseCase,
+    private val deleteInvitationUseCase: DeleteInvitationUseCase,
     private val sendNotificationsUseCase: SendNotificationsUseCase
 ) : ViewModel() {
 
@@ -224,7 +228,9 @@ class InvitationCandidateViewModel @Inject constructor(
         Log.i("glrzhdhte", "type: ${invitationFilter.type}")
         Log.i("glrzhdhte", "listTypeContract: ${invitationFilter.listTypeContract}")
 
-        if (invitationFilter.type == "All Candidates" && invitationFilter.listTypeContract?.isEmpty() == true) {
+        val isIDLE = invitationFilter.type == "All Candidates" || invitationFilter.type == "Tous les Candidats"
+
+        if (isIDLE && invitationFilter.listTypeContract?.isEmpty() == true) {
             getInvitations()
         } else {
             Log.i("glrzhdhte", "fefafae: ${invitationFilter.listTypeContract}")
@@ -319,20 +325,41 @@ class InvitationCandidateViewModel @Inject constructor(
             }
         }
     }
+    private val _localItemRemoves = MutableStateFlow(-1)
 
     val _newInvitations: StateFlow<PagingData<InvitationModel>> = merge(
         _invitations,
         StompInvitationService.messages.map {
-            Log.i("fzejhgrzg", ": $it")
             PagingData.from(listOf(it))
         }
-    ).stateIn(
+    ).combine(_localItemRemoves) { pagingData, updates ->
+        if (updates == -1) {
+            pagingData
+        } else {
+            pagingData.filter { item ->
+                item.idInvitation != updates
+            }
+        }
+    }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
         PagingData.empty()
     )
 
     val invitations: StateFlow<PagingData<InvitationModel>> get() = _newInvitations
+
+    fun deleteInvitation(invitation: InvitationModel) {
+        val id = invitation.idInvitation
+        val idFrom = sharedPreference.getInt("idUser", 0)
+        val param = Pair(id, idFrom)
+        viewModelScope.launch {
+            deleteInvitationUseCase.execute(param).collect { res ->
+                if (res.status == ResourceState.SUCCESS) {
+                    _localItemRemoves.update { id }
+                }
+            }
+        }
+    }
 
     fun connect() {
         val id = sharedPreference.getInt("idUser", 0)

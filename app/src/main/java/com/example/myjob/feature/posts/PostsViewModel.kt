@@ -215,23 +215,35 @@ class PostsViewModel @Inject constructor(
         }
     }
 
+    private var _posts = MutableStateFlow(emptyList<AnnouncementModel>())
+    val posts: StateFlow<List<AnnouncementModel>> get() = _posts.asStateFlow()
+
+    private val _localItemRemoves = MutableStateFlow(-1)
     val deleteStatus = MutableStateFlow("")
     fun deleteCompanyAnnouncement(idAnnounce: Int) {
         viewModelScope.launch {
             val idUser = sharedPreference.getInt("idUser", 0)
             val param = Pair(idAnnounce, idUser)
             deleteAnnouncementUseCase.execute(param).collect { res ->
-                Log.i("kelzhgkgr", "PostScreen: ${res.data?.message}")
+                /*if (res.status == ResourceState.SUCCESS) {
+                    _localItemRemoves.update { idAnnounce }
+
+                    _listSavedSearch.combine(_localItemRemoves) { pagingData, updates ->
+                        pagingData.filter { item ->
+                            item.id != updates
+                        }
+                    }.collect { data ->
+                        combinedDataFlow.update {
+                            data
+                        }
+                    }
+                }*/
                 deleteStatus.update {
                     res.data?.message ?: ""
                 }
             }
         }
     }
-
-
-    private var _posts = MutableStateFlow(emptyList<AnnouncementModel>())
-    val posts: StateFlow<List<AnnouncementModel>> get() = _posts.asStateFlow()
 
     val userConnectedId = MutableStateFlow(-1)
 

@@ -3,6 +3,7 @@ package com.example.myjob.feature.invitation.company
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.filter
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
@@ -11,6 +12,7 @@ import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
 import com.example.myjob.domain.usecase.announcement.GetAnnouncementUseCase
 import com.example.myjob.domain.usecase.announcement.SaveAnnouncementUseCase
+import com.example.myjob.domain.usecase.invitation.DeleteInvitationUseCase
 import com.example.myjob.domain.usecase.invitation.FinishProcessUseCase
 import com.example.myjob.domain.usecase.invitation.GetCompanyInvitationUseCase
 import com.example.myjob.local.database.SharedPreference
@@ -18,7 +20,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,7 +33,8 @@ class InvitationViewModel @Inject constructor(
     private val getCompanyInvitationUseCase: GetCompanyInvitationUseCase,
     private val getAnnouncementUseCase: GetAnnouncementUseCase,
     private val saveAnnouncementUseCase: SaveAnnouncementUseCase,
-    private val finishProcessUseCase: FinishProcessUseCase
+    private val finishProcessUseCase: FinishProcessUseCase,
+    private val deleteInvitationUseCase: DeleteInvitationUseCase
 ) : ViewModel() {
 
     val choiceList = MutableStateFlow(listOf("Mes Invitations", "Mes Annonces"))
@@ -38,7 +43,6 @@ class InvitationViewModel @Inject constructor(
         MutableStateFlow(value = PagingData.empty())
     val invitations: MutableStateFlow<PagingData<InvitationModel>> get() = _invitations
     fun getCompanyInvitations() {
-
         viewModelScope.launch {
             getCompanyInvitationUseCase.execute(sharedPreference.getInt("idUser", 0))
                 .collectLatest { res ->
@@ -47,6 +51,29 @@ class InvitationViewModel @Inject constructor(
                     }
 
                 }
+        }
+    }
+
+    private val _localItemRemoves = MutableStateFlow(-1)
+
+    fun deleteInvitation(invitation: InvitationModel) {
+        val id = invitation.idInvitation
+        val idFrom = sharedPreference.getInt("idUser", 0)
+        val param = Pair(id, idFrom)
+        viewModelScope.launch {
+            deleteInvitationUseCase.execute(param).collect { res ->
+                if (res.status == ResourceState.SUCCESS) {
+                    _localItemRemoves.update { id }
+
+                    _invitations.combine(_localItemRemoves) { pagingData, updates ->
+                        pagingData.filter { item ->
+                            item.idInvitation != updates
+                        }
+                    }.collect { data ->
+                        _invitations.update { data }
+                    }
+                }
+            }
         }
     }
 

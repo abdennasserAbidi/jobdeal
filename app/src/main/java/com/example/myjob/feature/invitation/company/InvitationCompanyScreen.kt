@@ -135,7 +135,7 @@ fun InvitationCompanyScreen(
                             openFinishProcess = true
                         },
                         onDeleteInvitation = {
-
+                            invitationViewModel.deleteInvitation(it)
                         }
                     )
                 }

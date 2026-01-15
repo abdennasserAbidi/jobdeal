@@ -304,6 +304,9 @@ fun InvitationScreen(
                                 GlobalEntries.idInvitation = item.idInvitation
                                 navController.navigate(Screen.NormalDetailInvitationScreen.route)
                             },
+                            onDeleteInvitation = {
+                                invitationViewModel.deleteInvitation(it)
+                            },
                             onAcceptInvitation = {
                                 item.status = InvitationStatus.IN_PROCESS.name
                                 invitationViewModel.acceptRejectInvitation(item)

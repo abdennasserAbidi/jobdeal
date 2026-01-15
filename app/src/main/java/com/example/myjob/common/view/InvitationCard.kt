@@ -45,6 +45,7 @@ fun InvitationCard(
     statusInvitations: String,
     invitationModel: InvitationModel,
     onClick: () -> Unit,
+    onDeleteInvitation: (InvitationModel) -> Unit = {},
     onAcceptInvitation: (InvitationModel) -> Unit = {},
     onRejectInvitation: (InvitationModel) -> Unit = {}
 ) {
@@ -162,7 +163,9 @@ fun InvitationCard(
                     )
 
                     Button(
-                        onClick = { /*onDeleteInvitation(invitationModel)*/ },
+                        onClick = {
+                            onDeleteInvitation(invitationModel)
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 10.dp),
@@ -191,7 +194,7 @@ fun InvitationCard(
                     )
 
                     Button(
-                        onClick = { /*onDeleteInvitation(invitationModel)*/ },
+                        onClick = { onDeleteInvitation(invitationModel) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 10.dp),
