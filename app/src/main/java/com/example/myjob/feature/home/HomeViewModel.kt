@@ -660,6 +660,7 @@ class HomeViewModel @Inject constructor(
             it.idCompany = sharedPreference.getInt("idUser", -1)
             it.companyName = GlobalEntries.user.companyName ?: ""
             it.idTo = user.id ?: -1
+            it.roleReceiver = user.role ?: "Company"
             it.fullName = user.fullName
             it.gender = user.sexe
             it.date = formattedDate

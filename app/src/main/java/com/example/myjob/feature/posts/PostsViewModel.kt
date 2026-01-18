@@ -31,6 +31,7 @@ import com.example.myjob.domain.usecase.announcement.GetPostUseCase
 import com.example.myjob.domain.usecase.announcement.RemoveLikeUseCase
 import com.example.myjob.domain.usecase.announcement.SaveAnnouncementUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
+import com.example.myjob.domain.usecase.notification.SeenNotificationUseCase
 import com.example.myjob.local.database.SharedPreference
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -64,10 +65,29 @@ class PostsViewModel @Inject constructor(
     private val deleteAnnouncementUseCase: DeleteAnnouncementUseCase,
     private val findAnnounceCandidateUseCase: FindAnnounceCandidateUseCase,
     private val findAnnounceCompanyUseCase: FindAnnounceCompanyUseCase,
+    private val seenNotificationUseCase: SeenNotificationUseCase,
     private val getPostUseCase: GetPostUseCase
 ) : ViewModel() {
 
+    val seenNotification = MutableStateFlow("")
+
+    private fun seenNotification(item: Int) {
+        viewModelScope.launch {
+            seenNotificationUseCase.execute(item).collect { res ->
+                if (res.status == ResourceState.SUCCESS) {
+                    seenNotification.update {
+                        res.data?.message ?: ""
+                    }
+                }
+            }
+        }
+    }
+
     init {
+        if (!GlobalEntries.isFromNotification) {
+            seenNotification(GlobalEntries.idNotification)
+        }
+
         getAnnouncementCandidate()
     }
 

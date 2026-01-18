@@ -38,6 +38,7 @@ data class InvitationModel(
     var idInvitation: Int = View.generateViewId(),
     var idTo: Int = 0,
     var date: String? = "",
+    var roleReceiver: String? = "",
     var fullName: String? = "",
     var gender: String? = "",
     var idCompany: Int = 0,

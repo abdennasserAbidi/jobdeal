@@ -28,6 +28,7 @@ sealed class Screen(val route:String) {
     object EducationScreen : Screen("education_screen")
     object FilterScreen : Screen("filter_screen")
     object DetailScreen : Screen("detail_screen")
+    object DetailCompanyScreen : Screen("detail_company_screen")
     object EducationFormScreen : Screen("education_form_screen")
     object PersonalFormScreen : Screen("personal_form_screen")
     object CountryCodeScreen : Screen("country_code_screen")

@@ -39,6 +39,7 @@ object GlobalEntries {
     var idExp = 0
     var idStudy = 0
     var idInvitation = 0
+    var idNotification = 0
     var tokenForgetPassword = ""
     var idAnnounce = 0
     var isFromNotification = false

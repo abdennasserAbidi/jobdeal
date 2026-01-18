@@ -15,7 +15,7 @@ import ua.naiksoftware.stomp.dto.StompHeader
 
 object StompNotificationService {
 
-    private const val WS_URL = "http://10.0.2.2:9090/ws"
+    private const val WS_URL = "http://72.61.102.178:9096/ws"
 
     private val stompClient = Stomp.over(
         Stomp.ConnectionProvider.OKHTTP,

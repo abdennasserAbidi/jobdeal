@@ -129,7 +129,9 @@ fun InvitationCompanyScreen(
                             userForCompany = User()
                             userForCompany.id = it.idTo
                             userForCompany.fullName = it.fullName
-                            navController.navigate(Screen.DetailScreen.route)
+                            val route = if (it.roleReceiver == "Candidat" || it.roleReceiver == "Candidate") Screen.DetailScreen.route
+                            else Screen.DetailCompanyScreen.route
+                            navController.navigate(route)
                         },
                         onTerminateInvitation = {
                             openFinishProcess = true

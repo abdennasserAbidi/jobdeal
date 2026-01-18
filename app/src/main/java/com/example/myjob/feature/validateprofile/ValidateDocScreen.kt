@@ -22,11 +22,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -80,6 +83,7 @@ fun ValidateDocScreen(
     var showDialog by remember { mutableStateOf(false) }
     var isSuccess by remember { mutableStateOf(false) }
     var activatedCheck by remember { mutableStateOf(false) }
+    var isProgressing by remember { mutableStateOf(false) }
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
@@ -91,13 +95,16 @@ fun ValidateDocScreen(
     val message by viewModel.message.collectAsState()
 
     if (showDialog) {
+        isProgressing = false
         CustomDialog(isSuccess = isSuccess, message = message) {
+            isProgressing = false
             showDialog = false
             navController.popBackStack()
         }
     }
 
     LaunchedEffect(message) {
+        Log.i("mefsfdfez", "ValidateDocScreen: $message")
         if (message == "your docs has uploaded") {
             //viewModel.changeDocs(docs)
             filesList.mapIndexed { index, path ->
@@ -116,6 +123,8 @@ fun ValidateDocScreen(
 
     val uploadMessage by viewModel.uploadMessage.collectAsState()
     LaunchedEffect(uploadMessage) {
+        Log.i("mefsfdfez", "uploadMessage: $uploadMessage")
+
         if (uploadMessage.contains("http")) {
             GlobalEntries.stepShared = 0
             navController.popBackStack()
@@ -144,177 +153,213 @@ fun ValidateDocScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        Box(
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    color = colorResource(id = R.color.whatsapp)
-                )
-                .padding(horizontal = 20.dp, vertical = 24.dp)
+                .fillMaxSize()
+                .verticalScroll(scrollState),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = {
-                        navController.popBackStack()
-                    },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.2f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
 
-                Text(
-                    text = stringResource(id = R.string.validate_profile_text),
-                    fontSize = 20.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-
-                IconButton(
-                    onClick = {
-                        filesList = (filesList + "").toMutableList()
-                    },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.2f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "More",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-        }
-
-        //docs
-        filesList.mapIndexed { index, doc ->
-            FormTextField(
-                value = doc,
-                borderColor = if (activatedCheck && doc.isEmpty()) Color.Red else colorResource(
-                    id = R.color.whatsapp
-                ),
-                onValueChange = {
-                    //docs[index] = it
-                },
-                label = stringResource(id = R.string.add_document_text),
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .padding(top = 20.dp),
-                isRequired = true,
-                readOnly = true,
-                onClick = {
-                    pickMediaLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                }
-            )
-
-            if (index > 0) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Text(
+                    .background(
+                        color = colorResource(id = R.color.whatsapp)
+                    )
+                    .padding(horizontal = 20.dp, vertical = 24.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = {
+                            navController.popBackStack()
+                        },
                         modifier = Modifier
-                            .padding(top = 5.dp, end = 20.dp)
-                            .align(Alignment.CenterEnd)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                filesList = (filesList - filesList[index]).toMutableList()
-                            },
-                        color = Color.Red,
-                        text = stringResource(id = R.string.remove_document_text),
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.2f))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Text(
+                        text = stringResource(id = R.string.validate_profile_text),
+                        fontSize = 20.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
                     )
+
+                    IconButton(
+                        onClick = {
+                            filesList = (filesList + "").toMutableList()
+                        },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.2f))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "More",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+
+            //docs
+            filesList.mapIndexed { index, doc ->
+                FormTextField(
+                    value = doc,
+                    borderColor = if (activatedCheck && doc.isEmpty()) Color.Red else colorResource(
+                        id = R.color.whatsapp
+                    ),
+                    onValueChange = {
+                        //docs[index] = it
+                    },
+                    label = stringResource(id = R.string.add_document_text),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 20.dp),
+                    isRequired = true,
+                    readOnly = true,
+                    onClick = {
+                        pickMediaLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    }
+                )
+
+                if (index > 0) {
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            modifier = Modifier
+                                .padding(top = 5.dp, end = 20.dp)
+                                .align(Alignment.CenterEnd)
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    filesList = (filesList - filesList[index]).toMutableList()
+                                },
+                            color = Color.Red,
+                            text = stringResource(id = R.string.remove_document_text),
+                        )
+                    }
+                }
+            }
+
+            Button(
+                onClick = {
+
+                    val listDoc = mutableListOf<String>()
+                    val listDocuments = mutableListOf<Documents>()
+                    filesList.mapIndexed { index, path ->
+                        val fileName = viewModel.imageInfo(context, viewModel.fromPathToUri(path))
+                        val type = viewModel.getTypeDoc(fileName)
+
+                        val document = Documents(
+                            name = fileName,
+                            type = type
+                        )
+
+                        listDoc.add(fileName)
+                        listDocuments.add(document)
+                    }
+
+                    val validationProfileStatus = ValidationProfileStatus()
+                    validationProfileStatus.typeValidation = "doc"
+                    validationProfileStatus.docs = listDoc
+                    validationProfileStatus.documents = listDocuments
+                    validationProfileStatus.status = VerificationStatus.PENDING_REVIEW.name
+                    viewModel.validate(validationProfileStatus)
+                    isProgressing = true
+                },
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .padding(top = 20.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorResource(id = R.color.whatsapp)
+                )
+            ) {
+                Text(
+                    stringResource(id = R.string.save_text),
+                    modifier = Modifier.padding(vertical = 5.dp)
+                )
+            }
+
+            Log.e("IMAGE_ERROR", "documentList : $filesList")
+
+            /*LazyRow {
+                itemsIndexed(
+                    items = filesList
+                ) { index, doc ->
+                    Log.e("IMAGE_ERROR", "Image failed to load: $doc")
+
+
+                    doc.split("/upload/")
+
+
+                    if (doc.isNotEmpty()) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data("https://res.cloudinary.com/dds7p6ltm/image/upload/v1767527341/document74.jpg")
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = null,
+                            modifier = Modifier.size(100.dp),
+                            contentScale = ContentScale.Crop,
+                            onError = { error ->
+                                Log.e("IMAGE_ERROR", "Image failed to load: ${error.result.throwable.message ?: "Unknown error"}")
+                            }
+                        )
+                    }
+                }
+            }*/
+
+        }
+
+        if (isProgressing) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center)
+            {
+
+                Card(
+                    modifier = Modifier
+                        .size(150.dp)
+                        .background(shape = RoundedCornerShape(30.dp), color = Color.White),
+                    elevation = 15.dp,
+                    shape = RoundedCornerShape(30.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(150.dp)
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .padding(20.dp),
+                            color = colorResource(id = R.color.whatsapp),
+                            strokeWidth = 8.dp,
+                            trackColor = Color.LightGray,
+                            strokeCap = StrokeCap.Round
+                        )
+                    }
                 }
             }
         }
-
-        Button(
-            onClick = {
-
-                val listDoc = mutableListOf<String>()
-                val listDocuments = mutableListOf<Documents>()
-                filesList.mapIndexed { index, path ->
-                    val fileName = viewModel.imageInfo(context, viewModel.fromPathToUri(path))
-                    val type = viewModel.getTypeDoc(fileName)
-
-                    val document = Documents(
-                        name = fileName,
-                        type = type
-                    )
-
-                    listDoc.add(fileName)
-                    listDocuments.add(document)
-                }
-
-                val validationProfileStatus = ValidationProfileStatus()
-                validationProfileStatus.typeValidation = "doc"
-                validationProfileStatus.docs = listDoc
-                validationProfileStatus.documents = listDocuments
-                validationProfileStatus.status = VerificationStatus.PENDING_REVIEW.name
-                viewModel.validate(validationProfileStatus)
-            },
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .padding(top = 20.dp),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colorResource(id = R.color.whatsapp)
-            )
-        ) {
-            Text(
-                stringResource(id = R.string.save_text),
-                modifier = Modifier.padding(vertical = 5.dp)
-            )
-        }
-
-        Log.e("IMAGE_ERROR", "documentList : $filesList")
-
-        /*LazyRow {
-            itemsIndexed(
-                items = filesList
-            ) { index, doc ->
-                Log.e("IMAGE_ERROR", "Image failed to load: $doc")
-
-
-                doc.split("/upload/")
-
-
-                if (doc.isNotEmpty()) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data("https://res.cloudinary.com/dds7p6ltm/image/upload/v1767527341/document74.jpg")
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = null,
-                        modifier = Modifier.size(100.dp),
-                        contentScale = ContentScale.Crop,
-                        onError = { error ->
-                            Log.e("IMAGE_ERROR", "Image failed to load: ${error.result.throwable.message ?: "Unknown error"}")
-                        }
-                    )
-                }
-            }
-        }*/
-
     }
 }

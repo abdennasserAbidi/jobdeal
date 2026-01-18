@@ -227,7 +227,7 @@ fun InvitationScreen(
                 )
             }
 
-            LazyRow(
+            /*LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 20.dp)
@@ -280,7 +280,7 @@ fun InvitationScreen(
                     }
 
                 }
-            }
+            }*/
 
             val statusInvitations by invitationViewModel.statusInvitations.collectAsState()
 

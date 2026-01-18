@@ -1,6 +1,6 @@
 package com.example.myjob.feature.notification
 
-import androidx.compose.animation.AnimatedContent
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ExperimentalMaterialApi
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -51,6 +50,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.idNotification
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
 import com.example.myjob.domain.entities.notification.NotificationModel
@@ -66,6 +66,9 @@ fun NotificationScreen(
     val interactionSource = remember { MutableInteractionSource() }
 
     val notifications = notificationViewModel.notifications.collectAsLazyPagingItems()
+    var selectedNotification by remember {
+        mutableStateOf(NotificationModel())
+    }
 
     val refreshing = notifications.loadState.refresh is LoadState.Loading
 
@@ -74,14 +77,34 @@ fun NotificationScreen(
         onRefresh = { notifications.refresh() }
     )
 
-    val seenNotification by notificationViewModel.seenNotification.collectAsState()
+    /*val seenNotification by notificationViewModel.seenNotification.collectAsState()
 
     LaunchedEffect(seenNotification) {
         if (seenNotification == "saved successfully") {
-            if (GlobalEntries.idAnnounce != -1) navController.navigate(Screen.DetailPostScreen.route)
-            else navController.navigate(Screen.NormalDetailInvitationScreen.route)
+
+            val idInvitation = selectedNotification.idInvitation
+            val idAnnounce = selectedNotification.idPost
+            val idCompany = selectedNotification.idCompany
+            val validation = intent?.getStringExtra("validation")
+
+            validation?.let {
+                startRoute = Screen.ValidateProfileCandidateScreen.route
+            }
+
+            if (idInvitation != -1) {
+                GlobalEntries.isFromNotification = false
+                GlobalEntries.idInvitation = idInvitation
+                navController.navigate(Screen.NormalDetailInvitationScreen.route)
+            }
+
+            if (idInvitation != -1) {
+                GlobalEntries.isFromNotification = false
+                GlobalEntries.idAnnounce = idAnnounce
+                GlobalEntries.idCompany = idCompany
+                navController.navigate(Screen.DetailPostScreen.route)
+            }
         }
-    }
+    }*/
 
     Box(
         modifier = Modifier
@@ -145,7 +168,6 @@ fun NotificationScreen(
                 ) {
                     items(notifications.itemCount) { index ->
                         val item = notifications[index] ?: NotificationModel()
-                        var isRead by remember { mutableStateOf(item.read) }
                         val data = notificationViewModel.getSenderData(item)
                         var textName = ""
                         if (data.first != -1) {
@@ -160,15 +182,31 @@ fun NotificationScreen(
                                         interactionSource = interactionSource,
                                         indication = null
                                     ) {
-                                        isRead = true
-                                        GlobalEntries.isFromNotification = false
-                                        GlobalEntries.idInvitation = item.idInvitation
-                                        GlobalEntries.idAnnounce = item.idPost
-                                        GlobalEntries.idCompany = item.idCompany
-                                        notificationViewModel.seenNotification(item.idNotification)
+                                        selectedNotification = item
+
+                                        val idInvitation = item.idInvitation
+                                        val idAnnounce = item.idPost
+                                        val idCompany = item.idCompany
+
+                                        idNotification = item.idNotification
+
+                                        if (idInvitation != -1) {
+                                            GlobalEntries.isFromNotification = false
+                                            GlobalEntries.idInvitation = idInvitation
+                                            navController.navigate(Screen.NormalDetailInvitationScreen.route)
+                                        }
+
+                                        if (idAnnounce != -1) {
+                                            GlobalEntries.isFromNotification = false
+                                            GlobalEntries.idAnnounce = idAnnounce
+                                            GlobalEntries.idCompany = idCompany
+                                            navController.navigate(Screen.DetailPostScreen.route)
+                                        }
+
+                                        //notificationViewModel.seenNotification(item.idNotification)
                                     }
                                     .background(
-                                        if (isRead) Color.Transparent else Color(0xFF25D366).copy(
+                                        if (item.read) Color.Transparent else Color(0xFF25D366).copy(
                                             alpha = 0.1f
                                         )
                                     )

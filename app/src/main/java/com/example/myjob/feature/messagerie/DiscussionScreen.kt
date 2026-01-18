@@ -324,7 +324,7 @@ fun MessageBubble(
                                 )
                             }
                         } else {
-                            message.documents.map { item ->
+                            message.documents?.map { item ->
                                 AsyncImage(
                                     model = ImageRequest.Builder(LocalContext.current)
                                         .data(item)

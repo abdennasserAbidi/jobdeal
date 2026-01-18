@@ -157,7 +157,9 @@ fun DetailInviScreen(
                     userCompany = userCompany,
                     viewProfile = {
                         GlobalEntries.userForCompany = it
-                        navController.navigate(Screen.DetailScreen.route)
+                        val route = if (it.role == "Candidat" || it.role == "Candidate") Screen.DetailScreen.route
+                        else Screen.DetailCompanyScreen.route
+                        navController.navigate(route)
                     },
                     onAcceptInvitation = {
                         it.status = InvitationStatus.IN_PROCESS.name

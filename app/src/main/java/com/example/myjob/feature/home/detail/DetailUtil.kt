@@ -305,6 +305,249 @@ fun CandidateHeaderCard(
 }
 
 @Composable
+fun CompanyHeaderCard(
+    candidateProfile: User,
+    experienceYears: Int,
+    sendInvitation: (User) -> Unit,
+    sendMessage: (User) -> Unit,
+    onTerminateInvitation: (InvitationModel) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Large Avatar
+                Surface(
+                    modifier = Modifier.size(80.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    color = colorResource(id = R.color.whatsapp)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center
+                    ) {
+                        val userName = candidateProfile.companyName ?: "Test Test"
+                        val nickname = userName.trim().ifEmpty { "Test Test" }.split(" ")
+                            .map { it.first() }.joinToString("")
+                        Text(
+                            text = nickname,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = candidateProfile.companyName ?: "",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = candidateProfile.companyActivitySector ?: "",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            val experiences = candidateProfile.experience ?: mutableListOf()
+            var lastExp = Experience()
+            if (experiences.isNotEmpty()) {
+                lastExp = experiences[experiences.lastIndex]
+            }
+
+            val lastContractExp = experiences.findLast {
+                it.type == "Contract" || it.type == "Contrat"
+            }
+
+            lastContractExp?.let { lastContractExperience ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    QuickInfoItem(
+                        icon = Icons.Default.Business,
+                        label = stringResource(id = R.string.choose_companies_text),
+                        value = lastContractExperience.companyName ?: ""
+                    )
+
+                    if (experienceYears != 0) {
+                        val yearsText = stringResource(id = R.string.years_text)
+                        val textExp = if (experienceYears <= 5) "$experienceYears $yearsText"
+                        else "+$experienceYears $yearsText"
+                        QuickInfoItem(
+                            icon = Icons.Default.Work,
+                            label = stringResource(id = R.string.experience_text),
+                            value = textExp
+                        )
+                    }
+
+                    QuickInfoItem(
+                        icon = Icons.Default.LocationOn,
+                        label = stringResource(id = R.string.location_text),
+                        value = lastContractExperience.place ?: "N'est pas précisé"
+                    )
+                }
+            }
+
+            val invitations = GlobalEntries.user.invitations ?: mutableListOf()
+            if (invitations.isNotEmpty()) {
+                val invitation = invitations.filter { it.idTo == candidateProfile.id }
+                if (invitation.isNotEmpty()) {
+                    val isFriend = invitation[0].status == InvitationStatus.HIRED.name
+                    val isInProcess = invitation[0].status == InvitationStatus.IN_PROCESS.name
+                    val isPending = invitation[0].status == InvitationStatus.ON_HOLD.name
+                    val isRejecting = invitation[0].status == InvitationStatus.REJECTED.name || invitation[0].status == InvitationStatus.NOT_INTERESTED.name
+
+                    val whatsappGreen = colorResource(id = R.color.whatsapp)
+                    if (isFriend) {
+                        OutlinedButton(
+                            onClick = {
+                                sendMessage(candidateProfile)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 10.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, whatsappGreen)
+                        ) {
+                            Icon(
+                                Icons.Default.Message,
+                                contentDescription = "Contact",
+                                tint = whatsappGreen,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(id = R.string.contact_text), color = whatsappGreen)
+                        }
+                    } else if (isInProcess) {
+                        OutlinedButton(
+                            onClick = {
+                                sendMessage(candidateProfile)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 10.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, whatsappGreen)
+                        ) {
+                            Icon(
+                                Icons.Default.Message,
+                                contentDescription = "Contact",
+                                tint = whatsappGreen,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(id = R.string.contact_text), color = whatsappGreen)
+                        }
+
+                        Button(
+                            onClick = { onTerminateInvitation(invitation[0]) },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(id = R.color.whatsapp),
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Icon(
+                                Icons.Default.Send,
+                                contentDescription = "",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(id = R.string.terminate_text))
+                        }
+                    } else if (isPending) {
+                        OutlinedButton(
+                            onClick = {
+
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 10.dp),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Timer,
+                                contentDescription = "timer",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(id = R.string.pending_text))
+                        }
+
+                    } else if (isRejecting) {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 10.dp),
+                            color = Color.Red,
+                            text = stringResource(id = R.string.refuse_candidate_text)
+                        )
+                    }
+                }
+                else {
+                    OutlinedButton(
+                        onClick = {
+                            sendInvitation(candidateProfile)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Send,
+                            contentDescription = "Send Invitation",
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(stringResource(id = R.string.send_invitation_text))
+                    }
+                }
+            } else {
+                OutlinedButton(
+                    onClick = {
+                        sendInvitation(candidateProfile)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Send,
+                        contentDescription = "Send Invitation",
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(stringResource(id = R.string.send_invitation_text))
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun ContactInformationCard(candidateProfile: User) {
     Card(
         modifier = Modifier.fillMaxWidth(),

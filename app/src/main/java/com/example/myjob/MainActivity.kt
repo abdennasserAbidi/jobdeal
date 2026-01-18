@@ -76,6 +76,7 @@ import com.example.myjob.feature.home.CandidateListScreen
 import com.example.myjob.feature.home.HomeCompany
 import com.example.myjob.feature.home.ModernHomeScreen
 import com.example.myjob.feature.home.detail.CandidateDetailScreen
+import com.example.myjob.feature.home.detail.CompanyDetailScreen
 import com.example.myjob.feature.home.filter.FilterScreenUpdated
 import com.example.myjob.feature.home.filter.FilteredHome
 import com.example.myjob.feature.invitation.candidat.InvitationCareerScreen
@@ -142,8 +143,6 @@ class MainActivity : ComponentActivity() {
     private var listCompany: MutableList<String> = mutableListOf()
     private var listCountries: MutableList<String> = mutableListOf()
 
-    //TODO("when click notification for announce i get all empty field")
-    //TODO("when click notification for invitation accept it crashs")
     //TODO("handling chat with files and images")
     //TODO("validation account review")
 
@@ -600,6 +599,16 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = false
 
                         CandidateDetailScreen(navController, hideNavigation = {
+                            isVisibleNav = false
+                        })
+                    }
+
+                    composable(
+                        route = Screen.DetailCompanyScreen.route,
+                    ) {
+                        isVisibleNav = false
+
+                        CompanyDetailScreen(navController, hideNavigation = {
                             isVisibleNav = false
                         })
                     }

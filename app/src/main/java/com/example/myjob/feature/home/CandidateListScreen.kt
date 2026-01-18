@@ -416,7 +416,9 @@ fun CandidateListScreen(
                             candidate = candidate,
                             onClick = {
                                 GlobalEntries.userForCompany = user
-                                navController.navigate(Screen.DetailScreen.route)
+                                val route = if (user.role == "Candidat" || user.role == "Candidate") Screen.DetailScreen.route
+                                else Screen.DetailCompanyScreen.route
+                                navController.navigate(route)
                             },
                             onSendInvitation = {
                                 candidateUser = user

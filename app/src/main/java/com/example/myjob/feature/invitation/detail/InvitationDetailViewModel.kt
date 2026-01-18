@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries.idInvitation
+import com.example.myjob.common.GlobalEntries.idNotification
+import com.example.myjob.common.GlobalEntries.isFromNotification
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
@@ -14,6 +16,7 @@ import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.domain.usecase.invitation.AcceptRejectInvitationUseCase
 import com.example.myjob.domain.usecase.invitation.DeleteInvitationUseCase
 import com.example.myjob.domain.usecase.invitation.GetDetailInvitationUseCase
+import com.example.myjob.domain.usecase.notification.SeenNotificationUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +31,7 @@ class InvitationDetailViewModel @Inject constructor(
     private val getDetailInvitationUseCase: GetDetailInvitationUseCase,
     private val deleteInvitationUseCase: DeleteInvitationUseCase,
     private val getUserUseCase: GetUserUseCase,
+    private val seenNotificationUseCase: SeenNotificationUseCase,
     private val acceptRejectInvitationUseCase: AcceptRejectInvitationUseCase
 ) : ViewModel() {
 
@@ -131,10 +135,29 @@ class InvitationDetailViewModel @Inject constructor(
         }
     }
 
+    val seenNotification = MutableStateFlow("")
+
+    private fun seenNotification(item: Int) {
+        viewModelScope.launch {
+            seenNotificationUseCase.execute(item).collect { res ->
+                if (res.status == ResourceState.SUCCESS) {
+                    seenNotification.update {
+                        res.data?.message ?: ""
+                    }
+                }
+            }
+        }
+    }
+
     init {
         language.update {
             sharedPreference.getString("lang", "Français") ?: "Français"
         }
+
+        if (!isFromNotification) {
+            seenNotification(idNotification)
+        }
+
         getInvitationDetail(idInvitation)
     }
 }
