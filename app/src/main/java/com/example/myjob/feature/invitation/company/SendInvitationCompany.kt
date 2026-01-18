@@ -372,56 +372,120 @@ fun CandidateInfoCard(candidate: User) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Initials Avatar
-                Surface(
-                    modifier = Modifier.size(48.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    color = colorResource(id = R.color.whatsapp)
+
+            if (candidate.role == "Candidate" || candidate.role == "Candidat") {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        contentAlignment = Alignment.Center
+                    // Initials Avatar
+                    Surface(
+                        modifier = Modifier.size(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        color = colorResource(id = R.color.whatsapp)
                     ) {
+                        Box(
+                            contentAlignment = Alignment.Center
+                        ) {
+
+                            Text(
+                                text = candidate.fullName?.trimStart()?.split(" ")?.map { it.first() }
+                                    ?.joinToString("") ?: "",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+
+                        //candidate.getYearsExp()
+                        val exp = candidate.experience ?: emptyList()
+
+                        val lastExperience = if (exp.isNotEmpty()) exp[exp.lastIndex]
+                        else Experience()
 
                         Text(
-                            text = candidate.fullName?.trimStart()?.split(" ")?.map { it.first() }
-                                ?.joinToString("") ?: "",
+                            text = candidate.fullName ?: "",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Text(
+                            text = candidate.preferredActivitySector ?: "",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        )
+                        Text(
+                            text = "${lastExperience.companyName} • 5+ years",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                         )
                     }
                 }
+            } else {
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.weight(0.6f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Initials Avatar
+                        Surface(
+                            modifier = Modifier.size(48.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            color = colorResource(id = R.color.whatsapp)
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center
+                            ) {
 
-                Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = candidate.companyName?.trimStart()?.split(" ")?.map { it.first() }
+                                        ?.joinToString("") ?: "",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            }
+                        }
 
-                    //candidate.getYearsExp()
-                    val exp = candidate.experience ?: emptyList()
+                        Spacer(modifier = Modifier.width(12.dp))
 
-                    val lastExperience = if (exp.isNotEmpty()) exp[exp.lastIndex]
-                    else Experience()
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = candidate.companyName ?: "",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = candidate.companyActivitySector ?: "",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
 
-                    Text(
-                        text = candidate.fullName ?: "",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Text(
-                        text = candidate.preferredActivitySector ?: "",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                    )
-                    Text(
-                        text = "${lastExperience.companyName} • 5+ years",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                    )
+                    Column {
+                        Text(
+                            text = candidate.email ?: "",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = candidate.phoneCompany ?: "",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        )
+                    }
+
                 }
             }
         }
@@ -528,8 +592,6 @@ fun InvitationFormSection(
                     fontWeight = FontWeight.SemiBold
                 )
 
-                /*val isContract = user.preferredWorkType?.contains(stringResource(id = R.string.type1_text)) ?: false
-                val isFreelance = user.preferredWorkType?.contains(stringResource(id = R.string.type2_text)) ?: false*/
                 val isContract = (user.preferredWorkType?.contains("Contrat") ?: false) || (user.preferredWorkType?.contains("Contract") ?: false)
                 val isFreelance = user.preferredWorkType?.contains("Freelance") ?: false
                 val isBoth = isContract && isFreelance

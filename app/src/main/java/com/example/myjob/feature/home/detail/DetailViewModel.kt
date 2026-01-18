@@ -43,9 +43,12 @@ class DetailViewModel @Inject constructor(
 
     fun getUserNameAbbreviation(userName: String) {
         userFullName.update { userName }
-        if (userName.isNotEmpty()) {
+        if (userName.contains(" ")) {
             val s = userName.trimStart().split(" ")
             val name = "${s[0][0].uppercaseChar()}${s[1][0].uppercaseChar()}"
+            username.update { name }
+        } else {
+            val name = "${userName[0].uppercaseChar()}"
             username.update { name }
         }
     }

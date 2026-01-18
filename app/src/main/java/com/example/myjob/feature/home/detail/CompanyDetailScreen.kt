@@ -62,7 +62,7 @@ fun CompanyDetailScreen(
             detailViewModel.getAllExperience(user.id ?: 0)
             detailViewModel.getAllEducations(user.id ?: 0)
             hideNavigation()
-            user.fullName?.let {
+            user.companyName?.let {
                 if (it.isNotEmpty()) detailViewModel.getUserNameAbbreviation(it)
             }
         }
@@ -136,7 +136,7 @@ fun CompanyDetailScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Header Card with Basic Info
-            CandidateHeaderCard(candidateProfile = user, experienceYears,
+            CompanyHeaderCard(candidateProfile = user, experienceYears,
                 sendInvitation = {
                     GlobalEntries.candidateUser = it
                     navController.navigate(Screen.SendInvitationScreen.route)
@@ -156,43 +156,13 @@ fun CompanyDetailScreen(
                     openFinishProcess = true
                 })
 
-            // Contact Information Card
-            ContactInformationCard(candidateProfile = user)
-
             // Bio Card
-            if (user.bio?.isNotEmpty() == true) {
-                BioCard(bio = user.bio ?: "")
+            if (user.companyDescription?.isNotEmpty() == true) {
+                BioCard(bio = user.companyDescription ?: "")
             }
 
-            // Skills Card
-            if (user.candidateSkills?.listSkills?.isNotEmpty() == true)
-                SkillsCard(skills = user.candidateSkills?.listSkills ?: mutableListOf())
-
-            // Experience Card
-            val experiences = user.experience ?: mutableListOf()
-            if (experiences.isNotEmpty())
-                ExperienceCard(experience = user.experience ?: mutableListOf())
-
-            // Education Card
-            val educations = user.education ?: mutableListOf()
-            if (educations.isNotEmpty())
-                EducationCard(educations = user.education ?: mutableListOf())
-
-            // Additional Info Card
-            AdditionalInfoCard(
-                certifications = user.candidateSkills?.listCertification ?: mutableListOf(),
-                languages = user.candidateSkills?.listLanguages ?: mutableListOf(),
-                availability = user.professionalStatus?.availability ?: "",
-                expectedSalary = "5000",
-                noticePeriod = "15"
-            )
-
-            // Action Buttons
-            /*ActionButtonsCard(
-                onSendInvitation = onSendInvitation,
-                onContactCandidate = onContactCandidate,
-                onScheduleInterview = onScheduleInterview
-            )*/
+            // Contact Information Card
+            ContactCompanyCard(candidateProfile = user)
 
             Spacer(modifier = Modifier.height(16.dp))
         }

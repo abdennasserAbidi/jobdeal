@@ -1,5 +1,6 @@
 package com.example.myjob.feature.home
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -415,6 +416,8 @@ fun CandidateListScreen(
                             user = user,
                             candidate = candidate,
                             onClick = {
+                                Log.i("userValue", "getUser: ${user.role}")
+
                                 GlobalEntries.userForCompany = user
                                 val route = if (user.role == "Candidat" || user.role == "Candidate") Screen.DetailScreen.route
                                 else Screen.DetailCompanyScreen.route

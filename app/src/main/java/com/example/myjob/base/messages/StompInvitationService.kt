@@ -16,7 +16,7 @@ import ua.naiksoftware.stomp.dto.StompHeader
 
 object StompInvitationService {
 
-    private const val WS_URL = "http://72.61.102.178:9096/ws"
+    private const val WS_URL = "http://192.168.1.129:9090/ws"
 
     private val stompClient = Stomp.over(
         Stomp.ConnectionProvider.OKHTTP,

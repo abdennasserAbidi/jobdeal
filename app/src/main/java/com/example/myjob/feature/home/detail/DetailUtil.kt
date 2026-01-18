@@ -172,7 +172,8 @@ fun CandidateHeaderCard(
                     val isFriend = invitation[0].status == InvitationStatus.HIRED.name
                     val isInProcess = invitation[0].status == InvitationStatus.IN_PROCESS.name
                     val isPending = invitation[0].status == InvitationStatus.ON_HOLD.name
-                    val isRejecting = invitation[0].status == InvitationStatus.REJECTED.name || invitation[0].status == InvitationStatus.NOT_INTERESTED.name
+                    val isRejecting =
+                        invitation[0].status == InvitationStatus.REJECTED.name || invitation[0].status == InvitationStatus.NOT_INTERESTED.name
 
                     val whatsappGreen = colorResource(id = R.color.whatsapp)
                     if (isFriend) {
@@ -261,8 +262,7 @@ fun CandidateHeaderCard(
                             text = stringResource(id = R.string.refuse_candidate_text)
                         )
                     }
-                }
-                else {
+                } else {
                     OutlinedButton(
                         onClick = {
                             sendInvitation(candidateProfile)
@@ -368,7 +368,7 @@ fun CompanyHeaderCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            val experiences = candidateProfile.experience ?: mutableListOf()
+            /*val experiences = candidateProfile.experience ?: mutableListOf()
             var lastExp = Experience()
             if (experiences.isNotEmpty()) {
                 lastExp = experiences[experiences.lastIndex]
@@ -406,7 +406,7 @@ fun CompanyHeaderCard(
                         value = lastContractExperience.place ?: "N'est pas précisé"
                     )
                 }
-            }
+            }*/
 
             val invitations = GlobalEntries.user.invitations ?: mutableListOf()
             if (invitations.isNotEmpty()) {
@@ -415,7 +415,8 @@ fun CompanyHeaderCard(
                     val isFriend = invitation[0].status == InvitationStatus.HIRED.name
                     val isInProcess = invitation[0].status == InvitationStatus.IN_PROCESS.name
                     val isPending = invitation[0].status == InvitationStatus.ON_HOLD.name
-                    val isRejecting = invitation[0].status == InvitationStatus.REJECTED.name || invitation[0].status == InvitationStatus.NOT_INTERESTED.name
+                    val isRejecting =
+                        invitation[0].status == InvitationStatus.REJECTED.name || invitation[0].status == InvitationStatus.NOT_INTERESTED.name
 
                     val whatsappGreen = colorResource(id = R.color.whatsapp)
                     if (isFriend) {
@@ -504,8 +505,7 @@ fun CompanyHeaderCard(
                             text = stringResource(id = R.string.refuse_candidate_text)
                         )
                     }
-                }
-                else {
+                } else {
                     OutlinedButton(
                         onClick = {
                             sendInvitation(candidateProfile)
@@ -624,6 +624,94 @@ fun ContactInformationCard(candidateProfile: User) {
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ContactCompanyCard(candidateProfile: User) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.contact_information_text),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+
+            val email = candidateProfile.email ?: ""
+            if (email.isNotEmpty()) {
+                ContactDetailRow(
+                    icon = Icons.Default.Email,
+                    label = "Email",
+                    value = candidateProfile.email ?: "",
+                    isClickable = true
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            Column {
+                candidateProfile.phoneCompany?.let {
+                    if (it.isNotEmpty()) {
+                        ContactDetailRow(
+                            icon = Icons.Default.Phone,
+                            label = stringResource(id = R.string.phone_text),
+                            value = it,
+                            isClickable = true
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                candidateProfile.secondPhoneCompany?.let {
+                    if (it.isNotEmpty()) {
+                        ContactDetailRow(
+                            icon = Icons.Default.Phone,
+                            label = stringResource(id = R.string.extra_phone_number_text),
+                            value = it,
+                            isClickable = true
+                        )
+                    }
+                }
+            }
+
+            Column {
+                candidateProfile.companyAddress?.let {
+                    if (it.isNotEmpty()) {
+                        ContactDetailRow(
+                            icon = Icons.Default.LocationOn,
+                            label = stringResource(id = R.string.address_text),
+                            value = it,
+                            isClickable = true
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                candidateProfile.companySecondAddress?.let {
+                    if (it.isNotEmpty()) {
+                        ContactDetailRow(
+                            icon = Icons.Default.LocationOn,
+                            label = stringResource(id = R.string.address_text),
+                            value = it,
+                            isClickable = true
+                        )
+                    }
+                }
+            }
+
         }
     }
 }

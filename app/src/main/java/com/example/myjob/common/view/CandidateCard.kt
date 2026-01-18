@@ -1,6 +1,8 @@
 package com.example.myjob.common.view
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,9 +14,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Person
@@ -39,12 +43,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Cyan
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.Candidate
@@ -97,16 +105,22 @@ fun CandidateCard(
     }
 
     if (user.role == "Candidat" || user.role == "Candidate") {
-        Card(
+        /*Card(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null
+                ) {
+                    onClick()
+                },
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = Color.White,
                 contentColor = Color.White
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
-        ) {
+        )
+        {
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {
@@ -247,7 +261,7 @@ fun CandidateCard(
                         val notInterested = invitation[0].status == InvitationStatus.NOT_INTERESTED.name
 
                         if (isFriend) {
-                            OutlinedButton(
+                            *//*OutlinedButton(
                                 onClick = { onClick() },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -263,7 +277,7 @@ fun CandidateCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
-                            }
+                            }*//*
 
                             OutlinedButton(
                                 onClick = {
@@ -285,7 +299,7 @@ fun CandidateCard(
                                 Text(stringResource(id = R.string.contact_text), color = whatsappGreen)
                             }
                         } else if (isInProcess) {
-                            OutlinedButton(
+                            *//*OutlinedButton(
                                 onClick = { onClick() },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -301,7 +315,7 @@ fun CandidateCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
-                            }
+                            }*//*
 
                             Button(
                                 onClick = { onTerminateInvitation(invitation[0]) },
@@ -322,7 +336,7 @@ fun CandidateCard(
                             }
                         } else if (isPending) {
 
-                            OutlinedButton(
+                            *//*OutlinedButton(
                                 onClick = { onClick() },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -338,7 +352,7 @@ fun CandidateCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
-                            }
+                            }*//*
 
                             OutlinedButton(
                                 onClick = {},
@@ -365,7 +379,7 @@ fun CandidateCard(
                                 text = stringResource(id = R.string.refuse_candidate_text)
                             )
 
-                            OutlinedButton(
+                            *//*OutlinedButton(
                                 onClick = { onClick() },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -381,7 +395,7 @@ fun CandidateCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
-                            }
+                            }*//*
 
                             Button(
                                 onClick = { onSendInvitation(candidate) },
@@ -412,7 +426,7 @@ fun CandidateCard(
                                 text = "${stringResource(id = R.string.refuse_text)}  ${invitation[0].reason}"
                             )
 
-                            OutlinedButton(
+                            *//*OutlinedButton(
                                 onClick = { onClick() },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -428,7 +442,7 @@ fun CandidateCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
-                            }
+                            }*//*
 
                             Button(
                                 onClick = { onSendInvitation(candidate) },
@@ -452,7 +466,7 @@ fun CandidateCard(
                         }
                     }
                     else {
-                        OutlinedButton(
+                        *//*OutlinedButton(
                             onClick = { onClick() },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -468,7 +482,7 @@ fun CandidateCard(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
-                        }
+                        }*//*
 
                         Button(
                             onClick = { onSendInvitation(candidate) },
@@ -492,7 +506,7 @@ fun CandidateCard(
                     }
                 }
                 else {
-                    OutlinedButton(
+                    *//*OutlinedButton(
                         onClick = { onClick() },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -508,7 +522,7 @@ fun CandidateCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
-                    }
+                    }*//*
 
                     Button(
                         onClick = { onSendInvitation(candidate) },
@@ -531,13 +545,332 @@ fun CandidateCard(
                     }
                 }
             }
+        }*/
+
+
+
+
+
+
+
+
+
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null
+                ) {
+                    onClick()
+                },
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            ),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 4.dp
+            )
+        )
+        {
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Avatar
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF049344)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = candidate.name.split(" ").map { it.first() }.take(2).joinToString(""),
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    // Content
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        // Name and Status Row
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = user.fullName ?: "",
+                                color = Color(0xFF1F2937),
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                val yearsText = stringResource(id = R.string.years_text)
+                                val textExp = if (diffYear <= 5) "$diffYear $yearsText exp"
+                                else "+$diffYear $yearsText exp"
+                                Text(
+                                    modifier = Modifier.padding(horizontal = 10.dp),
+                                    text = textExp,
+                                    color = Color(0xFF10B981),
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+
+                        // Position
+                        Text(
+                            text = user.preferredActivitySector ?: "",
+                            color = Color(0xFF049344),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        Text(
+                            text = user.country ?: "",
+                            color = Color(0xFF6B7280),
+                            fontSize = 13.sp
+                        )
+                    }
+                }
+
+                // Skills
+                val list = user.candidateSkills?.listSkills ?: emptyList()
+
+                val skills = list.joinToString("  .  ")
+                Text(
+                    modifier = Modifier.padding(horizontal = 10.dp),
+                    text = skills,
+                    color = Color(0xFF6B7280),
+                    fontSize = 12.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Spacer(Modifier.height(3.dp))
+
+                // Certifications
+                val listCertifications = user.candidateSkills?.listCertification ?: emptyList()
+
+                val certifications = listCertifications.joinToString("  .  ")
+                Text(
+                    modifier = Modifier.padding(horizontal = 10.dp),
+                    text = certifications,
+                    color = Color(0xFF6B7280),
+                    fontSize = 12.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Spacer(Modifier.height(10.dp))
+
+                val whatsappGreen = colorResource(id = R.color.whatsapp)
+                val invitations = GlobalEntries.user.invitations ?: mutableListOf()
+                if (invitations.isNotEmpty()) {
+                    val invitation = invitations.filter { it.idTo == user.id }
+                    if (invitation.isNotEmpty()) {
+                        val isFriend = invitation[0].status == InvitationStatus.HIRED.name
+                        val isInProcess = invitation[0].status == InvitationStatus.IN_PROCESS.name
+                        val isPending = invitation[0].status == InvitationStatus.ON_HOLD.name
+                        val isRejecting = invitation[0].status == InvitationStatus.REJECTED.name
+                        val notInterested = invitation[0].status == InvitationStatus.NOT_INTERESTED.name
+
+                        if (isFriend) {
+                            OutlinedButton(
+                                onClick = {
+                                    onSendMessage(user)
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                border = BorderStroke(1.dp, whatsappGreen)
+                            ) {
+                                Icon(
+                                    Icons.Default.Message,
+                                    contentDescription = "Contact",
+                                    tint = whatsappGreen,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(stringResource(id = R.string.contact_text), color = whatsappGreen)
+                            }
+                        } else if (isInProcess) {
+                            Button(
+                                onClick = { onTerminateInvitation(invitation[0]) },
+                                modifier = Modifier.fillMaxWidth().padding(10.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorResource(id = R.color.whatsapp),
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Icon(
+                                    Icons.Default.Send,
+                                    contentDescription = "",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(stringResource(id = R.string.terminate_text))
+                            }
+                        } else if (isPending) {
+
+                            OutlinedButton(
+                                onClick = {},
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Timer,
+                                    contentDescription = "timer",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(stringResource(id = R.string.pending_text))
+                            }
+
+                        } else if (notInterested) {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 10.dp),
+                                color = Color.Red,
+                                text = stringResource(id = R.string.refuse_candidate_text)
+                            )
+
+                            Button(
+                                onClick = { onSendInvitation(candidate) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorResource(id = R.color.whatsapp),
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Icon(
+                                    Icons.Default.Send,
+                                    contentDescription = "Send Invitation",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(stringResource(id = R.string.send_invitation_text))
+                            }
+                        }
+                        else if (isRejecting) {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 10.dp),
+                                color = Color.Red,
+                                text = "${stringResource(id = R.string.refuse_text)}  ${invitation[0].reason}"
+                            )
+
+                            Button(
+                                onClick = { onSendInvitation(candidate) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorResource(id = R.color.whatsapp),
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Icon(
+                                    Icons.Default.Send,
+                                    contentDescription = "Send Invitation",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(stringResource(id = R.string.send_invitation_text))
+                            }
+                        }
+                    }
+                    else {
+                        Button(
+                            onClick = { onSendInvitation(candidate) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(id = R.color.whatsapp),
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Icon(
+                                Icons.Default.Send,
+                                contentDescription = "Send Invitation",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(id = R.string.send_invitation_text))
+                        }
+                    }
+                }
+                else {
+                    Button(
+                        onClick = { onSendInvitation(candidate) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorResource(id = R.color.whatsapp),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.Send,
+                            contentDescription = "Send Invitation",
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(stringResource(id = R.string.send_invitation_text))
+                    }
+                }
+            }
+
         }
+
+
+
+
+
+
+
     } else {
         val name = user.companyName ?: "Test Test"
 
         Card(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null
+                ) {
+                    onClick()
+                },
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(5.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White)
@@ -571,6 +904,18 @@ fun CandidateCard(
                     }
                 }
 
+                user.companyDescription?.let {
+                    if (it.isNotEmpty()) {
+                        Text(
+                            text = it,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
                 // Info chips
                 Row(
                     modifier = Modifier.padding(top = 10.dp),
@@ -593,54 +938,32 @@ fun CandidateCard(
                             )
                         }
                     }
+                }
 
-                    Column {
-                        user.companyAddress?.let {
-                            if (it.isNotEmpty()) {
-                                InfoChip(
-                                    icon = Icons.Default.LocationOn,
-                                    text = it
-                                )
-                            }
+                Row {
+                    user.phoneCompany?.let {
+                        if (it.isNotEmpty()) {
+                            InfoChip(
+                                icon = Icons.Default.Phone,
+                                text = it
+                            )
                         }
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        user.companySecondAddress?.let {
-                            if (it.isNotEmpty()) {
-                                InfoChip(
-                                    icon = Icons.Default.LocationOn,
-                                    text = it
-                                )
-                            }
-                        }
-
                     }
 
-                    Column {
-                        user.phoneCompany?.let {
-                            if (it.isNotEmpty()) {
-                                InfoChip(
-                                    icon = Icons.Default.Phone,
-                                    text = it
-                                )
-                            }
-                        }
+                    Spacer(modifier = Modifier.width(4.dp))
 
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        user.secondPhoneCompany?.let {
-                            if (it.isNotEmpty()) {
-                                InfoChip(
-                                    icon = Icons.Default.Phone,
-                                    text = it
-                                )
-                            }
+                    user.companyAddress?.let {
+                        if (it.isNotEmpty()) {
+                            InfoChip(
+                                icon = Icons.Default.LocationOn,
+                                text = it
+                            )
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
+
                 val whatsappGreen = colorResource(id = R.color.whatsapp)
                 val invitations = GlobalEntries.user.invitations ?: mutableListOf()
                 if (invitations.isNotEmpty()) {
@@ -653,7 +976,7 @@ fun CandidateCard(
                         val notInterested = invitation[0].status == InvitationStatus.NOT_INTERESTED.name
 
                         if (isFriend) {
-                            OutlinedButton(
+                            /*OutlinedButton(
                                 onClick = { onClick() },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -669,7 +992,7 @@ fun CandidateCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
-                            }
+                            }*/
 
                             OutlinedButton(
                                 onClick = {
@@ -691,7 +1014,7 @@ fun CandidateCard(
                                 Text(stringResource(id = R.string.contact_text), color = whatsappGreen)
                             }
                         } else if (isInProcess) {
-                            OutlinedButton(
+                            /*OutlinedButton(
                                 onClick = { onClick() },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -707,7 +1030,7 @@ fun CandidateCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
-                            }
+                            }*/
 
                             Button(
                                 onClick = { onTerminateInvitation(invitation[0]) },
@@ -728,7 +1051,7 @@ fun CandidateCard(
                             }
                         } else if (isPending) {
 
-                            OutlinedButton(
+                            /*OutlinedButton(
                                 onClick = { onClick() },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -744,7 +1067,7 @@ fun CandidateCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
-                            }
+                            }*/
 
                             OutlinedButton(
                                 onClick = {},
@@ -771,7 +1094,7 @@ fun CandidateCard(
                                 text = stringResource(id = R.string.refuse_candidate_text)
                             )
 
-                            OutlinedButton(
+                            /*OutlinedButton(
                                 onClick = { onClick() },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -787,7 +1110,7 @@ fun CandidateCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
-                            }
+                            }*/
 
                             Button(
                                 onClick = { onSendInvitation(candidate) },
@@ -818,7 +1141,7 @@ fun CandidateCard(
                                 text = "${stringResource(id = R.string.refuse_text)}  ${invitation[0].reason}"
                             )
 
-                            OutlinedButton(
+                            /*OutlinedButton(
                                 onClick = { onClick() },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -834,7 +1157,7 @@ fun CandidateCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
-                            }
+                            }*/
 
                             Button(
                                 onClick = { onSendInvitation(candidate) },
@@ -858,7 +1181,7 @@ fun CandidateCard(
                         }
                     }
                     else {
-                        OutlinedButton(
+                        /*OutlinedButton(
                             onClick = { onClick() },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -874,7 +1197,7 @@ fun CandidateCard(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
-                        }
+                        }*/
 
                         Button(
                             onClick = { onSendInvitation(candidate) },
@@ -898,7 +1221,7 @@ fun CandidateCard(
                     }
                 }
                 else {
-                    OutlinedButton(
+                    /*OutlinedButton(
                         onClick = { onClick() },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -914,7 +1237,7 @@ fun CandidateCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(stringResource(id = R.string.view_profile_text), color = whatsappGreen)
-                    }
+                    }*/
 
                     Button(
                         onClick = { onSendInvitation(candidate) },

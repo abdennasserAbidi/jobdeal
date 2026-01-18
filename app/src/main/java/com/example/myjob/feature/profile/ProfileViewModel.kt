@@ -990,7 +990,6 @@ class ProfileViewModel @Inject constructor(
                     user.update { u }
                     GlobalEntries.user = u
                     sharedPreference.putString("username", u.fullName ?: "")
-                    Log.i("userValue", "getUser: $u")
                     Log.i("userValue", "getUser: ${u.showUser(lang)}")
                     showUser.update {
                         u.showUser(lang)
