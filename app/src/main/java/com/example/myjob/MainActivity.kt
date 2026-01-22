@@ -79,11 +79,6 @@ import com.example.myjob.feature.home.detail.CandidateDetailScreen
 import com.example.myjob.feature.home.detail.CompanyDetailScreen
 import com.example.myjob.feature.home.filter.FilterScreenUpdated
 import com.example.myjob.feature.home.filter.FilteredHome
-import com.example.myjob.feature.home.test.CandidateDetail
-import com.example.myjob.feature.home.test.CandidateDetailsScreen
-import com.example.myjob.feature.home.test.Education
-import com.example.myjob.feature.home.test.ExperienceItem
-import com.example.myjob.feature.home.test.Language
 import com.example.myjob.feature.invitation.candidat.InvitationCareerScreen
 import com.example.myjob.feature.invitation.candidat.InvitationScreen
 import com.example.myjob.feature.invitation.company.InvitationCompanyScreen
@@ -289,6 +284,8 @@ class MainActivity : ComponentActivity() {
                 navController.navigate(Screen.ForgotPasswordScreen.route)
             }
 
+            val idReceiver = intent.extras?.getString("idReceiver")
+            val idSender = intent.extras?.getString("idSender")
             val idInvitation = intent.extras?.getString("idInvitation")
             val idAnnounce = intent.extras?.getString("idAnnounce")
             val idCompany = intent.extras?.getString("idCompany")
@@ -302,6 +299,11 @@ class MainActivity : ComponentActivity() {
                 Log.i("DeepLink", "Navigating to: $it")
                 GlobalEntries.idInvitation = it.toInt()
                 navController.navigate(Screen.NormalDetailInvitationScreen.route)
+            }
+
+            idReceiver?.let {
+                GlobalEntries.otherUserId = it.toInt()
+                navController.navigate(Screen.SendMessageScreen.route)
             }
 
             idAnnounce?.let {
@@ -367,6 +369,7 @@ class MainActivity : ComponentActivity() {
             navController = rememberNavController()
 
             if (::navController.isInitialized) {
+                val idReceiver = intent?.getStringExtra("idReceiver")
                 val idInvitation = intent?.getStringExtra("idInvitation")
                 val idAnnounce = intent?.getStringExtra("idAnnounce")
                 val idCompany = intent?.getStringExtra("idCompany")
@@ -375,6 +378,12 @@ class MainActivity : ComponentActivity() {
                 validation?.let {
                     startRoute = Screen.ValidateProfileCandidateScreen.route
                 }
+
+                idReceiver?.let {
+                    GlobalEntries.otherUserId = it.toInt()
+                    startRoute = Screen.SendMessageScreen.route
+                }
+
 
                 idInvitation?.let {
                     GlobalEntries.isFromNotification = true
@@ -603,54 +612,9 @@ class MainActivity : ComponentActivity() {
                     ) {
                         isVisibleNav = false
 
-                        val sampleCandidate = CandidateDetail(
-                            id = "1",
-                            name = "Ahmed Bouzid",
-                            position = "Senior Android Developer",
-                            experience = "5+ ans",
-                            location = "Tunis",
-                            workType = "Remote",
-                            salary = "3000 DT",
-                            available = true,
-                            email = "ahmed.b@email.com",
-                            phone = "+216 20 123 456",
-                            bio = "Développeur Android passionné avec plus de 5 ans d'expérience dans la création d'applications mobiles innovantes. Expert en Kotlin et Jetpack Compose, j'aime créer des interfaces utilisateur fluides et performantes.",
-                            skills = listOf("Kotlin", "Jetpack Compose", "Firebase", "MVVM", "Clean Architecture", "Coroutines", "Room", "Retrofit"),
-                            languages = listOf(
-                                Language("Français", "Courant"),
-                                Language("Arabe", "Langue maternelle"),
-                                Language("Anglais", "Professionnel")
-                            ),
-                            education = listOf(
-                                Education("Master en Informatique", "ESPRIT", "2018"),
-                                Education("Licence en Informatique", "FST", "2016")
-                            ),
-                            experience_details = listOf(
-                                ExperienceItem(
-                                    title = "Senior Android Developer",
-                                    company = "TechCorp Tunisia",
-                                    duration = "2021 - Présent",
-                                    description = "Développement d'applications Android natives avec Kotlin et Jetpack Compose. Lead technique sur plusieurs projets."
-                                ),
-                                ExperienceItem(
-                                    title = "Android Developer",
-                                    company = "StartupHub",
-                                    duration = "2018 - 2021",
-                                    description = "Création d'applications mobiles pour startups locales et internationales."
-                                )
-                            ),
-                            certifications = listOf(
-                                "Google Associate Android Developer",
-                                "Kotlin Certified Developer",
-                                "Firebase Certified"
-                            )
-                        )
-
-                        CandidateDetailsScreen(sampleCandidate)
-
-                        /*CandidateDetailScreen(navController, hideNavigation = {
+                        CandidateDetailScreen(navController, hideNavigation = {
                             isVisibleNav = false
-                        })*/
+                        })
                     }
 
                     composable(
@@ -901,6 +865,7 @@ class MainActivity : ComponentActivity() {
                         CompanyProfileFormScreen(
                             navController = navController,
                             allSubjects = allSubjects,
+                            list = listCountry,
                             clearData = {
                                 selectedTabIndex = 0
                             }

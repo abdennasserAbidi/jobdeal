@@ -60,6 +60,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.paging.LoadState
@@ -69,8 +70,11 @@ import com.example.myjob.base.MyApp
 import com.example.myjob.base.StateApp
 import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.countInvitationPending
+import com.example.myjob.common.GlobalEntries.seenInvitation
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.common.view.InvitationCard
 import com.example.myjob.domain.entities.FilterType
 import com.example.myjob.domain.entities.invitation.InvitationModel
@@ -113,6 +117,14 @@ fun InvitationScreen(
     val fcmToken by invitationViewModel.fcmToken.collectAsState()
     val filter by invitationViewModel.filter.collectAsState()
     val listFilter by invitationViewModel.listFilterSv.collectAsState()
+
+    val lifecycle = rememberLifecycleEvent()
+    LaunchedEffect(lifecycle) {
+        if (lifecycle == Lifecycle.Event.ON_RESUME) {
+            seenInvitation.update { true }
+            countInvitationPending.update { 0 }
+        }
+    }
 
     LaunchedEffect(listFilter) {
         isFilterContract = listFilter.isNotEmpty()

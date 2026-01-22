@@ -237,9 +237,6 @@ fun BasicInfoForm(
             //countries
             val countries by profileViewModel.countryGeneric.collectAsState()
             val countriesCheck by remember { derivedStateOf { countries.isNotEmpty() } }
-            Log.i("checkingAAA", "countries: $countries")
-            Log.i("checkingAAA", "countriesCheck: $countriesCheck")
-            Log.i("checkingAAA", "activatedCheck: $activatedCheck")
 
             FormTextField(
                 value = countries,
@@ -343,6 +340,7 @@ fun BasicInfoForm(
                 modifier = Modifier.padding(top = 10.dp),
                 selectedCountry = selectedCountry,
                 defaultPhone = if (completePhone.contains(" ")) completePhone.split(" ")[1] else completePhone,
+                hint = "Téléphone",
                 onClick = {
                     showCountryPicker = true
                 },
@@ -368,12 +366,16 @@ fun BasicInfoForm(
             )
 
             val isCheckPersonal by profileViewModel.isCheckPersonal.collectAsState()
+            Log.i("fjkzhkzhgrzgz", "act: $isCheckPersonal")
 
             LaunchedEffect(isCheckPersonal) {
                 if (isCheckPersonal) {
                     val fullNameValidator = profileViewModel.validateFullName(userName)
                     val addressValidator = profileViewModel.validateAddress(userAddress)
-                    val emailValidator = profileViewModel.validateEmail(userEmail ?: "")
+                    val emailValidator = profileViewModel.validateEmail(email ?: "")
+                    Log.i("fjkzhkzhgrzgz", "userEmail: $email")
+                    Log.i("fjkzhkzhgrzgz", "emailValidator: $emailValidator")
+
                     val activitySectorValidator = title.isNotEmpty()
                     val countryValidator = countries.isNotEmpty()
                     val birthDateUserValidator = birthDateUser?.isNotEmpty() == true
@@ -401,6 +403,8 @@ fun BasicInfoForm(
                         && userSituationValidator
                         && userEmploymentTypeChoiceValidator
                     ) {
+                        Log.i("fjkzhkzhgrzgz", "act: $user")
+
                         profileViewModel.saveUserPersonalInfo()
                         profileViewModel.getInitialDetail()
                     }

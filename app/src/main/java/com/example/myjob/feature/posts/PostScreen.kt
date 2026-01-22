@@ -655,7 +655,8 @@ fun PostScreen(
                     .fillMaxWidth()
                     .fillMaxHeight(),
                 elevation = 10.dp
-            ) {
+            )
+            {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()

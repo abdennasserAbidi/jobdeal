@@ -39,6 +39,12 @@ object GlobalEntries {
     var idExp = 0
     var idStudy = 0
     var idInvitation = 0
+    var countInvitationPending = MutableStateFlow(0)
+    var seenInvitation = MutableStateFlow(false)
+    var seenMessage = MutableStateFlow(false)
+    var seenNotifications = MutableStateFlow(false)
+    var idReceiver = -1
+    var idSender = -1
     var idNotification = 0
     var tokenForgetPassword = ""
     var idAnnounce = 0

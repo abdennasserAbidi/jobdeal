@@ -11,6 +11,10 @@ import androidx.paging.PagingData
 import androidx.paging.filter
 import androidx.paging.map
 import com.example.myjob.R
+import com.example.myjob.base.messages.StompChatService
+import com.example.myjob.base.messages.StompInvitationService
+import com.example.myjob.base.messages.StompNotificationService
+import com.example.myjob.base.messages.WebsocketService
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.listIdToRemove
@@ -47,11 +51,18 @@ import com.google.firebase.messaging.ktx.messaging
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import ua.naiksoftware.stomp.dto.StompMessage
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -77,23 +88,61 @@ class HomeViewModel @Inject constructor(
         MutableStateFlow(value = PagingData.empty())
     val invitations: MutableStateFlow<PagingData<InvitationModel>> get() = _invitations
 
-    private fun getInvitations() {
+    fun connect() {
+        val id = sharedPreference.getInt("idUser", 0)
+        StompInvitationService.connect("$id")
+        StompChatService.connect("$id")
+    }
+
+    private val _notificationCount = MutableStateFlow(0)
+    val notificationCount: MutableStateFlow<Int> get() = _notificationCount
+    fun getNotificationCount() {
         viewModelScope.launch {
-            val idUser = sharedPreference.getInt("idUser", -1)
-            getAllInvitationsUseCase.execute(idUser).collect { res ->
-                when (res.status) {
-                    ResourceState.SUCCESS -> {
-                        _invitations.update {
-                            res.data ?: PagingData.empty()
-                        }
-                    }
-                    else -> {
-
-                    }
-                }
-
+            StompNotificationService.messages.collect {
+                var count = _notificationCount.value
+                count += 1
+                _notificationCount.update { count }
             }
         }
+    }
+
+    fun resetCountNotifications() {
+        _notificationCount.update { 0 }
+    }
+
+    private val _messageCount = MutableStateFlow(0)
+    val messageCount: MutableStateFlow<Int> get() = _messageCount
+    fun getMessageCount() {
+        viewModelScope.launch {
+            StompChatService.messages.collect {
+                var count = _messageCount.value
+                count += 1
+                _messageCount.update { count }
+            }
+        }
+    }
+
+    fun resetCountMessages() {
+        _messageCount.update { 0 }
+    }
+
+    private val _invitationCount = MutableStateFlow(0)
+    val invitationCount: MutableStateFlow<Int> get() = _invitationCount
+
+    fun getInvitations() {
+        viewModelScope.launch {
+            StompInvitationService.messages.collect {
+                if (it.status == InvitationStatus.ON_HOLD.name) {
+                    var count = _invitationCount.value
+                    count += 1
+                    _invitationCount.update { count }
+                }
+            }
+        }
+    }
+
+    fun resetCountInvitation() {
+        _invitationCount.update { 0 }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -774,15 +823,11 @@ class HomeViewModel @Inject constructor(
     }
 
     fun validateFilter(criteria: CriteriaModel) {
-        Log.i("ljkljlkjkljlkgtr", "aeeeeee: $criteria")
 
         viewModelScope.launch {
 
             if (!criteria.checkEmpty()) {
                 searchUserUseCase.execute(criteria).collect { res ->
-                    res.data?.map {
-                        Log.i("ljkljlkjkljlkgtr", "validateFilter: $it")
-                    }
                     _user.update {
                         res.data ?: PagingData.empty()
                     }
@@ -827,7 +872,7 @@ class HomeViewModel @Inject constructor(
 
         lang = sharedPreference.getString("lang", "") ?: ""
         langState.update { lang }
-
+        connect()
         getCurrent()
 
         val listParent = listOf(
@@ -936,6 +981,7 @@ class HomeViewModel @Inject constructor(
         }
 
         getInvitations()
+        getMessageCount()
     }
 
     fun getCurrent() {

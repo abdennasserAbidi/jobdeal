@@ -9,6 +9,10 @@ data class HomeEntity(
     val withNotification: Boolean = true
 )
 
+enum class JobType {
+    NORMAL, GET, SEND, LOGOUT
+}
+
 val HOME_ENTITY = listOf(
     HomeEntity(
         R.string.invitations_text,
@@ -17,8 +21,8 @@ val HOME_ENTITY = listOf(
     ),
 
     HomeEntity(
-        R.string.validate_text,
-        R.string.validate_profile_text,
+        R.string.notification_text,
+        R.string.notification_desc_text,
         icon = R.drawable.ic_settings_privacy
     ),
 

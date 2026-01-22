@@ -45,80 +45,6 @@ class SignUpViewModel @Inject constructor(
     val isConfirmPasswordValid = MutableStateFlow(false)
     val saveUserRes = MutableStateFlow(LoginResponse())
 
-    ///////////////////////////////////////////////////////////////////////////
-    // FIRST ROLE
-    ///////////////////////////////////////////////////////////////////////////
-    val selectedCategory = MutableStateFlow(emptyList<CategoryChoices>())
-    val selectedCat = MutableStateFlow(listOf(false, false))
-    val selectedWorkPref = MutableStateFlow("")
-
-    fun changeSelectionCategory(context: Context, index: Int, title: String, isSelected: Boolean) {
-        val availability = selectedCategory.value.toMutableList()
-        availability[index].titleString = title
-        availability[index].isSelected = isSelected
-        selectedCategory.update {
-            availability
-        }
-
-        val selectedAvailabilities = selectedCat.value.toMutableList()
-        selectedAvailabilities[index] = isSelected
-        selectedCat.update {
-            selectedAvailabilities
-        }
-
-        val list = availability.filter { it.isSelected }.map { context.getString(it.title) }.toMutableList()
-        val workPref = if (list.isNotEmpty() && list.size > 1) list.joinToString(" & ")
-        else if (list.size == 1) list[0]
-        else ""
-
-        selectedWorkPref.update {
-            workPref
-        }
-
-        user.update {
-            it.preferredWorkType = list
-            it
-        }
-
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // SECOND ROLE
-    ///////////////////////////////////////////////////////////////////////////
-    val selectedSecondRole = MutableStateFlow(emptyList<CategoryChoices>())
-    val selectedRole = MutableStateFlow(listOf(false, false, false))
-    val selectedSecondWorkPref = MutableStateFlow("")
-
-    fun changeSelectionSecondRole(context: Context, index: Int, title: String, isSelected: Boolean) {
-        val availability = selectedSecondRole.value.toMutableList()
-        availability[index].titleString = title
-        availability[index].isSelected = isSelected
-        selectedSecondRole.update {
-            availability
-        }
-
-        val selectedAvailabilities = selectedRole.value.toMutableList()
-        selectedAvailabilities[index] = isSelected
-        selectedRole.update {
-            selectedAvailabilities
-        }
-
-        val l = availability.filter { it.isSelected }.map { context.getString(it.title) }.toMutableList()
-        val workPref = if (l.isNotEmpty() && l.size > 1) l.joinToString(" & ")
-        else if (l.size == 1) l[0]
-        else ""
-
-        selectedSecondWorkPref.update {
-            workPref
-        }
-
-        user.update {
-            it.workPreferences = l
-            it
-        }
-
-    }
-
     //sign in with gmail
     private val _state = MutableStateFlow(SignInState())
     val state = _state.asStateFlow()
@@ -315,22 +241,5 @@ class SignUpViewModel @Inject constructor(
 
     init {
         getToken()
-
-        val listCategories = listOf(
-            CategoryChoices(title = R.string.type1_text, isSelected = false),
-            CategoryChoices(title = R.string.type2_text, isSelected = false)
-        )
-        selectedCategory.update {
-            listCategories
-        }
-
-        val listSecondRole = listOf(
-            CategoryChoices(title = R.string.intern_user_text, isSelected = false),
-            CategoryChoices(title = R.string.trainer_user_text, isSelected = false),
-            CategoryChoices(title = R.string.event_user_text, isSelected = false)
-        )
-        selectedSecondRole.update {
-            listSecondRole
-        }
     }
 }

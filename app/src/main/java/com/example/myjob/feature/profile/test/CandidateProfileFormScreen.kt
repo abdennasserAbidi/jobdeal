@@ -418,6 +418,14 @@ fun CandidateProfileFormScreen(
             }
         }
 
+        val saveCandidateSkillsState by profileViewModel.saveCandidateSkillsState.collectAsState()
+        LaunchedEffect(saveCandidateSkillsState) {
+            if (saveCandidateSkillsState == "saved successfully") {
+                selectedTab += 1
+                profileViewModel.clearSkillsState()
+            }
+        }
+
         val saveEducationState by profileViewModel.saveEducationState.collectAsState()
         LaunchedEffect(saveEducationState) {
             if (saveEducationState == "saved successfully") {

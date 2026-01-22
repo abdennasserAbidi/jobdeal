@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,7 +22,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Notifications
@@ -31,8 +32,14 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -58,12 +66,21 @@ import androidx.navigation.NavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.seenInvitation
+import com.example.myjob.common.GlobalEntries.seenMessage
+import com.example.myjob.common.GlobalEntries.seenNotifications
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.HomeEntity
+import com.example.myjob.domain.entities.JobType
+import com.example.myjob.domain.entities.announcement.PostType
 import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.feature.navigation.Screen
+import com.example.myjob.feature.posts.FilterPostBottomSheet
+import com.example.myjob.ui.theme.WhatsAppDarkGreen
+import com.example.myjob.ui.theme.WhatsAppLightGreen
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModernHomeScreen(
     navController: NavController,
@@ -71,10 +88,32 @@ fun ModernHomeScreen(
     clearData: () -> Unit = {}
 ) {
 
-    //GlobalEntries.scheduleFileDownload(LocalContext.current, homeViewModel.getPDFName())
-
     val listHomeEntity by homeViewModel.listHomeEntity.collectAsState()
     val fcmToken by homeViewModel.fcmToken.collectAsState()
+
+    var showTypeSheet by remember { mutableStateOf(false) }
+    var selectedSearch by remember { mutableStateOf(JobType.NORMAL) }
+
+    val invitationCount by homeViewModel.invitationCount.collectAsState()
+    val seen by seenInvitation.collectAsState()
+
+    LaunchedEffect(seen) {
+        if (seen) homeViewModel.resetCountInvitation()
+    }
+
+    val messageCount by homeViewModel.messageCount.collectAsState()
+    val seenMessages by seenMessage.collectAsState()
+
+    LaunchedEffect(seenMessages) {
+        if (seenMessages) homeViewModel.resetCountMessages()
+    }
+
+    val notificationCount by homeViewModel.notificationCount.collectAsState()
+    val seenNotification by seenNotifications.collectAsState()
+
+    LaunchedEffect(seenNotification) {
+        if (seenNotification) homeViewModel.resetCountNotifications()
+    }
 
     val invitations = homeViewModel.invitations.collectAsLazyPagingItems()
     var count by remember { mutableStateOf(0) }
@@ -102,6 +141,10 @@ fun ModernHomeScreen(
         }
     }
 
+    val demandText = stringResource(id = R.string.demand_text)
+    val offerText = stringResource(id = R.string.offer_text)
+    val normalText = stringResource(id = R.string.normal_text)
+    val logoutText = stringResource(id = R.string.logout_text)
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -111,16 +154,73 @@ fun ModernHomeScreen(
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             item {
-                ModernHeader(
-                    notification = {
-                        navController.navigate(Screen.NotificationCompanyScreen.route)
-                    },
-                    logout = {
-                        homeViewModel.logout()
-                        clearData()
-                        navController.navigate(Screen.LoginScreen.route)
+
+                val userName = GlobalEntries.user.fullName ?: ""
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = Transparent
+                        )
+                        .padding(horizontal = 20.dp, vertical = 24.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(CircleShape)
+                                    .background(colorResource(id = R.color.whatsapp).copy(alpha = 0.5f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = userName.split(" ").mapNotNull { it.firstOrNull() }.take(2)
+                                        .joinToString(""),
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+                        }
+
+
+                        FilterChip(
+                            onClick = { showTypeSheet = true },
+                            modifier = Modifier
+                                .fillMaxWidth(0.7f)
+                                .height(50.dp),
+                            label = {
+                                Text(
+                                    text = when (selectedSearch) {
+                                        JobType.NORMAL -> normalText
+                                        JobType.GET -> demandText
+                                        JobType.SEND -> offerText
+                                        JobType.LOGOUT -> logoutText
+                                    }
+                                )
+                            },
+                            selected = false,
+                            trailingIcon = {
+                                androidx.compose.material.Icon(
+                                    Icons.Default.KeyboardArrowDown,
+                                    contentDescription = "Filter",
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = WhatsAppLightGreen,
+                                selectedLabelColor = WhatsAppDarkGreen
+                            )
+                        )
                     }
-                )
+                }
             }
 
             // Main Actions Grid
@@ -129,11 +229,14 @@ fun ModernHomeScreen(
 
                 MainActionsGrid(
                     listHomeEntity = listHomeEntity,
+                    invitationCount = invitationCount,
+                    messageCount = messageCount,
+                    notificationCount = notificationCount,
                     onMyInvitationsClick = {
                         navController.navigate(Screen.InvitationScreen.route)
                     },
                     onValidationClick = {
-                        navController.navigate(Screen.ValidateProfileCandidateScreen.route)
+                        navController.navigate(Screen.NotificationCompanyScreen.route)
                     },
                     onSettingsClick = {
                         navController.navigate(Screen.SettingScreen.route)
@@ -153,110 +256,98 @@ fun ModernHomeScreen(
             }
         }
     }
+
+    if (showTypeSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showTypeSheet = false }
+        ) {
+            FilterTypeBottomSheet(
+                selectedFilter = selectedSearch,
+                onFilterSelected = { filter ->
+                    selectedSearch = filter
+                    if (filter.name == logoutText) {
+                        homeViewModel.logout()
+                        clearData()
+                        navController.navigate(Screen.LoginScreen.route)
+                    } else if (filter.name == demandText) {
+                        navController.navigate(Screen.LoginScreen.route)
+                    }
+                    //postsViewModel.getFilteredAnnounceCompany(filter.name)
+                    showTypeSheet = false
+                }
+            )
+        }
+    }
 }
 
 @Composable
-fun ModernHeader(
-    notification: () -> Unit,
-    logout: () -> Unit
+fun FilterTypeBottomSheet(
+    selectedFilter: JobType,
+    onFilterSelected: (JobType) -> Unit
 ) {
-    val userName = GlobalEntries.user.fullName ?: ""
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                color = colorResource(id = R.color.whatsapp)
-            )
-            .padding(horizontal = 20.dp, vertical = 24.dp)
+            .fillMaxHeight()
+            .padding(16.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Text(
+            text = stringResource(id = R.string.type_change_text),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        val demandText = stringResource(id = R.string.demand_text)
+        val offerText = stringResource(id = R.string.offer_text)
+        val normalText = stringResource(id = R.string.normal_text)
+        val logoutText = stringResource(id = R.string.logout_text)
+        JobType.entries.forEach { filter ->
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        onFilterSelected(filter)
+                    }
+                    .padding(vertical = 7.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.25f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = userName.split(" ").mapNotNull { it.firstOrNull() }.take(2)
-                            .joinToString(""),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-
-                Column {
-                    Text(
-                        text = stringResource(id = R.string.hello),
-                        fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.9f),
-                        fontWeight = FontWeight.Normal
-                    )
-                    Text(
-                        text = userName,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-            }
-
-            // Action Icons
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                IconButton(
+                RadioButton(
+                    selected = selectedFilter == filter,
                     onClick = {
-                        notification()
+                        onFilterSelected(filter)
                     },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.2f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Notifications,
-                        contentDescription = "Notifications",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = colorResource(id = R.color.whatsapp),
+                        unselectedColor = colorResource(id = R.color.whatsapp)
                     )
-                }
-
-                Spacer(modifier = Modifier.width(10.dp))
-
-                IconButton(
-                    onClick = {
-                        logout()
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = when (filter) {
+                        JobType.NORMAL -> normalText
+                        JobType.GET -> demandText
+                        JobType.SEND -> offerText
+                        JobType.LOGOUT -> logoutText
                     },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.2f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Logout,
-                        contentDescription = "Logout",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
 @Composable
 fun MainActionsGrid(
     listHomeEntity: List<HomeEntity>,
+    invitationCount: Int,
+    messageCount: Int,
+    notificationCount: Int,
     onMyInvitationsClick: () -> Unit,
     onValidationClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -286,8 +377,8 @@ fun MainActionsGrid(
                 iconTint = Color(0xFF25D366),
                 backgroundColor = Color.White,
                 onClick = onMyInvitationsClick,
-                showBadge = invitationsCount > 0,
-                badgeCount = invitationsCount
+                showBadge = invitationCount > 0,
+                badgeCount = invitationCount
             )
 
             val validationItem = listHomeEntity[1]
@@ -295,10 +386,12 @@ fun MainActionsGrid(
                 modifier = Modifier.weight(1f),
                 title = stringResource(id = validationItem.title),
                 subtitle = stringResource(id = validationItem.subTitle),
-                icon = Icons.Default.Verified,
+                icon = Icons.Default.Notifications,
                 iconTint = Color(0xFF25D366),
                 backgroundColor = Color.White,
-                onClick = onValidationClick
+                onClick = onValidationClick,
+                showBadge = notificationCount > 0,
+                badgeCount = notificationCount
             )
         }
 
@@ -330,7 +423,9 @@ fun MainActionsGrid(
                 icon = Icons.Default.Message,
                 iconTint = Color(0xFF25D366),
                 backgroundColor = Color.White,
-                onClick = onMessageClick
+                onClick = onMessageClick,
+                showBadge = messageCount > 0,
+                badgeCount = messageCount
             )
         }
 

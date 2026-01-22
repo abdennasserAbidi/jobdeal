@@ -32,6 +32,8 @@ class PushNotificationService : FirebaseMessagingService() {
         // Respond to received messages
         showNotification(
             notificationMessage.title, notificationMessage.body,
+            message.data["idReceiver"],
+            message.data["idSender"],
             message.data["idInvitation"],
             message.data["idAnnounce"],
             message.data["idCompany"],
@@ -54,6 +56,8 @@ class PushNotificationService : FirebaseMessagingService() {
     private fun showNotification(
         title: String?,
         body: String?,
+        idReceiver: String?,
+        idSender: String?,
         idUser: String?,
         idAnnounce: String?,
         idCompany: String?,
@@ -75,6 +79,8 @@ class PushNotificationService : FirebaseMessagingService() {
 
         val targetIntent = Intent(this, MainActivity::class.java).apply {
             // Add navigation data as extras
+            putExtra("idReceiver", idReceiver)
+            putExtra("idSender", idSender)
             putExtra("idInvitation", idUser)
             putExtra("idAnnounce", idAnnounce)
             putExtra("idCompany", idCompany)

@@ -58,6 +58,7 @@ import com.example.myjob.feature.profile.ProfileViewModel
 fun CompanyProfileFormScreen(
     navController: NavController,
     allSubjects: List<Subject>,
+    list: List<NewCountry>,
     clearData: () -> Unit = {},
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
@@ -83,6 +84,7 @@ fun CompanyProfileFormScreen(
         if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
             profileViewModel.getUserById()
             profileViewModel.mapperPersonalInfo(user)
+            profileViewModel.mapperToListNames(list)
         }
     }
 
@@ -264,20 +266,6 @@ fun CompanyProfileFormScreen(
                     }
 
                     item {
-
-                        FormTextField(
-                            value = address,
-                            onValueChange = {
-                                address = it
-                                profileViewModel.changeCompanyAddress(it)
-                            },
-                            label = "Address",
-                            modifier = Modifier.fillMaxWidth(),
-                            isRequired = false
-                        )
-                    }
-
-                    item {
                         FormTextField(
                             value = country,
                             onClick = {
@@ -291,6 +279,19 @@ fun CompanyProfileFormScreen(
                         )
                     }
 
+                    item {
+
+                        FormTextField(
+                            value = address,
+                            onValueChange = {
+                                address = it
+                                profileViewModel.changeCompanyAddress(it)
+                            },
+                            label = "Address",
+                            modifier = Modifier.fillMaxWidth(),
+                            isRequired = false
+                        )
+                    }
 
                     item {
                         FormTextField(

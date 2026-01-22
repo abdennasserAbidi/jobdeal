@@ -290,6 +290,11 @@
     <string name="share_text">Partager</string>
     <string name="exported_text">Exporter</string>
 
+    <string name="demand_text">Demande</string>
+    <string name="offer_text">offre</string>
+    <string name="normal_text">Normal</string>
+
+
     <!--Contract-->
     <string name="full_time_text">À temps plein</string>
     <string name="part_time_text">À temps partiel</string>
@@ -312,6 +317,7 @@
     <string name="delete_all_text">Tout supprimer</string>
 
     <string name="notification_text">Notifications</string>
+    <string name="notification_desc_text">Voir tous les notifications</string>
     <string name="validate_text">Validation</string>
     <string name="validate_profile_text">Valider votre profile</string>
     <string name="posts_text">Publications</string>

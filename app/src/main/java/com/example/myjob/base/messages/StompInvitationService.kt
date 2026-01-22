@@ -2,13 +2,18 @@ package com.example.myjob.base.messages
 
 import android.annotation.SuppressLint
 import android.util.Log
+import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.countInvitationPending
+import com.example.myjob.common.GlobalEntries.seenInvitation
 import com.example.myjob.domain.entities.invitation.InvitationModel
+import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.feature.messagerie.ChatMessage
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.dto.LifecycleEvent
@@ -16,7 +21,7 @@ import ua.naiksoftware.stomp.dto.StompHeader
 
 object StompInvitationService {
 
-    private const val WS_URL = "http://192.168.1.129:9090/ws"
+    private const val WS_URL = "http://10.0.2.2:9090/ws"
 
     private val stompClient = Stomp.over(
         Stomp.ConnectionProvider.OKHTTP,
@@ -58,6 +63,7 @@ object StompInvitationService {
             .subscribe { msg ->
                 val chat = gson.fromJson(msg.payload, InvitationModel::class.java)
                 Log.i("fzejhgrzg", "Received: $chat")
+
                 CoroutineScope(Dispatchers.IO).launch {
                     _messages.emit(chat)
                 }

@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -51,10 +52,13 @@ import com.example.myjob.R
 import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.idNotification
+import com.example.myjob.common.GlobalEntries.seenNotifications
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.feature.navigation.Screen
+import kotlinx.coroutines.flow.update
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -76,6 +80,13 @@ fun NotificationScreen(
         refreshing = refreshing,
         onRefresh = { notifications.refresh() }
     )
+
+    val lifecycle = rememberLifecycleEvent()
+    LaunchedEffect(lifecycle) {
+        if (lifecycle == Lifecycle.Event.ON_RESUME) {
+            seenNotifications.update { true }
+        }
+    }
 
     /*val seenNotification by notificationViewModel.seenNotification.collectAsState()
 

@@ -55,6 +55,7 @@ data class InvitationModel(
     var nbDaysPerWeek: String = "",
     var salary: String = "",
     var accepted: Boolean = false,
+    var vu: Boolean = false,
     var status: String? = "On hold",
     var reason: String? = "",
     var dateEnd: String? = "",

@@ -138,116 +138,29 @@ fun CandidateDetailScreen(
             .background(MaterialTheme.colorScheme.background)
     ) {
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(color = colorResource(id = R.color.whatsapp))
-        ) {
+        CandidateDetailsScreen(candidate = user,
+            onBackClick = {
+                navController.popBackStack()
+            },
+            onContactClick = {
+                GlobalEntries.candidateUser = it
+                otherUserId = it.id ?: -1
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 15.dp, horizontal = 15.dp)
-            ) {
-                IconButton(
-                    onClick = {
-                        navController.popBackStack()
-                    },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .align(Alignment.CenterStart)
-                        .background(Color.White.copy(alpha = 0.2f))
-                ) {
-                    androidx.compose.material.Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                otherUserName =
+                    if (it.role == "Candidate" || it.role == "Candidat") it.fullName ?: ""
+                    else it.companyName ?: ""
 
-                Text(
-                    text = stringResource(id = R.string.profile_candidate_type_text),
-                    modifier = Modifier.align(Alignment.Center),
-                    color = Color.White,
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        fontFamily = FontFamily.Default,
-                        fontWeight = FontWeight.Medium
-                    )
-                )
+                navController.navigate(Screen.SendMessageScreen.route)
+            },
+            onHireClick = {
+                GlobalEntries.candidateUser = it
+                navController.navigate(Screen.SendInvitationScreen.route)
+            },
+            onTerminateInvitation = {
+                invitationModel = it
+                openFinishProcess = true
             }
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Header Card with Basic Info
-            CandidateHeaderCard(candidateProfile = user, experienceYears,
-                sendInvitation = {
-                    GlobalEntries.candidateUser = it
-                    navController.navigate(Screen.SendInvitationScreen.route)
-                },
-                sendMessage = {
-                    GlobalEntries.candidateUser = it
-                    otherUserId = it.id ?: -1
-
-                    otherUserName =
-                        if (it.role == "Candidate" || it.role == "Candidat") it.fullName ?: ""
-                        else it.companyName ?: ""
-
-                    navController.navigate(Screen.SendMessageScreen.route)
-                },
-                onTerminateInvitation = {
-                    invitationModel = it
-                    openFinishProcess = true
-                })
-
-            // Contact Information Card
-            ContactInformationCard(candidateProfile = user)
-
-            // Bio Card
-            if (user.bio?.isNotEmpty() == true) {
-                BioCard(bio = user.bio ?: "")
-            }
-
-            // Skills Card
-            if (user.candidateSkills?.listSkills?.isNotEmpty() == true)
-                SkillsCard(skills = user.candidateSkills?.listSkills ?: mutableListOf())
-
-            // Experience Card
-            val experiences = user.experience ?: mutableListOf()
-            if (experiences.isNotEmpty())
-                ExperienceCard(experience = user.experience ?: mutableListOf())
-
-            // Education Card
-            val educations = user.education ?: mutableListOf()
-            if (educations.isNotEmpty())
-                EducationCard(educations = user.education ?: mutableListOf())
-
-            // Additional Info Card
-            AdditionalInfoCard(
-                certifications = user.candidateSkills?.listCertification ?: mutableListOf(),
-                languages = user.candidateSkills?.listLanguages ?: mutableListOf(),
-                availability = user.professionalStatus?.availability ?: "",
-                expectedSalary = "5000",
-                noticePeriod = "15"
-            )
-
-            // Action Buttons
-            /*ActionButtonsCard(
-                onSendInvitation = onSendInvitation,
-                onContactCandidate = onContactCandidate,
-                onScheduleInterview = onScheduleInterview
-            )*/
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+        )
     }
 }
 

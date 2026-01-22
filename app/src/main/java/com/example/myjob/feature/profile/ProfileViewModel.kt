@@ -657,8 +657,32 @@ class ProfileViewModel @Inject constructor(
         userEmploymentTypeChoice.update {
             user.value.changeEmploymentType(name, lang)
         }
+
+        val traduction = if (lang == "French" || lang == "Français") {
+            when(name) {
+                "Contract" -> "Contrat"
+                "Freelance" -> "Freelance"
+                "Both" -> "Les deux"
+                else -> name
+            }
+        } else {
+            when(name) {
+                "Contrat" -> "Contract"
+                "Freelance" -> "Freelance"
+                "Les deux" -> "Both"
+                else -> name
+            }
+        }
+
+        val preferredWorkType = when (name) {
+            "Both", "Les deux" -> mutableListOf("Contrat", "Freelance")
+            "Contrat", "Contract" -> mutableListOf("Contrat")
+            else -> mutableListOf("Freelance")
+        }
+
         user.update {
             it.changeEmploymentType(name, lang)
+            it.preferredWorkType = preferredWorkType
             it
         }
     }
@@ -703,7 +727,10 @@ class ProfileViewModel @Inject constructor(
 
     fun saveUserPersonalInfo() {
         viewModelScope.launch {
+            Log.i("fjkzhkzhgrzgz", "saveUserPersonalInfo: ${user.value}")
             savePersonalUseCase.execute(user.value).collect { res ->
+                Log.i("fjkzhkzhgrzgz", "res: $res")
+
                 saveUserState.update {
                     res.data?.message ?: ""
                 }
@@ -938,6 +965,11 @@ class ProfileViewModel @Inject constructor(
     }
 
     val saveCandidateSkillsState = MutableStateFlow("")
+
+    fun clearSkillsState() {
+        saveCandidateSkillsState.update { "" }
+    }
+
     fun saveCandidateSkills() {
         viewModelScope.launch {
             val userId = sharedPreference.getInt("idUser", 0)

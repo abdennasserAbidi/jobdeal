@@ -41,8 +41,12 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.countInvitationPending
+import com.example.myjob.common.GlobalEntries.seenInvitation
+import com.example.myjob.common.GlobalEntries.seenMessage
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.feature.validateprofile.Documents
+import kotlinx.coroutines.flow.update
 import java.util.*
 
 @SuppressLint("MutableCollectionMutableState")
@@ -80,6 +84,7 @@ fun DiscussionScreen(
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
             isFirstTime = true
+            seenMessage.update { true }
             hideNavigation()
             viewModel.connect()
             viewModel.findConversations(GlobalEntries.otherUserId)

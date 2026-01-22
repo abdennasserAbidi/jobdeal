@@ -300,6 +300,11 @@
     <string name="share_text">Share</string>
     <string name="exported_text">Exported</string>
 
+    <string name="demand_text">Demand</string>
+    <string name="offer_text">offer</string>
+    <string name="normal_text">Normal</string>
+
+
     <!--Contract-->
     <string name="full_time_text">Full-time</string>
     <string name="part_time_text">Part-time</string>
@@ -322,6 +327,7 @@
     <string name="delete_all_text">Delete all</string>
 
     <string name="notification_text">Notifications</string>
+    <string name="notification_desc_text">View all notifications</string>
     <string name="validate_text">Validation</string>
     <string name="validate_profile_text">Validate your profile</string>
 
