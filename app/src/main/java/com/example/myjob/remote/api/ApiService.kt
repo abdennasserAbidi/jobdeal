@@ -343,6 +343,12 @@ ApiService {
         @Body announcementModel: AnnouncementModel
     ): UserResponse
 
+    @POST("auth/updateAnnouncement")
+    suspend fun updateAnnouncement(
+        @Query("idUserConnected") idUserConnected: Int,
+        @Body announcementModel: AnnouncementModel
+    ): UserResponse
+
     @GET("auth/findAnnounceCompany")
     suspend fun findAnnounceCompany(
         @Query("type") type: String,

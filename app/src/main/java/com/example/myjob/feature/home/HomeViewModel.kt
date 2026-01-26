@@ -823,10 +823,8 @@ class HomeViewModel @Inject constructor(
     }
 
     fun validateFilter(criteria: CriteriaModel) {
-
         viewModelScope.launch {
-
-            if (!criteria.checkEmpty()) {
+            if (criteria.checkEmpty()) {
                 searchUserUseCase.execute(criteria).collect { res ->
                     _user.update {
                         res.data ?: PagingData.empty()
@@ -996,6 +994,10 @@ class HomeViewModel @Inject constructor(
 
     fun logout() {
         sharedPreference.putString("token", "")
+    }
+
+    fun offerDemand() {
+        sharedPreference.putString("offerDemand", "")
     }
 
     fun updateQuery(newQuery: String) {

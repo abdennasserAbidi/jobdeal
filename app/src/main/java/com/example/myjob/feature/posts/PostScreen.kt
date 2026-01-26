@@ -1,5 +1,6 @@
 package com.example.myjob.feature.posts
 
+import android.view.View
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -33,6 +34,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -64,6 +66,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -98,10 +101,12 @@ fun PostScreen(
     val posts by postsViewModel.posts.collectAsState()
     var allPost by remember { mutableStateOf(emptyList<AnnouncementModel>()) }
     var selectedItemPost by remember { mutableStateOf(AnnouncementModel()) }
+    var openOptions by remember { mutableStateOf(false) }
 
     val announcementModel by postsViewModel.announcementModel.collectAsState()
     val userConnectedId by postsViewModel.userConnectedId.collectAsState()
     val annoucementStatus by postsViewModel.annoucementStatus.collectAsState()
+    val announcementUpdateStatus by postsViewModel.announcementUpdateStatus.collectAsState()
 
     var openAnnounceForm by remember { mutableStateOf(false) }
     var showAddButton by remember { mutableStateOf(true) }
@@ -111,6 +116,7 @@ fun PostScreen(
     var selectedPost by remember { mutableStateOf(mutableListOf<CommentsPost>()) }
     var showFilterSheet by remember { mutableStateOf(false) }
     var showSearchSheet by remember { mutableStateOf(false) }
+    var targetIndex by remember { mutableStateOf(-1) }
     var selectedFilter by remember { mutableStateOf(PostType.ALL) }
     var selectedSearch by remember { mutableStateOf(PostType.ALL) }
 
@@ -118,6 +124,7 @@ fun PostScreen(
     var descriptions by remember { mutableStateOf(announcementModel.description) }
     var postType by remember { mutableStateOf(announcementModel.postType) }
 
+    var isUpdating by remember { mutableStateOf(false) }
     var isFirstTime by remember { mutableStateOf(false) }
 
     LaunchedEffect(posts) {
@@ -166,6 +173,19 @@ fun PostScreen(
         }
     }
 
+    LaunchedEffect(announcementUpdateStatus) {
+        if (announcementUpdateStatus == "saved successfully") {
+            announcementModel.companyName = GlobalEntries.user.companyName ?: ""
+
+            allPost = allPost
+                .mapIndexed { index, value ->
+                    if (index == targetIndex) announcementModel else value
+                }
+                .toMutableList()
+
+        }
+    }
+
     if (showDialog) {
         CustomDialog(isSuccess = false, message = deleteStatus) {
             showDialog = false
@@ -180,14 +200,15 @@ fun PostScreen(
         }
     }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .clickable(
-            interactionSource = interactionSource,
-            indication = null
-        ) {
-            showComments = !showComments
-        }) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) {
+                showComments = !showComments
+            }) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -301,7 +322,7 @@ fun PostScreen(
                     itemsIndexed(
                         items = allPost,
                         key = { _, item ->
-                            item.idAnnounce
+                            View.generateViewId()
                         }
                     ) { index, item ->
                         postsViewModel.getPostCommentsCompany(item.idAnnounce)
@@ -349,6 +370,25 @@ fun PostScreen(
                                             .align(Alignment.CenterEnd),
                                         onClick = {
                                             selectedItemPost = item
+                                            targetIndex = index
+                                            showComments = false
+                                            openAnnounceForm = false
+                                            openOptions = true
+                                        }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            tint = Color.Red,
+                                            modifier = Modifier.size(20.dp),
+                                            contentDescription = "delete"
+                                        )
+                                    }
+
+                                    /*IconButton(
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .align(Alignment.CenterEnd),
+                                        onClick = {
+                                            selectedItemPost = item
                                             postsViewModel.deleteCompanyAnnouncement(item.idAnnounce)
                                     }) {
                                         Icon(
@@ -357,7 +397,7 @@ fun PostScreen(
                                             modifier = Modifier.size(20.dp),
                                             contentDescription = "delete"
                                         )
-                                    }
+                                    }*/
                                 }
 
                                 Spacer(modifier = Modifier.height(12.dp))
@@ -655,8 +695,7 @@ fun PostScreen(
                     .fillMaxWidth()
                     .fillMaxHeight(),
                 elevation = 10.dp
-            )
-            {
+            ) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -742,15 +781,15 @@ fun PostScreen(
                             )
                         )
 
-                        val validator = postType.isEmpty() || postType == PostType.ALL.name || postType == allPostsText
-                        if(activatedCheck && validator) {
-
+                        val validator =
+                            postType.isEmpty() || postType == PostType.ALL.name || postType == allPostsText
+                        if (activatedCheck && validator) {
                             Text(
                                 modifier = Modifier.padding(top = 5.dp),
                                 text = stringResource(id = R.string.type_annonce_error),
                                 color = Color.Red
                             )
-                            
+
                         }
 
                         FormTextField(
@@ -800,12 +839,11 @@ fun PostScreen(
                                 }
 
                                 if (postTitleValidator && postDescriptionValidator && postTypeValidator) {
-                                    postsViewModel.saveCompanyAnnouncement()
+                                    if (!isUpdating) postsViewModel.saveCompanyAnnouncement()
+                                    else postsViewModel.updateCompanyAnnouncement()
                                     openAnnounceForm = false
                                     showAddButton = true
-                                    GlobalEntries.isVisibleNav.update {
-                                        true
-                                    }
+                                    GlobalEntries.isVisibleNav.update { true }
                                 }
                             },
                             modifier = Modifier
@@ -826,7 +864,75 @@ fun PostScreen(
 
                 }
             }
+        }
+    }
 
+    // Filter Bottom Sheet
+    if (openOptions) {
+        ModalBottomSheet(
+            onDismissRequest = { openOptions = false }
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Row(
+                    verticalAlignment = CenterVertically,
+                    modifier = Modifier.clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
+                        postsViewModel.deleteCompanyAnnouncement(selectedItemPost.idAnnounce)
+                        openOptions = false
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        tint = Color.Red,
+                        modifier = Modifier.size(20.dp),
+                        contentDescription = "delete"
+                    )
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Text(stringResource(R.string.delete_text))
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(
+                    verticalAlignment = CenterVertically,
+                    modifier = Modifier.clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
+                        isUpdating = true
+
+                        postsViewModel.changePostId(selectedItemPost.idAnnounce)
+                        postsViewModel.changePostName(selectedItemPost.title)
+                        postsViewModel.changeDescriptions(selectedItemPost.description)
+                        postsViewModel.changePostType(selectedItemPost.postType)
+
+                        descriptions = selectedItemPost.description
+                        postName = selectedItemPost.title
+                        postType = selectedItemPost.postType
+
+                        openAnnounceForm = true
+                        openOptions = false
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        tint = colorResource(R.color.whatsapp),
+                        modifier = Modifier.size(20.dp),
+                        contentDescription = "edit"
+                    )
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Text(stringResource(R.string.update_text))
+                }
+
+            }
         }
     }
 

@@ -14,6 +14,10 @@ interface AnnouncementRepository {
         idUserConnected: Int,
         announcementModel: AnnouncementModel
     ): Flow<Resource<UserResponse>>
+    suspend fun updateAnnouncement(
+        idUserConnected: Int,
+        announcementModel: AnnouncementModel
+    ): Flow<Resource<UserResponse>>
     suspend fun findAnnounceCompany(type: String, idCompany: Int): Flow<Resource<AnnounceResponse>>
 
     suspend fun findAnnounceCandidate(

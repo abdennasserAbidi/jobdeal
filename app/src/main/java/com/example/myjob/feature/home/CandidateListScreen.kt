@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
@@ -49,6 +50,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -85,6 +87,7 @@ import com.example.myjob.common.view.CandidateCard
 import com.example.myjob.domain.entities.Candidate
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.FilterType
+import com.example.myjob.domain.entities.JobType
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.invitation.InvitationModel
@@ -93,7 +96,8 @@ import com.example.myjob.feature.invitation.company.EnProcessForm
 import com.example.myjob.feature.navigation.Screen
 import kotlinx.coroutines.flow.update
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
     ExperimentalMaterialApi::class
 )
 @Composable
@@ -142,6 +146,9 @@ fun CandidateListScreen(
     var indexParent by remember { mutableStateOf(-1) }
     var titleParent by remember { mutableStateOf("") }
     var isSelectedParent by remember { mutableStateOf(false) }
+
+    var showTypeSheet by remember { mutableStateOf(false) }
+    var selectedSearch by remember { mutableStateOf(JobType.NORMAL) }
 
     val listChoiceParentSelect by homeViewModel.listChoiceParentSelect.collectAsState()
     val listChoiceParentSelected by homeViewModel.listChoiceParentSelected.collectAsState()
@@ -212,7 +219,8 @@ fun CandidateListScreen(
     var invitationModel by remember { mutableStateOf(InvitationModel()) }
 
     if (openFinishProcess) {
-        EnProcessForm(invitationModel,
+        EnProcessForm(
+            invitationModel,
             onDismissRequest = {
                 openFinishProcess = false
             },
@@ -221,6 +229,11 @@ fun CandidateListScreen(
                 openFinishProcess = false
             })
     }
+
+    val demandText = stringResource(id = R.string.demand_text)
+    val offerText = stringResource(id = R.string.offer_text)
+    val normalText = stringResource(id = R.string.normal_text)
+    val logoutText = stringResource(id = R.string.logout_text)
 
     Box(
         modifier = Modifier
@@ -255,45 +268,79 @@ fun CandidateListScreen(
                         fontWeight = FontWeight.Bold
                     )
 
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(40.dp)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                showTypeSheet = true
+                            }
+                            .clip(RoundedCornerShape(30.dp))
+                            .background(White.copy(alpha = 0.2f))
                     ) {
-                        IconButton(
-                            onClick = {
-                                navController.navigate(Screen.NotificationCompanyScreen.route)
-                            },
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(White.copy(alpha = 0.2f))
-                        ) {
+
+                        val badgeCount by remember { mutableIntStateOf(1) }
+
+                        Box(modifier = Modifier
+                            .size(30.dp)
+                            .padding(start = 10.dp)
+                            .align(Alignment.CenterStart)) {
+
                             Icon(
                                 imageVector = Icons.Default.Notifications,
                                 contentDescription = "Notifications",
                                 tint = White,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .align(Alignment.CenterEnd)
                             )
                         }
 
-                        IconButton(
-                            onClick = {
-                                homeViewModel.logout()
-                                clearData()
-                                navController.navigate(Screen.LoginScreen.route)
+                        if (badgeCount > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .size(15.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFEF4444)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (badgeCount > 9) "9+" else badgeCount.toString(),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = White
+                                )
+                            }
+                        }
+
+                        Text(
+                            text = when (selectedSearch) {
+                                JobType.NORMAL -> normalText
+                                JobType.GET -> demandText
+                                JobType.SEND -> offerText
+                                JobType.LOGOUT -> logoutText
                             },
+                            color = White,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                        )
+
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "ArrowDropDown",
+                            tint = White,
                             modifier = Modifier
                                 .size(40.dp)
-                                .clip(CircleShape)
-                                .background(White.copy(alpha = 0.2f))
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Logout,
-                                contentDescription = "Logout",
-                                tint = White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
+                                .padding(end = 10.dp)
+                                .align(Alignment.CenterEnd)
+                        )
                     }
+
+
                 }
             }
 
@@ -419,8 +466,9 @@ fun CandidateListScreen(
                                 Log.i("userValue", "getUser: ${user.role}")
 
                                 GlobalEntries.userForCompany = user
-                                val route = if (user.role == "Candidat" || user.role == "Candidate") Screen.DetailScreen.route
-                                else Screen.DetailCompanyScreen.route
+                                val route =
+                                    if (user.role == "Candidat" || user.role == "Candidate") Screen.DetailScreen.route
+                                    else Screen.DetailCompanyScreen.route
                                 navController.navigate(route)
                             },
                             onSendInvitation = {
@@ -430,8 +478,10 @@ fun CandidateListScreen(
                             onSendMessage = { it ->
                                 candidateUser = it
                                 otherUserId = it.id ?: -1
-                                otherUserName = if (it.role == "Candidate" || it.role == "Candidat") it.fullName ?: ""
-                                else it.companyName ?: ""
+                                otherUserName =
+                                    if (it.role == "Candidate" || it.role == "Candidat") it.fullName
+                                        ?: ""
+                                    else it.companyName ?: ""
 
                                 navController.navigate(Screen.SendMessageScreen.route)
                             },
@@ -442,14 +492,18 @@ fun CandidateListScreen(
                         )
 
                         if (index >= lazyPagingItems.itemCount) {
-                            Spacer(modifier = Modifier
-                                .height(50.dp)
-                                .fillMaxWidth())
+                            Spacer(
+                                modifier = Modifier
+                                    .height(50.dp)
+                                    .fillMaxWidth()
+                            )
                         }
 
-                        Spacer(modifier = Modifier
-                            .height(20.dp)
-                            .fillMaxWidth())
+                        Spacer(
+                            modifier = Modifier
+                                .height(20.dp)
+                                .fillMaxWidth()
+                        )
                     }
                     lazyPagingItems.apply {
                         when {
@@ -677,6 +731,29 @@ fun CandidateListScreen(
             }
         }
 
+    }
+
+    if (showTypeSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showTypeSheet = false }
+        ) {
+            FilterTypeBottomSheet(
+                selectedFilter = selectedSearch,
+                onFilterSelected = { filter ->
+                    selectedSearch = filter
+                    if (filter.name == logoutText) {
+                        homeViewModel.logout()
+                        clearData()
+                        navController.navigate(Screen.LoginScreen.route)
+                    } else if (filter.name == demandText) {
+                        homeViewModel.offerDemand()
+                        navController.navigate(Screen.LoginScreen.route)
+                    }
+                    //postsViewModel.getFilteredAnnounceCompany(filter.name)
+                    showTypeSheet = false
+                }
+            )
+        }
     }
 
     if (showFilterSheet) {

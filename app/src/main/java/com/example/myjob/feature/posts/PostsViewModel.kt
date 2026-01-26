@@ -30,6 +30,7 @@ import com.example.myjob.domain.usecase.announcement.GetNumberLikeAllPostsUseCas
 import com.example.myjob.domain.usecase.announcement.GetPostUseCase
 import com.example.myjob.domain.usecase.announcement.RemoveLikeUseCase
 import com.example.myjob.domain.usecase.announcement.SaveAnnouncementUseCase
+import com.example.myjob.domain.usecase.announcement.UpdateAnnouncementUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.domain.usecase.notification.SeenNotificationUseCase
 import com.example.myjob.local.database.SharedPreference
@@ -62,6 +63,7 @@ class PostsViewModel @Inject constructor(
     private val addLikeUseCase: AddLikeUseCase,
     private val addCommentUseCase: AddCommentUseCase,
     private val saveAnnouncementUseCase: SaveAnnouncementUseCase,
+    private val updateAnnouncementUseCase: UpdateAnnouncementUseCase,
     private val deleteAnnouncementUseCase: DeleteAnnouncementUseCase,
     private val findAnnounceCandidateUseCase: FindAnnounceCandidateUseCase,
     private val findAnnounceCompanyUseCase: FindAnnounceCompanyUseCase,
@@ -204,8 +206,42 @@ class PostsViewModel @Inject constructor(
         }
     }
 
+    fun changePostId(id: Int) {
+        announcementModel.update {
+            it.idAnnounce = id
+            it
+        }
+    }
+
     val annoucementStatus = MutableStateFlow("")
+    val announcementUpdateStatus = MutableStateFlow("")
     val addedPost = MutableStateFlow(AnnouncementModel())
+
+    fun updateCompanyAnnouncement() {
+        val id = sharedPreference.getInt("idUser", 0)
+
+        val currentDate = Date()
+        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val formattedDate = formatter.format(currentDate)
+
+        val announcementModels = announcementModel.value
+        announcementModels.date = formattedDate
+
+        announcementModel.update { announcementModels }
+
+        val announcementParams = AnnouncementParams(
+            idUserConnected = id,
+            announcementModel = announcementModel.value
+        )
+        viewModelScope.launch {
+            updateAnnouncementUseCase.execute(announcementParams)
+                .collectLatest { res ->
+                    if (res.status == ResourceState.SUCCESS) {
+                        announcementUpdateStatus.update { res.data?.message ?: "" }
+                    }
+                }
+        }
+    }
 
     fun saveCompanyAnnouncement() {
         val id = sharedPreference.getInt("idUser", 0)

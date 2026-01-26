@@ -12,6 +12,10 @@ interface AnnouncementDataSource {
         idUserConnected: Int,
         announcementModel: AnnouncementModel
     ): UserResponse
+    suspend fun updateAnnouncement(
+        idUserConnected: Int,
+        announcementModel: AnnouncementModel
+    ): UserResponse
     suspend fun findAnnounceCompany(type: String, idCompany: Int): AnnounceResponse
     suspend fun findAnnounceCandidate(
         type: String,

@@ -18,6 +18,11 @@ class AnnouncementDataSourceImp @Inject constructor(
         announcementModel: AnnouncementModel
     ): UserResponse = apiService.makeAnnouncement(idUserConnected, announcementModel)
 
+    override suspend fun updateAnnouncement(
+        idUserConnected: Int,
+        announcementModel: AnnouncementModel
+    ): UserResponse = apiService.updateAnnouncement(idUserConnected, announcementModel)
+
     override suspend fun findAnnounceCompany(
         type: String,
         idCompany: Int

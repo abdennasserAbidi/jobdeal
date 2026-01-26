@@ -45,6 +45,20 @@ class AnnouncementRepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
+    override suspend fun updateAnnouncement(
+        idUserConnected: Int,
+        announcementModel: AnnouncementModel
+    ): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.updateAnnouncement(idUserConnected, announcementModel)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
 
     override suspend fun findAnnounceCompany(type: String, idCompany: Int): Flow<Resource<AnnounceResponse>> = flow {
         try {
