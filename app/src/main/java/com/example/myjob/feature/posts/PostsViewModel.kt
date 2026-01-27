@@ -169,6 +169,8 @@ class PostsViewModel @Inject constructor(
         }
     }
 
+    fun isOwn(idCompany: Int) = idCompany == sharedPreference.getInt("idUser", -1)
+
     private fun getAnnounceSearchCompany(type: String) {
         viewModelScope.launch {
             val idUser = sharedPreference.getInt("idUser", -1)

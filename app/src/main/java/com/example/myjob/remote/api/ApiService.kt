@@ -13,6 +13,7 @@ import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.announcement.CommentsPost
 import com.example.myjob.domain.entities.announcement.LikesPost
+import com.example.myjob.domain.entities.demands.MarketDemandModel
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
 import com.example.myjob.domain.entities.invitation.InvitationUser
@@ -448,6 +449,20 @@ ApiService {
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
     ): GenericResponse<AnnouncementModel>
+
+    ///////////////////////////////////////////////////////////////////////////
+    // DEMANDS
+    ///////////////////////////////////////////////////////////////////////////
+    @GET("auth/getAllDemands")
+    suspend fun getAllDemands(
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<MarketDemandModel>
+
+    @POST("auth/saveDemand")
+    suspend fun saveDemand(
+        @Body marketDemandModel: MarketDemandModel
+    ): UserResponse
 
     ///////////////////////////////////////////////////////////////////////////
     // NOTIFICATION

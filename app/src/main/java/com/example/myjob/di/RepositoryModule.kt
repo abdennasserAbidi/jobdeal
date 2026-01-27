@@ -4,6 +4,8 @@ import com.example.myjob.data.announcement.AnnouncementRepository
 import com.example.myjob.data.announcement.AnnouncementRepositoryImp
 import com.example.myjob.data.chat.ChatRepository
 import com.example.myjob.data.chat.ChatRepositoryImp
+import com.example.myjob.data.demand.DemandRepository
+import com.example.myjob.data.demand.DemandRepositoryImp
 import com.example.myjob.data.home.HomeRepository
 import com.example.myjob.data.home.HomeRepositoryImp
 import com.example.myjob.data.invitation.InvitationRepository
@@ -18,6 +20,8 @@ import com.example.myjob.data.subscription.SubscriptionRepository
 import com.example.myjob.data.subscription.SubscriptionRepositoryImp
 import com.example.myjob.local.source.LocalDataSource
 import com.example.myjob.local.source.LocalDataSourceImp
+import com.example.myjob.remote.demands.DemandsDataSource
+import com.example.myjob.remote.demands.DemandsDataSourceImp
 import com.example.myjob.remote.source.announcement.AnnouncementDataSource
 import com.example.myjob.remote.source.announcement.AnnouncementDataSourceImp
 import com.example.myjob.remote.source.chat.ChatDataSource
@@ -110,4 +114,15 @@ abstract class RepositoryModule {
     @Binds
     @ViewModelScoped
     abstract fun provideNotificationRepository(repository: NotificationRepositoryImp): NotificationRepository
+
+    ///////////////////////////////////////////////////////////////////////////
+    // DEMANDS
+    ///////////////////////////////////////////////////////////////////////////
+    @Binds
+    abstract fun provideDemandDataSource(remoteDataSourceImp: DemandsDataSourceImp): DemandsDataSource
+
+    @Binds
+    @ViewModelScoped
+    abstract fun provideDemandRepository(repository: DemandRepositoryImp): DemandRepository
+
 }

@@ -998,7 +998,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun offerDemand() {
-        sharedPreference.putString("offerDemand", "")
+        sharedPreference.putString("offerDemand", "service")
     }
 
     fun updateQuery(newQuery: String) {

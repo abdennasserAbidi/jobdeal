@@ -1,5 +1,6 @@
 package com.example.myjob.feature.home
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -282,7 +283,10 @@ fun CandidateListScreen(
                             .background(White.copy(alpha = 0.2f))
                     ) {
 
-                        Spacer(Modifier.align(Alignment.TopCenter).height(20.dp).fillMaxWidth())
+                        Spacer(Modifier
+                            .align(Alignment.TopCenter)
+                            .height(20.dp)
+                            .fillMaxWidth())
 
                         Box(
                             modifier = Modifier
@@ -344,7 +348,10 @@ fun CandidateListScreen(
                                 .align(Alignment.CenterEnd)
                         )
 
-                        Spacer(Modifier.align(Alignment.BottomCenter).height(20.dp).fillMaxWidth())
+                        Spacer(Modifier
+                            .align(Alignment.BottomCenter)
+                            .height(20.dp)
+                            .fillMaxWidth())
                     }
 
 
@@ -746,13 +753,16 @@ fun CandidateListScreen(
                 selectedFilter = selectedSearch,
                 onFilterSelected = { filter ->
                     selectedSearch = filter
-                    if (filter.name == logoutText) {
+                    Log.i("frzgkrzhgrz", "CandidateListScreen: ${filter.name}")
+                    if (filter.name == JobType.LOGOUT.name) {
                         homeViewModel.logout()
                         clearData()
                         navController.navigate(Screen.LoginScreen.route)
-                    } else if (filter.name == demandText) {
+                    } else if (filter.name == JobType.GET.name) {
                         homeViewModel.offerDemand()
-                        navController.navigate(Screen.LoginScreen.route)
+                        Log.i("frzgkrzhgrz", "demandText: $demandText")
+
+                        navController.navigate(Screen.DemandMarketScreen.route)
                     }
                     //postsViewModel.getFilteredAnnounceCompany(filter.name)
                     showTypeSheet = false

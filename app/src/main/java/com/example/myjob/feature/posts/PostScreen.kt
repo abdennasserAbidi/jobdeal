@@ -364,23 +364,25 @@ fun PostScreen(
                                         )
                                     }
 
-                                    IconButton(
-                                        modifier = Modifier
-                                            .size(20.dp)
-                                            .align(Alignment.CenterEnd),
-                                        onClick = {
-                                            selectedItemPost = item
-                                            targetIndex = index
-                                            showComments = false
-                                            openAnnounceForm = false
-                                            openOptions = true
-                                        }) {
-                                        Icon(
-                                            imageVector = Icons.Default.Delete,
-                                            tint = Color.Red,
-                                            modifier = Modifier.size(20.dp),
-                                            contentDescription = "delete"
-                                        )
+                                    if (postsViewModel.isOwn(item.idCompany)) {
+                                        IconButton(
+                                            modifier = Modifier
+                                                .size(20.dp)
+                                                .align(Alignment.CenterEnd),
+                                            onClick = {
+                                                selectedItemPost = item
+                                                targetIndex = index
+                                                showComments = false
+                                                openAnnounceForm = false
+                                                openOptions = true
+                                            }) {
+                                            Icon(
+                                                imageVector = Icons.Default.Delete,
+                                                tint = Color.Red,
+                                                modifier = Modifier.size(20.dp),
+                                                contentDescription = "delete"
+                                            )
+                                        }
                                     }
 
                                     /*IconButton(

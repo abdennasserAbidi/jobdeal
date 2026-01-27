@@ -70,6 +70,7 @@ import com.example.myjob.domain.entities.AllSchools
 import com.example.myjob.domain.entities.CountryPickerViewState
 import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.Subject
+import com.example.myjob.feature.demands.MarketDemandScreen
 import com.example.myjob.feature.favorites.CompanyFavorites
 import com.example.myjob.feature.forgotpassword.ForgotPasswordScreen
 import com.example.myjob.feature.home.CandidateListScreen
@@ -872,6 +873,12 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     //END PROFILE
+
+                    composable(route = Screen.DemandMarketScreen.route) {
+                        isVisibleNav = false
+
+                        MarketDemandScreen(navController = navController)
+                    }
                 }
 
             }
