@@ -825,6 +825,7 @@ class HomeViewModel @Inject constructor(
     fun validateFilter(criteria: CriteriaModel) {
         viewModelScope.launch {
             if (criteria.checkEmpty()) {
+                criteria.idUser = sharedPreference.getInt("idUser", -1)
                 searchUserUseCase.execute(criteria).collect { res ->
                     _user.update {
                         res.data ?: PagingData.empty()

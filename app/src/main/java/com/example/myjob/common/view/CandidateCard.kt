@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -131,21 +133,47 @@ fun CandidateCard(
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Avatar
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF049344)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = candidate.name.split(" ").map { it.first() }.take(2).joinToString(""),
-                            color = Color.White,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                    // Avatar with User Type Badge
+                    Box {
+                        Box(
+                            modifier = Modifier
+                                .size(70.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF049344)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = candidate.name.split(" ").map { it.first() }.take(2)
+                                    .joinToString(""),
+                                color = Color.White,
+                                fontSize = 25.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        // User Type Badge
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .size(22.dp)
+                                .clip(CircleShape)
+                                .background(Color.White)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF3B82F6)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "👤",
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
                     }
+
 
                     // Content
                     Column(
@@ -170,8 +198,10 @@ fun CandidateCard(
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 val yearsText = stringResource(id = R.string.years_text)
-                                val textExp = if (diffYear <= 5) "$diffYear $yearsText exp"
+                                val textExp = if (diffYear == 0) "No experience"
+                                else if (diffYear <= 5) "$diffYear $yearsText exp"
                                 else "+$diffYear $yearsText exp"
+
                                 Text(
                                     modifier = Modifier.padding(horizontal = 10.dp),
                                     text = textExp,
@@ -239,7 +269,8 @@ fun CandidateCard(
                         val isInProcess = invitation[0].status == InvitationStatus.IN_PROCESS.name
                         val isPending = invitation[0].status == InvitationStatus.ON_HOLD.name
                         val isRejecting = invitation[0].status == InvitationStatus.REJECTED.name
-                        val notInterested = invitation[0].status == InvitationStatus.NOT_INTERESTED.name
+                        val notInterested =
+                            invitation[0].status == InvitationStatus.NOT_INTERESTED.name
 
                         if (isFriend) {
                             OutlinedButton(
@@ -259,12 +290,17 @@ fun CandidateCard(
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text(stringResource(id = R.string.contact_text), color = whatsappGreen)
+                                Text(
+                                    stringResource(id = R.string.contact_text),
+                                    color = whatsappGreen
+                                )
                             }
                         } else if (isInProcess) {
                             Button(
                                 onClick = { onTerminateInvitation(invitation[0]) },
-                                modifier = Modifier.fillMaxWidth().padding(10.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = colorResource(id = R.color.whatsapp),
@@ -325,8 +361,7 @@ fun CandidateCard(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(stringResource(id = R.string.send_invitation_text))
                             }
-                        }
-                        else if (isRejecting) {
+                        } else if (isRejecting) {
                             Text(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -355,8 +390,7 @@ fun CandidateCard(
                                 Text(stringResource(id = R.string.send_invitation_text))
                             }
                         }
-                    }
-                    else {
+                    } else {
                         Button(
                             onClick = { onSendInvitation(candidate) },
                             modifier = Modifier
@@ -377,8 +411,7 @@ fun CandidateCard(
                             Text(stringResource(id = R.string.send_invitation_text))
                         }
                     }
-                }
-                else {
+                } else {
                     Button(
                         onClick = { onSendInvitation(candidate) },
                         modifier = Modifier
@@ -427,7 +460,7 @@ fun CandidateCard(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     // Avatar
-                    Box(
+                    /*Box(
                         modifier = Modifier
                             .size(56.dp)
                             .clip(CircleShape)
@@ -440,6 +473,45 @@ fun CandidateCard(
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold
                         )
+                    }*/
+
+                    Box {
+                        Box(
+                            modifier = Modifier
+                                .size(70.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF049344)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = name.split(" ").map { it.first() }.take(2).joinToString(""),
+                                color = Color.White,
+                                fontSize = 25.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        // User Type Badge
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .size(22.dp)
+                                .clip(CircleShape)
+                                .background(Color.White)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFF59E0B)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "🏢",
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
                     }
 
                     // Content
@@ -516,7 +588,8 @@ fun CandidateCard(
                         val isInProcess = invitation[0].status == InvitationStatus.IN_PROCESS.name
                         val isPending = invitation[0].status == InvitationStatus.ON_HOLD.name
                         val isRejecting = invitation[0].status == InvitationStatus.REJECTED.name
-                        val notInterested = invitation[0].status == InvitationStatus.NOT_INTERESTED.name
+                        val notInterested =
+                            invitation[0].status == InvitationStatus.NOT_INTERESTED.name
 
                         if (isFriend) {
                             OutlinedButton(
@@ -536,12 +609,16 @@ fun CandidateCard(
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text(stringResource(id = R.string.contact_text), color = whatsappGreen)
+                                Text(
+                                    stringResource(id = R.string.contact_text),
+                                    color = whatsappGreen
+                                )
                             }
                         } else if (isInProcess) {
                             Button(
                                 onClick = { onTerminateInvitation(invitation[0]) },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
                                     .padding(10.dp),
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
@@ -603,8 +680,7 @@ fun CandidateCard(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(stringResource(id = R.string.send_invitation_text))
                             }
-                        }
-                        else if (isRejecting) {
+                        } else if (isRejecting) {
                             Text(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -633,8 +709,7 @@ fun CandidateCard(
                                 Text(stringResource(id = R.string.send_invitation_text))
                             }
                         }
-                    }
-                    else {
+                    } else {
                         Button(
                             onClick = { onSendInvitation(candidate) },
                             modifier = Modifier
@@ -655,8 +730,7 @@ fun CandidateCard(
                             Text(stringResource(id = R.string.send_invitation_text))
                         }
                     }
-                }
-                else {
+                } else {
                     Button(
                         onClick = { onSendInvitation(candidate) },
                         modifier = Modifier

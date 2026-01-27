@@ -1,6 +1,5 @@
 package com.example.myjob.feature.home
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -31,7 +30,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
@@ -172,6 +170,9 @@ fun CandidateListScreen(
 
     val criteria by homeViewModel.criteria.collectAsState()
 
+    val badgeCountNormal by remember { mutableIntStateOf(0) }
+    val badgeCountService by remember { mutableIntStateOf(1) }
+
     val scope = rememberCoroutineScope()
 
     val density = LocalDensity.current
@@ -271,7 +272,6 @@ fun CandidateListScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(0.7f)
-                            .height(40.dp)
                             .clickable(
                                 interactionSource = interactionSource,
                                 indication = null
@@ -282,13 +282,14 @@ fun CandidateListScreen(
                             .background(White.copy(alpha = 0.2f))
                     ) {
 
-                        val badgeCount by remember { mutableIntStateOf(1) }
+                        Spacer(Modifier.align(Alignment.TopCenter).height(20.dp).fillMaxWidth())
 
-                        Box(modifier = Modifier
-                            .size(30.dp)
-                            .padding(start = 10.dp)
-                            .align(Alignment.CenterStart)) {
-
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .padding(start = 10.dp)
+                                .align(Alignment.CenterStart)
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Notifications,
                                 contentDescription = "Notifications",
@@ -299,9 +300,13 @@ fun CandidateListScreen(
                             )
                         }
 
+                        val badgeCount = if (selectedSearch == JobType.NORMAL) badgeCountNormal
+                        else badgeCountService
+
                         if (badgeCount > 0) {
                             Box(
                                 modifier = Modifier
+                                    .padding(top = 5.dp, start = 5.dp)
                                     .align(Alignment.TopStart)
                                     .size(15.dp)
                                     .clip(CircleShape)
@@ -338,6 +343,8 @@ fun CandidateListScreen(
                                 .padding(end = 10.dp)
                                 .align(Alignment.CenterEnd)
                         )
+
+                        Spacer(Modifier.align(Alignment.BottomCenter).height(20.dp).fillMaxWidth())
                     }
 
 
@@ -463,8 +470,6 @@ fun CandidateListScreen(
                             user = user,
                             candidate = candidate,
                             onClick = {
-                                Log.i("userValue", "getUser: ${user.role}")
-
                                 GlobalEntries.userForCompany = user
                                 val route =
                                     if (user.role == "Candidat" || user.role == "Candidate") Screen.DetailScreen.route
@@ -542,7 +547,7 @@ fun CandidateListScreen(
                     }
 
                     item {
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(50.dp))
                     }
                 }
 

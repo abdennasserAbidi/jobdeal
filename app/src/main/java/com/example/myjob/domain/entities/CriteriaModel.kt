@@ -4,6 +4,7 @@ import android.view.View
 
 data class CriteriaModel(
     var id: Int = View.generateViewId(),
+    var idUser: Int = -1,
     var status: MutableList<String> = mutableListOf(),
     var disponibility: MutableList<String> = mutableListOf(),
     var situation: MutableList<String> = mutableListOf(),
