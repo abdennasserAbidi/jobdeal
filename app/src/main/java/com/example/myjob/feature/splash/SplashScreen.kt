@@ -74,8 +74,6 @@ fun SplashScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -110,15 +108,18 @@ fun SplashScreen(
                     GlobalEntries.isFromLogin = true
 
                     val token = splashViewModel.getToken()
+                    val type = splashViewModel.getType()
                     if (isFinished) {
                         if (token.isNotEmpty()) {
-                            Log.i("rlkzhgzrlghzr", "SplashScreen: ${user.firstTimeUse}")
 
                             if (user.firstTimeUse == true) {
                                 if (user.role == "Candidate" || user.role == "Candidat")
                                     navController.navigate(Screen.SearchWordScreen.route)
                                 else navController.navigate(Screen.CompanyProfileForm.route)
-                            } else navController.navigate(Screen.HomeScreen.route)
+                            } else {
+                                if (type == "service") navController.navigate(Screen.DemandMarketScreen.route)
+                                else navController.navigate(Screen.HomeScreen.route)
+                            }
 
                         } else navController.navigate(Screen.LoginScreen.route)
 

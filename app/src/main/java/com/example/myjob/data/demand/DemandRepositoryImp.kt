@@ -7,7 +7,6 @@ import androidx.paging.cachedIn
 import com.example.myjob.base.GenericSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
-import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.demands.MarketDemandModel
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.local.database.SharedPreference
@@ -27,10 +26,22 @@ class DemandRepositoryImp @Inject constructor(
     private val sharedPreference: SharedPreference
 ) : DemandRepository {
 
-    override suspend fun makeAnnouncement(marketDemandModel: MarketDemandModel): Flow<Resource<UserResponse>> = flow {
+    override suspend fun saveDemand(marketDemandModel: MarketDemandModel): Flow<Resource<UserResponse>> = flow {
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.saveDemand(marketDemandModel)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun countDownTrial(idDemand: Int): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.countDownTrial(idDemand)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {

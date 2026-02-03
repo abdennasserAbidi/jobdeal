@@ -133,13 +133,14 @@ fun SettingScreen(
             ) {
                 val context = LocalContext.current
 
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(if (expanded) (screenHeightDp - 20.dp) else 200.dp)
-                    .offset { offset }
-                    .clickable {
-                        openTest = true
-                    }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(if (expanded) (screenHeightDp - 20.dp) else 200.dp)
+                        .offset { offset }
+                        .clickable {
+                            openTest = true
+                        }
                 ) {
                     val shapeInit = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
 
@@ -345,9 +346,7 @@ fun SettingScreen(
                                             }
 
                                             var companyPhone by remember {
-                                                mutableStateOf(
-                                                    user.phoneCompany ?: ""
-                                                )
+                                                mutableStateOf("")
                                             }
 
                                             CustomTextField(
@@ -355,12 +354,12 @@ fun SettingScreen(
                                                 value = companyPhone,
                                             ) {
                                                 companyPhone = it
-                                                settingViewModel.changeCompanyPhone(it)
+
                                             }
 
                                             var secondPhone by remember {
                                                 mutableStateOf(
-                                                    user.secondPhoneCompany ?: ""
+                                                    ""
                                                 )
                                             }
 
@@ -369,12 +368,11 @@ fun SettingScreen(
                                                 value = secondPhone,
                                             ) {
                                                 secondPhone = it
-                                                settingViewModel.changeCompanySecondPhone(it)
                                             }
 
                                             var companyAddress by remember {
                                                 mutableStateOf(
-                                                    user.companyAddress ?: ""
+                                                    ""
                                                 )
                                             }
 
@@ -383,12 +381,11 @@ fun SettingScreen(
                                                 value = companyAddress,
                                             ) {
                                                 companyAddress = it
-                                                settingViewModel.changeCompanyAddress(it)
                                             }
 
                                             var secondAddress by remember {
                                                 mutableStateOf(
-                                                    user.companySecondAddress ?: ""
+                                                    ""
                                                 )
                                             }
 
@@ -397,7 +394,6 @@ fun SettingScreen(
                                                 value = secondAddress,
                                             ) {
                                                 secondAddress = it
-                                                settingViewModel.changeCompanySecondAddress(it)
                                             }
 
                                             Spacer(modifier = Modifier.height(50.dp))
@@ -502,7 +498,8 @@ fun SettingScreen(
                         var isRejected by remember { mutableStateOf(false) }
                         var showDialog by remember { mutableStateOf(false) }
                         var textInfo by remember { mutableStateOf("") }
-                        val textVerified = stringResource(id = R.string.verification_validate_info_text)
+                        val textVerified =
+                            stringResource(id = R.string.verification_validate_info_text)
                         val textPending = stringResource(id = R.string.verification_info_text)
 
                         if (showDialog) {

@@ -6,5 +6,6 @@ import com.example.myjob.domain.response.UserResponse
 
 interface DemandsDataSource {
     suspend fun saveDemand(marketDemandModel: MarketDemandModel): UserResponse
+    suspend fun countDownTrial(idDemand: Int): UserResponse
     suspend fun getAllDemands(pageNumber: Int): GenericResponse<MarketDemandModel>
 }

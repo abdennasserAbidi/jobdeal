@@ -480,7 +480,7 @@ fun CandidateInfoCard(candidate: User) {
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
-                            text = candidate.phoneCompany ?: "",
+                            text = candidate.phoneList?.joinToString { "\n" } ?: "",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                         )

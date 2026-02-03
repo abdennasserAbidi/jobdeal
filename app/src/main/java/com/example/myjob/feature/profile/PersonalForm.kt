@@ -248,7 +248,6 @@ fun PersonalForm(
                     value = address,
                     onValueChange = {
                         if (activatedCheck) profileViewModel.validateAddress(it)
-                        profileViewModel.changeAddress(it)
                     },
                     textStyle = TextStyle(Color.Black, fontSize = 14.sp)
                 )
@@ -713,7 +712,6 @@ fun PersonalForm(
                 )
             )
 
-            val phone by profileViewModel.phone.collectAsState()
             val completePhone by profileViewModel.completePhone.collectAsState()
 
             CustomPhoneKit(
@@ -726,8 +724,6 @@ fun PersonalForm(
                 },
                 onValueChanged = {
                     val phoneComplete = "+${selectedCountry.code} $it"
-                    profileViewModel.changePhone(it)
-                    profileViewModel.changeCompletePhone(phoneComplete)
                 }
             )
 

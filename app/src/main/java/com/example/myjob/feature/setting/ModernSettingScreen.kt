@@ -52,6 +52,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -673,11 +674,20 @@ fun EditProfileBottomSheet(
     //phone
     var showCountryPicker by remember { mutableStateOf(false) }
     var selectedCountry by remember { mutableStateOf(NewCountry("tn", "Tunisia", 216)) }
-    var completePhone by remember { mutableStateOf(user.phoneCompany ?: "") }
-    var secondPhone by remember { mutableStateOf(user.secondPhoneCompany ?: "") }
 
-    var address by remember { mutableStateOf(user.companyAddress ?: "") }
-    var secondAddress by remember { mutableStateOf(user.companySecondAddress ?: "") }
+    var listPhones by remember(user.phoneList) {
+        mutableStateOf(
+            if (user.phoneList.isNullOrEmpty()) mutableListOf("") else user.phoneList
+                ?: mutableListOf("")
+        )
+    }
+
+    var listAddress by remember(user.addressList) {
+        mutableStateOf(
+            if (user.addressList.isNullOrEmpty()) mutableListOf("") else user.addressList
+                ?: mutableListOf("")
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -727,6 +737,8 @@ fun EditProfileBottomSheet(
                     )
 
                     TextButton(onClick = {
+                        settingViewModel.changeListPhoneCompany(listPhones)
+                        settingViewModel.changeListAddressCompany(listAddress)
                         settingViewModel.saveCompanyInfo()
                     }) {
                         Text(
@@ -762,18 +774,6 @@ fun EditProfileBottomSheet(
                             modifier = Modifier.fillMaxWidth(),
                             isRequired = false
                         )
-
-                        /*if (activatedCheck) {
-                            if (companyName.isEmpty() || !companyNameVerified) {
-                                Text(
-                                    modifier = Modifier.padding(top = 5.dp, start = 20.dp),
-                                    text = if (!companyNameVerified) stringResource(id = R.string.error_email) else "",
-                                    color = if (companyNameVerified) colorResource(id = R.color.whatsapp) else Color.Red
-                                )
-                            }
-                        }*/
-
-
                     }
 
                     item {
@@ -804,65 +804,82 @@ fun EditProfileBottomSheet(
                         )
                     }
 
-                    item {
-                        CustomPhoneKit(
-                            modifier = Modifier.padding(top = 10.dp),
-                            selectedCountry = selectedCountry,
-                            defaultPhone = if (completePhone.contains(" ")) completePhone.split(" ")[1] else completePhone,
-                            hint = stringResource(id = R.string.phone_number_text),
-                            onClick = {
-                                showCountryPicker = true
-                            },
-                            onValueChanged = {
-                                val phoneComplete = "+${selectedCountry.code} $it"
-                                completePhone = phoneComplete
-                                settingViewModel.changeCompletePhone(phoneComplete)
+                    listPhones.mapIndexed { index, phone ->
+                        item {
+                            //phone
+                            var selectedCountry by remember {
+                                mutableStateOf(
+                                    NewCountry(
+                                        "tn",
+                                        "Tunisia",
+                                        216
+                                    )
+                                )
                             }
-                        )
-                    }
 
-                    item {
-                        CustomPhoneKit(
-                            modifier = Modifier.padding(top = 10.dp),
-                            selectedCountry = selectedCountry,
-                            defaultPhone = if (secondPhone.contains(" ")) secondPhone.split(" ")[1] else secondPhone,
-                            hint = stringResource(id = R.string.extra_phone_number_text),
-                            onClick = {
-                                showCountryPicker = true
-                            },
-                            onValueChanged = {
-                                val phoneComplete = "+${selectedCountry.code} $it"
-                                secondPhone = phoneComplete
-                                settingViewModel.changeSecondCompletePhone(phoneComplete)
+                            CustomPhoneKit(
+                                modifier = Modifier.padding(top = 10.dp),
+                                selectedCountry = selectedCountry,
+                                hint = "Numéro téléphone",
+                                defaultPhone = if (phone.contains(" ")) phone.split(" ")[1] else phone,
+                                onClick = {
+                                    showCountryPicker = true
+                                },
+                                onValueChanged = {
+                                    val phoneComplete = "+${selectedCountry.code} $it"
+
+                                    listPhones = listPhones.mapIndexed { i, value ->
+                                        if (index == i) it else value
+                                    }
+
+                                }
+                            )
+
+                            Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                                Text(
+                                    text = "Ajouter un numéro de téléphone",
+                                    modifier = Modifier
+                                        .align(CenterEnd)
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null
+                                        ) {
+                                            listPhones = (listPhones + "").toMutableList()
+                                        }
+                                )
                             }
-                        )
+
+                        }
                     }
 
-                    item {
+                    listAddress.mapIndexed { index, addresses ->
+                        item {
+                            FormTextField(
+                                value = addresses,
+                                onValueChange = {
+                                    listAddress = listAddress.mapIndexed { i, value ->
+                                        if (index == i) it else value
+                                    }
+                                },
+                                label = "Address",
+                                modifier = Modifier.fillMaxWidth(),
+                                isRequired = false
+                            )
 
-                        FormTextField(
-                            value = address,
-                            onValueChange = {
-                                address = it
-                                settingViewModel.changeCompanyAddress(it)
-                            },
-                            label = "Address",
-                            modifier = Modifier.fillMaxWidth(),
-                            isRequired = false
-                        )
-                    }
-
-                    item {
-                        FormTextField(
-                            value = secondAddress,
-                            onValueChange = {
-                                secondAddress = it
-                                settingViewModel.changeCompanySecondAddress(it)
-                            },
-                            label = "Extra Address",
-                            modifier = Modifier.fillMaxWidth(),
-                            isRequired = false
-                        )
+                            Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                                Text(
+                                    text = "Ajouter une adresse",
+                                    modifier = Modifier
+                                        .align(CenterEnd)
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null
+                                        ) {
+                                            listAddress = (listAddress + "").toMutableList()
+                                        }
+                                )
+                            }
+                        }
                     }
                 }
             }

@@ -93,6 +93,8 @@ class ProfileViewModel @Inject constructor(
     val savedCompanyInfo = MutableStateFlow("")
     fun saveCompanyInfo() {
         viewModelScope.launch {
+            Log.i("erjrehjfghez", "phoneList: ${user.value.phoneList}")
+
             saveCompanyInfoUseCase.execute(user.value).collect { res ->
                 //saveIsCompletedProfileCandidate()
                 getCompaniesValidated()
@@ -115,18 +117,6 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    /*fun validateCompanyName(text: String): Boolean {
-        var t = false
-        viewModelScope.launch {
-            isCompanyNameValid.update {
-                validateEmailUseCase.execute(text) ?: false
-            }
-            t = validateEmailUseCase.execute(text) ?: false
-        }
-
-        return t
-    }*/
-
     fun changeCompanyEmail(name: String) {
         user.update {
             it.email = name
@@ -144,34 +134,6 @@ class ProfileViewModel @Inject constructor(
     fun changeCompanyDescription(name: String) {
         user.update {
             it.companyDescription = name
-            it
-        }
-    }
-
-    fun changeCompanyAddress(name: String) {
-        user.update {
-            it.companyAddress = name
-            it
-        }
-    }
-
-    fun changeCompanySecondAddress(name: String) {
-        user.update {
-            it.companySecondAddress = name
-            it
-        }
-    }
-
-    fun changeCompanySecondPhone(name: String) {
-        user.update {
-            it.secondPhoneCompany = name
-            it
-        }
-    }
-
-    fun changeCompanyPhone(name: String) {
-        user.update {
-            it.phoneCompany = name
             it
         }
     }
@@ -428,21 +390,10 @@ class ProfileViewModel @Inject constructor(
     }
 
     var completePhone = MutableStateFlow("")
-    var phone = MutableStateFlow("")
 
-    fun changePhone(search: String) {
-        phone.update {
-            search
-        }
-    }
-
-    fun changeCompletePhone(search: String) {
-        completePhone.update {
-            search
-        }
-
+    fun changeCompletePhone(search: List<String>) {
         user.update {
-            it.phone = search
+            it.phoneList = search
             it
         }
     }
@@ -450,49 +401,18 @@ class ProfileViewModel @Inject constructor(
     ///////////////////////////////////////////////////////////////////////////
     // FIRST PHONE COMPANY
     ///////////////////////////////////////////////////////////////////////////
-    var completePhoneCompany = MutableStateFlow("")
-    var phoneCompany = MutableStateFlow("")
 
-    fun changePhoneCompany(search: String) {
-        phoneCompany.update {
-            search
-        }
+    fun changeListPhoneCompany(phoneList: List<String>) {
+        val userValue = user.value
+        userValue.phoneList = phoneList
+        user.update { userValue }
     }
 
-    fun changeCompletePhoneCompany(search: String) {
-        completePhoneCompany.update {
-            search
-        }
-
-        user.update {
-            it.phoneCompany = search
-            it
-        }
+    fun changeListAddressCompany(addressList: List<String>) {
+        val userValue = user.value
+        userValue.addressList = addressList
+        user.update { userValue }
     }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // SECOND PHONE COMPANY
-    ///////////////////////////////////////////////////////////////////////////
-    var completeSecondPhoneCompany = MutableStateFlow("")
-    var secondPhoneCompany = MutableStateFlow("")
-
-    fun changeSecondPhoneCompany(search: String) {
-        secondPhoneCompany.update {
-            search
-        }
-    }
-
-    fun changeCompleteSecondPhoneCompany(search: String) {
-        completeSecondPhoneCompany.update {
-            search
-        }
-
-        user.update {
-            it.secondPhoneCompany = search
-            it
-        }
-    }
-
 
     var bio = MutableStateFlow("")
 
@@ -566,10 +486,13 @@ class ProfileViewModel @Inject constructor(
         return t
     }
 
-    fun changeAddress(name: String) {
-        userAddress.update { name }
+    fun validateAddress(text: List<String>): Boolean = text.isNotEmpty() && text.none { it.isNotEmpty() }
+
+    fun validatePhones(text: List<String>): Boolean = text.isNotEmpty() && text.none { it.isNotEmpty() }
+
+    fun changeAddress(name: List<String>) {
         user.update {
-            it.address = name
+            it.addressList = name
             it
         }
     }
@@ -659,14 +582,14 @@ class ProfileViewModel @Inject constructor(
         }
 
         val traduction = if (lang == "French" || lang == "Français") {
-            when(name) {
+            when (name) {
                 "Contract" -> "Contrat"
                 "Freelance" -> "Freelance"
                 "Both" -> "Les deux"
                 else -> name
             }
         } else {
-            when(name) {
+            when (name) {
                 "Contrat" -> "Contract"
                 "Freelance" -> "Freelance"
                 "Les deux" -> "Both"
@@ -705,9 +628,7 @@ class ProfileViewModel @Inject constructor(
             userSituation.update { situation ?: "" }
             userSex.update { sexe ?: "" }
             birthDateUser.update { birthDate ?: "" }
-            userAddress.update { address ?: "" }
             userFullName.update { fullName ?: "" }
-            completePhone.update { phone ?: "" }
         }
     }
 
@@ -1022,7 +943,6 @@ class ProfileViewModel @Inject constructor(
                     user.update { u }
                     GlobalEntries.user = u
                     sharedPreference.putString("username", u.fullName ?: "")
-                    Log.i("userValue", "getUser: ${u.showUser(lang)}")
                     showUser.update {
                         u.showUser(lang)
                     }

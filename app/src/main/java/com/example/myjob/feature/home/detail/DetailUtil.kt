@@ -60,6 +60,7 @@ import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.feature.profile.test.LanguageForm
+import kotlin.collections.joinToString
 
 @Composable
 fun CandidateHeaderCard(
@@ -368,46 +369,6 @@ fun CompanyHeaderCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            /*val experiences = candidateProfile.experience ?: mutableListOf()
-            var lastExp = Experience()
-            if (experiences.isNotEmpty()) {
-                lastExp = experiences[experiences.lastIndex]
-            }
-
-            val lastContractExp = experiences.findLast {
-                it.type == "Contract" || it.type == "Contrat"
-            }
-
-            lastContractExp?.let { lastContractExperience ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    QuickInfoItem(
-                        icon = Icons.Default.Business,
-                        label = stringResource(id = R.string.choose_companies_text),
-                        value = lastContractExperience.companyName ?: ""
-                    )
-
-                    if (experienceYears != 0) {
-                        val yearsText = stringResource(id = R.string.years_text)
-                        val textExp = if (experienceYears <= 5) "$experienceYears $yearsText"
-                        else "+$experienceYears $yearsText"
-                        QuickInfoItem(
-                            icon = Icons.Default.Work,
-                            label = stringResource(id = R.string.experience_text),
-                            value = textExp
-                        )
-                    }
-
-                    QuickInfoItem(
-                        icon = Icons.Default.LocationOn,
-                        label = stringResource(id = R.string.location_text),
-                        value = lastContractExperience.place ?: "N'est pas précisé"
-                    )
-                }
-            }*/
-
             val invitations = GlobalEntries.user.invitations ?: mutableListOf()
             if (invitations.isNotEmpty()) {
                 val invitation = invitations.filter { it.idTo == candidateProfile.id }
@@ -579,7 +540,7 @@ fun ContactInformationCard(candidateProfile: User) {
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            val phone = candidateProfile.phone ?: ""
+            val phone = candidateProfile.phoneList?.joinToString { "\n" }?: ""
             if (phone.isNotEmpty()) {
                 ContactDetailRow(
                     icon = Icons.Default.Phone,
@@ -661,55 +622,23 @@ fun ContactCompanyCard(candidateProfile: User) {
             }
 
             Column {
-                candidateProfile.phoneCompany?.let {
-                    if (it.isNotEmpty()) {
-                        ContactDetailRow(
-                            icon = Icons.Default.Phone,
-                            label = stringResource(id = R.string.phone_text),
-                            value = it,
-                            isClickable = true
-                        )
-                    }
-                }
-
+                ContactDetailRow(
+                    icon = Icons.Default.Phone,
+                    label = stringResource(id = R.string.phone_text),
+                    value = candidateProfile.phoneList?.joinToString { "\n" } ?: "",
+                    isClickable = true
+                )
                 Spacer(modifier = Modifier.height(4.dp))
-
-                candidateProfile.secondPhoneCompany?.let {
-                    if (it.isNotEmpty()) {
-                        ContactDetailRow(
-                            icon = Icons.Default.Phone,
-                            label = stringResource(id = R.string.extra_phone_number_text),
-                            value = it,
-                            isClickable = true
-                        )
-                    }
-                }
             }
 
             Column {
-                candidateProfile.companyAddress?.let {
-                    if (it.isNotEmpty()) {
-                        ContactDetailRow(
-                            icon = Icons.Default.LocationOn,
-                            label = stringResource(id = R.string.address_text),
-                            value = it,
-                            isClickable = true
-                        )
-                    }
-                }
-
+                ContactDetailRow(
+                    icon = Icons.Default.LocationOn,
+                    label = stringResource(id = R.string.address_text),
+                    value = candidateProfile.addressList?.joinToString { "\n" } ?: "",
+                    isClickable = true
+                )
                 Spacer(modifier = Modifier.height(4.dp))
-
-                candidateProfile.companySecondAddress?.let {
-                    if (it.isNotEmpty()) {
-                        ContactDetailRow(
-                            icon = Icons.Default.LocationOn,
-                            label = stringResource(id = R.string.address_text),
-                            value = it,
-                            isClickable = true
-                        )
-                    }
-                }
             }
 
         }

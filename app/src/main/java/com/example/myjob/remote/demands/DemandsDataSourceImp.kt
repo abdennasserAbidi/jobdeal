@@ -14,6 +14,8 @@ class DemandsDataSourceImp @Inject constructor(
         marketDemandModel: MarketDemandModel
     ): UserResponse  = apiService.saveDemand(marketDemandModel)
 
+    override suspend fun countDownTrial(idDemand: Int): UserResponse = apiService.countDownTrial(idDemand)
+
     override suspend fun getAllDemands(
         pageNumber: Int
     ): GenericResponse<MarketDemandModel> = apiService.getAllDemands(pageNumber)

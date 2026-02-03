@@ -7,6 +7,7 @@ import com.example.myjob.domain.response.UserResponse
 import kotlinx.coroutines.flow.Flow
 
 interface DemandRepository {
-    suspend fun makeAnnouncement(marketDemandModel: MarketDemandModel): Flow<Resource<UserResponse>>
+    suspend fun saveDemand(marketDemandModel: MarketDemandModel): Flow<Resource<UserResponse>>
+    suspend fun countDownTrial(idDemand: Int): Flow<Resource<UserResponse>>
     suspend fun getAllDemands(): Flow<Resource<PagingData<MarketDemandModel>>>
 }

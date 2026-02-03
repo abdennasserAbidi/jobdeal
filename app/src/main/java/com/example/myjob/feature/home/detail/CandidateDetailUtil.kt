@@ -255,9 +255,10 @@ fun HeaderSection(candidate: User) {
                     icon = Icons.Filled.Email,
                     text = candidate.email ?: ""
                 )
+
                 ContactInfoItem(
                     icon = Icons.Filled.Phone,
-                    text = candidate.phone ?: ""
+                    text = candidate.phoneList?.joinToString { "\n" } ?: ""
                 )
             }
         }
@@ -304,7 +305,7 @@ fun QuickInfoSection(candidate: User) {
         InfoCard(
             icon = Icons.Filled.LocationOn,
             label = "Localisation",
-            value = candidate.address ?: "",
+            value = candidate.addressList?.joinToString { "\n" } ?: "",
             modifier = Modifier.weight(1f)
         )
         InfoCard(
@@ -619,7 +620,6 @@ fun BottomActionBar(
                         invitation[0].status == InvitationStatus.REJECTED.name || invitation[0].status == InvitationStatus.NOT_INTERESTED.name
 
                     val whatsappGreen = colorResource(id = R.color.whatsapp)
-                    Log.i("faklekahklbhga", "BottomActionBar: $isFriend")
                     if (isFriend) {
                         OutlinedButton(
                             onClick = onContactClick,

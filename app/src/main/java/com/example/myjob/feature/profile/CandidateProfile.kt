@@ -532,14 +532,14 @@ fun createPdf(
 
     startY += 70f
 
-    user.showUserList(lang).map {
+    /*user.showUserList(lang).map {
         paintTitle.textSize = 20f
         paintTitle.isFakeBoldText = true
         paintTitle.textAlign = Paint.Align.LEFT
         canvas1?.drawText("${it.first} :  ", 10f, startY, paintTitle)
         canvas1?.drawText(it.second, 250f, startY, paint)
         startY += lineHeight // Move to the next line
-    }
+    }*/
 
     allExp.mapIndexed { index, experience ->
         // Start a new page every 3 items or on the first item

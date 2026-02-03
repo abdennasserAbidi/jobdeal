@@ -84,6 +84,10 @@ class SplashViewModel @Inject constructor(
         return sharedPreferences.getString("token", "") ?: ""
     }
 
+    fun getType(): String {
+        return sharedPreferences.getString("offerDemand", "service") ?: ""
+    }
+
     fun isOnBoardingFinished(): Boolean {
         return sharedPreferences.getBoolean("isFinished", false)
     }

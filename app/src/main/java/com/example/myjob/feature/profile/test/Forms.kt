@@ -54,6 +54,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -106,8 +107,7 @@ fun BasicInfoForm(
     val isDateShowed by profileViewModel.isDateShowed.collectAsState()
     val isSearch by profileViewModel.isSearch.collectAsState()
 
-    var showCountryPicker by remember { mutableStateOf(false) }
-    var selectedCountry by remember { mutableStateOf(NewCountry("tn", "Tunisia", 216)) }
+
     val isShowed by profileViewModel.isCountryShowed.collectAsState()
     val listNames by profileViewModel.listNames.collectAsState()
     val listFlagLazy = profileViewModel.listFlag.collectAsLazyPagingItems()
@@ -145,6 +145,23 @@ fun BasicInfoForm(
             userEmploymentTypeChoice?.ifEmpty { "" })
     }
 
+    var listPhones by remember(user.phoneList) {
+        mutableStateOf(
+            if (user.phoneList.isNullOrEmpty()) mutableListOf("") else user.phoneList
+                ?: mutableListOf("")
+        )
+    }
+
+    var listAddress by remember(user.addressList) {
+        mutableStateOf(
+            if (user.addressList.isNullOrEmpty()) mutableListOf("") else user.addressList
+                ?: mutableListOf("")
+        )
+    }
+
+    var showCountryPicker by remember { mutableStateOf(false) }
+    var selectedCountry by remember { mutableStateOf(NewCountry("tn", "Tunisia", 216)) }
+
     val saveUserState by profileViewModel.saveUserState.collectAsState()
     LaunchedEffect(saveUserState) {
         if (saveUserState == "saved successfully") {
@@ -175,23 +192,39 @@ fun BasicInfoForm(
                 isRequired = true
             )
 
-            val userAddress by profileViewModel.userAddress.collectAsState()
-            val isAddressValid by profileViewModel.isAddressValid.collectAsState()
-            val addressCheck by remember { derivedStateOf { isAddressValid } }
+            listAddress.mapIndexed { index, userAddress ->
+                FormTextField(
+                    value = userAddress,
+                    borderColor = if (activatedCheck && userAddress.isEmpty()) Color.Red else colorResource(
+                        id = R.color.whatsapp
+                    ),
+                    onValueChange = {
+                        if (activatedCheck) it.isNotEmpty()
+                        listAddress = listAddress.mapIndexed { i, value ->
+                            if (index == i) it else value
+                        }
+                    },
+                    label = stringResource(id = R.string.address_text),
+                    leadingIcon = Icons.Default.LocationOn,
+                    isRequired = true
+                )
 
-            FormTextField(
-                value = userAddress,
-                borderColor = if (activatedCheck && !addressCheck) Color.Red else colorResource(
-                    id = R.color.whatsapp
-                ),
-                onValueChange = {
-                    if (activatedCheck) profileViewModel.validateAddress(it)
-                    profileViewModel.changeAddress(it)
-                },
-                label = stringResource(id = R.string.address_text),
-                leadingIcon = Icons.Default.LocationOn,
-                isRequired = true
-            )
+                Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                    Text(
+                        text = "Ajouter une adresse",
+                        modifier = Modifier
+                            .align(CenterEnd)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+                                listAddress = (listAddress + "").toMutableList()
+                            }
+                    )
+                }
+            }
+
+
 
             //EMAIL
             val userEmail by profileViewModel.userEmail.collectAsState()
@@ -332,24 +365,38 @@ fun BasicInfoForm(
                 }
             )
 
-            //phone
-            val phone by profileViewModel.phone.collectAsState()
-            val completePhone by profileViewModel.completePhone.collectAsState()
+            listPhones.mapIndexed { index, phone ->
+                CustomPhoneKit(
+                    modifier = Modifier.padding(top = 10.dp),
+                    selectedCountry = selectedCountry,
+                    hint = "Numéro téléphone",
+                    defaultPhone = if (phone.contains(" ")) phone.split(" ")[1] else phone,
+                    onClick = {
+                        showCountryPicker = true
+                    },
+                    onValueChanged = {
+                        val phoneComplete = "+${selectedCountry.code} $it"
 
-            CustomPhoneKit(
-                modifier = Modifier.padding(top = 10.dp),
-                selectedCountry = selectedCountry,
-                defaultPhone = if (completePhone.contains(" ")) completePhone.split(" ")[1] else completePhone,
-                hint = "Téléphone",
-                onClick = {
-                    showCountryPicker = true
-                },
-                onValueChanged = {
-                    val phoneComplete = "+${selectedCountry.code} $it"
-                    profileViewModel.changePhone(it)
-                    profileViewModel.changeCompletePhone(phoneComplete)
+                        listPhones = listPhones.mapIndexed { i, value ->
+                            if (index == i) it else value
+                        }
+                    }
+                )
+
+                Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                    Text(
+                        text = "Ajouter un numéro de téléphone",
+                        modifier = Modifier
+                            .align(CenterEnd)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+                                listPhones = (listPhones + "").toMutableList()
+                            }
+                    )
                 }
-            )
+            }
 
             // Bio
             val bio by profileViewModel.bio.collectAsState()
@@ -371,10 +418,9 @@ fun BasicInfoForm(
             LaunchedEffect(isCheckPersonal) {
                 if (isCheckPersonal) {
                     val fullNameValidator = profileViewModel.validateFullName(userName)
-                    val addressValidator = profileViewModel.validateAddress(userAddress)
+                    val addressValidator = profileViewModel.validateAddress(listAddress)
+                    val phoneValidator = profileViewModel.validatePhones(listPhones)
                     val emailValidator = profileViewModel.validateEmail(email ?: "")
-                    Log.i("fjkzhkzhgrzgz", "userEmail: $email")
-                    Log.i("fjkzhkzhgrzgz", "emailValidator: $emailValidator")
 
                     val activitySectorValidator = title.isNotEmpty()
                     val countryValidator = countries.isNotEmpty()
@@ -391,6 +437,7 @@ fun BasicInfoForm(
                         || !userGenderValidator
                         || !userSituationValidator
                         || !userEmploymentTypeChoiceValidator
+                        || !phoneValidator
                     ) {
                         activatedCheck = true
                     }
@@ -402,9 +449,11 @@ fun BasicInfoForm(
                         && userGenderValidator
                         && userSituationValidator
                         && userEmploymentTypeChoiceValidator
+                        && phoneValidator
                     ) {
-                        Log.i("fjkzhkzhgrzgz", "act: $user")
 
+                        profileViewModel.changeAddress(listAddress)
+                        profileViewModel.changeCompletePhone(listPhones)
                         profileViewModel.saveUserPersonalInfo()
                         profileViewModel.getInitialDetail()
                     }

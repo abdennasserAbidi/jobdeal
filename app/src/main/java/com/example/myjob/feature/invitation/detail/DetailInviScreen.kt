@@ -274,48 +274,18 @@ fun DetailInviScreen(
                             }
 
                             Column {
-                                userCompany.companyAddress?.let {
-                                    if (it.isNotEmpty()) {
-                                        InfoChip(
-                                            icon = Icons.Default.LocationOn,
-                                            text = it
-                                        )
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(4.dp))
-
-                                userCompany.companySecondAddress?.let {
-                                    if (it.isNotEmpty()) {
-                                        InfoChip(
-                                            icon = Icons.Default.LocationOn,
-                                            text = it
-                                        )
-                                    }
-                                }
+                                InfoChip(
+                                    icon = Icons.Default.LocationOn,
+                                    text = userCompany.addressList?.joinToString { "\n" }?:""
+                                )
 
                             }
 
                             Column {
-                                userCompany.phoneCompany?.let {
-                                    if (it.isNotEmpty()) {
-                                        InfoChip(
-                                            icon = Icons.Default.Phone,
-                                            text = it
-                                        )
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(4.dp))
-
-                                userCompany.secondPhoneCompany?.let {
-                                    if (it.isNotEmpty()) {
-                                        InfoChip(
-                                            icon = Icons.Default.Phone,
-                                            text = it
-                                        )
-                                    }
-                                }
+                                InfoChip(
+                                    icon = Icons.Default.Phone,
+                                    text = userCompany.phoneList?.joinToString { "\n" }?:""
+                                )
                             }
                         }
                     }

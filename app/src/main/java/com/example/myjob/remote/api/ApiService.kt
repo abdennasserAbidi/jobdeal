@@ -460,9 +460,10 @@ ApiService {
     ): GenericResponse<MarketDemandModel>
 
     @POST("auth/saveDemand")
-    suspend fun saveDemand(
-        @Body marketDemandModel: MarketDemandModel
-    ): UserResponse
+    suspend fun saveDemand(@Body marketDemandModel: MarketDemandModel): UserResponse
+
+    @POST("auth/countDownTrial")
+    suspend fun countDownTrial(@Query("idDemand") idDemand: Int): UserResponse
 
     ///////////////////////////////////////////////////////////////////////////
     // NOTIFICATION

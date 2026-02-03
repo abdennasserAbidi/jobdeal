@@ -1,9 +1,12 @@
 package com.example.myjob.feature.profile.test
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -65,11 +69,32 @@ fun CompanyProfileFormScreen(
     val user by profileViewModel.user.collectAsState()
 
     var companyName by remember(user.companyName) { mutableStateOf(user.companyName ?: "") }
-    var activitySector by remember(user.companyActivitySector) { mutableStateOf(user.companyActivitySector ?: "") }
-    var description by remember(user.companyDescription) { mutableStateOf(user.companyDescription ?: "") }
-    var address by remember(user.companyAddress) { mutableStateOf(user.companyAddress ?: "") }
+    var activitySector by remember(user.companyActivitySector) {
+        mutableStateOf(
+            user.companyActivitySector ?: ""
+        )
+    }
+    var description by remember(user.companyDescription) {
+        mutableStateOf(
+            user.companyDescription ?: ""
+        )
+    }
     var country by remember(user.country) { mutableStateOf(user.country ?: "") }
-    var secondAddress by remember(user.companySecondAddress) { mutableStateOf(user.companySecondAddress ?: "") }
+
+    var listPhones by remember(user.phoneList) {
+        mutableStateOf(
+            if (user.phoneList.isNullOrEmpty()) mutableListOf("") else user.phoneList
+                ?: mutableListOf("")
+        )
+    }
+
+    var listAddress by remember(user.addressList) {
+        mutableStateOf(
+            if (user.addressList.isNullOrEmpty()) mutableListOf("") else user.addressList
+                ?: mutableListOf("")
+        )
+    }
+
     var showCountryPicker by remember { mutableStateOf(false) }
     var showSecondCountryPicker by remember { mutableStateOf(false) }
     var isActivityShowed by remember { mutableStateOf(false) }
@@ -147,6 +172,8 @@ fun CompanyProfileFormScreen(
                     },
                     actions = {
                         TextButton(onClick = {
+                            profileViewModel.changeListPhoneCompany(listPhones)
+                            profileViewModel.changeListAddressCompany(listAddress)
                             profileViewModel.saveCompanyInfo()
                         }) {
                             Text(
@@ -218,51 +245,52 @@ fun CompanyProfileFormScreen(
                             isRequired = false
                         )
                     }
-
-                    item {
-
-                        //phone
-                        val phone by profileViewModel.phoneCompany.collectAsState()
-                        val completePhone by profileViewModel.completePhoneCompany.collectAsState()
-                        var selectedCountry by remember { mutableStateOf(NewCountry("tn", "Tunisia", 216)) }
-
-                        CustomPhoneKit(
-                            modifier = Modifier.padding(top = 10.dp),
-                            selectedCountry = selectedCountry,
-                            hint = "Numéro téléphone",
-                            defaultPhone = if (completePhone.contains(" ")) completePhone.split(" ")[1] else completePhone,
-                            onClick = {
-                                showCountryPicker = true
-                            },
-                            onValueChanged = {
-                                val phoneComplete = "+${selectedCountry.code} $it"
-                                profileViewModel.changePhoneCompany(it)
-                                profileViewModel.changeCompletePhoneCompany(phoneComplete)
+                    listPhones.mapIndexed { index, phone ->
+                        item {
+                            //phone
+                            var selectedCountry by remember {
+                                mutableStateOf(
+                                    NewCountry(
+                                        "tn",
+                                        "Tunisia",
+                                        216
+                                    )
+                                )
                             }
-                        )
 
-                    }
+                            CustomPhoneKit(
+                                modifier = Modifier.padding(top = 10.dp),
+                                selectedCountry = selectedCountry,
+                                hint = "Numéro téléphone",
+                                defaultPhone = if (phone.contains(" ")) phone.split(" ")[1] else phone,
+                                onClick = {
+                                    showCountryPicker = true
+                                },
+                                onValueChanged = {
+                                    val phoneComplete = "+${selectedCountry.code} $it"
 
-                    item {
+                                    listPhones = listPhones.mapIndexed { i, value ->
+                                        if (index == i) it else value
+                                    }
 
-                        val secondPhoneCompany by profileViewModel.secondPhoneCompany.collectAsState()
-                        val completeSecondPhoneCompany by profileViewModel.completeSecondPhoneCompany.collectAsState()
-                        var selectedSecondCountry by remember { mutableStateOf(NewCountry("tn", "Tunisia", 216)) }
+                                }
+                            )
 
-                        CustomPhoneKit(
-                            modifier = Modifier.padding(top = 10.dp),
-                            selectedCountry = selectedSecondCountry,
-                            hint = "Extra phone",
-                            defaultPhone = if (completeSecondPhoneCompany.contains(" ")) completeSecondPhoneCompany.split(" ")[1] else completeSecondPhoneCompany,
-                            onClick = {
-                                showSecondCountryPicker = true
-                            },
-                            onValueChanged = {
-                                val phoneComplete = "+${selectedSecondCountry.code} $it"
-                                profileViewModel.changePhoneCompany(it)
-                                profileViewModel.changeCompletePhoneCompany(phoneComplete)
+                            Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                                Text(
+                                    text = "Ajouter un numéro de téléphone",
+                                    modifier = Modifier
+                                        .align(CenterEnd)
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null
+                                        ) {
+                                            listPhones = (listPhones + "").toMutableList()
+                                        }
+                                )
                             }
-                        )
+
+                        }
                     }
 
                     item {
@@ -279,39 +307,43 @@ fun CompanyProfileFormScreen(
                         )
                     }
 
-                    item {
+                    listAddress.mapIndexed { index, addresses ->
+                        item {
+                            FormTextField(
+                                value = addresses,
+                                onValueChange = {
+                                    listAddress = listAddress.mapIndexed { i, value ->
+                                        if (index == i) it else value
+                                    }
+                                },
+                                label = "Address",
+                                modifier = Modifier.fillMaxWidth(),
+                                isRequired = false
+                            )
 
-                        FormTextField(
-                            value = address,
-                            onValueChange = {
-                                address = it
-                                profileViewModel.changeCompanyAddress(it)
-                            },
-                            label = "Address",
-                            modifier = Modifier.fillMaxWidth(),
-                            isRequired = false
-                        )
+                            Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                                Text(
+                                    text = "Ajouter une adresse",
+                                    modifier = Modifier
+                                        .align(CenterEnd)
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null
+                                        ) {
+                                            listAddress = (listAddress + "").toMutableList()
+                                        }
+                                )
+                            }
+                        }
                     }
-
-                    item {
-                        FormTextField(
-                            value = secondAddress,
-                            onValueChange = {
-                                secondAddress = it
-                                profileViewModel.changeCompanySecondAddress(it)
-                            },
-                            label = "Extra Address",
-                            modifier = Modifier.fillMaxWidth(),
-                            isRequired = false
-                        )
-                    }
-
 
                     if (isFirstTime) {
                         item {
 
                             Button(
                                 onClick = {
+                                    profileViewModel.changeListAddressCompany(listAddress)
+                                    profileViewModel.changeListPhoneCompany(listPhones)
                                     profileViewModel.saveCompanyInfo()
                                 },
                                 modifier = Modifier

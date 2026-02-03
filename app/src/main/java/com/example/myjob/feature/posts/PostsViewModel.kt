@@ -217,7 +217,6 @@ class PostsViewModel @Inject constructor(
 
     val annoucementStatus = MutableStateFlow("")
     val announcementUpdateStatus = MutableStateFlow("")
-    val addedPost = MutableStateFlow(AnnouncementModel())
 
     fun updateCompanyAnnouncement() {
         val id = sharedPreference.getInt("idUser", 0)

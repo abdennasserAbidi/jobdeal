@@ -9,19 +9,25 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,6 +37,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -63,6 +73,8 @@ import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.JobType
 import com.example.myjob.domain.entities.announcement.PostType
 import com.example.myjob.domain.entities.demands.MarketDemandModel
+import com.example.myjob.feature.home.FilterTypeBottomSheet
+import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.posts.FilterPostBottomSheet
 import com.example.myjob.ui.theme.WhatsAppDarkGreen
 import com.example.myjob.ui.theme.WhatsAppLightGreen
@@ -71,6 +83,8 @@ import com.example.myjob.ui.theme.WhatsAppLightGreen
 @Composable
 fun MarketDemandScreen(
     navController: NavController,
+    makeCall: (String) -> Unit = {},
+    clearData: () -> Unit = {},
     demandsViewModel: DemandsViewModel = hiltViewModel()
 ) {
 
@@ -78,10 +92,15 @@ fun MarketDemandScreen(
     var showSearchSheet by remember { mutableStateOf(false) }
 
     var showTypeSheet by remember { mutableStateOf(false) }
+    var showContact by remember { mutableStateOf(false) }
+    var selectedPhone by remember { mutableStateOf("") }
     var selectedSearch by remember { mutableStateOf(PostType.ALL) }
     var selectedType by remember { mutableStateOf(JobType.NORMAL) }
     val badgeCountNormal by remember { mutableIntStateOf(0) }
     val badgeCountService by remember { mutableIntStateOf(1) }
+    var isUpdating by remember { mutableStateOf(false) }
+
+    var selectedItem by remember { mutableStateOf(MarketDemandModel()) }
 
     val demands = demandsViewModel.demands.collectAsLazyPagingItems()
 
@@ -89,18 +108,11 @@ fun MarketDemandScreen(
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
             selectedType = demandsViewModel.getType()
-            Log.i("frzgkrzhgrz", "selectedType: $selectedType")
-
+            demandsViewModel.getDemands()
         }
     }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .clickable(
-            interactionSource = interactionSource,
-            indication = null
-        ) {
-        }) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -260,6 +272,7 @@ fun MarketDemandScreen(
 
                     items(demands.itemCount) { index ->
                         val item = demands[index] ?: MarketDemandModel()
+                        selectedItem = item
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -271,6 +284,14 @@ fun MarketDemandScreen(
                                     GlobalEntries.idAnnounce = item.idAnnounce
                                     GlobalEntries.idCompany = item.idCompany
                                     navController.navigate(Screen.DetailPostScreen.route)*/
+
+                                    isUpdating = true
+
+                                    demandsViewModel.changePostId(item.id)
+                                    demandsViewModel.changePostName(item.title)
+                                    demandsViewModel.changeDescriptions(item.description)
+                                    demandsViewModel.changePostType(item.activitySector)
+
                                 },
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(
@@ -301,8 +322,12 @@ fun MarketDemandScreen(
                                             overflow = TextOverflow.Ellipsis
                                         )
 
+                                        val user = item.userSender
+                                        val name = if (user?.role == "Candidat" || user?.role == "Candidate") user.fullName
+                                        else user?.companyName
+
                                         Text(
-                                            text = "${stringResource(id = R.string.posted_by_text)} ${item.companyName}",
+                                            text = "${stringResource(id = R.string.posted_by_text)} $name",
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = Color.Black,
                                             maxLines = 1,
@@ -332,8 +357,6 @@ fun MarketDemandScreen(
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
-
-
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 HorizontalDivider(
@@ -341,6 +364,37 @@ fun MarketDemandScreen(
                                     thickness = 1.dp
                                 )
 
+                                Row(modifier = Modifier.fillMaxWidth()) {
+
+                                    Text("", modifier = Modifier.weight(0.5f))
+
+                                    OutlinedButton(
+                                        onClick = {
+                                            showContact = true
+                                        },
+                                        modifier = Modifier.weight(0.5f),
+                                        shape = RoundedCornerShape(12.dp),
+                                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                                            width = 2.dp,
+                                            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFF049344))
+                                        ),
+                                        colors = ButtonDefaults.outlinedButtonColors(
+                                            contentColor = Color(0xFF049344)
+                                        )
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Message,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = "Contacter",
+                                            fontSize = 15.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
+                                }
                             }
                         }
 
@@ -391,6 +445,111 @@ fun MarketDemandScreen(
                         color = colorResource(id = R.color.whatsapp)
                     )
                 }
+            }
+        }
+
+        FloatingActionButton(
+            modifier = Modifier
+                .size(70.dp)
+                .padding(bottom = 20.dp, end = 20.dp)
+                .align(Alignment.BottomEnd),
+            onClick = {
+                navController.navigate(Screen.FormMarketScreen.route)
+            }
+        ) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = "add")
+        }
+
+        if (showContact) {
+            ModalBottomSheet(
+                onDismissRequest = { showContact = false }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.type_change_text),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    val isShown = if (selectedItem.paidUser == true) true
+                    else if (selectedItem.countTrial > 0) true
+                    else false
+
+                    if (isShown) {
+                        selectedItem.userSender?.phoneList?.forEach { item ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
+                                        demandsViewModel.countDownTrial(selectedItem.id)
+                                        makeCall(item)
+                                        showContact = false
+                                    }
+                                    .padding(vertical = 7.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = selectedPhone == item,
+                                    onClick = {
+                                        demandsViewModel.countDownTrial(selectedItem.id)
+                                        makeCall(item)
+                                        showContact = false
+                                    },
+                                    colors = RadioButtonDefaults.colors(
+                                        selectedColor = colorResource(id = R.color.whatsapp),
+                                        unselectedColor = colorResource(id = R.color.whatsapp)
+                                    )
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = item,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                        }
+                    } else
+                        Text(
+                            text = stringResource(id = R.string.end_trial_text),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Red,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                }
+            }
+        }
+
+        if (showTypeSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showTypeSheet = false }
+            ) {
+                FilterTypeBottomSheet(
+                    selectedFilter = selectedType,
+                    onFilterSelected = { filter ->
+                        selectedType = filter
+                        if (filter.name == JobType.LOGOUT.name) {
+                            demandsViewModel.logout()
+                            clearData()
+                            navController.navigate(Screen.LoginScreen.route)
+                        } else if (filter.name == JobType.NORMAL.name) {
+                            demandsViewModel.changeToJobDeal()
+                            navController.navigate(Screen.HomeScreen.route)
+                        }
+                        showTypeSheet = false
+                    }
+                )
             }
         }
 

@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
-import com.example.myjob.domain.usecase.profile.SaveCompanyInfoUseCase
 import com.example.myjob.domain.usecase.home.ValidateAccountUseCase
+import com.example.myjob.domain.usecase.profile.SaveCompanyInfoUseCase
 import com.example.myjob.domain.usecase.verification.GetVerifiedCandidateStatusUseCase
 import com.example.myjob.feature.validateprofile.ValidationProfileStatus
 import com.example.myjob.local.database.SharedPreference
@@ -23,20 +23,6 @@ class SettingViewModel @Inject constructor(
     private val saveCompanyInfoUseCase: SaveCompanyInfoUseCase,
     private val getVerifiedCandidateStatusUseCase: GetVerifiedCandidateStatusUseCase
 ) : ViewModel() {
-
-    fun changeCompletePhone(search: String) {
-        user.update {
-            it.phoneCompany = search
-            it
-        }
-    }
-
-    fun changeSecondCompletePhone(search: String) {
-        user.update {
-            it.secondPhoneCompany = search
-            it
-        }
-    }
 
     val role = MutableStateFlow("")
     val username = MutableStateFlow("AA")
@@ -58,6 +44,18 @@ class SettingViewModel @Inject constructor(
                 Log.i("ffjlebfjkefbe", "saveCompanyInfo: ${it.data}")
             }
         }
+    }
+
+    fun changeListPhoneCompany(phoneList: List<String>) {
+        val userValue = user.value
+        userValue.phoneList = phoneList
+        user.update { userValue }
+    }
+
+    fun changeListAddressCompany(addressList: List<String>) {
+        val userValue = user.value
+        userValue.addressList = addressList
+        user.update { userValue }
     }
 
     fun changeCompanyWebsite(name: String) {
@@ -115,34 +113,6 @@ class SettingViewModel @Inject constructor(
     fun changeCompanyDescription(name: String) {
         user.update {
             it.companyDescription = name
-            it
-        }
-    }
-
-    fun changeCompanyAddress(name: String) {
-        user.update {
-            it.companyAddress = name
-            it
-        }
-    }
-
-    fun changeCompanySecondAddress(name: String) {
-        user.update {
-            it.companySecondAddress = name
-            it
-        }
-    }
-
-    fun changeCompanySecondPhone(name: String) {
-        user.update {
-            it.secondPhoneCompany = name
-            it
-        }
-    }
-
-    fun changeCompanyPhone(name: String) {
-        user.update {
-            it.phoneCompany = name
             it
         }
     }

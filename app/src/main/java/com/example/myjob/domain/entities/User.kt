@@ -1,6 +1,5 @@
 package com.example.myjob.domain.entities
 
-import android.util.Log
 import android.view.View
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.invitation.InvitationModel
@@ -16,7 +15,8 @@ data class User(
     var id: Int? = View.generateViewId(),
     var firstName: String? = "",
     var lastName: String? = "",
-    var phone: String? = "",
+    var phoneList: List<String>? = mutableListOf(),
+    var addressList: List<String>? = mutableListOf(),
     var country: String? = "",
     var fcmToken: String? = "",
     var newCountry: String? = "",
@@ -30,7 +30,6 @@ data class User(
     var fullName: String? = "$firstName $lastName",
     var password: String? = "Aladin@123",
     var preferredEmploymentType: String? = "",
-    var address: String? = "",
     var situation: String? = "",
     var isVerified: Boolean? = false,
     var firstTime: Boolean? = true,
@@ -54,17 +53,13 @@ data class User(
     val invitations: MutableList<InvitationModel>? = mutableListOf(),
     val listNum: MutableList<String>? = mutableListOf(),
     var companyName: String? = "",
-    var phoneCompany: String? = "",
-    var companyAddress: String? = "13 Rue Sassi Bellil Borj el baccouch",
     var companyActivitySector: String? = "Informatique",
     var numSecuritySocial: String? = "",
     var docs: List<String>? = mutableListOf(),
-    var secondPhoneCompany: String? = "",
     var faxCompany: String? = "",
     var linkWebsite: String? = "",
     var linkLinkedIn: String? = "",
-    var companyDescription: String? = "",
-    var companySecondAddress: String? = "",
+    var companyDescription: String? = ""
 ) {
 
     private fun getMonthNumber(monthName: String): Int {
@@ -253,9 +248,9 @@ data class User(
         val mapUser = hashMapOf<String, String> ()
 
         val nameValid = fullName?.isNotEmpty() == true
-        val addressValid = !address.isNullOrEmpty()
+        val addressValid = !addressList.isNullOrEmpty()
         val newCountryValid = !newCountry.isNullOrEmpty()
-        val phoneValid = !phone.isNullOrEmpty()
+        val phoneValid = !phoneList.isNullOrEmpty()
         val countryValid = !country.isNullOrEmpty()
         val companyNameValid = !companyName.isNullOrEmpty()
         val nationalityValid = !nationality.isNullOrEmpty()
@@ -307,7 +302,7 @@ data class User(
         }
 
         if (nameValid) mapUser[listTag[0]] = fullName ?: ""
-        if (addressValid) mapUser[listTag[1]] = address ?: ""
+        if (addressValid) mapUser[listTag[1]] = addressList?.joinToString { "\n" } ?: ""
         if (activitySectorValid) mapUser[listTag[2]] = activitySector ?: ""
         if (companyNameValid) mapUser[listTag[3]] = companyName ?: ""
         if (birthDateValid) mapUser[listTag[4]] = birthDate ?: ""
@@ -320,120 +315,11 @@ data class User(
         if (rangeSalaryValid) mapUser[listTag[9]] = rangeSalary ?: ""
         if (preferredActivitySectorValid) mapUser[listTag[10]] = preferredActivitySector ?: ""
         if (preferredEmploymentTypeValid) mapUser[listTag[11]] = preferredEmploymentType ?: ""
-        if (phoneValid) mapUser[listTag[12]] = phone ?: ""
+        if (phoneValid) mapUser[listTag[12]] = phoneList?.joinToString { "\n" } ?: ""
         if (countryValid) mapUser[listTag[13]] = country ?: ""
         if (newCountryValid) mapUser[listTag[14]] = newCountry ?: ""
 
         return mapUser
-    }
-
-    fun showUserList(lang: String): List<Pair<String, String>> {
-        val mapUser = mutableListOf<Pair<String, String>> ()
-
-        val nameValid = fullName?.isNotEmpty() == true
-        val addressValid = !address.isNullOrEmpty()
-        val newCountryValid = !newCountry.isNullOrEmpty()
-        val phoneValid = !phone.isNullOrEmpty()
-        val countryValid = !country.isNullOrEmpty()
-        val companyNameValid = !companyName.isNullOrEmpty()
-        val nationalityValid = !nationality.isNullOrEmpty()
-        val activitySectorValid = activitySector != null && activitySector != "Choose activity sector"
-        val birthDateValid = birthDate != null && birthDate != "Choose Date"
-        val availabilityValid = !professionalStatus?.availability.isNullOrEmpty()
-        val rangeSalaryValid = !rangeSalary.isNullOrEmpty()
-        val sexValid = !sexe.isNullOrEmpty()
-        val situationValid = !situation.isNullOrEmpty()
-        val preferredActivitySectorValid = !preferredActivitySector.isNullOrEmpty()
-
-        val listTag = if (lang == "French" || lang == "Français") {
-            listOf(
-                "Nom et prénom",
-                "Adresse",
-                "Sécteur d'activity",
-                "Nom de la societé",
-                "Date de naissance",
-                "Nationalité",
-                "Sexe",
-                "Situation",
-                "Disponibilité",
-                "Marge salariale",
-                "Votre sécteur d'activité",
-                "Téléphone",
-                "Pays",
-                "New Country"
-            )
-        } else {
-            listOf(
-                "Full name",
-                "Address",
-                "Activity sector",
-                "Company name",
-                "Birth date",
-                "Nationality",
-                "Sex",
-                "Situation",
-                "Availability",
-                "Salary range",
-                "Your activity sector",
-                "Phone",
-                "Country",
-                "New Country"
-            )
-        }
-
-        if (nameValid) mapUser.add(Pair(listTag[0], fullName ?: ""))
-        if (addressValid) mapUser.add(Pair(listTag[1], address ?: ""))
-        if (activitySectorValid) mapUser.add(Pair(listTag[2], activitySector ?: ""))
-        if (companyNameValid) mapUser.add(Pair(listTag[3], companyName ?: ""))
-        if (birthDateValid) mapUser.add(Pair(listTag[4], birthDate ?: ""))
-        if (nationalityValid) mapUser.add(Pair(listTag[5], nationality ?: ""))
-        if (sexValid) mapUser.add(Pair(listTag[6], sexe ?: ""))
-        if (situationValid) mapUser.add(Pair(listTag[7], situation ?: ""))
-        if (availabilityValid) mapUser.add(Pair(listTag[8], professionalStatus?.availability ?: ""))
-        if (rangeSalaryValid) mapUser.add(Pair(listTag[9], rangeSalary ?: ""))
-        if (preferredActivitySectorValid) mapUser.add(Pair(listTag[10], preferredActivitySector ?: ""))
-        if (phoneValid) mapUser.add(Pair(listTag[11], phone ?: ""))
-        if (countryValid) mapUser.add(Pair(listTag[12], country ?: ""))
-        if (newCountryValid) mapUser.add(Pair(listTag[13], newCountry ?: ""))
-
-        return mapUser
-    }
-    fun resumeUser(): String {
-        var resume = ""
-
-        val addressValid = !address.isNullOrEmpty()
-        val phoneValid = !phone.isNullOrEmpty()
-        val countryValid = !country.isNullOrEmpty()
-        val nationalityValid = !nationality.isNullOrEmpty()
-        val birthDateValid = birthDate != null && birthDate != "Choose Date"
-        val availabilityValid = !professionalStatus?.availability.isNullOrEmpty()
-        val rangeSalaryValid = !rangeSalary.isNullOrEmpty()
-        val sexValid = !sexe.isNullOrEmpty()
-        val situationValid = !situation.isNullOrEmpty()
-        val preferredActivitySectorValid = !preferredActivitySector.isNullOrEmpty()
-
-        val t = if (sexe == "Male") "he" else "she"
-        val t1 = if (sexe == "Male") "him" else "her"
-        val t2 = if (sexe == "Male") "his" else "her"
-
-        if (birthDateValid) {
-            val year = birthDate?.split(",")?.get(2)?.trimStart()?.trimEnd()?.toInt() ?: 0
-            val age = Calendar.getInstance().get(Calendar.YEAR) - year
-            resume += "$t is $age years old "
-        }
-        if (nationalityValid) resume += "${nationality}n"
-        if (situationValid) resume += "${situation}, "
-        if (addressValid) resume += "$t situated in $address "
-        if (countryValid) resume += "${country}, "
-        if (preferredActivitySectorValid) resume += "$t preferred working in $preferredActivitySector, "
-        if (rangeSalaryValid) resume += "$t wants a salary range between $rangeSalary, "
-        if (availabilityValid) resume += "$t is available ${professionalStatus?.availability}, "
-        resume += "you can contact $t1 via $t2 email : $email "
-        if (phoneValid) resume += "or on $t2 phone $phone"
-
-        Log.i("resume", "resumeUser: $resume")
-
-        return resume
     }
 
 }

@@ -753,7 +753,6 @@ fun CandidateListScreen(
                 selectedFilter = selectedSearch,
                 onFilterSelected = { filter ->
                     selectedSearch = filter
-                    Log.i("frzgkrzhgrz", "CandidateListScreen: ${filter.name}")
                     if (filter.name == JobType.LOGOUT.name) {
                         homeViewModel.logout()
                         clearData()
@@ -764,7 +763,6 @@ fun CandidateListScreen(
 
                         navController.navigate(Screen.DemandMarketScreen.route)
                     }
-                    //postsViewModel.getFilteredAnnounceCompany(filter.name)
                     showTypeSheet = false
                 }
             )

@@ -381,6 +381,7 @@
     <string name="filter_status_text">Filter by Status</string>
 
     <string name="type_change_text">Change type</string>
+    <string name="end_trial_text">Buy a subscription to make more contact</string>
 
     <string name="other_text">Other</string>
     <string name="pending_text">Pending</string>

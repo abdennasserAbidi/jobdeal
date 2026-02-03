@@ -623,12 +623,6 @@ class HomeViewModel @Inject constructor(
     var lang = ""
     var langState = MutableStateFlow(lang)
 
-    val resume = MutableStateFlow("")
-
-    fun getResume(user: User) {
-        resume.update { user.resumeUser() }
-    }
-
     val invitationParam = MutableStateFlow(InvitationModel())
     fun changePostName(name: String) {
         invitationParam.update {
@@ -995,6 +989,7 @@ class HomeViewModel @Inject constructor(
 
     fun logout() {
         sharedPreference.putString("token", "")
+        sharedPreference.putString("offerDemand", "")
     }
 
     fun offerDemand() {

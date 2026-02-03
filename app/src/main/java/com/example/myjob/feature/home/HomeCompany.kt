@@ -120,8 +120,6 @@ fun HomeCompany(
 
     var search by remember { mutableStateOf(false) }
 
-    val resume by homeViewModel.resume.collectAsState()
-
     val invitationSent by homeViewModel.invitationSent.collectAsState()
     val fcmToken by homeViewModel.fcmToken.collectAsState()
 

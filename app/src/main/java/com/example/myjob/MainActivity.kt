@@ -1,12 +1,14 @@
 package com.example.myjob
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -70,6 +72,7 @@ import com.example.myjob.domain.entities.AllSchools
 import com.example.myjob.domain.entities.CountryPickerViewState
 import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.Subject
+import com.example.myjob.feature.demands.AddDemandScreen
 import com.example.myjob.feature.demands.MarketDemandScreen
 import com.example.myjob.feature.favorites.CompanyFavorites
 import com.example.myjob.feature.forgotpassword.ForgotPasswordScreen
@@ -271,8 +274,6 @@ class MainActivity : ComponentActivity() {
         for (listener in newIntentListeners) {
             listener.invoke(intent)
         }
-
-        Log.i("DeepLink", "onNewIntent: ${intent.extras}")
 
         if (::navController.isInitialized) {
 
@@ -877,11 +878,44 @@ class MainActivity : ComponentActivity() {
                     composable(route = Screen.DemandMarketScreen.route) {
                         isVisibleNav = false
 
-                        MarketDemandScreen(navController = navController)
+                        MarketDemandScreen(
+                            navController = navController,
+                            makeCall = { phone ->
+                                makePhoneCall(context, phone)
+                            },
+                            clearData = {
+                                selectedTabIndex = 0
+                            }
+                        )
+                    }
+
+                    composable(route = Screen.FormMarketScreen.route) {
+                        isVisibleNav = false
+
+                        AddDemandScreen(
+                            navController = navController,
+                            allSubjects = allSubjects
+                        )
                     }
                 }
 
             }
+        }
+    }
+
+    fun makePhoneCall(context: Context, phoneNumber: String) {
+        val intent = Intent(Intent.ACTION_CALL).apply { // Use ACTION_DIAL to open the dialer app instead
+            data = Uri.parse("tel:$phoneNumber")
+        }
+        if (intent.resolveActivity(context.packageManager) != null) {
+            try {
+                context.startActivity(intent)
+            } catch (e: SecurityException) {
+                // Handle the case where the permission is not granted
+                Toast.makeText(context, "CALL_PHONE permission is required.", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(context, "No application found to handle the call request.", Toast.LENGTH_SHORT).show()
         }
     }
 
