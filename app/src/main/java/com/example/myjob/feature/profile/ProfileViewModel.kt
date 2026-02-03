@@ -486,9 +486,9 @@ class ProfileViewModel @Inject constructor(
         return t
     }
 
-    fun validateAddress(text: List<String>): Boolean = text.isNotEmpty() && text.none { it.isNotEmpty() }
+    fun validateAddress(text: List<String>): Boolean = text.isNotEmpty() && text.none { it.isEmpty() }
 
-    fun validatePhones(text: List<String>): Boolean = text.isNotEmpty() && text.none { it.isNotEmpty() }
+    fun validatePhones(text: List<String>): Boolean = text.isNotEmpty() && text.none { it.isEmpty() }
 
     fun changeAddress(name: List<String>) {
         user.update {
@@ -648,7 +648,8 @@ class ProfileViewModel @Inject constructor(
 
     fun saveUserPersonalInfo() {
         viewModelScope.launch {
-            Log.i("fjkzhkzhgrzgz", "saveUserPersonalInfo: ${user.value}")
+            Log.i("fjkzhkzhgrzgz", "user: ${user.value}")
+
             savePersonalUseCase.execute(user.value).collect { res ->
                 Log.i("fjkzhkzhgrzgz", "res: $res")
 

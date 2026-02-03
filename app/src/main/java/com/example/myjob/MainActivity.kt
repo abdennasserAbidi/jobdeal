@@ -109,6 +109,7 @@ import com.example.myjob.feature.profile.EducationForm
 import com.example.myjob.feature.profile.PersonalForm
 import com.example.myjob.feature.profile.ProfileScreen
 import com.example.myjob.feature.profile.test.CandidateProfileFormScreen
+import com.example.myjob.feature.profile.test.CandidateProfileFormScreenTest
 import com.example.myjob.feature.profile.test.CompanyProfileFormScreen
 import com.example.myjob.feature.profile.test.UpdateDetailScreen
 import com.example.myjob.feature.setting.ModernSettingScreen
@@ -847,7 +848,7 @@ class MainActivity : ComponentActivity() {
                         app.listCompanies.add(stringResource(id = R.string.other_text))
                         listCompany = app.listCompanies.distinctBy { it }.toMutableList()
 
-                        CandidateProfileFormScreen(
+                        CandidateProfileFormScreenTest(
                             navController = navController,
                             list = listCountry,
                             clearData = {

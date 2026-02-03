@@ -596,7 +596,8 @@ fun ProfessionalForm(
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+    )
+    {
         WorkTypePreferences(
             remoteWork = remotePreference ?: false,
             hybridWork = hybridPreference ?: false,
