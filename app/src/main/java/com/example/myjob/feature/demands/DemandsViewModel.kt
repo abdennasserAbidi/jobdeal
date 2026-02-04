@@ -5,8 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.JobType
-import com.example.myjob.domain.entities.announcement.AnnouncementModel
-import com.example.myjob.domain.entities.announcement.AnnouncementParams
+import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.demands.MarketDemandModel
 import com.example.myjob.domain.usecase.demand.CountDownTrialUseCase
 import com.example.myjob.domain.usecase.demand.GetAllDemandUseCase
@@ -32,6 +31,8 @@ class DemandsViewModel @Inject constructor(
     private val countDownTrialUseCase: CountDownTrialUseCase
 ) : ViewModel() {
 
+    fun isNotMe(userSender: Int): Boolean =
+        userSender != sharedPreference.getInt("idUser", 0)
     val marketDemandModel = MutableStateFlow(MarketDemandModel())
     fun changePostName(name: String) {
         marketDemandModel.update {

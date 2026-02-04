@@ -265,14 +265,14 @@ fun ModernHomeScreen(
                 selectedFilter = selectedSearch,
                 onFilterSelected = { filter ->
                     selectedSearch = filter
-                    if (filter.name == logoutText) {
+                    if (filter.name == JobType.LOGOUT.name) {
                         homeViewModel.logout()
                         clearData()
                         navController.navigate(Screen.LoginScreen.route)
-                    } else if (filter.name == demandText) {
-                        navController.navigate(Screen.LoginScreen.route)
+                    } else if (filter.name == JobType.GET.name) {
+                        homeViewModel.offerDemand()
+                        navController.navigate(Screen.DemandMarketScreen.route)
                     }
-                    //postsViewModel.getFilteredAnnounceCompany(filter.name)
                     showTypeSheet = false
                 }
             )
@@ -299,7 +299,6 @@ fun FilterTypeBottomSheet(
         )
 
         val demandText = stringResource(id = R.string.demand_text)
-        val offerText = stringResource(id = R.string.offer_text)
         val normalText = stringResource(id = R.string.normal_text)
         val logoutText = stringResource(id = R.string.logout_text)
         JobType.entries.forEach { filter ->
@@ -330,8 +329,7 @@ fun FilterTypeBottomSheet(
                     text = when (filter) {
                         JobType.NORMAL -> normalText
                         JobType.GET -> demandText
-                        JobType.SEND -> offerText
-                        JobType.LOGOUT -> logoutText
+                        else -> logoutText
                     },
                     style = MaterialTheme.typography.bodyLarge
                 )

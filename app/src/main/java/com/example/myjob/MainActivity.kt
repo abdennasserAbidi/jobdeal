@@ -108,7 +108,6 @@ import com.example.myjob.feature.profile.CountryCodeScreen
 import com.example.myjob.feature.profile.EducationForm
 import com.example.myjob.feature.profile.PersonalForm
 import com.example.myjob.feature.profile.ProfileScreen
-import com.example.myjob.feature.profile.test.CandidateProfileFormScreen
 import com.example.myjob.feature.profile.test.CandidateProfileFormScreenTest
 import com.example.myjob.feature.profile.test.CompanyProfileFormScreen
 import com.example.myjob.feature.profile.test.UpdateDetailScreen
@@ -135,6 +134,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.net.URISyntaxException
 import javax.inject.Inject
+import androidx.core.net.toUri
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -287,6 +287,8 @@ class MainActivity : ComponentActivity() {
                 navController.navigate(Screen.ForgotPasswordScreen.route)
             }
 
+            val idDemand = intent.extras?.getString("idDemand")
+            val idHoster = intent.extras?.getString("idHoster")
             val idReceiver = intent.extras?.getString("idReceiver")
             val idSender = intent.extras?.getString("idSender")
             val idInvitation = intent.extras?.getString("idInvitation")
@@ -294,12 +296,18 @@ class MainActivity : ComponentActivity() {
             val idCompany = intent.extras?.getString("idCompany")
             val validation = intent.extras?.getString("validation")
 
+            idDemand?.let {
+                GlobalEntries.idDemand = it.toInt()
+                GlobalEntries.idHoster = idHoster?.toInt() ?: 0
+                //TODO("change route from list demand to detail demand")
+                navController.navigate(Screen.DemandMarketScreen.route)
+            }
+
             validation?.let {
                 navController.navigate(Screen.ValidateProfileCandidateScreen.route)
             }
 
             idInvitation?.let {
-                Log.i("DeepLink", "Navigating to: $it")
                 GlobalEntries.idInvitation = it.toInt()
                 navController.navigate(Screen.NormalDetailInvitationScreen.route)
             }
@@ -310,7 +318,6 @@ class MainActivity : ComponentActivity() {
             }
 
             idAnnounce?.let {
-                Log.i("DeepLink", "Navigating to: $it")
                 GlobalEntries.idAnnounce = it.toInt()
                 GlobalEntries.idCompany = idCompany?.toInt() ?: 0
                 navController.navigate(Screen.DetailPostScreen.route)
@@ -377,6 +384,16 @@ class MainActivity : ComponentActivity() {
                 val idAnnounce = intent?.getStringExtra("idAnnounce")
                 val idCompany = intent?.getStringExtra("idCompany")
                 val validation = intent?.getStringExtra("validation")
+                val idDemand = intent?.getStringExtra("idDemand")
+                val idHoster = intent?.getStringExtra("idHoster")
+
+                idDemand?.let {
+                    GlobalEntries.isFromNotification = true
+                    GlobalEntries.idDemand = it.toInt()
+                    GlobalEntries.idHoster = idHoster?.toInt() ?: 0
+                    //TODO("change route from list demand to detail demand")
+                    startRoute = Screen.DemandMarketScreen.route
+                }
 
                 validation?.let {
                     startRoute = Screen.ValidateProfileCandidateScreen.route
@@ -905,18 +922,14 @@ class MainActivity : ComponentActivity() {
     }
 
     fun makePhoneCall(context: Context, phoneNumber: String) {
-        val intent = Intent(Intent.ACTION_CALL).apply { // Use ACTION_DIAL to open the dialer app instead
-            data = Uri.parse("tel:$phoneNumber")
-        }
-        if (intent.resolveActivity(context.packageManager) != null) {
-            try {
-                context.startActivity(intent)
-            } catch (e: SecurityException) {
-                // Handle the case where the permission is not granted
-                Toast.makeText(context, "CALL_PHONE permission is required.", Toast.LENGTH_SHORT).show()
-            }
-        } else {
-            Toast.makeText(context, "No application found to handle the call request.", Toast.LENGTH_SHORT).show()
+
+        val u = ("tel:$phoneNumber").toUri()
+        val i = Intent(Intent.ACTION_DIAL, u)
+        try {
+            context.startActivity(i)
+        } catch (s: SecurityException) {
+            Toast.makeText(context, "An error occurred", Toast.LENGTH_LONG)
+                .show()
         }
     }
 

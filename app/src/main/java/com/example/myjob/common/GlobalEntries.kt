@@ -39,6 +39,8 @@ object GlobalEntries {
     var idExp = 0
     var idStudy = 0
     var idInvitation = 0
+    var idDemand = 0
+    var idHoster = 0
     var countInvitationPending = MutableStateFlow(0)
     var seenInvitation = MutableStateFlow(false)
     var seenMessage = MutableStateFlow(false)

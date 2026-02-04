@@ -1,6 +1,5 @@
 package com.example.myjob.feature.demands
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -192,15 +191,13 @@ fun MarketDemandScreen(
                             }
                         }
                         val demandText = stringResource(id = R.string.demand_text)
-                        val offerText = stringResource(id = R.string.offer_text)
                         val normalText = stringResource(id = R.string.normal_text)
                         val logoutText = stringResource(id = R.string.logout_text)
                         Text(
                             text = when (selectedType) {
                                 JobType.NORMAL -> normalText
                                 JobType.GET -> demandText
-                                JobType.SEND -> offerText
-                                JobType.LOGOUT -> logoutText
+                                else -> logoutText
                             },
                             color = White,
                             modifier = Modifier
@@ -280,18 +277,10 @@ fun MarketDemandScreen(
                                     interactionSource = interactionSource,
                                     indication = null
                                 ) {
-                                    /*GlobalEntries.isFromNotification = false
-                                    GlobalEntries.idAnnounce = item.idAnnounce
-                                    GlobalEntries.idCompany = item.idCompany
-                                    navController.navigate(Screen.DetailPostScreen.route)*/
-
-                                    isUpdating = true
-
                                     demandsViewModel.changePostId(item.id)
                                     demandsViewModel.changePostName(item.title)
                                     demandsViewModel.changeDescriptions(item.description)
                                     demandsViewModel.changePostType(item.activitySector)
-
                                 },
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(
@@ -357,42 +346,41 @@ fun MarketDemandScreen(
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                Spacer(modifier = Modifier.height(8.dp))
+                                if (demandsViewModel.isNotMe(item.userSender?.id ?: 0)) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        thickness = 1.dp
+                                    )
+                                    Row(modifier = Modifier.fillMaxWidth()) {
 
-                                HorizontalDivider(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    thickness = 1.dp
-                                )
+                                        Text("", modifier = Modifier.weight(0.5f))
 
-                                Row(modifier = Modifier.fillMaxWidth()) {
-
-                                    Text("", modifier = Modifier.weight(0.5f))
-
-                                    OutlinedButton(
-                                        onClick = {
-                                            showContact = true
-                                        },
-                                        modifier = Modifier.weight(0.5f),
-                                        shape = RoundedCornerShape(12.dp),
-                                        border = ButtonDefaults.outlinedButtonBorder.copy(
-                                            width = 2.dp,
-                                            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFF049344))
-                                        ),
-                                        colors = ButtonDefaults.outlinedButtonColors(
-                                            contentColor = Color(0xFF049344)
-                                        )
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Filled.Message,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            text = "Contacter",
-                                            fontSize = 15.sp,
-                                            fontWeight = FontWeight.SemiBold
-                                        )
+                                        OutlinedButton(
+                                            onClick = {
+                                                showContact = true
+                                            },
+                                            modifier = Modifier.weight(0.5f),
+                                            shape = RoundedCornerShape(12.dp),
+                                            border = ButtonDefaults.outlinedButtonBorder.copy(
+                                                width = 2.dp,
+                                                brush = androidx.compose.ui.graphics.SolidColor(Color(0xFF049344))
+                                            ),
+                                            colors = ButtonDefaults.outlinedButtonColors(
+                                                contentColor = Color(0xFF049344)
+                                            )
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Filled.Message,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = "Contacter",
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
                                     }
                                 }
                             }

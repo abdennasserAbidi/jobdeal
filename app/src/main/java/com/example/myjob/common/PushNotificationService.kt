@@ -37,7 +37,9 @@ class PushNotificationService : FirebaseMessagingService() {
             message.data["idInvitation"],
             message.data["idAnnounce"],
             message.data["idCompany"],
-            message.data["validation"]
+            message.data["validation"],
+            message.data["idDemand"],
+            message.data["idHoster"],
         )
     }
 
@@ -61,7 +63,9 @@ class PushNotificationService : FirebaseMessagingService() {
         idUser: String?,
         idAnnounce: String?,
         idCompany: String?,
-        validation: String?
+        validation: String?,
+        idDemand: String?,
+        idHoster: String?,
     ) {
         val channelId = "channel_id"
         val channelName = "Default Channel"
@@ -85,6 +89,8 @@ class PushNotificationService : FirebaseMessagingService() {
             putExtra("idAnnounce", idAnnounce)
             putExtra("idCompany", idCompany)
             putExtra("validation", validation)
+            putExtra("idDemand", idDemand)
+            putExtra("idHoster", idHoster)
             putExtra("ITEM_ID", "myapp://notification/$idUser")
             addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }
