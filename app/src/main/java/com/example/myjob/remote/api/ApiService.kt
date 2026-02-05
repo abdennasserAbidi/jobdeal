@@ -459,6 +459,11 @@ ApiService {
         @Query("size") size: Int = 10
     ): GenericResponse<MarketDemandModel>
 
+    @GET("auth/getDemand")
+    suspend fun getDemand(
+        @Query("idDemand") idDemand: Int
+    ): MarketDemandModel
+
     @POST("auth/saveDemand")
     suspend fun saveDemand(@Body marketDemandModel: MarketDemandModel): UserResponse
 

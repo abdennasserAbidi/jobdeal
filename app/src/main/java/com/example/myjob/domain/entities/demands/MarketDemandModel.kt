@@ -2,7 +2,11 @@ package com.example.myjob.domain.entities.demands
 
 import android.view.View
 import com.example.myjob.domain.entities.User
+import com.example.myjob.feature.demands.DemandStatus
+import com.example.myjob.feature.demands.ServiceCategory
+import com.example.myjob.feature.demands.Urgency
 import kotlinx.serialization.Serializable
+import java.util.Date
 
 @Serializable
 data class MarketDemandModel(
@@ -10,11 +14,15 @@ data class MarketDemandModel(
     var date: String? = "",
     var idSender: Int = 0,
     var userSender: User? = User(),
-    var idCandidate: Int = 0,
     var paidUser: Boolean? = false,
     var countTrial: Int = 10,
     var description: String = "Creer une application pour connecter les entreprises avec les candidats facilement.",
-    var activitySector: String = "",
-    var username: String = "",
-    var title: String = "Dveloppeur Android"
+    var title: String = "Dveloppeur Android",
+    var category: ServiceCategory = ServiceCategory.MENUISIER,
+    var location: String = "",
+    var budget: String = "",
+    var urgency: String = Urgency.URGENT.name,
+    var status: String = DemandStatus.OUVERT.name,
+    var deadline: String = "",
+    var images: List<String> = emptyList()
 )

@@ -440,7 +440,6 @@ fun CandidateProfileFormScreenTest(
                 when (selectedTab) {
                     0 -> {
                         val saveUserState by profileViewModel.saveUserState.collectAsState()
-                        Log.i("fjkzhkzhgrzgz", "saveUserState: $saveUserState")
 
                         LaunchedEffect(saveUserState) {
                             if (saveUserState == "saved successfully") {
@@ -450,9 +449,7 @@ fun CandidateProfileFormScreenTest(
                         }
 
                         Box(modifier = Modifier.fillMaxSize()) {
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
+                            Column {
 
                                 FormTextField(
                                     value = userName,
@@ -468,8 +465,10 @@ fun CandidateProfileFormScreenTest(
                                 )
 
                                 listAddress.mapIndexed { index, userAddress ->
+                                    val pad = if (index == 0) 16.dp else 8.dp
                                     FormTextField(
                                         value = userAddress,
+                                        modifier = Modifier.padding(top = pad),
                                         borderColor = if (activatedCheck && userAddress.isEmpty()) Color.Red else colorResource(
                                             id = R.color.whatsapp
                                         ),
@@ -484,9 +483,10 @@ fun CandidateProfileFormScreenTest(
                                         isRequired = true
                                     )
 
-                                    Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                                    Box(modifier = Modifier.fillMaxWidth()) {
                                         Text(
                                             text = "Ajouter une adresse",
+                                            color = whatsAppGreen,
                                             modifier = Modifier
                                                 .align(CenterEnd)
                                                 .clickable(
@@ -501,6 +501,7 @@ fun CandidateProfileFormScreenTest(
 
                                 FormTextField(
                                     value = email ?: "",
+                                    modifier = Modifier.padding(top = 16.dp),
                                     borderColor = if (activatedCheck && !emailCheck) Color.Red else colorResource(
                                         id = R.color.whatsapp
                                     ),
@@ -517,6 +518,7 @@ fun CandidateProfileFormScreenTest(
 
                                 FormTextField(
                                     value = title,
+                                    modifier = Modifier.padding(top = 16.dp),
                                     borderColor = if (activatedCheck && !activitySectorCheck) Color.Red else colorResource(
                                         id = R.color.whatsapp
                                     ),
@@ -531,6 +533,7 @@ fun CandidateProfileFormScreenTest(
 
                                 FormTextField(
                                     value = countries,
+                                    modifier = Modifier.padding(top = 16.dp),
                                     borderColor = if (activatedCheck && !countriesCheck) Color.Red else colorResource(
                                         id = R.color.whatsapp
                                     ),
@@ -546,6 +549,7 @@ fun CandidateProfileFormScreenTest(
 
                                 FormTextField(
                                     value = birthDateUser ?: "",
+                                    modifier = Modifier.padding(top = 16.dp),
                                     borderColor = if (activatedCheck && !birthDateUserCheck) Color.Red else colorResource(
                                         id = R.color.whatsapp
                                     ),
@@ -566,6 +570,7 @@ fun CandidateProfileFormScreenTest(
 
                                 FormTextField(
                                     value = userGender ?: "",
+                                    modifier = Modifier.padding(top = 16.dp),
                                     borderColor = if (activatedCheck && !titleGenderCheck) Color.Red else colorResource(
                                         id = R.color.whatsapp
                                     ),
@@ -586,6 +591,7 @@ fun CandidateProfileFormScreenTest(
 
                                 FormTextField(
                                     value = userSituation ?: "",
+                                    modifier = Modifier.padding(top = 16.dp),
                                     borderColor = if (activatedCheck && !titleSituationCheck) Color.Red else colorResource(
                                         id = R.color.whatsapp
                                     ),
@@ -606,6 +612,7 @@ fun CandidateProfileFormScreenTest(
 
                                 FormTextField(
                                     value = userEmploymentTypeChoice ?: "",
+                                    modifier = Modifier.padding(top = 16.dp),
                                     borderColor = if (activatedCheck && !titleWorkCheck) Color.Red else colorResource(
                                         id = R.color.whatsapp
                                     ),
@@ -621,8 +628,9 @@ fun CandidateProfileFormScreenTest(
                                 )
 
                                 listPhones.mapIndexed { index, phone ->
+                                    val pad = if (index == 0) 16.dp else 8.dp
                                     CustomPhoneKit(
-                                        modifier = Modifier.padding(top = 10.dp),
+                                        modifier = Modifier.padding(top = pad),
                                         selectedCountry = selectedCountry,
                                         hint = "Numéro téléphone",
                                         defaultPhone = if (phone.contains(" ")) phone.split(" ")[1] else phone,
@@ -638,9 +646,10 @@ fun CandidateProfileFormScreenTest(
                                         }
                                     )
 
-                                    Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                                    Box(modifier = Modifier.fillMaxWidth()) {
                                         Text(
                                             text = "Ajouter un numéro de téléphone",
+                                            color = whatsAppGreen,
                                             modifier = Modifier
                                                 .align(CenterEnd)
                                                 .clickable(
@@ -658,6 +667,7 @@ fun CandidateProfileFormScreenTest(
 
                                 FormTextField(
                                     value = bio,
+                                    modifier = Modifier.padding(top = 16.dp),
                                     onValueChange = {
                                         profileViewModel.changeBio(it)
                                     },

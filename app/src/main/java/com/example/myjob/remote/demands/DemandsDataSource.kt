@@ -8,4 +8,5 @@ interface DemandsDataSource {
     suspend fun saveDemand(marketDemandModel: MarketDemandModel): UserResponse
     suspend fun countDownTrial(idDemand: Int): UserResponse
     suspend fun getAllDemands(pageNumber: Int): GenericResponse<MarketDemandModel>
+    suspend fun getDemand(idDemand: Int): MarketDemandModel
 }

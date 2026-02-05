@@ -135,6 +135,8 @@ import kotlinx.coroutines.launch
 import java.net.URISyntaxException
 import javax.inject.Inject
 import androidx.core.net.toUri
+import com.example.myjob.feature.demands.AddDemandScreenTest
+import com.example.myjob.feature.demands.DemandMarketDetailScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -150,6 +152,7 @@ class MainActivity : ComponentActivity() {
 
     //TODO("handling chat with files and images")
     //TODO("validation account review")
+    //TODO("add images to posts")
 
     var mSocket: Socket? = null
     private var imageUri = mutableStateOf<Uri?>(null)
@@ -299,8 +302,7 @@ class MainActivity : ComponentActivity() {
             idDemand?.let {
                 GlobalEntries.idDemand = it.toInt()
                 GlobalEntries.idHoster = idHoster?.toInt() ?: 0
-                //TODO("change route from list demand to detail demand")
-                navController.navigate(Screen.DemandMarketScreen.route)
+                navController.navigate(Screen.DemandMarketDetailScreen.route)
             }
 
             validation?.let {
@@ -391,8 +393,7 @@ class MainActivity : ComponentActivity() {
                     GlobalEntries.isFromNotification = true
                     GlobalEntries.idDemand = it.toInt()
                     GlobalEntries.idHoster = idHoster?.toInt() ?: 0
-                    //TODO("change route from list demand to detail demand")
-                    startRoute = Screen.DemandMarketScreen.route
+                    startRoute = Screen.DemandMarketDetailScreen.route
                 }
 
                 validation?.let {
@@ -909,10 +910,16 @@ class MainActivity : ComponentActivity() {
 
                     composable(route = Screen.FormMarketScreen.route) {
                         isVisibleNav = false
-
                         AddDemandScreen(
                             navController = navController,
-                            allSubjects = allSubjects
+                            listCountries = listCountries
+                        )
+                    }
+
+                    composable(route = Screen.DemandMarketDetailScreen.route) {
+                        isVisibleNav = false
+                        DemandMarketDetailScreen(
+                            navController = navController
                         )
                     }
                 }

@@ -20,5 +20,7 @@ class DemandsDataSourceImp @Inject constructor(
         pageNumber: Int
     ): GenericResponse<MarketDemandModel> = apiService.getAllDemands(pageNumber)
 
+    override suspend fun getDemand(idDemand: Int): MarketDemandModel = apiService.getDemand(idDemand)
+
 
 }

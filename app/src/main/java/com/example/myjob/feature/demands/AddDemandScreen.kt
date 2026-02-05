@@ -1,33 +1,46 @@
 package com.example.myjob.feature.demands
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -37,43 +50,46 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.CustomDialog
-import com.example.myjob.common.GenericSearch
 import com.example.myjob.domain.entities.Subject
-import com.example.myjob.feature.profile.test.FormTextField
-import com.example.myjob.ui.theme.WhatsAppDarkGreen
-import com.example.myjob.ui.theme.WhatsAppLightGreen
+import com.example.myjob.feature.profile.DateContainer
 
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddDemandScreen(
     navController: NavController,
-    allSubjects: List<Subject>,
+    listCountries: List<String>,
     demandsViewModel: DemandsViewModel = hiltViewModel()
 ) {
+    var title by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf<ServiceCategory?>(null) }
+    var description by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf("") }
+    var budget by remember { mutableStateOf("") }
+    var urgency by remember { mutableStateOf(Urgency.MOYEN) }
+    var deadline by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var showCategoryDialog by remember { mutableStateOf(false) }
 
     val interactionSource = remember { MutableInteractionSource() }
-    var showActivitySector by remember { mutableStateOf(false) }
-    var activitySector by remember { mutableStateOf("Choisir un sécteur d'activité") }
     var activatedCheck by remember { mutableStateOf(false) }
-
-    var postName by remember { mutableStateOf("") }
-    var descriptions by remember { mutableStateOf("") }
-
-
     var showDialog by remember { mutableStateOf(false) }
+    var showCitiesDialog by remember { mutableStateOf(false) }
     var isProgressing by remember { mutableStateOf(false) }
     var isSuccess by remember { mutableStateOf(false) }
+    var isDateShowed by remember { mutableStateOf(false) }
 
 
     val demandStatus by demandsViewModel.demandStatus.collectAsState()
@@ -94,214 +110,341 @@ fun AddDemandScreen(
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(White)
-    ) {
-        Column(
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Nouvelle demande de service") },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        //onBackClick
+                    }) {
+                        Icon(Icons.Filled.ArrowBack, "Retour", tint = Color(0xFF049344))
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+            )
+        },
+        containerColor = Color(0xFFF3F4F6)
+    ) { padding ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(padding)
         ) {
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp)
-                    .padding(top = 20.dp)
-            ) {
-
-                androidx.compose.material.Icon(
-                    imageVector = Icons.Filled.Close,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null
-                        ) {
-                            navController.popBackStack()
-                        },
-                    contentDescription = ""
-                )
-
-                Text(
-                    text = stringResource(id = R.string.posts_text),
-                    modifier = Modifier.align(Alignment.Center),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(30.dp))
-
             Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-
-                FilterChip(
-                    onClick = { showActivitySector = true },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(70.dp)
-                        .padding(top = 20.dp)
-                        .padding(horizontal = 20.dp),
-                    label = {
-                        Text(text = activitySector)
-                    },
-                    selected = false,
-                    trailingIcon = {
-                        androidx.compose.material.Icon(
-                            Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Filter",
-                            modifier = Modifier.size(18.dp)
+                // Category Selection Card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Catégorie de service *",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF1F2937)
                         )
-                    },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = WhatsAppLightGreen,
-                        selectedLabelColor = WhatsAppDarkGreen
-                    )
-                )
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                val validator = activitySector.isEmpty() || activitySector == "Choisir un sécteur d'activité"
-                if (activatedCheck && validator) {
-                    Text(
-                        modifier = Modifier.padding(top = 5.dp),
-                        text = stringResource(id = R.string.type_annonce_error),
-                        color = Color.Red
-                    )
-
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFFF9FAFB))
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) { showCategoryDialog = true }
+                                .padding(16.dp)
+                        ) {
+                            selectedCategory?.let { category ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(text = category.icon, fontSize = 24.sp)
+                                    Text(
+                                        text = category.displayName,
+                                        color = Color(0xFF1F2937),
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            } ?: run {
+                                Text(
+                                    text = "Sélectionner une catégorie",
+                                    color = Color(0xFF9CA3AF),
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+                    }
                 }
 
+                // Title Field
                 FormTextField(
-                    value = postName,
-                    borderColor = if (activatedCheck && postName.isEmpty()) Color.Red else colorResource(
-                        id = R.color.whatsapp
-                    ),
+                    value = title,
                     onValueChange = {
-                        postName = it
-                        if (activatedCheck) postName.isNotEmpty()
+                        title = it
                         demandsViewModel.changePostName(it)
                     },
-                    label = stringResource(id = R.string.post_title_text),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 40.dp),
-                    isRequired = true
+                    label = "Titre de la demande *",
+                    placeholder = "Ex: Installation d'une porte en bois"
                 )
 
+                // Description Field
                 FormTextField(
-                    value = descriptions,
-                    borderColor = if (activatedCheck && descriptions.isEmpty()) Color.Red else colorResource(
-                        id = R.color.whatsapp
-                    ),
+                    value = description,
                     onValueChange = {
-                        descriptions = it
-                        if (activatedCheck) descriptions.isNotEmpty()
+                        description = it
                         demandsViewModel.changeDescriptions(it)
                     },
-                    label = stringResource(id = R.string.post_description_text),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 40.dp),
-                    isRequired = true
+                    label = "Description détaillée *",
+                    placeholder = "Décrivez votre besoin en détail...",
+                    minLines = 4,
+                    maxLines = 6
                 )
 
+                // Location Field
+                FormTextField(
+                    value = location,
+                    readOnly = true,
+                    onClick = {
+                        showCitiesDialog = true
+                    },
+                    onValueChange = {
+                        /*location = it
+                        demandsViewModel.changeLocation(it)*/
+                    },
+                    label = "Localisation *",
+                    placeholder = "Ville, quartier",
+                    leadingIcon = Icons.Filled.LocationOn
+                )
+
+                // Budget Field
+                FormTextField(
+                    value = budget,
+                    onValueChange = {
+                        budget = it
+                        demandsViewModel.changeBudget(it)
+                    },
+                    label = "Budget estimé",
+                    placeholder = "Ex: 500 DT",
+                    leadingIcon = Icons.Filled.AttachMoney,
+                    keyboardType = KeyboardType.Number
+                )
+
+                // Urgency Selection
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Urgence",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF1F2937)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Urgency.entries.forEach { urg ->
+                                UrgencyChip(
+                                    urgency = urg,
+                                    selected = urgency == urg,
+                                    onClick = {
+                                        urgency = urg
+                                        demandsViewModel.changeUrgency(urg.name)
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Deadline Field
+                FormTextField(
+                    value = deadline,
+                    readOnly = true,
+                    onClick = {
+                        isDateShowed = true
+                    },
+                    onValueChange = {
+
+                        /*deadline = it
+                        demandsViewModel.changeDeadline(it)*/
+                    },
+                    label = "Date limite souhaitée",
+                    placeholder = "JJ/MM/AAAA",
+                    leadingIcon = Icons.Filled.CalendarToday
+                )
+
+                // Submit Button
                 Button(
                     onClick = {
-                        val postTypeValidator = activitySector.isNotEmpty() && activitySector != "Choisir un sécteur d'activité"
-                        val postTitleValidator = postName.isNotEmpty()
-                        val postDescriptionValidator = descriptions.isNotEmpty()
-                        if (!postTitleValidator || !postDescriptionValidator || !postTypeValidator) {
+
+                        val isOneWrong = selectedCategory == null || title.isNotEmpty() ||
+                                description.isNotEmpty() || location.isNotEmpty()
+                        if (isOneWrong) {
                             activatedCheck = true
                         }
 
-                        if (postTitleValidator && postDescriptionValidator && postTypeValidator) {
+                        val isAllTrue = selectedCategory != null && title.isNotEmpty() &&
+                                description.isNotEmpty() && location.isNotEmpty()
+
+                        if (isAllTrue) {
                             isProgressing = true
                             demandsViewModel.saveDemand()
                         }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 40.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorResource(id = R.color.whatsapp)
-                    )
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF049344)),
+                    enabled = selectedCategory != null && title.isNotEmpty() && description.isNotEmpty() && location.isNotEmpty()
                 ) {
-                    Text(
-                        stringResource(id = R.string.save_text),
-                        modifier = Modifier.padding(vertical = 5.dp)
+                    Icon(Icons.Filled.CheckCircle, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Publier la demande", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+
+            DateContainer(
+                isDateShowed = isDateShowed,
+                changeDate = {
+                    deadline = it
+                    demandsViewModel.changeDeadline(it)
+                },
+                onDismiss = {
+                    isDateShowed = false
+                }
+            )
+        }
+    }
+
+    if (isProgressing) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+
+            androidx.compose.material.Card(
+                modifier = Modifier
+                    .size(150.dp)
+                    .background(shape = RoundedCornerShape(30.dp), color = Color.White),
+                elevation = 15.dp,
+                shape = RoundedCornerShape(30.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(150.dp)
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .padding(20.dp),
+                        color = colorResource(id = R.color.whatsapp),
+                        strokeWidth = 8.dp,
+                        trackColor = Color.LightGray,
+                        strokeCap = StrokeCap.Round
                     )
                 }
             }
-
         }
+    }
 
-        if (isProgressing) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center)
-            {
+    // Category Selection Dialog
+    if (showCitiesDialog) {
+        AlertDialog(
+            onDismissRequest = { showCitiesDialog = false },
+            title = { Text("Choisir votre pays") },
+            text = {
+                LazyColumn {
+                    items(listCountries.toTypedArray()) { city ->
 
-                Card(
-                    modifier = Modifier
-                        .size(150.dp)
-                        .background(shape = RoundedCornerShape(30.dp), color = Color.White),
-                    elevation = 15.dp,
-                    shape = RoundedCornerShape(30.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(150.dp)
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
+                        val interactionSource = remember { MutableInteractionSource() }
+
+                        Row(
                             modifier = Modifier
-                                .size(100.dp)
-                                .padding(20.dp),
-                            color = colorResource(id = R.color.whatsapp),
-                            strokeWidth = 8.dp,
-                            trackColor = Color.LightGray,
-                            strokeCap = StrokeCap.Round
+                                .fillMaxWidth()
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    location = city
+                                    demandsViewModel.changeLocation(city)
+                                    showCitiesDialog = false
+                                }
+                                .padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = city,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF1F2937)
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showCitiesDialog = false }) {
+                    Text("Annuler", color = Color(0xFF049344))
+                }
+            }
+        )
+    }
+
+    // Category Selection Dialog
+    if (showCategoryDialog) {
+        AlertDialog(
+            onDismissRequest = { showCategoryDialog = false },
+            title = { Text("Choisir une catégorie") },
+            text = {
+                LazyColumn {
+                    items(ServiceCategory.entries.toTypedArray()) { category ->
+                        CategoryDialogItem(
+                            category = category,
+                            onClick = {
+                                selectedCategory = category
+                                demandsViewModel.changePostType(category.name)
+                                showCategoryDialog = false
+                            }
                         )
                     }
                 }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showCategoryDialog = false }) {
+                    Text("Annuler", color = Color(0xFF049344))
+                }
             }
-        }
-
-        AnimatedVisibility(
-            showActivitySector,
-            enter = slideInVertically(
-                initialOffsetY = { it }, // Slide from below the screen
-                animationSpec = tween(durationMillis = 600) // Set animation duration
-            ),
-            exit = slideOutVertically(
-                targetOffsetY = { it }, // Slide out upwards
-                animationSpec = tween(durationMillis = 600) // Set animation duration
-            )
-        ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                val allNames = allSubjects.map { it.libelly ?: "" }
-                GenericSearch(
-                    mListOfJobs = allNames,
-                    onDismissRequest = {
-                        showActivitySector = false
-                    },
-                    onSelectedBank = { item, _ ->
-                        showActivitySector = false
-                        demandsViewModel.changePostType(item)
-                        activitySector = item
-                    },
-                    title = stringResource(id = R.string.country_text)
-                )
-            }
-        }
+        )
     }
 }

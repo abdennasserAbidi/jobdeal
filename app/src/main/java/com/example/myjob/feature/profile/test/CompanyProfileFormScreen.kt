@@ -1,13 +1,11 @@
 package com.example.myjob.feature.profile.test
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -125,7 +123,7 @@ fun CompanyProfileFormScreen(
     val context = LocalContext.current
     val app = context.applicationContext as MyApp
     LaunchedEffect(listCompanies) {
-        app.listCompanies.removeLast()
+        app.listCompanies.removeAt(app.listCompanies.lastIndex)
         if (!app.listCompanies.containsAll(listCompanies)) app.listCompanies.addAll(listCompanies.distinctBy { it })
     }
 
@@ -199,8 +197,7 @@ fun CompanyProfileFormScreen(
                 // Form Fields
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    contentPadding = PaddingValues(20.dp)
                 ) {
                     item {
 
@@ -211,7 +208,7 @@ fun CompanyProfileFormScreen(
                                 profileViewModel.changeCompanyName(it)
                             },
                             label = stringResource(id = R.string.company_name_text),
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                             isRequired = false
                         )
 
@@ -227,7 +224,7 @@ fun CompanyProfileFormScreen(
                                 isActivityShowed = true
                             },
                             label = stringResource(id = R.string.activity_text),
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                             isRequired = false
                         )
                     }
@@ -241,7 +238,7 @@ fun CompanyProfileFormScreen(
                                 profileViewModel.changeCompanyDescription(it)
                             },
                             label = "Description",
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                             isRequired = false
                         )
                     }
@@ -257,9 +254,9 @@ fun CompanyProfileFormScreen(
                                     )
                                 )
                             }
-
+                            val pad = if (index == 0) 16.dp else 8.dp
                             CustomPhoneKit(
-                                modifier = Modifier.padding(top = 10.dp),
+                                modifier = Modifier.padding(top = pad),
                                 selectedCountry = selectedCountry,
                                 hint = "Numéro téléphone",
                                 defaultPhone = if (phone.contains(" ")) phone.split(" ")[1] else phone,
@@ -300,7 +297,7 @@ fun CompanyProfileFormScreen(
                                 profileViewModel.changeVisibilityCountry(true)
                             },
                             label = "Address",
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                             isRequired = false,
                             onValueChange = {},
                             readOnly = true
@@ -308,6 +305,7 @@ fun CompanyProfileFormScreen(
                     }
 
                     listAddress.mapIndexed { index, addresses ->
+                        val pad = if (index == 0) 16.dp else 8.dp
                         item {
                             FormTextField(
                                 value = addresses,
@@ -317,11 +315,11 @@ fun CompanyProfileFormScreen(
                                     }
                                 },
                                 label = "Address",
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().padding(top = pad),
                                 isRequired = false
                             )
 
-                            Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                            Box(modifier = Modifier.fillMaxWidth()) {
                                 Text(
                                     text = "Ajouter une adresse",
                                     modifier = Modifier

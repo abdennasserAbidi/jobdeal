@@ -1,15 +1,20 @@
 package com.example.myjob.feature.demands
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.example.myjob.base.reources.ResourceState
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.JobType
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.demands.MarketDemandModel
 import com.example.myjob.domain.usecase.demand.CountDownTrialUseCase
 import com.example.myjob.domain.usecase.demand.GetAllDemandUseCase
+import com.example.myjob.domain.usecase.demand.GetDemandUseCase
 import com.example.myjob.domain.usecase.demand.SaveDemandUseCase
+import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,13 +31,29 @@ import javax.inject.Inject
 @HiltViewModel
 class DemandsViewModel @Inject constructor(
     private val sharedPreference: SharedPreference,
+    private val getUserUseCase: GetUserUseCase,
     private val getAllDemandUseCase: GetAllDemandUseCase,
     private val saveDemandUseCase: SaveDemandUseCase,
+    private val getDemandUseCase: GetDemandUseCase,
     private val countDownTrialUseCase: CountDownTrialUseCase
 ) : ViewModel() {
 
+    val userSender = MutableStateFlow(User())
+
+    fun getUserById(id: Int = sharedPreference.getInt("idUser", 0)) {
+        viewModelScope.launch {
+            getUserUseCase.execute(id).collect {
+                it.data?.let { u ->
+                    GlobalEntries.user = u
+                    userSender.update { u }
+                }
+            }
+        }
+    }
+
     fun isNotMe(userSender: Int): Boolean =
         userSender != sharedPreference.getInt("idUser", 0)
+
     val marketDemandModel = MutableStateFlow(MarketDemandModel())
     fun changePostName(name: String) {
         marketDemandModel.update {
@@ -48,9 +69,47 @@ class DemandsViewModel @Inject constructor(
         }
     }
 
+    fun changeLocation(name: String) {
+        marketDemandModel.update {
+            it.location = name
+            it
+        }
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    fun changeDate() {
+        val sdf = SimpleDateFormat("dd/M/yyyy")
+        val currentDate = sdf.format(Date())
+        marketDemandModel.update {
+            it.date = currentDate
+            it
+        }
+    }
+
+    fun changeUrgency(name: String) {
+        marketDemandModel.update {
+            it.urgency = name
+            it
+        }
+    }
+
+    fun changeDeadline(name: String) {
+        marketDemandModel.update {
+            it.deadline = name
+            it
+        }
+    }
+
+    fun changeBudget(name: String) {
+        marketDemandModel.update {
+            it.budget = name
+            it
+        }
+    }
+
     fun changePostType(name: String) {
         marketDemandModel.update {
-            it.activitySector = name
+            it.category = name
             it
         }
     }
@@ -86,6 +145,7 @@ class DemandsViewModel @Inject constructor(
         marketDemandModel.update { marketDemandModels }
 
         viewModelScope.launch {
+            Log.i("jrzghrzjgrrlkgnz", "saveDemand: ${marketDemandModel.value}")
             saveDemandUseCase.execute(marketDemandModel.value)
                 .collectLatest { res ->
                     if (res.status == ResourceState.SUCCESS) {
@@ -96,6 +156,27 @@ class DemandsViewModel @Inject constructor(
                 }
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // DEMAND BY ID
+    ///////////////////////////////////////////////////////////////////////////
+    private val _demand = MutableStateFlow(MarketDemandModel())
+    val demand: StateFlow<MarketDemandModel> get() = _demand.asStateFlow()
+
+    fun getDemandById(idDemand: Int) {
+        viewModelScope.launch {
+            getDemandUseCase.execute(idDemand).collect { res ->
+                if (res.status == ResourceState.SUCCESS)
+                    _demand.update {
+                        res.data ?: MarketDemandModel()
+                    }
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // LIST DEMANDS
+    ///////////////////////////////////////////////////////////////////////////
 
     private val _demands = MutableStateFlow(PagingData.empty<MarketDemandModel>())
     val demands: StateFlow<PagingData<MarketDemandModel>> get() = _demands.asStateFlow()
