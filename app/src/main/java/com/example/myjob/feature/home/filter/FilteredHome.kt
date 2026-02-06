@@ -189,6 +189,7 @@ fun FilteredHome(
                                     indication = null
                                 ) {
                                     GlobalEntries.userForCompany = user
+                                    GlobalEntries.isFromDemand = false
                                     navController.navigate(Screen.DetailScreen.route)
                                 }
                         ) {

@@ -1,6 +1,7 @@
 package com.example.myjob.feature.demands
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -54,6 +55,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -64,6 +66,7 @@ import com.example.myjob.R
 import com.example.myjob.common.CustomDialog
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.feature.profile.DateContainer
+import com.example.myjob.feature.signup.RoleSection
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,14 +77,21 @@ fun AddDemandScreen(
     demandsViewModel: DemandsViewModel = hiltViewModel()
 ) {
     var title by remember { mutableStateOf("") }
+
     var selectedCategory by remember { mutableStateOf<ServiceCategory?>(null) }
+    var selectedCategoryText by remember { mutableStateOf("") }
+    var showCategoryDialog by remember { mutableStateOf(false) }
+
+    var selectedTool by remember { mutableStateOf<ToolCategory?>(null) }
+    var selectedToolText by remember { mutableStateOf("") }
+    var showToolsDialog by remember { mutableStateOf(false) }
+
     var description by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
     var budget by remember { mutableStateOf("") }
     var urgency by remember { mutableStateOf(Urgency.MOYEN) }
     var deadline by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
-    var showCategoryDialog by remember { mutableStateOf(false) }
 
     val interactionSource = remember { MutableInteractionSource() }
     var activatedCheck by remember { mutableStateOf(false) }
@@ -91,6 +101,7 @@ fun AddDemandScreen(
     var isSuccess by remember { mutableStateOf(false) }
     var isDateShowed by remember { mutableStateOf(false) }
 
+    var selectedIndex by remember { mutableStateOf(0) }
 
     val demandStatus by demandsViewModel.demandStatus.collectAsState()
 
@@ -139,54 +150,146 @@ fun AddDemandScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Category Selection Card
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Catégorie de service *",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF1F2937)
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
 
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFFF9FAFB))
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) { showCategoryDialog = true }
-                                .padding(16.dp)
-                        ) {
-                            selectedCategory?.let { category ->
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Text(text = category.icon, fontSize = 24.sp)
+                val listRole = listOf(
+                    stringResource(id = R.string.service_text),
+                    stringResource(id = R.string.tools_text)
+                )
+
+                TypeDemandSection(
+                    listDemand = listRole,
+                    interactionSource = interactionSource,
+                    onClick = {
+                        selectedIndex = it
+                    }
+                )
+
+                if (selectedIndex == 0) {
+                    // Category Selection Card
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = "Catégorie de service *",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF1F2937)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFF9FAFB))
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) { showCategoryDialog = true }
+                                    .padding(16.dp)
+                            ) {
+                                selectedCategory?.let { category ->
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(text = category.icon, fontSize = 24.sp)
+                                        Text(
+                                            text = category.displayName,
+                                            color = Color(0xFF1F2937),
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                } ?: run {
                                     Text(
-                                        text = category.displayName,
-                                        color = Color(0xFF1F2937),
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Medium
+                                        text = "Sélectionner une catégorie",
+                                        color = Color(0xFF9CA3AF),
+                                        fontSize = 16.sp
                                     )
                                 }
-                            } ?: run {
-                                Text(
-                                    text = "Sélectionner une catégorie",
-                                    color = Color(0xFF9CA3AF),
-                                    fontSize = 16.sp
-                                )
                             }
                         }
+                    }
+
+                    if (selectedCategory?.displayName == "Autre") {
+                        FormTextField(
+                            value = selectedCategoryText,
+                            onValueChange = {
+                                selectedCategoryText = it
+                                demandsViewModel.changeOtherCategory(it)
+                            },
+                            label = "Autre catégorie *",
+                            placeholder = "Ex: Forgeron"
+                        )
+                    }
+
+                } else {
+                    //TOOLS
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = "Tools *",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF1F2937)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFF9FAFB))
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) { showToolsDialog = true }
+                                    .padding(16.dp)
+                            ) {
+                                selectedTool?.let { tool ->
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(text = tool.icon, fontSize = 24.sp)
+                                        Text(
+                                            text = tool.displayName,
+                                            color = Color(0xFF1F2937),
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                } ?: run {
+                                    Text(
+                                        text = "Sélectionner un outil",
+                                        color = Color(0xFF9CA3AF),
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    if (selectedTool?.displayName == "Autre Outil") {
+                        FormTextField(
+                            value = selectedToolText,
+                            onValueChange = {
+                                selectedToolText = it
+                                demandsViewModel.changeOtherTool(it)
+                            },
+                            label = "Autre outil *",
+                            placeholder = "Ex: Perceuse"
+                        )
                     }
                 }
 
@@ -222,26 +325,45 @@ fun AddDemandScreen(
                         showCitiesDialog = true
                     },
                     onValueChange = {
-                        /*location = it
-                        demandsViewModel.changeLocation(it)*/
+
                     },
                     label = "Localisation *",
                     placeholder = "Ville, quartier",
                     leadingIcon = Icons.Filled.LocationOn
                 )
 
-                // Budget Field
-                FormTextField(
-                    value = budget,
-                    onValueChange = {
-                        budget = it
-                        demandsViewModel.changeBudget(it)
-                    },
-                    label = "Budget estimé",
-                    placeholder = "Ex: 500 DT",
-                    leadingIcon = Icons.Filled.AttachMoney,
-                    keyboardType = KeyboardType.Number
-                )
+                if (selectedIndex == 0) {
+                    // Budget Field
+                    FormTextField(
+                        value = budget,
+                        onValueChange = {
+                            budget = it
+                            demandsViewModel.changeBudget(it)
+                        },
+                        label = "Budget estimé",
+                        placeholder = "Ex: 500 DT",
+                        leadingIcon = Icons.Filled.AttachMoney,
+                        keyboardType = KeyboardType.Number
+                    )
+
+                    // Deadline Field
+                    FormTextField(
+                        value = deadline,
+                        readOnly = true,
+                        onClick = {
+                            isDateShowed = true
+                        },
+                        onValueChange = {
+
+                            /*deadline = it
+                            demandsViewModel.changeDeadline(it)*/
+                        },
+                        label = "Date limite souhaitée",
+                        placeholder = "JJ/MM/AAAA",
+                        leadingIcon = Icons.Filled.CalendarToday
+                    )
+                }
+
 
                 // Urgency Selection
                 Card(
@@ -278,23 +400,6 @@ fun AddDemandScreen(
                     }
                 }
 
-                // Deadline Field
-                FormTextField(
-                    value = deadline,
-                    readOnly = true,
-                    onClick = {
-                        isDateShowed = true
-                    },
-                    onValueChange = {
-
-                        /*deadline = it
-                        demandsViewModel.changeDeadline(it)*/
-                    },
-                    label = "Date limite souhaitée",
-                    placeholder = "JJ/MM/AAAA",
-                    leadingIcon = Icons.Filled.CalendarToday
-                )
-
                 // Submit Button
                 Button(
                     onClick = {
@@ -305,8 +410,9 @@ fun AddDemandScreen(
                             activatedCheck = true
                         }
 
-                        val isAllTrue = selectedCategory != null && title.isNotEmpty() &&
-                                description.isNotEmpty() && location.isNotEmpty()
+                        val isAllTrue =
+                            (selectedCategory != null || selectedTool != null) && title.isNotEmpty() &&
+                                    description.isNotEmpty() && location.isNotEmpty()
 
                         if (isAllTrue) {
                             isProgressing = true
@@ -318,7 +424,7 @@ fun AddDemandScreen(
                         .height(56.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF049344)),
-                    enabled = selectedCategory != null && title.isNotEmpty() && description.isNotEmpty() && location.isNotEmpty()
+                    enabled = (selectedCategory != null || selectedTool != null) && title.isNotEmpty() && description.isNotEmpty() && location.isNotEmpty()
                 ) {
                     Icon(Icons.Filled.CheckCircle, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -432,7 +538,7 @@ fun AddDemandScreen(
                             category = category,
                             onClick = {
                                 selectedCategory = category
-                                demandsViewModel.changePostType(category.name)
+                                demandsViewModel.changePostType(category)
                                 showCategoryDialog = false
                             }
                         )
@@ -442,6 +548,34 @@ fun AddDemandScreen(
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = { showCategoryDialog = false }) {
+                    Text("Annuler", color = Color(0xFF049344))
+                }
+            }
+        )
+    }
+
+    // Category Selection Dialog
+    if (showToolsDialog) {
+        AlertDialog(
+            onDismissRequest = { showToolsDialog = false },
+            title = { Text("Choisir une catégorie") },
+            text = {
+                LazyColumn {
+                    items(ToolCategory.entries.toTypedArray()) { tool ->
+                        ToolDialogItem(
+                            category = tool,
+                            onClick = {
+                                selectedTool = tool
+                                demandsViewModel.changeTool(tool)
+                                showToolsDialog = false
+                            }
+                        )
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showToolsDialog = false }) {
                     Text("Annuler", color = Color(0xFF049344))
                 }
             }

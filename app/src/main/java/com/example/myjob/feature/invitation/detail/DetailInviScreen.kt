@@ -157,6 +157,7 @@ fun DetailInviScreen(
                     userCompany = userCompany,
                     viewProfile = {
                         GlobalEntries.userForCompany = it
+                        GlobalEntries.isFromDemand = false
                         val route = if (it.role == "Candidat" || it.role == "Candidate") Screen.DetailScreen.route
                         else Screen.DetailCompanyScreen.route
                         navController.navigate(route)

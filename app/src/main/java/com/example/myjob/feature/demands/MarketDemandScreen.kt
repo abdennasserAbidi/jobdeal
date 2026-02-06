@@ -3,6 +3,7 @@ package com.example.myjob.feature.demands
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -19,8 +21,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -54,6 +60,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
@@ -61,6 +68,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.ErrorMessage
+import com.example.myjob.common.GlobalEntries.idDemand
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
 import com.example.myjob.common.rememberLifecycleEvent
@@ -103,14 +111,6 @@ fun MarketDemandScreen(
         }
     }
 
-    /*val filteredDemands = demands.filter { demand ->
-        val matchesSearch = demand.title.contains(searchQuery, ignoreCase = true) ||
-                demand.description.contains(searchQuery, ignoreCase = true) ||
-                demand.location.contains(searchQuery, ignoreCase = true)
-        val matchesCategory = selectedCategory == null || demand.category == selectedCategory
-        matchesSearch && matchesCategory
-    }*/
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -147,7 +147,10 @@ fun MarketDemandScreen(
             ) {
                 OutlinedTextField(
                     value = searchQuery,
-                    onValueChange = { searchQuery = it },
+                    onValueChange = {
+                        searchQuery = it
+                        demandsViewModel.filterDemands(it)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
@@ -189,7 +192,9 @@ fun MarketDemandScreen(
                     val category = ServiceCategory.entries[index]
                     FilterChip(
                         selected = selectedCategory == category,
-                        onClick = { selectedCategory = if (selectedCategory == category) null else category },
+                        onClick = {
+                            selectedCategory = if (selectedCategory == category) null else category
+                        },
                         label = {
                             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                 Text(category.icon)
@@ -206,53 +211,62 @@ fun MarketDemandScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Demands List
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            if (demands.itemCount > 0) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
 
-                items(demands.itemCount) { index ->
-                    val demand = demands[index] ?: MarketDemandModel()
-                    DemandCard(demand = demand, onClick = {
-                        showContact = true
-                    })
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
+                    items(demands.itemCount) { index ->
+                        val demand = demands[index] ?: MarketDemandModel()
+                        selectedItem = demand
+                        DemandCard(
+                            demand = demand,
+                            isNotMe = demandsViewModel.isNotMe(demand.idSender),
+                            showContacts = {
+                                showContact = true
+                            },
+                            onClick = {
+                                idDemand = demand.id
+                                navController.navigate(Screen.DemandMarketDetailScreen.route)
+                            })
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
 
-                demands.apply {
-                    when {
-                        loadState.refresh is LoadState.Loading -> {
-                            item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
-                        }
-
-                        loadState.refresh is LoadState.Error -> {
-                            val error = demands.loadState.refresh as LoadState.Error
-                            item {
-                                ErrorMessage(
-                                    modifier = Modifier.fillParentMaxSize(),
-                                    message = error.error.localizedMessage ?: "",
-                                    onClickRetry = { retry() })
+                    demands.apply {
+                        when {
+                            loadState.refresh is LoadState.Loading -> {
+                                item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
                             }
-                        }
 
-                        loadState.append is LoadState.Loading -> {
-                            item { LoadingNextPageItem(modifier = Modifier) }
-                        }
+                            loadState.refresh is LoadState.Error -> {
+                                val error = demands.loadState.refresh as LoadState.Error
+                                item {
+                                    ErrorMessage(
+                                        modifier = Modifier.fillParentMaxSize(),
+                                        message = error.error.localizedMessage ?: "",
+                                        onClickRetry = { retry() })
+                                }
+                            }
 
-                        loadState.append is LoadState.Error -> {
-                            val error = demands.loadState.append as LoadState.Error
-                            item {
-                                ErrorMessage(
-                                    modifier = Modifier,
-                                    message = error.error.localizedMessage!!,
-                                    onClickRetry = { retry() })
+                            loadState.append is LoadState.Loading -> {
+                                item { LoadingNextPageItem(modifier = Modifier) }
+                            }
+
+                            loadState.append is LoadState.Error -> {
+                                val error = demands.loadState.append as LoadState.Error
+                                item {
+                                    ErrorMessage(
+                                        modifier = Modifier,
+                                        message = error.error.localizedMessage!!,
+                                        onClickRetry = { retry() })
+                                }
                             }
                         }
                     }
                 }
-            }
+            } else EmptyState()
         }
     }
 
@@ -262,8 +276,7 @@ fun MarketDemandScreen(
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
+                    .fillMaxSize()
                     .padding(16.dp)
             ) {
                 Text(
@@ -286,9 +299,7 @@ fun MarketDemandScreen(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
                                 ) {
-                                    demandsViewModel.countDownTrial(selectedItem.id)
-                                    makeCall(item)
-                                    showContact = false
+
                                 }
                                 .padding(vertical = 7.dp),
                             verticalAlignment = Alignment.CenterVertically
@@ -296,9 +307,7 @@ fun MarketDemandScreen(
                             RadioButton(
                                 selected = selectedPhone == item,
                                 onClick = {
-                                    demandsViewModel.countDownTrial(selectedItem.id)
-                                    makeCall(item)
-                                    showContact = false
+                                    selectedPhone = item
                                 },
                                 colors = RadioButtonDefaults.colors(
                                     selectedColor = colorResource(id = R.color.whatsapp),
@@ -312,6 +321,39 @@ fun MarketDemandScreen(
                             )
                         }
                     }
+
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+
+                        Button(
+                            onClick = {
+                                demandsViewModel.countDownTrial(selectedItem.id)
+                                makeCall(selectedPhone)
+                                showContact = false
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF049344)
+                            ),
+                            enabled = selectedPhone.isNotEmpty()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Phone,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Appeler",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+
+                    }
+
                 } else
                     Text(
                         text = stringResource(id = R.string.end_trial_text),

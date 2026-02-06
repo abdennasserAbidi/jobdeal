@@ -71,6 +71,7 @@ object GlobalEntries {
     var role = ""
     var criteriaModel = CriteriaModel()
     var isFromFilter = false
+    var isFromDemand = false
     var invitationModel = InvitationModel()
     var matchInvitation: () -> Unit = {}
     var isFromLogin = false

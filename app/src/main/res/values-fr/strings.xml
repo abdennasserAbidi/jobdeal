@@ -279,6 +279,10 @@
     <string name="language_text">langue</string>
     <string name="change_language_text">Changer</string>
 
+    <string name="choose_type_text">Choisir type de demande</string>
+    <string name="service_text">Services</string>
+    <string name="tools_text">Outils</string>
+
     <string name="profile_candidate_type_text">Profil Candidat</string>
 
     <string name="my_resume_text">Mon CV</string>

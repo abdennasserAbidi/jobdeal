@@ -459,6 +459,13 @@ ApiService {
         @Query("size") size: Int = 10
     ): GenericResponse<MarketDemandModel>
 
+    @GET("auth/getDemandFiltered")
+    suspend fun getDemandFiltered(
+        @Query("word") word: String,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<MarketDemandModel>
+
     @GET("auth/getDemand")
     suspend fun getDemand(
         @Query("idDemand") idDemand: Int

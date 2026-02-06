@@ -287,6 +287,10 @@
     <string name="language_text">language</string>
     <string name="change_language_text">Change</string>
 
+    <string name="choose_type_text">Choose demand type</string>
+    <string name="service_text">Services</string>
+    <string name="tools_text">Tools</string>
+
     <string name="profile_candidate_type_text">Candidate Profile</string>
     <string name="contact_information_text">Contact Information</string>
     <string name="contact_text">Contact</string>

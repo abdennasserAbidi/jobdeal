@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.isFromDemand
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
@@ -367,81 +368,110 @@ fun CompanyHeaderCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            if (!isFromDemand) {
+                Spacer(modifier = Modifier.height(16.dp))
 
-            val invitations = GlobalEntries.user.invitations ?: mutableListOf()
-            if (invitations.isNotEmpty()) {
-                val invitation = invitations.filter { it.idTo == candidateProfile.id }
-                if (invitation.isNotEmpty()) {
-                    val isFriend = invitation[0].status == InvitationStatus.HIRED.name
-                    val isInProcess = invitation[0].status == InvitationStatus.IN_PROCESS.name
-                    val isPending = invitation[0].status == InvitationStatus.ON_HOLD.name
-                    val isRejecting =
-                        invitation[0].status == InvitationStatus.REJECTED.name || invitation[0].status == InvitationStatus.NOT_INTERESTED.name
+                val invitations = GlobalEntries.user.invitations ?: mutableListOf()
+                if (invitations.isNotEmpty()) {
+                    val invitation = invitations.filter { it.idTo == candidateProfile.id }
+                    if (invitation.isNotEmpty()) {
+                        val isFriend = invitation[0].status == InvitationStatus.HIRED.name
+                        val isInProcess = invitation[0].status == InvitationStatus.IN_PROCESS.name
+                        val isPending = invitation[0].status == InvitationStatus.ON_HOLD.name
+                        val isRejecting =
+                            invitation[0].status == InvitationStatus.REJECTED.name || invitation[0].status == InvitationStatus.NOT_INTERESTED.name
 
-                    val whatsappGreen = colorResource(id = R.color.whatsapp)
-                    if (isFriend) {
+                        val whatsappGreen = colorResource(id = R.color.whatsapp)
+                        if (isFriend) {
+                            OutlinedButton(
+                                onClick = {
+                                    sendMessage(candidateProfile)
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 10.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                border = BorderStroke(1.dp, whatsappGreen)
+                            ) {
+                                Icon(
+                                    Icons.Default.Message,
+                                    contentDescription = "Contact",
+                                    tint = whatsappGreen,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(stringResource(id = R.string.contact_text), color = whatsappGreen)
+                            }
+                        } else if (isInProcess) {
+                            OutlinedButton(
+                                onClick = {
+                                    sendMessage(candidateProfile)
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 10.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                border = BorderStroke(1.dp, whatsappGreen)
+                            ) {
+                                Icon(
+                                    Icons.Default.Message,
+                                    contentDescription = "Contact",
+                                    tint = whatsappGreen,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(stringResource(id = R.string.contact_text), color = whatsappGreen)
+                            }
+
+                            Button(
+                                onClick = { onTerminateInvitation(invitation[0]) },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorResource(id = R.color.whatsapp),
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Icon(
+                                    Icons.Default.Send,
+                                    contentDescription = "",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(stringResource(id = R.string.terminate_text))
+                            }
+                        } else if (isPending) {
+                            OutlinedButton(
+                                onClick = {
+
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 10.dp),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Timer,
+                                    contentDescription = "timer",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(stringResource(id = R.string.pending_text))
+                            }
+
+                        } else if (isRejecting) {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 10.dp),
+                                color = Color.Red,
+                                text = stringResource(id = R.string.refuse_candidate_text)
+                            )
+                        }
+                    } else {
                         OutlinedButton(
                             onClick = {
-                                sendMessage(candidateProfile)
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 10.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            border = BorderStroke(1.dp, whatsappGreen)
-                        ) {
-                            Icon(
-                                Icons.Default.Message,
-                                contentDescription = "Contact",
-                                tint = whatsappGreen,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(stringResource(id = R.string.contact_text), color = whatsappGreen)
-                        }
-                    } else if (isInProcess) {
-                        OutlinedButton(
-                            onClick = {
-                                sendMessage(candidateProfile)
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 10.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            border = BorderStroke(1.dp, whatsappGreen)
-                        ) {
-                            Icon(
-                                Icons.Default.Message,
-                                contentDescription = "Contact",
-                                tint = whatsappGreen,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(stringResource(id = R.string.contact_text), color = whatsappGreen)
-                        }
-
-                        Button(
-                            onClick = { onTerminateInvitation(invitation[0]) },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(id = R.color.whatsapp),
-                                contentColor = Color.White
-                            )
-                        ) {
-                            Icon(
-                                Icons.Default.Send,
-                                contentDescription = "",
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(stringResource(id = R.string.terminate_text))
-                        }
-                    } else if (isPending) {
-                        OutlinedButton(
-                            onClick = {
-
+                                sendInvitation(candidateProfile)
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -449,22 +479,13 @@ fun CompanyHeaderCard(
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Icon(
-                                Icons.Default.Timer,
-                                contentDescription = "timer",
+                                Icons.Default.Send,
+                                contentDescription = "Send Invitation",
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(stringResource(id = R.string.pending_text))
+                            Text(stringResource(id = R.string.send_invitation_text))
                         }
-
-                    } else if (isRejecting) {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 10.dp),
-                            color = Color.Red,
-                            text = stringResource(id = R.string.refuse_candidate_text)
-                        )
                     }
                 } else {
                     OutlinedButton(
@@ -484,24 +505,6 @@ fun CompanyHeaderCard(
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(stringResource(id = R.string.send_invitation_text))
                     }
-                }
-            } else {
-                OutlinedButton(
-                    onClick = {
-                        sendInvitation(candidateProfile)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Send,
-                        contentDescription = "Send Invitation",
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(stringResource(id = R.string.send_invitation_text))
                 }
             }
         }

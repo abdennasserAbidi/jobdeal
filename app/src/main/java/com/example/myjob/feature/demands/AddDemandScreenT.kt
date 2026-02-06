@@ -296,7 +296,7 @@ fun AddDemandScreenT(
                     },
                     onSelectedBank = { item, _ ->
                         showActivitySector = false
-                        demandsViewModel.changePostType(item)
+                        //demandsViewModel.changePostType(item)
                         activitySector = item
                     },
                     title = stringResource(id = R.string.country_text)

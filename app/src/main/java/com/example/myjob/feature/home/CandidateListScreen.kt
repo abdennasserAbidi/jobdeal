@@ -478,6 +478,7 @@ fun CandidateListScreen(
                             candidate = candidate,
                             onClick = {
                                 GlobalEntries.userForCompany = user
+                                GlobalEntries.isFromDemand = false
                                 val route =
                                     if (user.role == "Candidat" || user.role == "Candidate") Screen.DetailScreen.route
                                     else Screen.DetailCompanyScreen.route

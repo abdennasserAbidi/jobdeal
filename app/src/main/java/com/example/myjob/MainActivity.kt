@@ -135,7 +135,6 @@ import kotlinx.coroutines.launch
 import java.net.URISyntaxException
 import javax.inject.Inject
 import androidx.core.net.toUri
-import com.example.myjob.feature.demands.AddDemandScreenTest
 import com.example.myjob.feature.demands.DemandMarketDetailScreen
 
 @AndroidEntryPoint
@@ -919,7 +918,10 @@ class MainActivity : ComponentActivity() {
                     composable(route = Screen.DemandMarketDetailScreen.route) {
                         isVisibleNav = false
                         DemandMarketDetailScreen(
-                            navController = navController
+                            navController = navController,
+                            makeCall = { phone ->
+                                makePhoneCall(context, phone)
+                            },
                         )
                     }
                 }

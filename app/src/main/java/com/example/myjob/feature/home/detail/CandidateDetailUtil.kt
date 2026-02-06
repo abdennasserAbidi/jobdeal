@@ -1,16 +1,48 @@
 package com.example.myjob.feature.home.detail
 
-import android.util.Log
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Message
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material.icons.filled.Work
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.isFromDemand
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.invitation.InvitationModel
@@ -63,18 +96,20 @@ fun CandidateDetailsScreen(
             )
         },
         bottomBar = {
-            BottomActionBar(
-                candidate = candidate,
-                onContactClick = {
-                    onContactClick(candidate)
-                },
-                onHireClick = {
-                    onHireClick(candidate)
-                },
-                onTerminateInvitation = {
-                    onTerminateInvitation(it)
-                }
-            )
+            if (!isFromDemand) {
+                BottomActionBar(
+                    candidate = candidate,
+                    onContactClick = {
+                        onContactClick(candidate)
+                    },
+                    onHireClick = {
+                        onHireClick(candidate)
+                    },
+                    onTerminateInvitation = {
+                        onTerminateInvitation(it)
+                    }
+                )
+            }
         },
         containerColor = Color(0xFFF3F4F6)
     ) { padding ->

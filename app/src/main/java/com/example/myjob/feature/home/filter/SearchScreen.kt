@@ -300,6 +300,7 @@ fun SearchScreen(
                                         userToDetail.id = userHistory.idUser
 
                                         GlobalEntries.userForCompany = userToDetail
+                                        GlobalEntries.isFromDemand = false
                                         navController.navigate(Screen.DetailScreen.route)
                                     }
                             ) {

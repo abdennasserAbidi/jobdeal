@@ -49,6 +49,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.isFromDemand
 import com.example.myjob.common.GlobalEntries.userForCompany
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
@@ -129,6 +130,7 @@ fun InvitationCompanyScreen(
                             userForCompany = User()
                             userForCompany.id = it.idTo
                             userForCompany.fullName = it.fullName
+                            isFromDemand = false
                             val route = if (it.roleReceiver == "Candidat" || it.roleReceiver == "Candidate") Screen.DetailScreen.route
                             else Screen.DetailCompanyScreen.route
                             navController.navigate(route)

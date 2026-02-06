@@ -1,6 +1,5 @@
 package com.example.myjob.feature.demands
 
-import android.annotation.SuppressLint
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,6 +12,7 @@ import com.example.myjob.domain.entities.demands.MarketDemandModel
 import com.example.myjob.domain.usecase.demand.CountDownTrialUseCase
 import com.example.myjob.domain.usecase.demand.GetAllDemandUseCase
 import com.example.myjob.domain.usecase.demand.GetDemandUseCase
+import com.example.myjob.domain.usecase.demand.GetFilteredDemandUseCase
 import com.example.myjob.domain.usecase.demand.SaveDemandUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.local.database.SharedPreference
@@ -35,6 +35,7 @@ class DemandsViewModel @Inject constructor(
     private val getAllDemandUseCase: GetAllDemandUseCase,
     private val saveDemandUseCase: SaveDemandUseCase,
     private val getDemandUseCase: GetDemandUseCase,
+    private val getFilteredDemandUseCase: GetFilteredDemandUseCase,
     private val countDownTrialUseCase: CountDownTrialUseCase
 ) : ViewModel() {
 
@@ -76,16 +77,6 @@ class DemandsViewModel @Inject constructor(
         }
     }
 
-    @SuppressLint("SimpleDateFormat")
-    fun changeDate() {
-        val sdf = SimpleDateFormat("dd/M/yyyy")
-        val currentDate = sdf.format(Date())
-        marketDemandModel.update {
-            it.date = currentDate
-            it
-        }
-    }
-
     fun changeUrgency(name: String) {
         marketDemandModel.update {
             it.urgency = name
@@ -107,9 +98,30 @@ class DemandsViewModel @Inject constructor(
         }
     }
 
-    fun changePostType(name: String) {
+    fun changePostType(name: ServiceCategory) {
         marketDemandModel.update {
             it.category = name
+            it
+        }
+    }
+
+    fun changeOtherCategory(name: String) {
+        marketDemandModel.update {
+            it.otherCategory = name
+            it
+        }
+    }
+
+    fun changeTool(name: ToolCategory) {
+        marketDemandModel.update {
+            it.tools = name
+            it
+        }
+    }
+
+    fun changeOtherTool(name: String) {
+        marketDemandModel.update {
+            it.otherTools = name
             it
         }
     }
@@ -190,6 +202,22 @@ class DemandsViewModel @Inject constructor(
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // FILTER
+    ///////////////////////////////////////////////////////////////////////////
+    fun filterDemands(query: String) {
+        if (query.isNotEmpty()) {
+            viewModelScope.launch {
+                getFilteredDemandUseCase.execute(query).collectLatest { res ->
+                    _demands.update {
+                        res.data ?: PagingData.empty()
+                    }
+                }
+            }
+
+        } else getDemands()
+    }
+
     fun getType(): JobType {
         val type = sharedPreference.getString("offerDemand", "")
         return if (type == "service") JobType.GET
@@ -203,5 +231,32 @@ class DemandsViewModel @Inject constructor(
 
     fun changeToJobDeal() {
         sharedPreference.putString("offerDemand", "")
+    }
+
+    fun convertDate(date: String): String {
+        return if (date.isNotEmpty()) {
+            val allDate = date.split(", ")
+            val completeMonth = allDate[1]
+            val year = allDate[2]
+            val day = completeMonth.split(" ")[0]
+            val month = completeMonth.split(" ")[1]
+            val correctMonth = when (month) {
+                "janvier" -> "jan"
+                "février" -> "fev"
+                "mars" -> "mars"
+                "avril" -> "avril"
+                "mai" -> "mai"
+                "juin" -> "juin"
+                "juillet" -> "juillet"
+                "août" -> "aout"
+                "septembre" -> "sep"
+                "octobre" -> "oct"
+                "novembre" -> "nov"
+                "décembre" -> "dec"
+                else -> ""
+            }
+
+            "$day $correctMonth $year"
+        } else ""
     }
 }

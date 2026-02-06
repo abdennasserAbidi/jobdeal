@@ -4,6 +4,7 @@ import android.view.View
 import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.demands.DemandStatus
 import com.example.myjob.feature.demands.ServiceCategory
+import com.example.myjob.feature.demands.ToolCategory
 import com.example.myjob.feature.demands.Urgency
 import kotlinx.serialization.Serializable
 import java.util.Date
@@ -18,11 +19,14 @@ data class MarketDemandModel(
     var countTrial: Int = 10,
     var description: String = "Creer une application pour connecter les entreprises avec les candidats facilement.",
     var title: String = "Dveloppeur Android",
-    var category: ServiceCategory = ServiceCategory.MENUISIER,
+    var category: ServiceCategory = ServiceCategory.IDLE,
+    var otherCategory: String = "",
+    var tools: ToolCategory? = ToolCategory.IDLE,
+    var otherTools: String = "",
     var location: String = "",
     var budget: String = "",
-    var urgency: String = Urgency.URGENT.name,
-    var status: String = DemandStatus.OUVERT.name,
+    var urgency: String = Urgency.URGENT.displayName,
+    var status: String = DemandStatus.OUVERT.displayName,
     var deadline: String = "",
     var images: List<String> = emptyList()
 )

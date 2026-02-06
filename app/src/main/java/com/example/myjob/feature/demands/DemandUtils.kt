@@ -7,7 +7,6 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,34 +15,24 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.HomeRepairService
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
@@ -51,7 +40,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -61,11 +49,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterEnd
+import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -74,102 +65,94 @@ import androidx.compose.ui.unit.sp
 import com.example.myjob.R
 import com.example.myjob.domain.entities.demands.MarketDemandModel
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
-import java.util.UUID
 
-// Data Models
+@Composable
+fun TypeDemandSection(
+    listDemand: List<String>,
+    interactionSource: MutableInteractionSource,
+    onClick: (Int) -> Unit = {}
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.HomeRepairService,
+                    contentDescription = null,
+                    tint = Color(0xFF25D366),
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = stringResource(id = R.string.choose_type_text),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF1F2937)
+                )
+            }
 
-val entity = listOf(
-    ServiceDemand(
-        id = "1",
-        title = "Installation d'une porte en bois massif",
-        category = ServiceCategory.MENUISIER,
-        description = "Je cherche un menuisier professionnel pour installer une porte en bois massif dans ma maison. Dimensions: 2m x 90cm. Le bois est déjà acheté, besoin uniquement de l'installation.",
-        location = "Tunis, Carthage",
-        budget = "300 DT",
-        urgency = Urgency.MOYEN,
-        status = DemandStatus.OUVERT,
-        createdBy = "Karim M.",
-        createdDate = Date(),
-        deadline = "15/02/2026",
-        phone = "+216 20 123 456"
-    ),
-    ServiceDemand(
-        id = "2",
-        title = "Réparation fuite d'eau cuisine",
-        category = ServiceCategory.PLOMBIER,
-        description = "Fuite d'eau importante sous l'évier de la cuisine. Besoin d'intervention rapide. L'eau coule constamment et crée des dégâts.",
-        location = "Sfax, Centre-ville",
-        budget = "150 DT",
-        urgency = Urgency.URGENT,
-        status = DemandStatus.EN_COURS,
-        createdBy = "Amira B.",
-        createdDate = Date(),
-        deadline = "Immédiat",
-        phone = "+216 21 234 567"
-    ),
-    ServiceDemand(
-        id = "3",
-        title = "Installation électrique complète appartement",
-        category = ServiceCategory.ELECTRICIEN,
-        description = "Nouvel appartement nécessitant installation électrique complète: prises, interrupteurs, luminaires, tableau électrique. Surface 120m².",
-        location = "Sousse, Khezama",
-        budget = "2500 DT",
-        urgency = Urgency.FAIBLE,
-        status = DemandStatus.OUVERT,
-        createdBy = "Mohamed L.",
-        createdDate = Date(),
-        deadline = "01/03/2026",
-        phone = "+216 22 345 678"
-    ),
-    ServiceDemand(
-        id = "4",
-        title = "Peinture salon et chambres",
-        category = ServiceCategory.PEINTRE,
-        description = "Besoin de peindre un salon (25m²) et deux chambres (15m² chacune). Préparation des murs incluse. Peinture de qualité souhaitée.",
-        location = "Ariana, Raoued",
-        budget = "800 DT",
-        urgency = Urgency.MOYEN,
-        status = DemandStatus.OUVERT,
-        createdBy = "Sarah K.",
-        createdDate = Date(),
-        deadline = "20/02/2026",
-        phone = "+216 23 456 789"
-    ),
-    ServiceDemand(
-        id = "5",
-        title = "Entretien jardin mensuel",
-        category = ServiceCategory.JARDINAGE,
-        description = "Recherche jardinier pour entretien mensuel d'un jardin de 200m². Tonte, taille des haies, arrosage, désherbage.",
-        location = "La Marsa",
-        budget = "200 DT/mois",
-        urgency = Urgency.FAIBLE,
-        status = DemandStatus.TERMINE,
-        createdBy = "Ahmed T.",
-        createdDate = Date(),
-        deadline = "Flexible",
-        phone = "+216 24 567 890"
-    )
-)
+            Spacer(modifier = Modifier.height(16.dp))
 
-data class ServiceDemand(
-    val id: String,
-    val title: String,
-    val category: ServiceCategory,
-    val description: String,
-    val location: String,
-    val budget: String,
-    val urgency: Urgency,
-    val status: DemandStatus,
-    val createdBy: String,
-    val createdDate: Date,
-    val deadline: String,
-    val phone: String,
-    val images: List<String> = emptyList()
-)
+            var selected by remember { mutableStateOf(0) }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                listDemand.forEachIndexed { index, lang ->
+                    val isSelected = index == selected
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                if (isSelected)
+                                    colorResource(id = R.color.whatsapp)
+                                else
+                                    Color(0xFFF3F4F6)
+                            )
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                selected = index
+                                onClick(index)
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = lang,
+                            fontSize = 14.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected)
+                                Color(0xFFF3F4F6)
+                            else
+                                Color(0xFF6B7280)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 enum class ServiceCategory(val displayName: String, val icon: String) {
     // Construction & Rénovation
+    IDLE("", ""),
     MENUISIER("Menuisier", "🔨"),
     PLOMBIER("Plombier", "🔧"),
     ELECTRICIEN("Électricien", "💡"),
@@ -246,6 +229,8 @@ enum class ServiceCategory(val displayName: String, val icon: String) {
 
 enum class ToolCategory(val displayName: String, val icon: String) {
     // Outils électriques
+    IDLE("", ""),
+
     PERCEUSE("Perceuse", "🔩"),
     MEULEUSE("Meuleuse", "⚙️"),
     SCIE_CIRCULAIRE("Scie Circulaire", "🪚"),
@@ -313,250 +298,6 @@ enum class DemandStatus(val displayName: String, val color: Color) {
     EN_COURS("En cours", Color(0xFFF59E0B)),
     TERMINE("Terminé", Color(0xFF10B981)),
     ANNULE("Annulé", Color(0xFF6B7280))
-}
-
-// ============================================
-// 1. CREATE DEMAND FORM
-// ============================================
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CreateDemandScreen(
-    onDemandCreated: (ServiceDemand) -> Unit = {},
-    onBackClick: () -> Unit = {}
-) {
-    var title by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf<ServiceCategory?>(null) }
-    var description by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("") }
-    var budget by remember { mutableStateOf("") }
-    var urgency by remember { mutableStateOf(Urgency.MOYEN) }
-    var deadline by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var showCategoryDialog by remember { mutableStateOf(false) }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Nouvelle demande de service") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Filled.ArrowBack, "Retour", tint = Color(0xFF049344))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
-            )
-        },
-        containerColor = Color(0xFFF3F4F6)
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Category Selection Card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Catégorie de service *",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1F2937)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF9FAFB))
-                            .clickable { showCategoryDialog = true }
-                            .padding(16.dp)
-                    ) {
-                        if (selectedCategory != null) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(text = selectedCategory!!.icon, fontSize = 24.sp)
-                                Text(
-                                    text = selectedCategory!!.displayName,
-                                    color = Color(0xFF1F2937),
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                        } else {
-                            Text(
-                                text = "Sélectionner une catégorie",
-                                color = Color(0xFF9CA3AF),
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Title Field
-            FormTextField(
-                value = title,
-                onValueChange = { title = it },
-                label = "Titre de la demande *",
-                placeholder = "Ex: Installation d'une porte en bois"
-            )
-
-            // Description Field
-            FormTextField(
-                value = description,
-                onValueChange = { description = it },
-                label = "Description détaillée *",
-                placeholder = "Décrivez votre besoin en détail...",
-                minLines = 4,
-                maxLines = 6
-            )
-
-            // Location Field
-            FormTextField(
-                value = location,
-                onValueChange = { location = it },
-                label = "Localisation *",
-                placeholder = "Ville, quartier",
-                leadingIcon = Icons.Filled.LocationOn
-            )
-
-            // Budget Field
-            FormTextField(
-                value = budget,
-                onValueChange = { budget = it },
-                label = "Budget estimé",
-                placeholder = "Ex: 500 DT",
-                leadingIcon = Icons.Filled.AttachMoney,
-                keyboardType = KeyboardType.Number
-            )
-
-            // Urgency Selection
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Urgence",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1F2937)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Urgency.values().forEach { urg ->
-                            UrgencyChip(
-                                urgency = urg,
-                                selected = urgency == urg,
-                                onClick = { urgency = urg },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Deadline Field
-            FormTextField(
-                value = deadline,
-                onValueChange = { deadline = it },
-                label = "Date limite souhaitée",
-                placeholder = "JJ/MM/AAAA",
-                leadingIcon = Icons.Filled.CalendarToday
-            )
-
-            // Phone Field
-            FormTextField(
-                value = phone,
-                onValueChange = { phone = it },
-                label = "Numéro de téléphone *",
-                placeholder = "+216 XX XXX XXX",
-                leadingIcon = Icons.Filled.Phone,
-                keyboardType = KeyboardType.Phone
-            )
-
-            // Submit Button
-            Button(
-                onClick = {
-                    if (selectedCategory != null && title.isNotEmpty() &&
-                        description.isNotEmpty() && location.isNotEmpty() && phone.isNotEmpty()) {
-                        val demand = ServiceDemand(
-                            id = UUID.randomUUID().toString(),
-                            title = title,
-                            category = selectedCategory!!,
-                            description = description,
-                            location = location,
-                            budget = budget.ifEmpty { "À négocier" },
-                            urgency = urgency,
-                            status = DemandStatus.OUVERT,
-                            createdBy = "Utilisateur",
-                            createdDate = Date(),
-                            deadline = deadline.ifEmpty { "Flexible" },
-                            phone = phone
-                        )
-                        onDemandCreated(demand)
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF049344)),
-                enabled = selectedCategory != null && title.isNotEmpty() &&
-                        description.isNotEmpty() && location.isNotEmpty() && phone.isNotEmpty()
-            ) {
-                Icon(Icons.Filled.CheckCircle, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Publier la demande", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-    }
-
-    // Category Selection Dialog
-    if (showCategoryDialog) {
-        AlertDialog(
-            onDismissRequest = { showCategoryDialog = false },
-            title = { Text("Choisir une catégorie") },
-            text = {
-                LazyColumn {
-                    items(ServiceCategory.values()) { category ->
-                        CategoryDialogItem(
-                            category = category,
-                            onClick = {
-                                selectedCategory = category
-                                showCategoryDialog = false
-                            }
-                        )
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { showCategoryDialog = false }) {
-                    Text("Annuler", color = Color(0xFF049344))
-                }
-            }
-        )
-    }
 }
 
 @Composable
@@ -675,292 +416,195 @@ fun CategoryDialogItem(category: ServiceCategory, onClick: () -> Unit) {
     }
 }
 
-// ============================================
-// 2. DEMANDS LIST WITH SEARCH
-// ============================================
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview
 @Composable
-fun DemandsListScreen(
-    demands: List<ServiceDemand> = entity,
-    onDemandClick: (ServiceDemand) -> Unit = {},
-    onCreateClick: () -> Unit = {}
+fun ToolDialogItem(category: ToolCategory, onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) {
+                onClick()
+            }
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(text = category.icon, fontSize = 28.sp)
+        Text(
+            text = category.displayName,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color(0xFF1F2937)
+        )
+    }
+}
+
+@Composable
+fun DemandCard(
+    demand: MarketDemandModel,
+    isNotMe: Boolean,
+    showContacts: () -> Unit,
+    onClick: () -> Unit
 ) {
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf<ServiceCategory?>(null) }
-
-    val filteredDemands = demands.filter { demand ->
-        val matchesSearch = demand.title.contains(searchQuery, ignoreCase = true) ||
-                demand.description.contains(searchQuery, ignoreCase = true) ||
-                demand.location.contains(searchQuery, ignoreCase = true)
-        val matchesCategory = selectedCategory == null || demand.category == selectedCategory
-        matchesSearch && matchesCategory
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Demandes de services") },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onCreateClick,
-                containerColor = Color(0xFF049344),
-                contentColor = Color.White
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
             ) {
-                Icon(Icons.Filled.Add, "Nouvelle demande")
-            }
-        },
-        containerColor = Color(0xFFF3F4F6)
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            // Search Bar
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                onClick()
+            },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Header Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
             ) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    placeholder = { Text("Rechercher une demande...", color = Color(0xFF9CA3AF)) },
-                    leadingIcon = { Icon(Icons.Filled.Search, null, tint = Color(0xFF049344)) },
-                    trailingIcon = {
-                        if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { searchQuery = "" }) {
-                                Icon(Icons.Filled.Close, null, tint = Color(0xFF6B7280))
-                            }
+                Row(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF049344).copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+
+                        val icon = if (demand.otherCategory.isNotEmpty()) "⚙️"
+                        else if (demand.category.icon.isNotEmpty()) demand.category.icon
+                        else if (demand.otherTools.isNotEmpty()) "🔧"
+                        else demand.tools?.icon
+
+                        icon?.let { ic ->
+                            Text(text = ic, fontSize = 24.sp)
                         }
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF049344),
-                        unfocusedBorderColor = Color.Transparent
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                )
+                    }
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = demand.title,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1F2937),
+                            maxLines = 1
+                        )
+
+                        val name =
+                            demand.otherCategory.ifEmpty { demand.category.displayName.ifEmpty { demand.otherTools.ifEmpty { demand.tools?.displayName } } }
+
+                        Text(
+                            text = name ?: "",
+                            fontSize = 13.sp,
+                            color = Color(0xFF049344),
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+
+                StatusBadge(status = demand.status)
             }
 
-            // Category Filter
-            LazyRow(
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Description
+            Text(
+                text = demand.description,
+                fontSize = 14.sp,
+                color = Color(0xFF4B5563),
+                maxLines = 2,
+                lineHeight = 20.sp
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Info Row
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                item {
-                    FilterChip(
-                        selected = selectedCategory == null,
-                        onClick = { selectedCategory = null },
-                        label = { Text("Tous") },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFF049344),
-                            selectedLabelColor = Color.White
+                InfoChip(icon = Icons.Filled.LocationOn, text = demand.location)
+                if (demand.category.displayName != "")
+                    InfoChip(icon = Icons.Filled.AttachMoney, text = demand.budget)
+                UrgencyBadge(urgency = demand.urgency)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            if (isNotMe) {
+                // Owner Info
+                val role = demand.userSender?.role
+                val username =
+                    if (role == "Candidate" || role == "Candidat") demand.userSender?.fullName
+                        ?: "Unkown"
+                    else demand.userSender?.companyName ?: "Unkown"
+
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.align(CenterStart),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF049344)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = username.first().toString(),
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Text(
+                            text = username,
+                            fontSize = 12.sp,
+                            color = Color(0xFF6B7280)
                         )
-                    )
-                }
-                items(ServiceCategory.entries.size) { index ->
-                    val category = ServiceCategory.entries[index]
-                    FilterChip(
-                        selected = selectedCategory == category,
-                        onClick = { selectedCategory = if (selectedCategory == category) null else category },
-                        label = {
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Text(category.icon)
-                                Text(category.displayName)
-                            }
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            showContacts()
                         },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFF049344),
-                            selectedLabelColor = Color.White
+                        modifier = Modifier.align(CenterEnd),
+                        shape = RoundedCornerShape(12.dp),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            width = 2.dp,
+                            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFF049344))
+                        ),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF049344)
                         )
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Demands List
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(filteredDemands) { demand ->
-                    DemandCard(demand = demand, onClick = { onDemandClick(demand) })
-                }
-
-                if (filteredDemands.isEmpty()) {
-                    item {
-                        EmptyState()
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun DemandCard(demand: MarketDemandModel, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Header Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Row(
-                    modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF049344).copy(alpha = 0.1f)),
-                        contentAlignment = Alignment.Center
                     ) {
-                        Text(text = demand.category.icon, fontSize = 24.sp)
-                    }
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = demand.title,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1F2937),
-                            maxLines = 1
+                        Icon(
+                            imageVector = Icons.Filled.Message,
+                            contentDescription = null,
+                            modifier = Modifier.size(13.dp)
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = demand.category.displayName,
-                            fontSize = 13.sp,
-                            color = Color(0xFF049344),
-                            fontWeight = FontWeight.Medium
+                            text = "Contacter",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
                 }
-
-                StatusBadge(status = demand.status)
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Description
-            Text(
-                text = demand.description,
-                fontSize = 14.sp,
-                color = Color(0xFF4B5563),
-                maxLines = 2,
-                lineHeight = 20.sp
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Info Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                InfoChip(icon = Icons.Filled.LocationOn, text = demand.location)
-                InfoChip(icon = Icons.Filled.AttachMoney, text = demand.budget)
-                UrgencyBadge(urgency = demand.urgency)
-            }
-        }
-    }
-}
-
-@Composable
-fun DemandCardModel(demand: MarketDemandModel, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Header Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Row(
-                    modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF049344).copy(alpha = 0.1f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = demand.category.icon, fontSize = 24.sp)
-                    }
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = demand.title,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1F2937),
-                            maxLines = 1
-                        )
-                        Text(
-                            text = demand.category.displayName,
-                            fontSize = 13.sp,
-                            color = Color(0xFF049344),
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-
-                StatusBadge(status = demand.status)
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Description
-            Text(
-                text = demand.description,
-                fontSize = 14.sp,
-                color = Color(0xFF4B5563),
-                maxLines = 2,
-                lineHeight = 20.sp
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Info Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                InfoChip(icon = Icons.Filled.LocationOn, text = demand.location)
-                InfoChip(icon = Icons.Filled.AttachMoney, text = demand.budget)
-                UrgencyBadge(urgency = demand.urgency)
             }
         }
     }
@@ -1048,8 +692,9 @@ fun EmptyState() {
 // ============================================
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Preview
 fun DemandDetailScreen(
-    demand: MarketDemandModel,
+    demand: MarketDemandModel = MarketDemandModel(),
     onBackClick: () -> Unit = {},
     onContactClick: () -> Unit = {},
     onApplyClick: () -> Unit = {}
@@ -1068,8 +713,7 @@ fun DemandDetailScreen(
         },
         bottomBar = {
             BottomActionBar(
-                onContactClick = onContactClick,
-                onApplyClick = onApplyClick
+                onContactClick = onContactClick
             )
         },
         containerColor = Color(0xFFF3F4F6)
@@ -1198,8 +842,9 @@ fun DemandDetailScreen(
             }
 
             val role = demand.userSender?.role ?: ""
-            val createdBy = if (role == "candidate" || role == "candidat") demand.userSender?.fullName ?: ""
-            else demand.userSender?.companyName ?: ""
+            val createdBy =
+                if (role == "candidate" || role == "candidat") demand.userSender?.fullName ?: ""
+                else demand.userSender?.companyName ?: ""
 
             // Contact Info Section
             DetailSection(title = "Contact") {
@@ -1283,6 +928,7 @@ fun DetailSection(title: String, content: @Composable () -> Unit) {
         }
     }
 }
+
 @Composable
 fun ContactRow(icon: ImageVector, label: String, value: String) {
     Row(
@@ -1302,10 +948,10 @@ fun ContactRow(icon: ImageVector, label: String, value: String) {
         }
     }
 }
+
 @Composable
 fun BottomActionBar(
-    onContactClick: () -> Unit,
-    onApplyClick: () -> Unit
+    onContactClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),

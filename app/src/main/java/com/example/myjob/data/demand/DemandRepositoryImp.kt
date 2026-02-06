@@ -61,6 +61,33 @@ class DemandRepositoryImp @Inject constructor(
         }
     }
 
+    override suspend fun getDemandFiltered(word: String): Flow<Resource<PagingData<MarketDemandModel>>> = flow {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            pagingSourceFactory = {
+                GenericSource { currentPage ->
+                    val educations =
+                        remoteDataSource.getDemandFiltered(
+                            word = word,
+                            pageNumber = currentPage
+                        )
+
+                    val json = Gson().toJson(educations.content)
+                    sharedPreference.putString("jsonDemand", json)
+
+                    educations
+                }
+            }
+        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+        emitAll(
+            pager.map { pagingData ->
+                Resource(ResourceState.SUCCESS, pagingData, null)
+            }
+        )
+    }.catch { ex ->
+        emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
 
     override suspend fun getAllDemands(): Flow<Resource<PagingData<MarketDemandModel>>> = flow {
         val pager = Pager(
