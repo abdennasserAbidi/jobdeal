@@ -12,7 +12,6 @@ import com.example.myjob.base.messages.WebsocketService
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.usecase.notification.GetDemandNotificationsUseCase
-import com.example.myjob.domain.usecase.notification.GetNotificationsUseCase
 import com.example.myjob.domain.usecase.notification.RemoveNotificationUseCase
 import com.example.myjob.domain.usecase.notification.SeenNotificationUseCase
 import com.example.myjob.local.database.SharedPreference
@@ -29,9 +28,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class NotificationViewModel @Inject constructor(
+class DemandNotificationViewModel @Inject constructor(
     private val sharedPreference: SharedPreference,
-    private val getNotificationsUseCase: GetNotificationsUseCase,
+    private val getDemandNotificationsUseCase: GetDemandNotificationsUseCase,
     private val seenNotificationUseCase: SeenNotificationUseCase,
     private val removeNotificationUseCase: RemoveNotificationUseCase
 ) : ViewModel() {
@@ -91,12 +90,11 @@ class NotificationViewModel @Inject constructor(
 
     private val _notifications: MutableStateFlow<PagingData<NotificationModel>> =
         MutableStateFlow(value = PagingData.empty())
-    //val notifications: MutableStateFlow<PagingData<NotificationModel>> get() = _notifications
 
     private fun getNotifications() {
         val idConnected = sharedPreference.getInt("idUser", -1)
         viewModelScope.launch {
-            getNotificationsUseCase.execute(idConnected).collect { res ->
+            getDemandNotificationsUseCase.execute(idConnected).collect { res ->
                 _notifications.update {
                     res.data ?: PagingData.empty()
                 }
@@ -131,7 +129,7 @@ class NotificationViewModel @Inject constructor(
     val _newNotifications: StateFlow<PagingData<NotificationModel>> = merge(
         _notifications,
         StompNotificationService.messages.map {
-            if (it.idDemand == -1)
+            if (it.idDemand != -1)
                 PagingData.from(listOf(it))
             else PagingData.from(listOf(NotificationModel()))
         }

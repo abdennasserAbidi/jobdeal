@@ -38,6 +38,18 @@ class DemandRepositoryImp @Inject constructor(
         }
     }
 
+    override suspend fun deleteDemand(idDemand: Int): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.deleteDemand(idDemand)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
     override suspend fun countDownTrial(idDemand: Int): Flow<Resource<UserResponse>> = flow {
         try {
             // Get data from RemoteDataSource

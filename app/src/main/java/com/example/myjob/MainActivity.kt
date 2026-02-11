@@ -136,6 +136,7 @@ import java.net.URISyntaxException
 import javax.inject.Inject
 import androidx.core.net.toUri
 import com.example.myjob.feature.demands.DemandMarketDetailScreen
+import com.example.myjob.feature.notification.DemandNotificationScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -862,7 +863,8 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = false
                         //SearchScreen(navController)
                         //CandidateCompleteProfileApp()
-                        app.listCompanies.add(stringResource(id = R.string.other_text))
+                        if (!app.listCompanies.contains(stringResource(id = R.string.other_text)))
+                            app.listCompanies.add(stringResource(id = R.string.other_text))
                         listCompany = app.listCompanies.distinctBy { it }.toMutableList()
 
                         CandidateProfileFormScreenTest(
@@ -905,6 +907,11 @@ class MainActivity : ComponentActivity() {
                                 selectedTabIndex = 0
                             }
                         )
+                    }
+
+                    composable(route = Screen.NotificationDemandScreen.route) {
+                        isVisibleNav = false
+                        DemandNotificationScreen(navController)
                     }
 
                     composable(route = Screen.FormMarketScreen.route) {

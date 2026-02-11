@@ -4,23 +4,33 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.filter
+import com.example.myjob.base.messages.StompChatService
+import com.example.myjob.base.messages.StompInvitationService
+import com.example.myjob.base.messages.StompNotificationService
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.JobType
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.demands.MarketDemandModel
 import com.example.myjob.domain.usecase.demand.CountDownTrialUseCase
+import com.example.myjob.domain.usecase.demand.DeleteDemandUseCase
 import com.example.myjob.domain.usecase.demand.GetAllDemandUseCase
 import com.example.myjob.domain.usecase.demand.GetDemandUseCase
 import com.example.myjob.domain.usecase.demand.GetFilteredDemandUseCase
 import com.example.myjob.domain.usecase.demand.SaveDemandUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
+import com.example.myjob.domain.usecase.notification.SeenNotificationUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -33,11 +43,50 @@ class DemandsViewModel @Inject constructor(
     private val sharedPreference: SharedPreference,
     private val getUserUseCase: GetUserUseCase,
     private val getAllDemandUseCase: GetAllDemandUseCase,
+    private val seenNotificationUseCase: SeenNotificationUseCase,
     private val saveDemandUseCase: SaveDemandUseCase,
     private val getDemandUseCase: GetDemandUseCase,
     private val getFilteredDemandUseCase: GetFilteredDemandUseCase,
-    private val countDownTrialUseCase: CountDownTrialUseCase
+    private val countDownTrialUseCase: CountDownTrialUseCase,
+    private val deleteDemandUseCase: DeleteDemandUseCase
 ) : ViewModel() {
+
+    init {
+        connect()
+        getNotificationCount()
+    }
+
+    fun connect() {
+        val id = sharedPreference.getInt("idUser", 0)
+        StompInvitationService.connect("$id")
+        StompChatService.connect("$id")
+    }
+    private val _notificationCount = MutableStateFlow(0)
+    val notificationCount: MutableStateFlow<Int> get() = _notificationCount
+
+    fun getNotificationCount() {
+        viewModelScope.launch {
+            StompNotificationService.messagesDemand.collect {
+                var count = _notificationCount.value
+                count += 1
+                _notificationCount.update { count }
+            }
+        }
+    }
+
+    val seenNotification = MutableStateFlow("")
+
+    fun seenNotification(item: Int) {
+        viewModelScope.launch {
+            seenNotificationUseCase.execute(item).collect { res ->
+                if (res.status == ResourceState.SUCCESS) {
+                    seenNotification.update {
+                        res.data?.message ?: ""
+                    }
+                }
+            }
+        }
+    }
 
     val userSender = MutableStateFlow(User())
 
@@ -157,7 +206,6 @@ class DemandsViewModel @Inject constructor(
         marketDemandModel.update { marketDemandModels }
 
         viewModelScope.launch {
-            Log.i("jrzghrzjgrrlkgnz", "saveDemand: ${marketDemandModel.value}")
             saveDemandUseCase.execute(marketDemandModel.value)
                 .collectLatest { res ->
                     if (res.status == ResourceState.SUCCESS) {
@@ -189,7 +237,6 @@ class DemandsViewModel @Inject constructor(
     ///////////////////////////////////////////////////////////////////////////
     // LIST DEMANDS
     ///////////////////////////////////////////////////////////////////////////
-
     private val _demands = MutableStateFlow(PagingData.empty<MarketDemandModel>())
     val demands: StateFlow<PagingData<MarketDemandModel>> get() = _demands.asStateFlow()
 
@@ -203,9 +250,38 @@ class DemandsViewModel @Inject constructor(
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // FILTER
+    // DELETE
+    ///////////////////////////////////////////////////////////////////////////
+    val deleteDemandState = MutableStateFlow("")
+    private val _localItemRemoves = MutableStateFlow(-1)
+
+    fun deleteDemand(item: Int) {
+        viewModelScope.launch {
+            deleteDemandUseCase.execute(item).collect { res ->
+                if (res.status == ResourceState.SUCCESS) {
+                    deleteDemandState.update {
+                        res.data?.message ?: ""
+                    }
+
+                    _localItemRemoves.update { item }
+
+                    _demands.combine(_localItemRemoves) { pagingData, updates ->
+                        pagingData.filter {
+                            it.id != updates
+                        }
+                    }.collect { data ->
+                        _demands.update { data }
+                    }
+                }
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // SEARCH
     ///////////////////////////////////////////////////////////////////////////
     fun filterDemands(query: String) {
+        Log.i("gtejgkltegnte", "filterDemands: $query")
         if (query.isNotEmpty()) {
             viewModelScope.launch {
                 getFilteredDemandUseCase.execute(query).collectLatest { res ->
@@ -216,6 +292,15 @@ class DemandsViewModel @Inject constructor(
             }
 
         } else getDemands()
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // FILTER
+    ///////////////////////////////////////////////////////////////////////////
+    fun searchDemands(query: List<String>) {
+        query.map {
+            filterDemands(it)
+        }
     }
 
     fun getType(): JobType {

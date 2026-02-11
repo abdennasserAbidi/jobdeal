@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface NotificationRepository {
     suspend fun getCompanyNotifications(id: Int): Flow<Resource<PagingData<NotificationModel>>>
+    suspend fun getDemandNotifications(id: Int): Flow<Resource<PagingData<NotificationModel>>>
     suspend fun seenNotification(id: Int): Flow<Resource<UserResponse>>
     suspend fun removeNotification(id: Int): Flow<Resource<UserResponse>>
     suspend fun updateToken(id: Int, token: String): Flow<Resource<UserResponse>>

@@ -14,6 +14,8 @@ class DemandsDataSourceImp @Inject constructor(
         marketDemandModel: MarketDemandModel
     ): UserResponse = apiService.saveDemand(marketDemandModel)
 
+    override suspend fun deleteDemand(idDemand: Int):UserResponse = apiService.deleteDemand(idDemand)
+
     override suspend fun countDownTrial(idDemand: Int): UserResponse =
         apiService.countDownTrial(idDemand)
 

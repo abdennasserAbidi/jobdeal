@@ -1,5 +1,7 @@
 package com.example.myjob.feature.demands
 
+import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -8,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,14 +18,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -43,10 +46,11 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -54,8 +58,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -68,7 +74,9 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.ErrorMessage
+import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.idDemand
+import com.example.myjob.common.GlobalEntries.marketDemand
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
 import com.example.myjob.common.rememberLifecycleEvent
@@ -88,12 +96,68 @@ fun MarketDemandScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<ServiceCategory?>(null) }
+    var filterType by remember { mutableStateOf(false) }
+    var selectedTypeCategory by remember { mutableStateOf("Services") }
+    var selectedTool by remember { mutableStateOf<ToolCategory?>(null) }
+
+    var listFilter by remember {
+        mutableStateOf(
+            mutableListOf<String>()
+        )
+    }
+
+    var listSelected by remember {
+        mutableStateOf(List(ServiceCategory.entries.size) { false })
+    }
+
+
+    var listFilterTools by remember {
+        mutableStateOf(
+            mutableListOf<String>()
+        )
+    }
+
+    var listSelectedTools by remember {
+        mutableStateOf(List(ToolCategory.entries.size) { false })
+    }
+
+    LaunchedEffect(listFilter) {
+        Log.i("gtejgkltegnte", "filterDemands: $listFilter")
+
+        if (listFilter.isNotEmpty())
+            demandsViewModel.searchDemands(listFilter)
+        else demandsViewModel.getDemands()
+    }
+
+    LaunchedEffect(listFilterTools) {
+        if (listFilterTools.isNotEmpty())
+            demandsViewModel.searchDemands(listFilterTools)
+        else demandsViewModel.getDemands()
+    }
+
+    val service = stringResource(R.string.service_text)
+    val tools = stringResource(R.string.tools_text)
+
+    val demandText = stringResource(id = R.string.demand_text)
+    val normalText = stringResource(id = R.string.normal_text)
+    val logoutText = stringResource(id = R.string.logout_text)
+
+    val lists by remember {
+        mutableStateOf(
+            mutableListOf(
+                service,
+                tools
+            )
+        )
+    }
+
     var selectedItem by remember { mutableStateOf(MarketDemandModel()) }
     val interactionSource = remember { MutableInteractionSource() }
     var showSearchSheet by remember { mutableStateOf(false) }
 
     var showTypeSheet by remember { mutableStateOf(false) }
     var showContact by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
     var selectedPhone by remember { mutableStateOf("") }
     var selectedSearch by remember { mutableStateOf(PostType.ALL) }
     var selectedType by remember { mutableStateOf(JobType.NORMAL) }
@@ -101,6 +165,7 @@ fun MarketDemandScreen(
     val badgeCountService by remember { mutableIntStateOf(1) }
     var isUpdating by remember { mutableStateOf(false) }
 
+    val notificationCount by demandsViewModel.notificationCount.collectAsState()
     val demands = demandsViewModel.demands.collectAsLazyPagingItems()
 
     val lifecycleEvent = rememberLifecycleEvent()
@@ -113,10 +178,121 @@ fun MarketDemandScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Demandes de services") },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = colorResource(id = R.color.whatsapp)
+                    )
+                    .padding(horizontal = 20.dp, vertical = 24.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Services",
+                        fontSize = 24.sp,
+                        color = White,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                showTypeSheet = true
+                            }
+                            .clip(RoundedCornerShape(30.dp))
+                            .background(White.copy(alpha = 0.2f))
+                    ) {
+
+                        Spacer(
+                            Modifier
+                                .align(Alignment.TopCenter)
+                                .height(20.dp)
+                                .fillMaxWidth()
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .padding(start = 10.dp)
+                                .align(Alignment.CenterStart)
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    navController.navigate(Screen.NotificationDemandScreen.route)
+                                }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "Notifications",
+                                tint = White,
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .align(Alignment.CenterEnd)
+                            )
+                        }
+
+                        if (notificationCount > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(top = 5.dp, start = 5.dp)
+                                    .align(Alignment.TopStart)
+                                    .size(15.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFEF4444)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (notificationCount > 9) "9+" else notificationCount.toString(),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = White
+                                )
+                            }
+                        }
+
+                        Text(
+                            text = when (selectedType) {
+                                JobType.NORMAL -> normalText
+                                JobType.GET -> demandText
+                                else -> logoutText
+                            },
+                            color = White,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                        )
+
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "ArrowDropDown",
+                            tint = White,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .padding(end = 10.dp)
+                                .align(Alignment.CenterEnd)
+                        )
+
+                        Spacer(
+                            Modifier
+                                .align(Alignment.BottomCenter)
+                                .height(20.dp)
+                                .fillMaxWidth()
+                        )
+                    }
+
+
+                }
+            }
+
+
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -124,7 +300,7 @@ fun MarketDemandScreen(
                     navController.navigate(Screen.FormMarketScreen.route)
                 },
                 containerColor = Color(0xFF049344),
-                contentColor = Color.White
+                contentColor = White
             ) {
                 Icon(Icons.Filled.Add, "Nouvelle demande")
             }
@@ -171,41 +347,108 @@ fun MarketDemandScreen(
                 )
             }
 
-            // Category Filter
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 16.dp),
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                item {
-                    FilterChip(
-                        selected = selectedCategory == null,
-                        onClick = { selectedCategory = null },
-                        label = { Text("Tous") },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFF049344),
-                            selectedLabelColor = Color.White
-                        )
+                FilterChip(
+                    selected = true,
+                    onClick = { filterType = true },
+                    label = { Text(selectedTypeCategory) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFF049344),
+                        selectedLabelColor = White
                     )
-                }
-                items(ServiceCategory.entries.size) { index ->
-                    val category = ServiceCategory.entries[index]
-                    FilterChip(
-                        selected = selectedCategory == category,
-                        onClick = {
-                            selectedCategory = if (selectedCategory == category) null else category
-                        },
-                        label = {
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Text(category.icon)
-                                Text(category.displayName)
+                )
+
+                FilterChip(
+                    modifier = Modifier.width(1.dp),
+                    selected = false,
+                    onClick = {  },
+                    label = { Text("") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFF049344),
+                        selectedLabelColor = White
+                    )
+                )
+
+                // Category Filter
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                )
+                {
+
+                    if (selectedTypeCategory == service) {
+                        items(ServiceCategory.entries.size) { index ->
+                            if (index != 0) {
+                                val category = ServiceCategory.entries[index]
+                                FilterChip(
+                                    selected = listSelected[index],
+                                    onClick = {
+                                        listSelected = listSelected.mapIndexed { i, item ->
+                                            if (i == index) {
+                                                !item
+                                            } else item
+                                        }.toMutableList()
+
+                                        if (listSelected[index]) {
+                                            if (!listFilter.contains(category.displayName))
+                                                listFilter = (listFilter + category.displayName).toMutableList()
+                                        } else {
+                                            if (listFilter.contains(category.displayName))
+                                                listFilter = (listFilter - category.displayName).toMutableList()
+                                        }
+                                    },
+                                    label = {
+                                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            Text(category.icon)
+                                            Text(category.displayName)
+                                        }
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = Color(0xFF049344),
+                                        selectedLabelColor = White
+                                    )
+                                )
                             }
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFF049344),
-                            selectedLabelColor = Color.White
-                        )
-                    )
+                        }
+                    } else {
+                        items(ToolCategory.entries.size) { index ->
+                            if (index != 0) {
+                                val tools = ToolCategory.entries[index]
+
+                                FilterChip(
+                                    selected = listSelectedTools[index],
+                                    onClick = {
+                                        listSelectedTools = listSelectedTools.mapIndexed { i, item ->
+                                            if (i == index) {
+                                                !item
+                                            } else item
+                                        }.toMutableList()
+
+                                        if (listSelectedTools[index]) {
+                                            if (!listFilterTools.contains(tools.displayName))
+                                                listFilterTools = (listFilterTools + tools.displayName).toMutableList()
+                                        } else {
+                                            if (listFilterTools.contains(tools.displayName))
+                                                listFilterTools = (listFilterTools - tools.displayName).toMutableList()
+                                        }
+                                    },
+                                    label = {
+                                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            Text(tools.icon)
+                                            Text(tools.displayName)
+                                        }
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = Color(0xFF049344),
+                                        selectedLabelColor = Color.White
+                                    )
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
@@ -220,14 +463,18 @@ fun MarketDemandScreen(
 
                     items(demands.itemCount) { index ->
                         val demand = demands[index] ?: MarketDemandModel()
-                        selectedItem = demand
                         DemandCard(
                             demand = demand,
                             isNotMe = demandsViewModel.isNotMe(demand.idSender),
                             showContacts = {
                                 showContact = true
                             },
+                            openMenu = {
+                                selectedItem = demand
+                                showMenu = true
+                            },
                             onClick = {
+                                selectedItem = demand
                                 idDemand = demand.id
                                 navController.navigate(Screen.DemandMarketDetailScreen.route)
                             })
@@ -369,6 +616,37 @@ fun MarketDemandScreen(
         }
     }
 
+    if (showMenu) {
+        ModalBottomSheet(
+            onDismissRequest = { showMenu = false }
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                CategoryTypeDialogItem(
+                    category = "Modifier",
+                    icon =  "✏️",
+                    onClick = {
+                        marketDemand = selectedItem
+                        navController.navigate(Screen.FormMarketScreen.route)
+                        showMenu = false
+                    }
+                )
+
+                CategoryTypeDialogItem(
+                    category = "Supprimer",
+                    icon = "🗑️",
+                    onClick = {
+                        demandsViewModel.deleteDemand(selectedItem.id)
+                        showMenu = false
+                    }
+                )
+
+            }
+        }
+    }
+
     if (showTypeSheet) {
         ModalBottomSheet(
             onDismissRequest = { showTypeSheet = false }
@@ -389,5 +667,37 @@ fun MarketDemandScreen(
                 }
             )
         }
+    }
+
+    // Category Selection Dialog
+    if (filterType) {
+        AlertDialog(
+            onDismissRequest = { filterType = false },
+            title = { Text("Choisir votre type") },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    lists.mapIndexed { index, category ->
+                        val icon = if (index == 0) "⚙️" else "🛠️"
+                        CategoryTypeDialogItem(
+                            category = category,
+                            icon = icon,
+                            onClick = {
+                                selectedTypeCategory = category
+                                filterType = false
+                            }
+                        )
+                    }
+
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { filterType = false }) {
+                    Text("Annuler", color = Color(0xFF049344))
+                }
+            }
+        )
     }
 }

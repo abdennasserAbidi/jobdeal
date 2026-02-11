@@ -16,6 +16,11 @@ class NotificationDataSourceImp @Inject constructor(
         pageNumber: Int
     ): GenericResponse<NotificationModel> = apiService.getCompanyNotifications(id, pageNumber)
 
+    override suspend fun getDemandNotifications(
+        id: Int,
+        pageNumber: Int
+    ): GenericResponse<NotificationModel> = apiService.getDemandNotifications(id, pageNumber)
+
     override suspend fun seenNotification(id: Int):UserResponse = apiService.seenNotification(id)
     override suspend fun removeNotification(id: Int):UserResponse = apiService.removeNotification(id)
 

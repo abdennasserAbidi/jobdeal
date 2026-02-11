@@ -64,7 +64,9 @@ import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.idDemand
 import com.example.myjob.common.GlobalEntries.idHoster
+import com.example.myjob.common.GlobalEntries.idNotification
 import com.example.myjob.common.GlobalEntries.isFromDemand
+import com.example.myjob.common.GlobalEntries.isFromNotification
 import com.example.myjob.common.GlobalEntries.userForCompany
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.User
@@ -92,6 +94,9 @@ fun DemandMarketDetailScreen(
         if (lifecycle == Lifecycle.Event.ON_RESUME) {
             demandsViewModel.getDemandById(idDemand)
             demandsViewModel.getUserById(idHoster)
+            if (!isFromNotification) {
+                demandsViewModel.seenNotification(idNotification)
+            }
         }
     }
 

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -70,6 +71,7 @@ import java.util.Locale
 @Composable
 fun TypeDemandSection(
     listDemand: List<String>,
+    selectedIndex: Int = 0,
     interactionSource: MutableInteractionSource,
     onClick: (Int) -> Unit = {}
 ) {
@@ -106,7 +108,7 @@ fun TypeDemandSection(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            var selected by remember { mutableStateOf(0) }
+            var selected by remember { mutableStateOf(selectedIndex) }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -417,6 +419,33 @@ fun CategoryDialogItem(category: ServiceCategory, onClick: () -> Unit) {
 }
 
 @Composable
+fun CategoryTypeDialogItem(category: String, icon: String, onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) {
+                onClick()
+            }
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(text = icon, fontSize = 28.sp)
+        Text(
+            text = category,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color(0xFF1F2937)
+        )
+    }
+}
+
+@Composable
 fun ToolDialogItem(category: ToolCategory, onClick: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -448,6 +477,7 @@ fun DemandCard(
     demand: MarketDemandModel,
     isNotMe: Boolean,
     showContacts: () -> Unit,
+    openMenu: () -> Unit,
     onClick: () -> Unit
 ) {
     Card(
@@ -514,7 +544,17 @@ fun DemandCard(
                     }
                 }
 
-                StatusBadge(status = demand.status)
+                //StatusBadge(status = demand.status)
+                IconButton(
+                    onClick = {
+                        openMenu()
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = ""
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))

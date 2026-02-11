@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Message
@@ -45,6 +46,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -54,6 +56,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Transparent
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -91,6 +94,7 @@ fun ModernHomeScreen(
     val listHomeEntity by homeViewModel.listHomeEntity.collectAsState()
     val fcmToken by homeViewModel.fcmToken.collectAsState()
 
+    val interactionSource = remember { MutableInteractionSource() }
     var showTypeSheet by remember { mutableStateOf(false) }
     var selectedSearch by remember { mutableStateOf(JobType.NORMAL) }
 
@@ -116,7 +120,8 @@ fun ModernHomeScreen(
     }
 
     val invitations = homeViewModel.invitations.collectAsLazyPagingItems()
-    var count by remember { mutableStateOf(0) }
+    var count by remember { mutableIntStateOf(0) }
+    val badgeCount by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(invitations.itemCount) {
         invitations.itemSnapshotList.map {
@@ -142,7 +147,6 @@ fun ModernHomeScreen(
     }
 
     val demandText = stringResource(id = R.string.demand_text)
-    val offerText = stringResource(id = R.string.offer_text)
     val normalText = stringResource(id = R.string.normal_text)
     val logoutText = stringResource(id = R.string.logout_text)
 
@@ -160,7 +164,7 @@ fun ModernHomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            color = Transparent
+                            color = colorResource(id = R.color.whatsapp)
                         )
                         .padding(horizontal = 20.dp, vertical = 24.dp)
                 ) {
@@ -169,58 +173,106 @@ fun ModernHomeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        Text(
+                            text = userName,
+                            fontSize = 24.sp,
+                            color = White,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(0.7f)
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    showTypeSheet = true
+                                }
+                                .clip(RoundedCornerShape(30.dp))
+                                .background(White.copy(alpha = 0.2f))
                         ) {
+
+                            Spacer(Modifier
+                                .align(Alignment.TopCenter)
+                                .height(20.dp)
+                                .fillMaxWidth())
+
                             Box(
                                 modifier = Modifier
-                                    .size(48.dp)
-                                    .clip(CircleShape)
-                                    .background(colorResource(id = R.color.whatsapp).copy(alpha = 0.5f)),
-                                contentAlignment = Alignment.Center
+                                    .size(30.dp)
+                                    .padding(start = 10.dp)
+                                    .align(Alignment.CenterStart)
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) {
+                                        navController.navigate(Screen.NotificationCompanyScreen.route)
+                                    }
                             ) {
-                                Text(
-                                    text = userName.split(" ").mapNotNull { it.firstOrNull() }.take(2)
-                                        .joinToString(""),
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                Icon(
+                                    imageVector = Icons.Default.Notifications,
+                                    contentDescription = "Notifications",
+                                    tint = White,
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .align(Alignment.CenterEnd)
                                 )
                             }
+
+                            if (badgeCount > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(top = 5.dp, start = 5.dp)
+                                        .align(Alignment.TopStart)
+                                        .size(15.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFEF4444)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = if (badgeCount > 9) "9+" else badgeCount.toString(),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = White
+                                    )
+                                }
+                            }
+
+                            Text(
+                                text = when (selectedSearch) {
+                                    JobType.NORMAL -> normalText
+                                    JobType.GET -> demandText
+                                    JobType.LOGOUT -> logoutText
+                                },
+                                color = White,
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                            )
+
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = "ArrowDropDown",
+                                tint = White,
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .padding(end = 10.dp)
+                                    .align(Alignment.CenterEnd)
+                            )
+
+                            Spacer(Modifier
+                                .align(Alignment.BottomCenter)
+                                .height(20.dp)
+                                .fillMaxWidth())
                         }
 
 
-                        FilterChip(
-                            onClick = { showTypeSheet = true },
-                            modifier = Modifier
-                                .fillMaxWidth(0.7f)
-                                .height(50.dp),
-                            label = {
-                                Text(
-                                    text = when (selectedSearch) {
-                                        JobType.NORMAL -> normalText
-                                        JobType.GET -> demandText
-                                        JobType.SEND -> offerText
-                                        JobType.LOGOUT -> logoutText
-                                    }
-                                )
-                            },
-                            selected = false,
-                            trailingIcon = {
-                                androidx.compose.material.Icon(
-                                    Icons.Default.KeyboardArrowDown,
-                                    contentDescription = "Filter",
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = WhatsAppLightGreen,
-                                selectedLabelColor = WhatsAppDarkGreen
-                            )
-                        )
                     }
                 }
+
+
+
+
             }
 
             // Main Actions Grid

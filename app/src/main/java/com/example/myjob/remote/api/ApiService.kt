@@ -33,6 +33,7 @@ import com.example.myjob.feature.validateprofile.ValidationProfileStatus
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -459,6 +460,11 @@ ApiService {
         @Query("size") size: Int = 10
     ): GenericResponse<MarketDemandModel>
 
+    @DELETE("auth/deleteDemand")
+    suspend fun deleteDemand(
+        @Query("idDemand") idDemand: Int
+    ): UserResponse
+
     @GET("auth/getDemandFiltered")
     suspend fun getDemandFiltered(
         @Query("word") word: String,
@@ -482,6 +488,13 @@ ApiService {
     ///////////////////////////////////////////////////////////////////////////
     @GET("auth/getNotifications")
     suspend fun getCompanyNotifications(
+        @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<NotificationModel>
+
+    @GET("auth/getDemandNotifications")
+    suspend fun getDemandNotifications(
         @Query("id") id: Int,
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10

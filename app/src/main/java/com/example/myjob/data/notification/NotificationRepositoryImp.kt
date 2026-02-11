@@ -53,6 +53,34 @@ class NotificationRepositoryImp @Inject constructor(
     }.catch { ex ->
         emit(Resource(ResourceState.ERROR, null, ex.message))
     }
+
+    override suspend fun getDemandNotifications(
+        id: Int,
+    ): Flow<Resource<PagingData<NotificationModel>>> = flow {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            pagingSourceFactory = {
+                GenericSource { currentPage ->
+                    val educations =
+                        remoteDataSource.getDemandNotifications(id = id, pageNumber = currentPage)
+
+                    val json = Gson().toJson(educations.content)
+                    sharedPreference.putString("jsonNotificationDemand", json)
+
+                    educations
+                }
+            }
+        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+        emitAll(
+            pager.map { pagingData ->
+                Resource(ResourceState.SUCCESS, pagingData, null)
+            }
+        )
+    }.catch { ex ->
+        emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
+
     override suspend fun seenNotification(id: Int): Flow<Resource<UserResponse>> = flow {
         try {
             // Get data from RemoteDataSource
@@ -64,6 +92,7 @@ class NotificationRepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
+
     override suspend fun removeNotification(id: Int): Flow<Resource<UserResponse>> = flow {
         try {
             // Get data from RemoteDataSource

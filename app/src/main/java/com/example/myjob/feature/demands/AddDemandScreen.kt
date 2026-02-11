@@ -46,6 +46,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -64,9 +65,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.CustomDialog
-import com.example.myjob.domain.entities.Subject
+import com.example.myjob.common.GlobalEntries.marketDemand
+import com.example.myjob.domain.entities.demands.MarketDemandModel
 import com.example.myjob.feature.profile.DateContainer
-import com.example.myjob.feature.signup.RoleSection
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,21 +77,31 @@ fun AddDemandScreen(
     listCountries: List<String>,
     demandsViewModel: DemandsViewModel = hiltViewModel()
 ) {
-    var title by remember { mutableStateOf("") }
 
-    var selectedCategory by remember { mutableStateOf<ServiceCategory?>(null) }
-    var selectedCategoryText by remember { mutableStateOf("") }
+    var selectedCategory by remember {
+        mutableStateOf(
+            if (marketDemand.category == ServiceCategory.IDLE) null
+            else marketDemand.category
+        )
+    }
+    var selectedCategoryText by remember { mutableStateOf(marketDemand.otherCategory) }
     var showCategoryDialog by remember { mutableStateOf(false) }
 
-    var selectedTool by remember { mutableStateOf<ToolCategory?>(null) }
-    var selectedToolText by remember { mutableStateOf("") }
+    var selectedTool by remember {
+        mutableStateOf(
+            if (marketDemand.tools == ToolCategory.IDLE) null
+            else marketDemand.tools
+        )
+    }
+    var selectedToolText by remember { mutableStateOf(marketDemand.otherTools) }
     var showToolsDialog by remember { mutableStateOf(false) }
 
-    var description by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("") }
-    var budget by remember { mutableStateOf("") }
+    var title by remember { mutableStateOf(marketDemand.title) }
+    var description by remember { mutableStateOf(marketDemand.description) }
+    var location by remember { mutableStateOf(marketDemand.location) }
+    var budget by remember { mutableStateOf(marketDemand.budget) }
     var urgency by remember { mutableStateOf(Urgency.MOYEN) }
-    var deadline by remember { mutableStateOf("") }
+    var deadline by remember { mutableStateOf(marketDemand.deadline) }
     var phone by remember { mutableStateOf("") }
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -101,7 +112,18 @@ fun AddDemandScreen(
     var isSuccess by remember { mutableStateOf(false) }
     var isDateShowed by remember { mutableStateOf(false) }
 
-    var selectedIndex by remember { mutableStateOf(0) }
+    Log.i("gkzghrzjgrnzlrg", "AddDemandScreen: $marketDemand")
+
+    var selectedIndex by remember {
+        mutableIntStateOf(
+            if (marketDemand.category != ServiceCategory.IDLE) 0
+            else if (marketDemand.tools != ToolCategory.IDLE) 1
+            else 0
+        )
+    }
+
+    Log.i("gkzghrzjgrnzlrg", "index: $selectedIndex")
+
 
     val demandStatus by demandsViewModel.demandStatus.collectAsState()
 
@@ -118,6 +140,7 @@ fun AddDemandScreen(
         if (demandStatus.isNotEmpty()) {
             isSuccess = demandStatus == "saved successfully"
             showDialog = true
+            marketDemand = MarketDemandModel()
         }
     }
 
@@ -127,7 +150,7 @@ fun AddDemandScreen(
                 title = { Text("Nouvelle demande de service") },
                 navigationIcon = {
                     IconButton(onClick = {
-                        //onBackClick
+                        navController.popBackStack()
                     }) {
                         Icon(Icons.Filled.ArrowBack, "Retour", tint = Color(0xFF049344))
                     }
@@ -158,6 +181,7 @@ fun AddDemandScreen(
 
                 TypeDemandSection(
                     listDemand = listRole,
+                    selectedIndex = selectedIndex,
                     interactionSource = interactionSource,
                     onClick = {
                         selectedIndex = it
@@ -403,7 +427,6 @@ fun AddDemandScreen(
                 // Submit Button
                 Button(
                     onClick = {
-
                         val isOneWrong = selectedCategory == null || title.isNotEmpty() ||
                                 description.isNotEmpty() || location.isNotEmpty()
                         if (isOneWrong) {

@@ -11,6 +11,11 @@ interface NotificationDataSource {
         pageNumber: Int
     ): GenericResponse<NotificationModel>
 
+    suspend fun getDemandNotifications(
+        id: Int,
+        pageNumber: Int
+    ): GenericResponse<NotificationModel>
+
     suspend fun seenNotification(id: Int):UserResponse
     suspend fun removeNotification(id: Int):UserResponse
     suspend fun updateToken(id: Int, token: String): UserResponse

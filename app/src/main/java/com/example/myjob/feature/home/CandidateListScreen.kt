@@ -233,7 +233,6 @@ fun CandidateListScreen(
     }
 
     val demandText = stringResource(id = R.string.demand_text)
-    val offerText = stringResource(id = R.string.offer_text)
     val normalText = stringResource(id = R.string.normal_text)
     val logoutText = stringResource(id = R.string.logout_text)
 
@@ -293,6 +292,12 @@ fun CandidateListScreen(
                                 .size(30.dp)
                                 .padding(start = 10.dp)
                                 .align(Alignment.CenterStart)
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    navController.navigate(Screen.NotificationCompanyScreen.route)
+                                }
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Notifications,
@@ -330,7 +335,6 @@ fun CandidateListScreen(
                             text = when (selectedSearch) {
                                 JobType.NORMAL -> normalText
                                 JobType.GET -> demandText
-                                JobType.SEND -> offerText
                                 JobType.LOGOUT -> logoutText
                             },
                             color = White,

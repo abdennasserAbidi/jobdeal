@@ -23,6 +23,7 @@ import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.entities.demands.MarketDemandModel
 import com.example.myjob.domain.entities.notification.NotificationMessage
 import com.example.myjob.feature.validateprofile.StepStatus
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +46,7 @@ object GlobalEntries {
     var seenInvitation = MutableStateFlow(false)
     var seenMessage = MutableStateFlow(false)
     var seenNotifications = MutableStateFlow(false)
+    var seenDemandNotifications = MutableStateFlow(false)
     var idReceiver = -1
     var idSender = -1
     var idNotification = 0
@@ -58,6 +60,7 @@ object GlobalEntries {
     var listEducations = mutableListOf<Educations>()
     var experience = Experience()
     var educations = Educations()
+    var marketDemand = MarketDemandModel()
     var user = User()
     var candidateUser = User()
     var candidate = Candidate()

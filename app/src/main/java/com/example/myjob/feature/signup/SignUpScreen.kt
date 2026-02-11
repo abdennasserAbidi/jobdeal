@@ -152,7 +152,8 @@ fun SignUpScreen(
 
     val app = context.applicationContext as MyApp
     LaunchedEffect(listCompanies) {
-        app.listCompanies.removeLast()
+        Log.i("jrkzgnrjzgbzrk", "SignUpScreen: $listCompanies")
+        app.listCompanies.removeAt(app.listCompanies.lastIndex)
         if (!app.listCompanies.containsAll(listCompanies)) app.listCompanies.addAll(listCompanies)
     }
 

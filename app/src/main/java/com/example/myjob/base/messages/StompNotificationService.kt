@@ -25,6 +25,9 @@ object StompNotificationService {
     private val _messages = MutableSharedFlow<NotificationModel>()
     val messages = _messages.asSharedFlow()
 
+    private val _messagesDemand = MutableSharedFlow<NotificationModel>()
+    val messagesDemand = _messagesDemand.asSharedFlow()
+
     private val gson = Gson()
 
     @SuppressLint("CheckResult")
@@ -56,9 +59,10 @@ object StompNotificationService {
         stompClient.topic("/user/queue/notifications")
             .subscribe { msg ->
                 val chat = gson.fromJson(msg.payload, NotificationModel::class.java)
-                Log.i("fzejhgrzg", "Received: $chat")
                 CoroutineScope(Dispatchers.IO).launch {
-                    _messages.emit(chat)
+                    if (chat.idDemand != -1)
+                        _messagesDemand.emit(chat)
+                    else _messages.emit(chat)
                 }
             }
     }

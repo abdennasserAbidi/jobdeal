@@ -10,7 +10,7 @@ data class HomeEntity(
 )
 
 enum class JobType {
-    NORMAL, GET, SEND, LOGOUT
+    NORMAL, GET, LOGOUT
 }
 
 val HOME_ENTITY = listOf(
