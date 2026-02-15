@@ -11,9 +11,9 @@ import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.usecase.subscription.LoginUseCase
 import com.example.myjob.domain.usecase.subscription.SaveUserUseCase
+import com.example.myjob.domain.usecase.subscription.VerificationEmailUseCase
 import com.example.myjob.domain.usecase.verification.ValidateEmailUseCase
 import com.example.myjob.domain.usecase.verification.ValidatePasswordUseCase
-import com.example.myjob.domain.usecase.subscription.VerificationEmailUseCase
 import com.example.myjob.feature.login.gmail.SignInResult
 import com.example.myjob.feature.login.gmail.SignInState
 import com.example.myjob.local.database.SharedPreference
@@ -34,6 +34,7 @@ class LoginViewModel @Inject constructor(
     private val sharedPreferences: SharedPreference
 ) : ViewModel() {
 
+    fun getType(): String = sharedPreferences.getString("offerDemand", "service") ?: ""
 
     fun isFromLogin(fromLogin: Boolean) {
         sharedPreferences.putBoolean("isFromLogin", fromLogin)
@@ -66,7 +67,7 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun validateEmail(text: String) : Boolean {
+    fun validateEmail(text: String): Boolean {
         var t = false
         viewModelScope.launch {
             isEmailValid.update {
@@ -140,7 +141,7 @@ class LoginViewModel @Inject constructor(
                     token.update { sharedPreferences.getString("token", "") ?: "" }
 
                     saveUserRes.update {
-                        Resource(res.status, res.data?: LoginResponse(), null)
+                        Resource(res.status, res.data ?: LoginResponse(), null)
                     }
                 }
             }

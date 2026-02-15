@@ -4,17 +4,13 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.toUpperCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
-import androidx.paging.filter
-import androidx.paging.map
 import com.example.myjob.R
 import com.example.myjob.base.messages.StompChatService
 import com.example.myjob.base.messages.StompInvitationService
 import com.example.myjob.base.messages.StompNotificationService
-import com.example.myjob.base.messages.WebsocketService
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.listIdToRemove
@@ -35,7 +31,10 @@ import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
 import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.domain.entities.notification.NotificationMessage
+import com.example.myjob.domain.usecase.home.CountDownTrialUserUseCase
+import com.example.myjob.domain.usecase.home.GetAllUserServiceUseCase
 import com.example.myjob.domain.usecase.home.GetAllUserUseCase
+import com.example.myjob.domain.usecase.home.GetFilteredUserServiceUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.domain.usecase.home.SaveToFavoriteUseCase
 import com.example.myjob.domain.usecase.invitation.FinishProcessUseCase
@@ -48,21 +47,13 @@ import com.example.myjob.domain.usecase.search.SearchUserUseCase
 import com.example.myjob.local.database.SharedPreference
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
-import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import ua.naiksoftware.stomp.dto.StompMessage
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -75,13 +66,16 @@ class HomeViewModel @Inject constructor(
     private val updateTokenUseCase: UpdateTokenUseCase,
     private val sendNotificationsUseCase: SendNotificationsUseCase,
     private val getAllUserUseCase: GetAllUserUseCase,
+    private val getAllUserServiceUseCase: GetAllUserServiceUseCase,
+    private val getFilteredUserServiceUseCase: GetFilteredUserServiceUseCase,
     private val sendInvitationUseCase: SendInvitationUseCase,
     private val saveToFavoriteUseCase: SaveToFavoriteUseCase,
     private val searchUserUseCase: SearchUserUseCase,
     private val getUserUseCase: GetUserUseCase,
     private val getFilteredUserUseCase: GetFilteredUserUseCase,
     private val getAllInvitationsUseCase: GetAllInvitationsUseCase,
-    private val finishProcessUseCase: FinishProcessUseCase
+    private val finishProcessUseCase: FinishProcessUseCase,
+    private val countDownTrialUserUseCase: CountDownTrialUserUseCase
 ) : ViewModel() {
 
     private val _invitations: MutableStateFlow<PagingData<InvitationModel>> =
@@ -471,7 +465,6 @@ class HomeViewModel @Inject constructor(
     }
 
 
-
     val selectedTypeContract = MutableStateFlow(emptyList<ContractTypeChoices>())
     val selectedType = MutableStateFlow(listOf(false, false, false, false, false, false))
 
@@ -694,7 +687,12 @@ class HomeViewModel @Inject constructor(
         durationMission.update { duration }
     }
 
-    fun matchCurrentProfile(user: User, status: String, descriptionContract: String, duration: String) {
+    fun matchCurrentProfile(
+        user: User,
+        status: String,
+        descriptionContract: String,
+        duration: String
+    ) {
         val currentDate = Date()
         val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         val formattedDate = formatter.format(currentDate)
@@ -722,6 +720,7 @@ class HomeViewModel @Inject constructor(
             invitationModel = invitationParam.value
         )
         viewModelScope.launch {
+            Log.i("kzlkgrjlzkgrgzl", "matchCurrentProfile: $invitationParams")
             sendInvitationUseCase.execute(invitationParams).collect { res ->
                 when (res.status) {
 
@@ -813,6 +812,58 @@ class HomeViewModel @Inject constructor(
                     res.data ?: PagingData.empty()
                 }
             }
+        }
+    }
+
+    private val _userService: MutableStateFlow<PagingData<User>> =
+        MutableStateFlow(value = PagingData.empty())
+
+    val userService: MutableStateFlow<PagingData<User>> get() = _userService
+
+    fun getAllUserService() {
+        viewModelScope.launch {
+            val id = sharedPreference.getInt("idUser", -1)
+            getAllUserServiceUseCase.execute(id).collectLatest { res ->
+                _userService.update {
+                    res.data ?: PagingData.empty()
+                }
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // SEARCH
+    ///////////////////////////////////////////////////////////////////////////
+    fun filterUserService(query: String) {
+        if (query.isNotEmpty()) {
+            viewModelScope.launch {
+                getFilteredUserServiceUseCase.execute(query).collectLatest { res ->
+                    _userService.update {
+                        res.data ?: PagingData.empty()
+                    }
+                }
+            }
+
+        } else getAllUserService()
+    }
+
+    fun countDownTrial(param: Int) {
+        viewModelScope.launch {
+            countDownTrialUserUseCase.execute(param).collect {
+
+            }
+        }
+    }
+
+    fun isNotMe(userSender: Int): Boolean =
+        userSender != sharedPreference.getInt("idUser", 0)
+
+    ///////////////////////////////////////////////////////////////////////////
+    // FILTER
+    ///////////////////////////////////////////////////////////////////////////
+    fun searchUserService(query: List<String>) {
+        query.map {
+            filterUserService(it)
         }
     }
 

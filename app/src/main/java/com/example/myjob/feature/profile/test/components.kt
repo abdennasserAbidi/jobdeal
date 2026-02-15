@@ -1074,20 +1074,6 @@ fun EducationCard(
 
     var newInstituteName by remember { mutableStateOf("") }
 
-    LaunchedEffect(isSubmitEducationAction) {
-        if (isSubmitEducationAction) {
-
-            if (!schoolNameValidator || !degreeValidator || !fieldStudyValidator) {
-                activatedCheck = true
-                GlobalEntries.isSubmitEducationAction.update { false }
-            }
-
-            if (schoolNameValidator && degreeValidator && fieldStudyValidator) {
-                onSubmit()
-            }
-        }
-    }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()

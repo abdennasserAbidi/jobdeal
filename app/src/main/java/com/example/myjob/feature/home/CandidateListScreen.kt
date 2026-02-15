@@ -1,6 +1,7 @@
 package com.example.myjob.feature.home
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -60,6 +61,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -90,6 +92,7 @@ import com.example.myjob.domain.entities.JobType
 import com.example.myjob.domain.entities.Subject
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.invitation.InvitationModel
+import com.example.myjob.feature.demands.findActivity
 import com.example.myjob.feature.home.filter.flowHandling
 import com.example.myjob.feature.invitation.company.EnProcessForm
 import com.example.myjob.feature.navigation.Screen
@@ -230,6 +233,11 @@ fun CandidateListScreen(
                 homeViewModel.finishProcess(it)
                 openFinishProcess = false
             })
+    }
+
+    val context = LocalContext.current
+    BackHandler(enabled = true) {
+        context.findActivity()?.finish()
     }
 
     val demandText = stringResource(id = R.string.demand_text)

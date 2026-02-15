@@ -1,6 +1,9 @@
 package com.example.myjob.feature.demands
 
-import android.util.Log
+import android.annotation.SuppressLint
+import android.content.Context
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -47,7 +50,6 @@ import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -62,6 +64,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -74,8 +77,8 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.ErrorMessage
-import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.idDemand
+import com.example.myjob.common.GlobalEntries.isUpdatingDemand
 import com.example.myjob.common.GlobalEntries.marketDemand
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
@@ -85,7 +88,16 @@ import com.example.myjob.domain.entities.announcement.PostType
 import com.example.myjob.domain.entities.demands.MarketDemandModel
 import com.example.myjob.feature.home.FilterTypeBottomSheet
 import com.example.myjob.feature.navigation.Screen
+import dagger.hilt.android.internal.managers.FragmentComponentManager.findActivity
 
+fun Context.findActivity(): ComponentActivity? =
+    when (this) {
+        is ComponentActivity -> this
+        is android.content.ContextWrapper -> baseContext.findActivity()
+        else -> null
+    }
+
+@SuppressLint("MutableCollectionMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MarketDemandScreen(
@@ -94,6 +106,7 @@ fun MarketDemandScreen(
     clearData: () -> Unit = {},
     demandsViewModel: DemandsViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<ServiceCategory?>(null) }
     var filterType by remember { mutableStateOf(false) }
@@ -122,7 +135,6 @@ fun MarketDemandScreen(
     }
 
     LaunchedEffect(listFilter) {
-        Log.i("gtejgkltegnte", "filterDemands: $listFilter")
 
         if (listFilter.isNotEmpty())
             demandsViewModel.searchDemands(listFilter)
@@ -174,6 +186,10 @@ fun MarketDemandScreen(
             selectedType = demandsViewModel.getType()
             demandsViewModel.getDemands()
         }
+    }
+
+    BackHandler(enabled = true) {
+        context.findActivity()?.finish()
     }
 
     Scaffold(
@@ -348,7 +364,9 @@ fun MarketDemandScreen(
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FilterChip(
@@ -376,9 +394,7 @@ fun MarketDemandScreen(
                 LazyRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
-                )
-                {
-
+                ) {
                     if (selectedTypeCategory == service) {
                         items(ServiceCategory.entries.size) { index ->
                             if (index != 0) {
@@ -467,6 +483,7 @@ fun MarketDemandScreen(
                             demand = demand,
                             isNotMe = demandsViewModel.isNotMe(demand.idSender),
                             showContacts = {
+                                selectedItem = demand
                                 showContact = true
                             },
                             openMenu = {
@@ -629,6 +646,7 @@ fun MarketDemandScreen(
                     icon =  "✏️",
                     onClick = {
                         marketDemand = selectedItem
+                        isUpdatingDemand = true
                         navController.navigate(Screen.FormMarketScreen.route)
                         showMenu = false
                     }

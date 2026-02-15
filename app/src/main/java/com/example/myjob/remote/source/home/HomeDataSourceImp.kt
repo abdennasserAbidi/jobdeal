@@ -26,19 +26,39 @@ class HomeDataSourceImp @Inject constructor(
     override suspend fun getAllUser(id: Int, pageNumber: Int): GenericResponse<User> =
         apiService.getAllUser(id, pageNumber = pageNumber)
 
+    override suspend fun getAllCandidateService(id: Int, pageNumber: Int): GenericResponse<User> =
+        apiService.getAllCandidateService(id, pageNumber = pageNumber)
+
+    override suspend fun getUserServiceFiltered(
+        word: String,
+        pageNumber: Int
+    ): GenericResponse<User> =
+        apiService.getUserServiceFiltered(word, pageNumber = pageNumber)
+
     override suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): UserResponse =
         apiService.saveToFavorite(idUserConnected, candidateId)
 
     override suspend fun getUser(id: Int): UserAuthResponse = apiService.getUser(id)
     override suspend fun uploadFile(file: MultipartBody.Part): UserResponse =
         apiService.uploadFile(file)
+
     override suspend fun uploadFiles(idUser: Int, file: MultipartBody.Part): UploadResponse =
         apiService.upload(idUser, file)
-    override suspend fun uploadChat(idFrom: Int, idTo: Int, file: MultipartBody.Part): UploadResponse =
+
+    override suspend fun uploadChat(
+        idFrom: Int,
+        idTo: Int,
+        file: MultipartBody.Part
+    ): UploadResponse =
         apiService.uploadChat(idFrom, idTo, file)
 
-    override suspend fun uploadDirect(idFrom: Int, idTo: Int, file: List<MultipartBody.Part>): UploadResponse =
+    override suspend fun uploadDirect(
+        idFrom: Int,
+        idTo: Int,
+        file: List<MultipartBody.Part>
+    ): UploadResponse =
         apiService.uploadDirect(idFrom, idTo, file)
+
     override suspend fun getFiles(id: Int): FilesResponse = apiService.getFiles(id)
 
     override suspend fun validateProfile(email: String): UserResponse =

@@ -21,5 +21,10 @@ interface HomeDataSource {
     suspend fun validateProfile(email: String): UserResponse
     suspend fun verifyExisting(fileName: String): FileExistingResponse
     suspend fun getAllUser(id: Int, pageNumber: Int): GenericResponse<User>
+    suspend fun getAllCandidateService(id: Int, pageNumber: Int): GenericResponse<User>
+    suspend fun getUserServiceFiltered(
+        word: String,
+        pageNumber: Int
+    ): GenericResponse<User>
     suspend fun getFavorites(id: Int, pageNumber: Int): GenericResponse<User>
 }

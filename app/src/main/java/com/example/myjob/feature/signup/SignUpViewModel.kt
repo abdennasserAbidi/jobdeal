@@ -16,6 +16,7 @@ import com.example.myjob.domain.usecase.verification.GetVerifiedCompanyUseCase
 import com.example.myjob.domain.usecase.verification.ValidateEmailUseCase
 import com.example.myjob.domain.usecase.verification.ValidateNameUseCase
 import com.example.myjob.domain.usecase.verification.ValidatePasswordUseCase
+import com.example.myjob.feature.demands.ServiceCategory
 import com.example.myjob.feature.login.gmail.SignInResult
 import com.example.myjob.feature.login.gmail.SignInState
 import com.example.myjob.local.database.SharedPreference
@@ -69,6 +70,7 @@ class SignUpViewModel @Inject constructor(
 
         return password == input
     }
+
     //it.role = "company"
     fun changeRole(role: String) {
         user.update {
@@ -79,13 +81,65 @@ class SignUpViewModel @Inject constructor(
 
     fun changeRoleIndex(roleIndex: Int) {
         user.update {
-            if (roleIndex == 0) {
-                it.candidate = false
-                it.company = true
-            } else {
-                it.candidate = true
-                it.company = false
+            when (roleIndex) {
+                0 -> {
+                    it.candidate = false
+                    it.company = true
+                    it.service = false
+                }
+                1 -> {
+                    it.candidate = true
+                    it.company = false
+                    it.service = false
+                }
+                else -> {
+                    it.candidate = false
+                    it.company = false
+                    it.service = true
+                }
             }
+            it
+        }
+    }
+
+    fun changeDescriptions(name: String) {
+        user.update {
+            it.bio = name
+            it
+        }
+    }
+
+    fun changeLocation(name: String) {
+        user.update {
+            it.country = name
+            it
+        }
+    }
+
+    /*fun changeBudget(name: String) {
+        user.update {
+            it.budget = name
+            it
+        }
+    }*/
+
+    fun changeServiceUserName(name: String) {
+        user.update {
+            it.username = name
+            it
+        }
+    }
+
+    fun changePostType(name: ServiceCategory) {
+        user.update {
+            it.category = name
+            it
+        }
+    }
+
+    fun changeOtherCategory(name: String) {
+        user.update {
+            it.otherCategory = name
             it
         }
     }
@@ -168,7 +222,7 @@ class SignUpViewModel @Inject constructor(
             isEmailValid.update {
                 validateEmailUseCase.execute(text) ?: false
             }
-           t = validateEmailUseCase.execute(text) ?: false
+            t = validateEmailUseCase.execute(text) ?: false
         }
         return t
     }

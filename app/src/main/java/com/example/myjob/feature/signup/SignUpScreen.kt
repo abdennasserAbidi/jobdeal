@@ -1,15 +1,10 @@
 package com.example.myjob.feature.signup
 
-import android.app.Activity
+//noinspection UsingMaterialAndMaterial3Libraries
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -22,27 +17,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -57,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.graphics.Color.Companion.Red
+import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -76,10 +69,11 @@ import com.example.myjob.R
 import com.example.myjob.base.MyApp
 import com.example.myjob.common.CustomDialog
 import com.example.myjob.common.GlobalEntries.emailGoogleAccount
-import com.example.myjob.feature.home.filter.flowHandling
+import com.example.myjob.feature.demands.CategoryDialogItem
+import com.example.myjob.feature.demands.NewFormTextField
+import com.example.myjob.feature.demands.ServiceCategory
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
-import com.example.myjob.feature.profile.test.FormTextField
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -95,9 +89,7 @@ fun SignUpScreen(
 ) {
 
     val interactionSource = remember { MutableInteractionSource() }
-
     val context = LocalContext.current
-
     val density = LocalDensity.current
     val screenHeight = with(density) {
         LocalConfiguration.current.screenHeightDp.dp.toPx().toInt()
@@ -109,6 +101,23 @@ fun SignUpScreen(
     val isPasswordValid by viewModel.isPasswordValid.collectAsState()
     val user by viewModel.user.collectAsState()
     val isCompanyNameValid by viewModel.isCompanyNameValid.collectAsState()
+
+    var selectedCategory by remember {
+        mutableStateOf(
+            if (user.category == ServiceCategory.IDLE) null
+            else user.category
+        )
+    }
+    var selectedCategoryText by remember { mutableStateOf(user.otherCategory) }
+    var showCategoryDialog by remember { mutableStateOf(false) }
+
+    var title by remember { mutableStateOf(user.username) }
+    var description by remember { mutableStateOf(user.bio) }
+
+    var activatedCheckCategory by remember { mutableStateOf(false) }
+    var textErrorCategory by remember { mutableStateOf("") }
+    var activatedCheckUsername by remember { mutableStateOf(false) }
+    var textErrorUsername by remember { mutableStateOf("") }
 
     var selectedIndex by remember { mutableStateOf(0) }
 
@@ -127,8 +136,6 @@ fun SignUpScreen(
 
     var companyName by remember { mutableStateOf(user.companyName ?: "") }
     val companyNameVerified by remember { derivedStateOf { isCompanyNameValid } }
-
-    Log.i("emailGoogleAccount", "SignUpScreen: $emailGoogleAccount")
 
     var email by remember { mutableStateOf(emailGoogleAccount) }
     val emailVerified by remember { derivedStateOf { isEmailValid } }
@@ -162,7 +169,8 @@ fun SignUpScreen(
         if (saveUserRes.token?.isNotEmpty() == true) {
             if (selectedIndex == 1) {
                 navController.navigate(Screen.SearchWordScreen.route)
-            } else navController.navigate(Screen.CompanyProfileForm.route)
+            } else if (selectedIndex == 0) navController.navigate(Screen.CompanyProfileForm.route)
+            else navController.navigate(Screen.DemandServiceScreen.route)
         }
     }
 
@@ -188,22 +196,6 @@ fun SignUpScreen(
             Log.i("feklzhgzg", "SignUpScreen: ${googleAuthUiClient.getSignedInUser()}")
         }
     }
-
-    /*val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartIntentSenderForResult(),
-        onResult = { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                lifecycleScope.launch {
-                    val signInResult = googleAuthUiClient.signInWithIntent(
-                        intent = result.data ?: return@launch
-                    )
-                    val userData = signInResult.data
-                    Log.i("feklzhgzg", "SignUpScreen: $userData")
-                    viewModel.onSignInResult(signInResult)
-                }
-            }
-        }
-    )*/
 
     LaunchedEffect(key1 = state.isSignInSuccessful) {
         if (state.isSignInSuccessful) {
@@ -231,16 +223,14 @@ fun SignUpScreen(
     viewModel.changeRole(stringResource(id = R.string.choose_companies_text))
 
     Scaffold { padding ->
-
         Box(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
         ) {
-
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 10.dp)
+                    .padding(horizontal = 16.dp)
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
@@ -265,7 +255,8 @@ fun SignUpScreen(
 
                     val listRole = listOf(
                         stringResource(id = R.string.choose_companies_text),
-                        stringResource(id = R.string.choose_candidate_text)
+                        stringResource(id = R.string.choose_candidate_text),
+                        stringResource(id = R.string.service_text)
                     )
 
                     RoleSection(
@@ -277,12 +268,123 @@ fun SignUpScreen(
                             viewModel.changeRoleIndex(it)
                         }
                     )
-
                 }
 
-                if (selectedIndex == 1) {
+                if (selectedIndex == 2) {
 
-                    FormTextField(
+                    androidx.compose.material3.Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = "Catégorie de service *",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF1F2937)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            val color =
+                                if (activatedCheckCategory && (selectedCategory == ServiceCategory.IDLE || selectedCategory == null)) Red
+                                else Transparent
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFF9FAFB))
+                                    .border(1.dp, color, RoundedCornerShape(12.dp))
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) { showCategoryDialog = true }
+                                    .padding(16.dp)
+                            ) {
+                                selectedCategory?.let { category ->
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(text = category.icon, fontSize = 24.sp)
+                                        Text(
+                                            text = category.displayName,
+                                            color = Color(0xFF1F2937),
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                } ?: run {
+                                    Text(
+                                        text = "Sélectionner une catégorie",
+                                        color = Color(0xFF9CA3AF),
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            }
+
+                            if (activatedCheckCategory && (selectedCategory == ServiceCategory.IDLE || selectedCategory == null)) {
+                                Text(
+                                    modifier = Modifier.padding(top = 5.dp, start = 20.dp),
+                                    text = "Vous devez choisir une categorie",
+                                    color = Red
+                                )
+                            }
+
+                        }
+                    }
+
+                    if (selectedCategory?.displayName == "Autre") {
+                        com.example.myjob.feature.demands.FormTextField(
+                            value = selectedCategoryText,
+                            onValueChange = {
+                                selectedCategoryText = it
+                                viewModel.changeOtherCategory(it)
+                            },
+                            isCheckActivated = activatedCheckCategory,
+                            isError = selectedCategoryText.isEmpty(),
+                            errorText = "Vous devez remplir la categorie",
+                            label = "Autre catégorie *",
+                            modifier = Modifier.padding(top = 16.dp),
+                            placeholder = "Ex: Forgeron"
+                        )
+                    }
+
+                    // Title Field
+                    com.example.myjob.feature.demands.FormTextField(
+                        value = title,
+                        onValueChange = {
+                            title = it
+                            viewModel.changeServiceUserName(title)
+                        },
+                        isCheckActivated = activatedCheckUsername,
+                        isError = title.isEmpty(),
+                        errorText = "Vous devez remplir le nom",
+                        label = "Titre de la demande *",
+                        modifier = Modifier.padding(top = 16.dp),
+                        placeholder = "Ex: Installation d'une porte en bois"
+                    )
+
+                    // Description Field
+                    com.example.myjob.feature.demands.FormTextField(
+                        value = description ?: "",
+                        onValueChange = {
+                            description = it
+                            viewModel.changeDescriptions(description ?: "")
+                        },
+                        label = "Description détaillée *",
+                        modifier = Modifier.padding(top = 16.dp),
+                        placeholder = "Décrivez votre besoin en détail...",
+                        minLines = 4,
+                        maxLines = 6
+                    )
+
+                } else if (selectedIndex == 1) {
+                    NewFormTextField(
                         value = userFirstName,
                         onValueChange = {
                             userFirstName = it
@@ -290,11 +392,9 @@ fun SignUpScreen(
                             viewModel.changeUserFirstName(it)
                         },
                         label = stringResource(id = R.string.first_name_text),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 20.dp),
-                        isRequired = true
+                        modifier = Modifier.padding(top = 16.dp),
+                        isRequired = true,
+                        placeholder = stringResource(id = R.string.first_name_text)
                     )
 
                     if (activatedCheckFirstName) {
@@ -308,7 +408,7 @@ fun SignUpScreen(
                         }
                     }
 
-                    FormTextField(
+                    NewFormTextField(
                         value = userLastName,
                         onValueChange = {
                             userLastName = it
@@ -316,11 +416,9 @@ fun SignUpScreen(
                             viewModel.changeUserLastName(it)
                         },
                         label = stringResource(id = R.string.last_name_text),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 20.dp),
-                        isRequired = true
+                        modifier = Modifier.padding(top = 16.dp),
+                        isRequired = true,
+                        placeholder = stringResource(id = R.string.last_name_text)
                     )
 
                     if (activatedCheckLastName) {
@@ -337,7 +435,7 @@ fun SignUpScreen(
 
                 } else if (selectedIndex == 0) {
                     //company
-                    FormTextField(
+                    NewFormTextField(
                         value = companyName,
                         onValueChange = {
                             companyName = it
@@ -345,11 +443,9 @@ fun SignUpScreen(
                             viewModel.changeCompanyName(it)
                         },
                         label = stringResource(id = R.string.company_name_text),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 20.dp),
-                        isRequired = true
+                        modifier = Modifier.padding(top = 16.dp),
+                        isRequired = true,
+                        placeholder = stringResource(id = R.string.company_name_text)
                     )
 
                     if (activatedCheckCompanyName) {
@@ -363,7 +459,7 @@ fun SignUpScreen(
                     }
                 }
 
-                FormTextField(
+                NewFormTextField(
                     value = email,
                     onValueChange = {
                         email = it
@@ -371,11 +467,9 @@ fun SignUpScreen(
                         viewModel.changeUserEmail(it)
                     },
                     label = "Email",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 20.dp),
-                    isRequired = true
+                    modifier = Modifier.padding(top = 16.dp),
+                    isRequired = true,
+                    placeholder = "Email"
                 )
 
                 if (activatedCheckEmail) {
@@ -390,20 +484,18 @@ fun SignUpScreen(
                     }
                 }
 
-                FormTextField(
+                NewFormTextField(
                     value = password,
                     onValueChange = {
                         password = it
                         if (activatedCheckPassword) viewModel.validatePassword(it)
                         viewModel.changeUserPassword(it)
                     },
+                    isPassword = true,
                     label = stringResource(id = R.string.password_text),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 20.dp),
+                    modifier = Modifier.padding(top = 16.dp),
                     isRequired = true,
-                    isPassword = true
+                    placeholder = stringResource(id = R.string.password_text)
                 )
 
                 if (activatedCheckPassword) {
@@ -417,7 +509,7 @@ fun SignUpScreen(
                     }
                 }
 
-                FormTextField(
+                NewFormTextField(
                     value = confirmPassword,
                     onValueChange = {
                         confirmPassword = it
@@ -428,11 +520,9 @@ fun SignUpScreen(
                         )
                     },
                     label = stringResource(id = R.string.confirm_password_text),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 20.dp),
+                    modifier = Modifier.padding(top = 16.dp),
                     isRequired = true,
+                    placeholder = stringResource(id = R.string.confirm_password_text),
                     isPassword = true
                 )
 
@@ -461,7 +551,7 @@ fun SignUpScreen(
                                     viewModel.validateCompanyName(companyName)
                                 if (!companyNameValidator) activatedCheckCompanyName = true
                                 companyNameValidator
-                            } else {
+                            } else if (selectedIndex == 1) {
                                 val firstNameValidator =
                                     viewModel.validateFirstName(userFirstName)
                                 val lastNameValidator =
@@ -471,18 +561,22 @@ fun SignUpScreen(
                                 if (!lastNameValidator) activatedCheckLastName = true
 
                                 firstNameValidator && lastNameValidator
+                            } else {
+                                val categoryValidator =
+                                    (selectedCategory != null && selectedCategory != ServiceCategory.IDLE) || selectedCategoryText.isNotEmpty()
+
+                                val usernameValidator = title.isNotEmpty()
+
+                                if (!categoryValidator) activatedCheckCategory = true
+                                if (!usernameValidator) activatedCheckUsername = true
+
+                                categoryValidator && usernameValidator
                             }
 
                             val emailValidator = viewModel.validateEmail(email)
                             val passwordValidator = viewModel.validatePassword(password)
                             val confirmValidator =
                                 viewModel.checkConfirmPassword(password, confirmPassword)
-
-                            val localCheck = when (selectedIndex) {
-                                1 -> !submitEnabled || !lastNameVerified || !emailVerified || !passwordVerified || !confirmPasswordVerified
-                                0 -> !companyNameVerified || !emailVerified || !passwordVerified || !confirmPasswordVerified
-                                else -> true
-                            }
 
                             if (!emailValidator) activatedCheckEmail = true
                             if (!passwordValidator) activatedCheckPassword = true
@@ -533,6 +627,36 @@ fun SignUpScreen(
                         )
                     }
                 }
+            }
+
+            // Category Selection Dialog
+            if (showCategoryDialog) {
+                AlertDialog(
+                    onDismissRequest = { showCategoryDialog = false },
+                    title = { Text("Choisir une catégorie") },
+                    text = {
+                        LazyColumn {
+                            items(ServiceCategory.entries.toTypedArray()) { category ->
+                                CategoryDialogItem(
+                                    category = category,
+                                    onClick = {
+                                        selectedCategory = category
+                                        viewModel.changePostType(
+                                            selectedCategory ?: ServiceCategory.IDLE
+                                        )
+                                        showCategoryDialog = false
+                                    }
+                                )
+                            }
+                        }
+                    },
+                    confirmButton = {},
+                    dismissButton = {
+                        TextButton(onClick = { showCategoryDialog = false }) {
+                            Text("Annuler", color = Color(0xFF049344))
+                        }
+                    }
+                )
             }
 
             if (isProgressing) {

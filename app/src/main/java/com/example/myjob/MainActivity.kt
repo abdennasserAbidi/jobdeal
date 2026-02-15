@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresExtension
@@ -136,6 +137,7 @@ import java.net.URISyntaxException
 import javax.inject.Inject
 import androidx.core.net.toUri
 import com.example.myjob.feature.demands.DemandMarketDetailScreen
+import com.example.myjob.feature.home.ServiceUserScreen
 import com.example.myjob.feature.notification.DemandNotificationScreen
 
 @AndroidEntryPoint
@@ -335,6 +337,12 @@ class MainActivity : ComponentActivity() {
         requestNotificationPermission()
 
         //setupSocket()
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true /* isEnabled */) {
+            override fun handleOnBackPressed() {
+
+            }
+        })
 
         fetchData()
 
@@ -899,6 +907,20 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = false
 
                         MarketDemandScreen(
+                            navController = navController,
+                            makeCall = { phone ->
+                                makePhoneCall(context, phone)
+                            },
+                            clearData = {
+                                selectedTabIndex = 0
+                            }
+                        )
+                    }
+
+                    composable(route = Screen.DemandServiceScreen.route) {
+                        isVisibleNav = false
+
+                        ServiceUserScreen(
                             navController = navController,
                             makeCall = { phone ->
                                 makePhoneCall(context, phone)

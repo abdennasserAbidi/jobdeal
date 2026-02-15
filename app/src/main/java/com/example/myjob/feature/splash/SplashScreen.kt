@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.myjob.R
 import com.example.myjob.base.MyApp
 import com.example.myjob.common.GlobalEntries
@@ -63,7 +64,7 @@ fun SplashScreen(
     }
 
     LaunchedEffect(listCompanies) {
-        app.listCompanies.removeLast()
+        app.listCompanies.removeAt(app.listCompanies.lastIndex)
         if (!app.listCompanies.containsAll(listCompanies)) app.listCompanies.addAll(listCompanies)
     }
 
@@ -111,14 +112,17 @@ fun SplashScreen(
                     val type = splashViewModel.getType()
                     if (isFinished) {
                         if (token.isNotEmpty()) {
-
-                            if (user.firstTimeUse == true) {
-                                if (user.role == "Candidate" || user.role == "Candidat")
-                                    navController.navigate(Screen.SearchWordScreen.route)
-                                else navController.navigate(Screen.CompanyProfileForm.route)
-                            } else {
-                                if (type == "service") navController.navigate(Screen.DemandMarketScreen.route)
-                                else navController.navigate(Screen.HomeScreen.route)
+                            if (user.role == "Services")
+                                navController.navigate(Screen.DemandServiceScreen.route)
+                            else {
+                                if (user.firstTimeUse == true) {
+                                    if (user.role == "Candidate" || user.role == "Candidat")
+                                        navController.navigate(Screen.SearchWordScreen.route)
+                                    else navController.navigate(Screen.CompanyProfileForm.route)
+                                } else {
+                                    if (type == "service") navController.navigate(Screen.DemandServiceScreen.route)
+                                    else navController.navigate(Screen.HomeScreen.route)
+                                }
                             }
 
                         } else navController.navigate(Screen.LoginScreen.route)

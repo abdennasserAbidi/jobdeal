@@ -1,5 +1,6 @@
 package com.example.myjob.feature.home
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -58,6 +59,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -77,6 +79,7 @@ import com.example.myjob.domain.entities.HomeEntity
 import com.example.myjob.domain.entities.JobType
 import com.example.myjob.domain.entities.announcement.PostType
 import com.example.myjob.domain.entities.invitation.InvitationStatus
+import com.example.myjob.feature.demands.findActivity
 import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.posts.FilterPostBottomSheet
 import com.example.myjob.ui.theme.WhatsAppDarkGreen
@@ -144,6 +147,11 @@ fun ModernHomeScreen(
         if (fcmToken.isEmpty()) {
             homeViewModel.updateToken()
         }
+    }
+
+    val context = LocalContext.current
+    BackHandler(enabled = true) {
+        context.findActivity()?.finish()
     }
 
     val demandText = stringResource(id = R.string.demand_text)

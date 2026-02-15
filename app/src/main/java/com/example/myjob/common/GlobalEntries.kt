@@ -61,6 +61,7 @@ object GlobalEntries {
     var experience = Experience()
     var educations = Educations()
     var marketDemand = MarketDemandModel()
+    var isUpdatingDemand = false
     var user = User()
     var candidateUser = User()
     var candidate = Candidate()

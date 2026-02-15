@@ -136,6 +136,9 @@ ApiService {
         @Query("size") size: Int = 10
     ): GenericResponse<User>
 
+    @POST("auth/countDownTrialUser")
+    suspend fun countDownTrialUser(@Query("idUser") idUser: Int): UserResponse
+
     @POST("auth/addEducation")
     suspend fun saveEducation(@Body educations: Educations): UserResponse
 
@@ -152,6 +155,21 @@ ApiService {
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
     ): GenericResponse<User>
+
+    @GET("auth/getAllCandidateService")
+    suspend fun getAllCandidateService(
+        @Query("id") id: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<User>
+
+    @GET("auth/getUserServiceFiltered")
+    suspend fun getUserServiceFiltered(
+        @Query("word") word: String,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<User>
+
 
     @GET("auth/getNewCandidate")
     suspend fun getNewCandidate(

@@ -61,6 +61,7 @@ class DemandRepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
+
     override suspend fun getDemand(idDemand: Int): Flow<Resource<MarketDemandModel>> = flow {
         try {
             // Get data from RemoteDataSource

@@ -14,6 +14,7 @@ interface SearchDataSource {
     ): GenericResponse<SearchHistory>
 
     suspend fun searchUsers(criteria: CriteriaModel, pageNumber: Int): GenericResponse<User>
+    suspend fun countDownTrialUser(idUser: Int): UserResponse
 
     suspend fun getAllSearch(id: Int, pageNumber: Int): GenericResponse<SearchHistory>
 

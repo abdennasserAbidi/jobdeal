@@ -1,15 +1,17 @@
 package com.example.myjob.feature.demands
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import androidx.paging.filter
 import com.example.myjob.base.messages.StompChatService
 import com.example.myjob.base.messages.StompInvitationService
 import com.example.myjob.base.messages.StompNotificationService
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.isUpdatingDemand
+import com.example.myjob.common.GlobalEntries.marketDemand
 import com.example.myjob.domain.entities.JobType
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.demands.MarketDemandModel
@@ -24,13 +26,10 @@ import com.example.myjob.domain.usecase.notification.SeenNotificationUseCase
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -105,6 +104,13 @@ class DemandsViewModel @Inject constructor(
         userSender != sharedPreference.getInt("idUser", 0)
 
     val marketDemandModel = MutableStateFlow(MarketDemandModel())
+
+    fun changeAllModel() {
+        marketDemandModel.update {
+            marketDemand
+        }
+    }
+
     fun changePostName(name: String) {
         marketDemandModel.update {
             it.title = name
@@ -206,6 +212,13 @@ class DemandsViewModel @Inject constructor(
         marketDemandModel.update { marketDemandModels }
 
         viewModelScope.launch {
+            if (isUpdatingDemand) {
+                marketDemandModel.update {
+                    it.id = marketDemand.id
+                    it
+                }
+            }
+
             saveDemandUseCase.execute(marketDemandModel.value)
                 .collectLatest { res ->
                     if (res.status == ResourceState.SUCCESS) {
@@ -237,8 +250,13 @@ class DemandsViewModel @Inject constructor(
     ///////////////////////////////////////////////////////////////////////////
     // LIST DEMANDS
     ///////////////////////////////////////////////////////////////////////////
+    private val _localItemRemoves = MutableStateFlow(-1)
     private val _demands = MutableStateFlow(PagingData.empty<MarketDemandModel>())
-    val demands: StateFlow<PagingData<MarketDemandModel>> get() = _demands.asStateFlow()
+    val demands = _demands
+        .combine(_localItemRemoves) { pagingData, removedId ->
+            pagingData.filter { it.id != removedId }
+        }
+        .cachedIn(viewModelScope)
 
     fun getDemands() {
         viewModelScope.launch {
@@ -253,8 +271,6 @@ class DemandsViewModel @Inject constructor(
     // DELETE
     ///////////////////////////////////////////////////////////////////////////
     val deleteDemandState = MutableStateFlow("")
-    private val _localItemRemoves = MutableStateFlow(-1)
-
     fun deleteDemand(item: Int) {
         viewModelScope.launch {
             deleteDemandUseCase.execute(item).collect { res ->
@@ -262,16 +278,7 @@ class DemandsViewModel @Inject constructor(
                     deleteDemandState.update {
                         res.data?.message ?: ""
                     }
-
                     _localItemRemoves.update { item }
-
-                    _demands.combine(_localItemRemoves) { pagingData, updates ->
-                        pagingData.filter {
-                            it.id != updates
-                        }
-                    }.collect { data ->
-                        _demands.update { data }
-                    }
                 }
             }
         }
@@ -281,7 +288,6 @@ class DemandsViewModel @Inject constructor(
     // SEARCH
     ///////////////////////////////////////////////////////////////////////////
     fun filterDemands(query: String) {
-        Log.i("gtejgkltegnte", "filterDemands: $query")
         if (query.isNotEmpty()) {
             viewModelScope.launch {
                 getFilteredDemandUseCase.execute(query).collectLatest { res ->

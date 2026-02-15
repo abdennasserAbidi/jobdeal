@@ -9,9 +9,7 @@ import com.example.myjob.base.GenericSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.User
-import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
-import com.example.myjob.domain.response.UploadResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.local.database.SharedPreference
 import com.example.myjob.remote.source.home.HomeDataSource
@@ -55,6 +53,71 @@ class HomeRepositoryImp @Inject constructor(
                     sharedPreference.putString("jsonUser", json)
 
                     users
+                }
+            }
+        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+        emitAll(
+            pager.map { pagingData ->
+                Resource(ResourceState.SUCCESS, pagingData, null)
+            }
+        )
+    }.catch { ex ->
+        emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
+
+    override suspend fun getAllCandidateService(id: Int): Flow<Resource<PagingData<User>>> = flow {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            pagingSourceFactory = {
+                GenericSource { currentPage ->
+                    val users = remoteDataSource.getAllCandidateService(id, pageNumber = currentPage)
+                    val lang = sharedPreference.getString("lang", "") ?: ""
+                    users.content.map {
+                        val gender = it.sexe ?: ""
+                        it.changeSex(gender, lang)
+
+                        val situation = it.situation ?: ""
+                        it.changeSituation(situation, lang)
+
+                        /*if (it.role == "Candidate" || it.role == "Candidat") {
+                            val availability = it.professionalStatus.availability ?: ""
+                            it.changeAvailability(availability, lang)
+                        }*/
+                    }
+
+                    val json = Gson().toJson(users.content)
+                    sharedPreference.putString("jsonUser", json)
+
+                    users
+                }
+            }
+        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+        emitAll(
+            pager.map { pagingData ->
+                Resource(ResourceState.SUCCESS, pagingData, null)
+            }
+        )
+    }.catch { ex ->
+        emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
+
+    override suspend fun getUserServiceFiltered(word: String): Flow<Resource<PagingData<User>>> = flow {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            pagingSourceFactory = {
+                GenericSource { currentPage ->
+                    val educations =
+                        remoteDataSource.getUserServiceFiltered(
+                            word = word,
+                            pageNumber = currentPage
+                        )
+
+                    val json = Gson().toJson(educations.content)
+                    sharedPreference.putString("jsonDemand", json)
+
+                    educations
                 }
             }
         ).flow.cachedIn(CoroutineScope(Dispatchers.IO))

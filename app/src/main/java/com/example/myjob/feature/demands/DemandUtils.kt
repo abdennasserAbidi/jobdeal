@@ -30,6 +30,8 @@ import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -54,16 +56,21 @@ import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myjob.R
+import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.demands.MarketDemandModel
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -303,12 +310,155 @@ enum class DemandStatus(val displayName: String, val color: Color) {
 }
 
 @Composable
+fun NewFormTextField(
+    value: String,
+    borderColor: Color = colorResource(id = R.color.whatsapp),
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    placeholder: String = "",
+    leadingIcon: ImageVector? = null,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    maxLines: Int = 1,
+    minLines: Int = 1,
+    isCheckActivated: Boolean = false,
+    isError: Boolean = false,
+    errorText: String = "",
+    isRequired: Boolean = false,
+    isPassword: Boolean = false,
+    readOnly: Boolean = false,
+    focusChange: (Boolean) -> Unit = {},
+    onClick: () -> Unit = {}
+) {
+
+    val whatsAppGreen = colorResource(id = R.color.whatsapp)
+    var isFocused by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isFocused) {
+        focusChange(isFocused)
+    }
+
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = label,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF1F2937)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (isPassword) {
+                var showPassword by remember { mutableStateOf(false) }
+
+                OutlinedTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    interactionSource = interactionSource,
+                    readOnly = readOnly,
+                    placeholder = { Text(placeholder, color = Color(0xFF9CA3AF)) },
+                    leadingIcon = leadingIcon?.let { icon ->
+                        { Icon(icon, contentDescription = label) }
+                    },
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .onFocusChanged {
+                            isFocused = it.isFocused
+                        },
+                    shape = RoundedCornerShape(12.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                    maxLines = maxLines,
+                    minLines = minLines,
+                    visualTransformation = if (showPassword) {
+                        VisualTransformation.None
+                    } else {
+                        PasswordVisualTransformation()
+                    }, trailingIcon = {
+                        if (showPassword) {
+                            IconButton(onClick = { showPassword = false }) {
+                                Icon(imageVector = Icons.Filled.Visibility, contentDescription = "")
+                            }
+                        } else {
+                            IconButton(onClick = { showPassword = true }) {
+                                Icon(
+                                    imageVector = Icons.Filled.VisibilityOff,
+                                    contentDescription = ""
+                                )
+                            }
+                        }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = if (isCheckActivated && isError) Red else borderColor,
+                        unfocusedBorderColor = Color(0xFFE5E7EB),
+                        focusedTextColor = Color(0xFF1F2937),
+                        unfocusedTextColor = Color(0xFF1F2937)
+                    )
+                )
+            } else {
+                OutlinedTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    readOnly = readOnly,
+                    interactionSource = interactionSource,
+                    placeholder = { Text(placeholder, color = Color(0xFF9CA3AF)) },
+                    leadingIcon = leadingIcon?.let { icon ->
+                        { Icon(icon, contentDescription = label) }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged {
+                            isFocused = it.isFocused
+                        },
+                    shape = RoundedCornerShape(12.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                    maxLines = maxLines,
+                    minLines = minLines,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = if (isCheckActivated && isError) Red else borderColor,
+                        unfocusedBorderColor = Color(0xFFE5E7EB),
+                        focusedTextColor = Color(0xFF1F2937),
+                        unfocusedTextColor = Color(0xFF1F2937)
+                    )
+                )
+            }
+
+            if (isCheckActivated && isError) {
+                Text(
+                    modifier = Modifier.padding(top = 5.dp, start = 20.dp),
+                    text = errorText,
+                    color = Red
+                )
+            }
+
+            // Collect press events from the interaction source
+            if (interactionSource.collectIsPressedAsState().value) {
+                LaunchedEffect(Unit) {
+                    onClick()
+                }
+            }
+        }
+    }
+
+}
+
+@Composable
 fun FormTextField(
     value: String,
     borderColor: Color = Color(0xFF049344),
     onValueChange: (String) -> Unit,
     label: String,
     placeholder: String,
+    modifier: Modifier = Modifier,
+    isCheckActivated: Boolean = false,
+    isError: Boolean = false,
+    errorText: String = "",
     leadingIcon: ImageVector? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
     minLines: Int = 1,
@@ -320,7 +470,7 @@ fun FormTextField(
     val interactionSource = remember { MutableInteractionSource() }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -343,7 +493,7 @@ fun FormTextField(
                 placeholder = { Text(placeholder, color = Color(0xFF9CA3AF)) },
                 leadingIcon = leadingIcon?.let { { Icon(it, null, tint = Color(0xFF049344)) } },
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = borderColor,
+                    focusedBorderColor = if (isCheckActivated && isError) Red else borderColor,
                     unfocusedBorderColor = Color(0xFFE5E7EB),
                     focusedTextColor = Color(0xFF1F2937),
                     unfocusedTextColor = Color(0xFF1F2937)
@@ -353,6 +503,14 @@ fun FormTextField(
                 minLines = minLines,
                 maxLines = maxLines
             )
+
+            if (isCheckActivated && isError) {
+                Text(
+                    modifier = Modifier.padding(top = 5.dp, start = 20.dp),
+                    text = errorText,
+                    color = Red
+                )
+            }
 
             // Collect press events from the interaction source
             if (interactionSource.collectIsPressedAsState().value) {
@@ -545,15 +703,17 @@ fun DemandCard(
                 }
 
                 //StatusBadge(status = demand.status)
-                IconButton(
-                    onClick = {
-                        openMenu()
+                if (!isNotMe) {
+                    IconButton(
+                        onClick = {
+                            openMenu()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = ""
+                        )
                     }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = ""
-                    )
                 }
             }
 
@@ -590,6 +750,175 @@ fun DemandCard(
                     if (role == "Candidate" || role == "Candidat") demand.userSender?.fullName
                         ?: "Unkown"
                     else demand.userSender?.companyName ?: "Unkown"
+
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.align(CenterStart),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF049344)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = username.first().toString(),
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Text(
+                            text = username,
+                            fontSize = 12.sp,
+                            color = Color(0xFF6B7280)
+                        )
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            showContacts()
+                        },
+                        modifier = Modifier.align(CenterEnd),
+                        shape = RoundedCornerShape(12.dp),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            width = 2.dp,
+                            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFF049344))
+                        ),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF049344)
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Message,
+                            contentDescription = null,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Contacter",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun UserServiceCard(
+    user: User,
+    isNotMe: Boolean,
+    showContacts: () -> Unit,
+    openMenu: () -> Unit,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) {
+                onClick()
+            },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Header Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF049344).copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+
+                        val icon = if (user.otherCategory.isNotEmpty()) "⚙️"
+                        else user.category.icon
+
+                        Text(text = icon, fontSize = 24.sp)
+                    }
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = user.username,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1F2937),
+                            maxLines = 1
+                        )
+
+                        val name = user.otherCategory.ifEmpty { user.category.displayName }
+
+                        Text(
+                            text = name,
+                            fontSize = 13.sp,
+                            color = Color(0xFF049344),
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+
+                //StatusBadge(status = demand.status)
+                if (!isNotMe) {
+                    IconButton(
+                        onClick = {
+                            openMenu()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = ""
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Description
+            Text(
+                text = user.bio ?: "",
+                fontSize = 14.sp,
+                color = Color(0xFF4B5563),
+                maxLines = 2,
+                lineHeight = 20.sp
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Info Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                user.country?.let {
+                    InfoChip(icon = Icons.Filled.LocationOn, text = it)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            if (isNotMe) {
+                val username = user.username
 
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Row(

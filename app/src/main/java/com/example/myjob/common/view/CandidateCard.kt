@@ -12,22 +12,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Message
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -35,7 +28,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,11 +39,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Cyan
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -63,9 +53,6 @@ import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationStatus
-import com.example.myjob.feature.invitation.detail.InfoChip
-import com.example.myjob.feature.invitation.detail.WhatsAppGreen
-import com.example.myjob.feature.navigation.Screen
 import java.util.Calendar
 
 @Composable
@@ -265,12 +252,12 @@ fun CandidateCard(
                 if (invitations.isNotEmpty()) {
                     val invitation = invitations.filter { it.idTo == user.id }
                     if (invitation.isNotEmpty()) {
-                        val isFriend = invitation[0].status == InvitationStatus.HIRED.name
-                        val isInProcess = invitation[0].status == InvitationStatus.IN_PROCESS.name
-                        val isPending = invitation[0].status == InvitationStatus.ON_HOLD.name
-                        val isRejecting = invitation[0].status == InvitationStatus.REJECTED.name
+                        val isFriend = invitation[invitation.lastIndex].status == InvitationStatus.HIRED.name
+                        val isInProcess = invitation[invitation.lastIndex].status == InvitationStatus.IN_PROCESS.name
+                        val isPending = invitation[invitation.lastIndex].status == InvitationStatus.ON_HOLD.name
+                        val isRejecting = invitation[invitation.lastIndex].status == InvitationStatus.REJECTED.name
                         val notInterested =
-                            invitation[0].status == InvitationStatus.NOT_INTERESTED.name
+                            invitation[invitation.lastIndex].status == InvitationStatus.NOT_INTERESTED.name
 
                         if (isFriend) {
                             OutlinedButton(
@@ -337,7 +324,7 @@ fun CandidateCard(
                             Text(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 10.dp),
+                                    .padding(10.dp),
                                 color = Color.Red,
                                 text = stringResource(id = R.string.refuse_candidate_text)
                             )
@@ -365,7 +352,7 @@ fun CandidateCard(
                             Text(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 10.dp),
+                                    .padding(10.dp),
                                 color = Color.Red,
                                 text = "${stringResource(id = R.string.refuse_text)}  ${invitation[0].reason}"
                             )

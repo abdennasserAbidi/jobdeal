@@ -1,5 +1,6 @@
 package com.example.myjob.feature.home.detail
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -293,9 +294,16 @@ fun HeaderSection(candidate: User) {
 
                 ContactInfoItem(
                     icon = Icons.Filled.Phone,
-                    text = candidate.phoneList?.joinToString { "\n" } ?: ""
+                    text = candidate.phoneList?.joinToString(separator = "\n") ?: ""
                 )
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            ContactInfoItem(
+                icon = Icons.Filled.LocationOn,
+                text = candidate.addressList?.joinToString(separator = "\n") ?: ""
+            )
         }
     }
 }
@@ -328,7 +336,9 @@ fun QuickInfoSection(candidate: User) {
 
 
         val yearsText = stringResource(id = R.string.years_text)
-        val textExp = if (diffYear <= 5) "$diffYear $yearsText exp"
+
+        val textExp = if (diffYear == 0) "No experience"
+        else if (diffYear <= 5) "$diffYear $yearsText exp"
         else "+$diffYear $yearsText exp"
 
         InfoCard(
@@ -340,7 +350,7 @@ fun QuickInfoSection(candidate: User) {
         InfoCard(
             icon = Icons.Filled.LocationOn,
             label = "Localisation",
-            value = candidate.addressList?.joinToString { "\n" } ?: "",
+            value = candidate.country ?: "",
             modifier = Modifier.weight(1f)
         )
         InfoCard(
@@ -648,11 +658,13 @@ fun BottomActionBar(
             if (invitations.isNotEmpty()) {
                 val invitation = invitations.filter { it.idTo == candidate.id }
                 if (invitation.isNotEmpty()) {
-                    val isFriend = invitation[0].status == InvitationStatus.HIRED.name
-                    val isInProcess = invitation[0].status == InvitationStatus.IN_PROCESS.name
-                    val isPending = invitation[0].status == InvitationStatus.ON_HOLD.name
-                    val isRejecting =
-                        invitation[0].status == InvitationStatus.REJECTED.name || invitation[0].status == InvitationStatus.NOT_INTERESTED.name
+                    val isFriend = invitation[invitation.lastIndex].status == InvitationStatus.HIRED.name
+                    val isInProcess = invitation[invitation.lastIndex].status == InvitationStatus.IN_PROCESS.name
+                    val isPending = invitation[invitation.lastIndex].status == InvitationStatus.ON_HOLD.name
+                    val isRejecting = invitation[invitation.lastIndex].status == InvitationStatus.REJECTED.name
+                    val notInterested =
+                        invitation[invitation.lastIndex].status == InvitationStatus.NOT_INTERESTED.name
+
 
                     val whatsappGreen = colorResource(id = R.color.whatsapp)
                     if (isFriend) {
@@ -755,6 +767,39 @@ fun BottomActionBar(
                             )
                         }
 
+                    } else if (notInterested) {
+
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
+                            color = Color.Red,
+                            text = stringResource(id = R.string.refuse_candidate_text)
+                        )
+
+                        Spacer(Modifier.height(10.dp))
+
+                        Button(
+                            onClick = onHireClick,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF049344)
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.CheckCircle,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Recruter",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+
                     } else if (isRejecting) {
                         Column(modifier = Modifier.fillMaxWidth(),
                             horizontalAlignment = Alignment.CenterHorizontally) {
@@ -763,7 +808,7 @@ fun BottomActionBar(
                                     .fillMaxWidth()
                                     .padding(top = 10.dp),
                                 color = Color.Red,
-                                text = stringResource(id = R.string.refuse_candidate_text)
+                                text = "${stringResource(id = R.string.refuse_text)}  ${invitation[0].reason}"
                             )
 
                             Spacer(Modifier.height(10.dp))

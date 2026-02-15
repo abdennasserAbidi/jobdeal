@@ -62,10 +62,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.CustomDialog
+import com.example.myjob.common.GlobalEntries.isUpdatingDemand
 import com.example.myjob.common.GlobalEntries.marketDemand
+import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.demands.MarketDemandModel
 import com.example.myjob.feature.profile.DateContainer
 
@@ -98,6 +101,7 @@ fun AddDemandScreen(
 
     var title by remember { mutableStateOf(marketDemand.title) }
     var description by remember { mutableStateOf(marketDemand.description) }
+    Log.i("fzojflkrhgrizg", "AddDemandScreen: $description")
     var location by remember { mutableStateOf(marketDemand.location) }
     var budget by remember { mutableStateOf(marketDemand.budget) }
     var urgency by remember { mutableStateOf(Urgency.MOYEN) }
@@ -122,8 +126,13 @@ fun AddDemandScreen(
         )
     }
 
-    Log.i("gkzghrzjgrnzlrg", "index: $selectedIndex")
-
+    Log.i("gkzghrzjgrnzlrg", "index: $marketDemand")
+    val lifecycleEvent = rememberLifecycleEvent()
+    LaunchedEffect(lifecycleEvent) {
+        if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+            demandsViewModel.changeAllModel()
+        }
+    }
 
     val demandStatus by demandsViewModel.demandStatus.collectAsState()
 
@@ -141,6 +150,7 @@ fun AddDemandScreen(
             isSuccess = demandStatus == "saved successfully"
             showDialog = true
             marketDemand = MarketDemandModel()
+            isUpdatingDemand = false
         }
     }
 
@@ -309,7 +319,7 @@ fun AddDemandScreen(
                             value = selectedToolText,
                             onValueChange = {
                                 selectedToolText = it
-                                demandsViewModel.changeOtherTool(it)
+                                demandsViewModel.changeOtherTool(selectedToolText)
                             },
                             label = "Autre outil *",
                             placeholder = "Ex: Perceuse"
@@ -322,7 +332,7 @@ fun AddDemandScreen(
                     value = title,
                     onValueChange = {
                         title = it
-                        demandsViewModel.changePostName(it)
+                        demandsViewModel.changePostName(title)
                     },
                     label = "Titre de la demande *",
                     placeholder = "Ex: Installation d'une porte en bois"
@@ -333,7 +343,7 @@ fun AddDemandScreen(
                     value = description,
                     onValueChange = {
                         description = it
-                        demandsViewModel.changeDescriptions(it)
+                        demandsViewModel.changeDescriptions(description)
                     },
                     label = "Description détaillée *",
                     placeholder = "Décrivez votre besoin en détail...",
@@ -362,7 +372,7 @@ fun AddDemandScreen(
                         value = budget,
                         onValueChange = {
                             budget = it
-                            demandsViewModel.changeBudget(it)
+                            demandsViewModel.changeBudget(budget)
                         },
                         label = "Budget estimé",
                         placeholder = "Ex: 500 DT",
@@ -415,7 +425,7 @@ fun AddDemandScreen(
                                     selected = urgency == urg,
                                     onClick = {
                                         urgency = urg
-                                        demandsViewModel.changeUrgency(urg.name)
+                                        demandsViewModel.changeUrgency(urgency.name)
                                     },
                                     modifier = Modifier.weight(1f)
                                 )
@@ -462,7 +472,7 @@ fun AddDemandScreen(
                 isDateShowed = isDateShowed,
                 changeDate = {
                     deadline = it
-                    demandsViewModel.changeDeadline(it)
+                    demandsViewModel.changeDeadline(deadline)
                 },
                 onDismiss = {
                     isDateShowed = false
@@ -523,7 +533,7 @@ fun AddDemandScreen(
                                     indication = null
                                 ) {
                                     location = city
-                                    demandsViewModel.changeLocation(city)
+                                    demandsViewModel.changeLocation(location)
                                     showCitiesDialog = false
                                 }
                                 .padding(vertical = 12.dp),
@@ -561,7 +571,7 @@ fun AddDemandScreen(
                             category = category,
                             onClick = {
                                 selectedCategory = category
-                                demandsViewModel.changePostType(category)
+                                demandsViewModel.changePostType(selectedCategory ?: ServiceCategory.IDLE)
                                 showCategoryDialog = false
                             }
                         )
@@ -589,7 +599,7 @@ fun AddDemandScreen(
                             category = tool,
                             onClick = {
                                 selectedTool = tool
-                                demandsViewModel.changeTool(tool)
+                                demandsViewModel.changeTool(selectedTool ?: ToolCategory.IDLE)
                                 showToolsDialog = false
                             }
                         )

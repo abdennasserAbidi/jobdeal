@@ -4,7 +4,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.example.myjob.base.GenericResponse
 import com.example.myjob.base.GenericSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
@@ -68,6 +67,18 @@ class SearchRepositoryImp @Inject constructor(
         )
     }.catch { ex ->
         emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
+
+    override suspend fun countDownTrial(idUser: Int): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.countDownTrialUser(idUser)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
     }
 
     override suspend fun searchUsers(criteria: CriteriaModel): Flow<Resource<PagingData<User>>> =
@@ -145,38 +156,44 @@ class SearchRepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
-    override suspend fun getUserFiltered(word: String, id: Int): Flow<Resource<PagingData<User>>> = flow {
-        val pager = Pager(
-            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
-            pagingSourceFactory = {
-                GenericSource { currentPage ->
-                    val users = remoteDataSource.getUserFiltered(word = word, id, pageNumber = currentPage)
-                    val lang = sharedPreference.getString("lang", "") ?: ""
-                    users.content.map {
-                        val gender = it.sexe ?: ""
-                        it.changeSex(gender, lang)
 
-                        val situation = it.situation ?: ""
-                        it.changeSituation(situation, lang)
+    override suspend fun getUserFiltered(word: String, id: Int): Flow<Resource<PagingData<User>>> =
+        flow {
+            val pager = Pager(
+                config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+                pagingSourceFactory = {
+                    GenericSource { currentPage ->
+                        val users = remoteDataSource.getUserFiltered(
+                            word = word,
+                            id,
+                            pageNumber = currentPage
+                        )
+                        val lang = sharedPreference.getString("lang", "") ?: ""
+                        users.content.map {
+                            val gender = it.sexe ?: ""
+                            it.changeSex(gender, lang)
 
-                        val availability = it.professionalStatus?.availability ?: ""
-                        it.changeAvailability(availability, lang)
+                            val situation = it.situation ?: ""
+                            it.changeSituation(situation, lang)
+
+                            val availability = it.professionalStatus?.availability ?: ""
+                            it.changeAvailability(availability, lang)
+                        }
+
+                        val json = Gson().toJson(users.content)
+                        sharedPreference.putString("jsonUserFiltered", json)
+
+                        users
                     }
-
-                    val json = Gson().toJson(users.content)
-                    sharedPreference.putString("jsonUserFiltered", json)
-
-                    users
                 }
-            }
-        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+            ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
 
-        emitAll(
-            pager.map { pagingData ->
-                Resource(ResourceState.SUCCESS, pagingData, null)
-            }
-        )
-    }.catch { ex ->
-        emit(Resource(ResourceState.ERROR, null, ex.message))
-    }
+            emitAll(
+                pager.map { pagingData ->
+                    Resource(ResourceState.SUCCESS, pagingData, null)
+                }
+            )
+        }.catch { ex ->
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
 }

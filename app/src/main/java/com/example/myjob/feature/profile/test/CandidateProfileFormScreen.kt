@@ -297,6 +297,9 @@ fun CandidateProfileFormScreenTest(
         mutableStateOf(user.experience ?: mutableListOf())
     }
 
+    var selectedExperiences by remember { mutableStateOf<Experience?>(null) }
+    var selectedExperienceIndex by remember { mutableStateOf(-1) }
+
     listExperience = user.experience ?: mutableListOf()
 
     val listCompanies by profileViewModel.listCompanies.collectAsState()
@@ -311,6 +314,9 @@ fun CandidateProfileFormScreenTest(
     var educations by remember {
         mutableStateOf(user.education ?: mutableListOf())
     }
+
+    var selectedEducations by remember { mutableStateOf<Educations?>(null) }
+    var selectedEducationIndex by remember { mutableStateOf(-1) }
 
     listEducations = user.education ?: mutableListOf()
 
@@ -900,6 +906,15 @@ fun CandidateProfileFormScreenTest(
                     }
 
                     3 -> {
+
+                        val saveExpState by profileViewModel.saveExpState.collectAsState()
+                        LaunchedEffect(saveExpState) {
+                            if (saveExpState == "saved successfully") {
+                                profileViewModel.clearExpState()
+                                selectedTab += 1
+                            }
+                        }
+
                         Column(
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
@@ -993,12 +1008,8 @@ fun CandidateProfileFormScreenTest(
                                         profileViewModel.removeExperience(item.id)
                                     },
                                     onSubmit = {
-                                        item.companyName?.let {
-                                            if (it.contains(",")) {
-                                                profileViewModel.changeCompanyExperience(index, it.split(",")[1])
-                                            }
-                                        }
-                                        profileViewModel.saveExperiences(user.experience ?: mutableListOf())
+                                        selectedExperiences = item
+                                        selectedExperienceIndex = index
                                     }
                                 )
 
@@ -1013,6 +1024,14 @@ fun CandidateProfileFormScreenTest(
                             if (saveCompletedState == "saved successfully") {
                                 navController.navigate(Screen.UpdateDetailsScreen.route)
                                 profileViewModel.clearComplete()
+                            }
+                        }
+
+                        val saveEducationState by profileViewModel.saveEducationState.collectAsState()
+                        LaunchedEffect(saveEducationState) {
+                            if (saveEducationState == "saved successfully") {
+                                profileViewModel.saveIsCompletedProfileCandidate()
+                                profileViewModel.clearEducationState()
                             }
                         }
 
@@ -1046,6 +1065,8 @@ fun CandidateProfileFormScreenTest(
 
                             // Education Items
                             educations.forEachIndexed { index, education ->
+                                selectedEducations = education
+                                selectedEducationIndex = index
                                 EducationCard(
                                     index = index,
                                     profileViewModel = profileViewModel,
@@ -1066,12 +1087,7 @@ fun CandidateProfileFormScreenTest(
                                         profileViewModel.changeGradeEducation(index, it)
                                     },
                                     onSubmit = {
-                                        education.schoolName?.let {
-                                            if (it.contains(",")) {
-                                                profileViewModel.changeInstitution(index, it.split(",")[1])
-                                            }
-                                        }
-                                        profileViewModel.saveEducations(user.education ?: mutableListOf())
+
                                     },
                                     onRemove = {
                                         educations = (educations - education).toMutableList()
@@ -1243,8 +1259,22 @@ fun CandidateProfileFormScreenTest(
                                 }
                             }
                             2 -> profileViewModel.saveCandidateSkills()
-                            3 -> selectedTab += 1
-                            4 -> profileViewModel.saveIsCompletedProfileCandidate()
+                            3 -> {
+                                selectedExperiences?.companyName?.let {
+                                    if (it.contains(",")) {
+                                        profileViewModel.changeCompanyExperience(selectedExperienceIndex, it.split(",")[1])
+                                    }
+                                }
+                                profileViewModel.saveExperiences(user.experience ?: mutableListOf())
+                            }
+                            4 -> {
+                                selectedEducations?.schoolName?.let {
+                                    if (it.contains(",")) {
+                                        profileViewModel.changeInstitution(selectedEducationIndex, it.split(",")[1])
+                                    }
+                                }
+                                profileViewModel.saveEducations(user.education ?: mutableListOf())
+                            }
 
                         }
                     },

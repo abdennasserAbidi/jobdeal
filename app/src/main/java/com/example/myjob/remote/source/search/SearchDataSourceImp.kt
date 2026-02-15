@@ -36,6 +36,9 @@ class SearchDataSourceImp @Inject constructor(
         pageNumber: Int
     ): GenericResponse<User> = apiService.searchUsers(criteria, pageNumber)
 
+    override suspend fun countDownTrialUser(idUser: Int): UserResponse =
+        apiService.countDownTrialUser(idUser)
+
     override suspend fun getUserFiltered(
         word: String,
         id: Int,
