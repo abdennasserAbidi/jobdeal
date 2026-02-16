@@ -125,7 +125,7 @@ class SignUpViewModel @Inject constructor(
 
     fun changeServiceUserName(name: String) {
         user.update {
-            it.username = name
+            it.userServiceName = name
             it
         }
     }

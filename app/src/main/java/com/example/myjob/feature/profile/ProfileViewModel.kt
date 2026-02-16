@@ -40,10 +40,12 @@ import com.example.myjob.domain.usecase.profile.SaveEducationUseCase
 import com.example.myjob.domain.usecase.profile.SaveExperienceUseCase
 import com.example.myjob.domain.usecase.profile.SavePersonalUseCase
 import com.example.myjob.domain.usecase.profile.SaveProfessionalInfoUseCase
+import com.example.myjob.domain.usecase.profile.SaveServiceInfoUseCase
 import com.example.myjob.domain.usecase.profile.SaveSkillsUseCase
 import com.example.myjob.domain.usecase.profile.UpdateCandidateCompleteUseCase
 import com.example.myjob.domain.usecase.verification.GetVerifiedCompanyUseCase
 import com.example.myjob.domain.usecase.verification.GetVerifiedInstitutesUseCase
+import com.example.myjob.feature.demands.ServiceCategory
 import com.example.myjob.feature.profile.test.LanguageForm
 import com.example.myjob.local.database.SharedPreference
 import com.google.gson.Gson
@@ -84,7 +86,8 @@ class ProfileViewModel @Inject constructor(
     private val verifyExistingFileUseCase: VerifyExistingFileUseCase,
     private val saveCompanyInfoUseCase: SaveCompanyInfoUseCase,
     private val getVerifiedCompanyUseCase: GetVerifiedCompanyUseCase,
-    private val getVerifiedInstitutesUseCase: GetVerifiedInstitutesUseCase
+    private val getVerifiedInstitutesUseCase: GetVerifiedInstitutesUseCase,
+    private val saveServiceInfoUseCase: SaveServiceInfoUseCase
 ) : ViewModel() {
 
     ///////////////////////////////////////////////////////////////////////////
@@ -93,7 +96,6 @@ class ProfileViewModel @Inject constructor(
     val savedCompanyInfo = MutableStateFlow("")
     fun saveCompanyInfo() {
         viewModelScope.launch {
-            Log.i("erjrehjfghez", "phoneList: ${user.value.phoneList}")
 
             saveCompanyInfoUseCase.execute(user.value).collect { res ->
                 //saveIsCompletedProfileCandidate()
@@ -151,6 +153,62 @@ class ProfileViewModel @Inject constructor(
             it
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // PROFILE SERVICE
+    ///////////////////////////////////////////////////////////////////////////
+    fun changeServiceUserName(name: String) {
+        user.update {
+            it.userServiceName = name
+            it
+        }
+    }
+
+    fun changeServiceEmail(name: String) {
+        user.update {
+            it.email = name
+            it
+        }
+    }
+
+    fun changePostType(name: ServiceCategory) {
+        user.update {
+            it.category = name
+            it
+        }
+    }
+
+    fun changeDescriptions(name: String) {
+        user.update {
+            it.bio = name
+            it
+        }
+    }
+
+    fun changeLocation(name: String) {
+        user.update {
+            it.country = name
+            it
+        }
+    }
+
+    fun changeOtherCategory(name: String) {
+        user.update {
+            it.otherCategory = name
+            it
+        }
+    }
+
+    val savedServiceInfo = MutableStateFlow("")
+    fun saveServiceInfo() {
+        viewModelScope.launch {
+            saveServiceInfoUseCase.execute(user.value).collect { res ->
+                savedServiceInfo.update { res.data?.message ?: "" }
+            }
+        }
+    }
+
+
 
     ///////////////////////////////////////////////////////////////////////////
     // END NEW PROFILE
@@ -387,6 +445,13 @@ class ProfileViewModel @Inject constructor(
             it
         }
 
+    }
+
+    fun changeCity(item: String) {
+        user.update {
+            it.city = item
+            it
+        }
     }
 
     var completePhone = MutableStateFlow("")

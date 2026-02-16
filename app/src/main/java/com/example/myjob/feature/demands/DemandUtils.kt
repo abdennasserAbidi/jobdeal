@@ -1,6 +1,10 @@
 package com.example.myjob.feature.demands
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -43,6 +47,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -60,8 +66,11 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -70,6 +79,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myjob.R
+import com.example.myjob.common.phonekit.getFlagResource
+import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.demands.MarketDemandModel
 import java.text.SimpleDateFormat
@@ -523,6 +534,234 @@ fun FormTextField(
 }
 
 @Composable
+fun FormTextFieldAddress(
+    value: String,
+    borderColor: Color = Color(0xFF049344),
+    onValueChange: (String) -> Unit,
+    label: String,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    isCheckActivated: Boolean = false,
+    isError: Boolean = false,
+    errorText: String = "",
+    leadingIcon: ImageVector? = null,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    minLines: Int = 1,
+    maxLines: Int = 1,
+    readOnly: Boolean = false,
+    focusChange: (Boolean) -> Unit = {},
+    onClick: () -> Unit = {},
+    onAdd: () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = label,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF1F2937)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                readOnly = readOnly,
+                interactionSource = interactionSource,
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(placeholder, color = Color(0xFF9CA3AF)) },
+                leadingIcon = leadingIcon?.let { { Icon(it, null, tint = Color(0xFF049344)) } },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = if (isCheckActivated && isError) Red else borderColor,
+                    unfocusedBorderColor = Color(0xFFE5E7EB),
+                    focusedTextColor = Color(0xFF1F2937),
+                    unfocusedTextColor = Color(0xFF1F2937)
+                ),
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                minLines = minLines,
+                maxLines = maxLines
+            )
+
+            Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                Text(
+                    color = Color(0xFF049344),
+                    text = "Ajouter une adresse",
+                    modifier = Modifier
+                        .align(CenterEnd)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            onAdd()
+                        }
+                )
+            }
+
+            if (isCheckActivated && isError) {
+                Text(
+                    modifier = Modifier.padding(top = 5.dp, start = 20.dp),
+                    text = errorText,
+                    color = Red
+                )
+            }
+
+            // Collect press events from the interaction source
+            if (interactionSource.collectIsPressedAsState().value) {
+                LaunchedEffect(Unit) {
+                    onClick()
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FormTextFieldPhone(
+    selectedCountry: NewCountry,
+    borderColor: Color = Color(0xFF049344),
+    defaultPhone: String,
+    onAdd: () -> Unit,
+    onValueChanged: (phone: String) -> Unit = {},
+    onValueChange: (String) -> Unit = {},
+    label: String,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    isCheckActivated: Boolean = false,
+    isError: Boolean = false,
+    errorText: String = "",
+    keyboardType: KeyboardType = KeyboardType.Text,
+    minLines: Int = 1,
+    maxLines: Int = 1,
+    readOnly: Boolean = false,
+    focusChange: (Boolean) -> Unit = {},
+    onClick: () -> Unit = {}
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val context = LocalContext.current
+
+    var phone by remember { mutableStateOf("") }
+
+    LaunchedEffect(defaultPhone.isNotEmpty()) {
+        phone = defaultPhone
+    }
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = label,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF1F2937)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = phone,
+                onValueChange = onValueChange,
+                readOnly = readOnly,
+                interactionSource = interactionSource,
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(placeholder, color = Color(0xFF9CA3AF)) },
+                leadingIcon = {
+                    Row(
+                        modifier = Modifier
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                onClick()
+                            },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(id = context.getFlagResource(selectedCountry.iso2)),
+                            contentDescription = "",
+                            tint = Color.Unspecified,
+                            modifier = Modifier
+                                .size(30.dp)
+                                .padding(start = 10.dp)
+                        )
+
+                        androidx.compose.material.Text(
+                            text = "+${selectedCountry.code}",
+                            style = TextStyle(
+                                color = Color.Black,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            modifier = Modifier.padding(start = 10.dp)
+                        )
+
+                        androidx.compose.material.Text(
+                            text = "",
+                            modifier = Modifier
+                                .width(2.dp)
+                                .padding(start = 10.dp)
+                                .padding(vertical = 5.dp)
+                                .background(colorResource(id = R.color.whatsapp))
+                        )
+                    }
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = if (isCheckActivated && isError) Red else borderColor,
+                    unfocusedBorderColor = Color(0xFFE5E7EB),
+                    focusedTextColor = Color(0xFF1F2937),
+                    unfocusedTextColor = Color(0xFF1F2937)
+                ),
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                minLines = minLines,
+                maxLines = maxLines
+            )
+
+            Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                Text(
+                    color = Color(0xFF049344),
+                    text = "Ajouter un numéro de téléphone",
+                    modifier = Modifier
+                        .align(CenterEnd)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            onAdd()
+                        }
+                )
+            }
+
+            if (isCheckActivated && isError) {
+                Text(
+                    modifier = Modifier.padding(top = 5.dp, start = 20.dp),
+                    text = errorText,
+                    color = Red
+                )
+            }
+
+            // Collect press events from the interaction source
+            if (interactionSource.collectIsPressedAsState().value) {
+                LaunchedEffect(Unit) {
+                    onClick()
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun UrgencyChip(
     urgency: Urgency,
     selected: Boolean,
@@ -858,22 +1097,23 @@ fun UserServiceCard(
                     }
 
                     Column(modifier = Modifier.weight(1f)) {
+                        val name = user.otherCategory.ifEmpty { user.category.displayName }
                         Text(
-                            text = user.username,
+                            text = name,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF1F2937),
                             maxLines = 1
                         )
 
-                        val name = user.otherCategory.ifEmpty { user.category.displayName }
-
                         Text(
-                            text = name,
+                            text = "${user.country} - ${user.city}",
                             fontSize = 13.sp,
                             color = Color(0xFF049344),
                             fontWeight = FontWeight.Medium
                         )
+
+
                     }
                 }
 
@@ -910,15 +1150,15 @@ fun UserServiceCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                user.country?.let {
-                    InfoChip(icon = Icons.Filled.LocationOn, text = it)
+                user.addressList?.let {
+                    InfoChip(icon = Icons.Filled.LocationOn, text = it.joinToString(separator = "\n"))
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
             if (isNotMe) {
-                val username = user.username
+                val username = user.userServiceName
 
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Row(
@@ -934,14 +1174,14 @@ fun UserServiceCard(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = username.first().toString(),
+                                text = username?.first().toString(),
                                 color = Color.White,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                         Text(
-                            text = username,
+                            text = username ?: "",
                             fontSize = 12.sp,
                             color = Color(0xFF6B7280)
                         )

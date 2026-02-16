@@ -128,7 +128,9 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.compose.foundation:foundation:1.7.8")
 
-    implementation("io.coil-kt:coil-compose:2.0.0-rc01")
+    implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation("io.coil-kt:coil:2.7.0")
+    implementation("io.coil-kt:coil-gif:2.7.0")
     implementation("com.google.accompanist:accompanist-pager:0.22.0-rc")
     // The compose calendar library for Android
     implementation("com.kizitonwose.calendar:compose:2.3.0")

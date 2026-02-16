@@ -143,19 +143,17 @@ fun LoginScreen(
         isProgressing = false
         if (token.isNotEmpty()) {
             viewModel.isFromLogin(true)
-            if (user.role == "Services")
-                navController.navigate(Screen.DemandServiceScreen.route)
-            else {
-                val type = viewModel.getType()
-                val isFirstTime = login.user?.firstTimeUse ?: true
-                if (isFirstTime) {
-                    if (login.user?.role == "Candidate" || login.user?.role == "Candidat")
-                        navController.navigate(Screen.SearchWordScreen.route)
-                    else navController.navigate(Screen.CompanyProfileForm.route)
-                } else {
-                    if (type == "service") navController.navigate(Screen.DemandServiceScreen.route)
-                    else navController.navigate(Screen.HomeScreen.route)
+            val type = viewModel.getType()
+            val isFirstTime = login.user?.firstTimeUse ?: true
+            if (isFirstTime) {
+                when (login.user?.role) {
+                    "Candidate", "Candidat" -> navController.navigate(Screen.SearchWordScreen.route)
+                    "Services" -> navController.navigate(Screen.ServiceProfileForm.route)
+                    else -> navController.navigate(Screen.CompanyProfileForm.route)
                 }
+            } else {
+                if (type == "service") navController.navigate(Screen.DemandServiceScreen.route)
+                else navController.navigate(Screen.HomeScreen.route)
             }
         }
     }

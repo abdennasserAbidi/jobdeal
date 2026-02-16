@@ -5,9 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.usecase.home.ValidateAccountUseCase
 import com.example.myjob.domain.usecase.profile.SaveCompanyInfoUseCase
 import com.example.myjob.domain.usecase.verification.GetVerifiedCandidateStatusUseCase
+import com.example.myjob.feature.demands.ServiceCategory
 import com.example.myjob.feature.validateprofile.ValidationProfileStatus
 import com.example.myjob.local.database.SharedPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,6 +25,93 @@ class SettingViewModel @Inject constructor(
     private val saveCompanyInfoUseCase: SaveCompanyInfoUseCase,
     private val getVerifiedCandidateStatusUseCase: GetVerifiedCandidateStatusUseCase
 ) : ViewModel() {
+
+    ///////////////////////////////////////////////////////////////////////////
+    // PROFILE SERVICE
+    ///////////////////////////////////////////////////////////////////////////
+    fun changeServiceUserName(name: String) {
+        user.update {
+            it.userServiceName = name
+            it
+        }
+    }
+
+    fun changeServiceEmail(name: String) {
+        user.update {
+            it.email = name
+            it
+        }
+    }
+
+    fun changePostType(name: ServiceCategory) {
+        user.update {
+            it.category = name
+            it
+        }
+    }
+
+    fun changeDescriptions(name: String) {
+        user.update {
+            it.bio = name
+            it
+        }
+    }
+
+    fun changeLocation(name: String) {
+        user.update {
+            it.country = name
+            it
+        }
+    }
+
+    fun changeOtherCategory(name: String) {
+        user.update {
+            it.otherCategory = name
+            it
+        }
+    }
+
+    val savedServiceInfo = MutableStateFlow("")
+    fun saveServiceInfo() {
+        /*viewModelScope.launch {
+            fekzlgjkrzlgklzgzr.execute(user.value).collect { res ->
+                savedServiceInfo.update { res.data?.message ?: "" }
+            }
+        }*/
+    }
+
+    val listNames = MutableStateFlow<List<String>>(emptyList())
+    fun mapperToListNames(list: List<NewCountry>) {
+        val listCountry = mutableListOf<String>()
+        list.map { newCountry ->
+            val name = newCountry.name
+            val finalName = if (name.contains("(")) name.split("(")[0].trimEnd()
+            else name
+            listCountry.add(finalName)
+        }
+        listNames.update { listCountry }
+    }
+
+    var isCountryShowed = MutableStateFlow(false)
+
+    fun changeVisibilityCountry(search: Boolean) {
+        isCountryShowed.update {
+            search
+        }
+    }
+
+    var countryGeneric = MutableStateFlow("")
+
+    fun changeCountryGeneric(item: String) {
+        countryGeneric.update { item }
+
+        user.update {
+            it.country = item
+            it
+        }
+
+    }
+
 
     val role = MutableStateFlow("")
     val username = MutableStateFlow("AA")

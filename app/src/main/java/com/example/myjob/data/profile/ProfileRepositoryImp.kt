@@ -191,6 +191,18 @@ class ProfileRepositoryImp @Inject constructor(
         }
     }
 
+    override suspend fun updateService(user: User): Flow<Resource<UserResponse>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = profileDataSource.updateService(user)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
     override suspend fun removeExperience(
         id: Int,
         experienceId: Int

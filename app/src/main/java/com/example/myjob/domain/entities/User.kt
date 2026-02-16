@@ -19,6 +19,7 @@ data class User(
     var phoneList: List<String>? = mutableListOf(),
     var addressList: List<String>? = mutableListOf(),
     var country: String? = "",
+    var city: String? = "",
     var fcmToken: String? = "",
     var newCountry: String? = "",
     var bio: String? = "",
@@ -66,9 +67,10 @@ data class User(
     var service: Boolean? = false,
     var paidUser: Boolean? = false,
     var countTrial: Int = 10,
-    var username: String = "",
+    var userServiceName: String? = "",
     var category: ServiceCategory = ServiceCategory.IDLE,
     var otherCategory: String = "",
+    var description: String = "",
 ) {
 
     private fun getMonthNumber(monthName: String): Int {

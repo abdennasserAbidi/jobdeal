@@ -331,7 +331,7 @@ fun ModernHomeScreen(
                         navController.navigate(Screen.LoginScreen.route)
                     } else if (filter.name == JobType.GET.name) {
                         homeViewModel.offerDemand()
-                        navController.navigate(Screen.DemandMarketScreen.route)
+                        navController.navigate(Screen.DemandServiceScreen.route)
                     }
                     showTypeSheet = false
                 }

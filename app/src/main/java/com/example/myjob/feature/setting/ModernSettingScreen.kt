@@ -3,6 +3,7 @@ package com.example.myjob.feature.setting
 import android.content.Context
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -36,6 +38,8 @@ import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -44,6 +48,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -69,10 +75,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.CustomPhoneKit
+import com.example.myjob.common.GenericSearch
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.LanguageHelper
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.NewCountry
+import com.example.myjob.feature.demands.CategoryDialogItem
+import com.example.myjob.feature.demands.ServiceCategory
 import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.profile.test.FormTextField
 import com.example.myjob.feature.validateprofile.VerificationStatus
@@ -80,6 +89,7 @@ import com.example.myjob.feature.validateprofile.VerificationStatus
 @Composable
 fun ModernSettingScreen(
     navController: NavController,
+    list: List<NewCountry> = listOf(),
     clearData: () -> Unit = {},
     onResumed: (index: Int) -> Unit = {},
     onBackClick: () -> Unit = {},
@@ -98,12 +108,16 @@ fun ModernSettingScreen(
     val user by settingViewModel.user.collectAsState()
     val verificationSteps by settingViewModel.verificationSteps.collectAsState()
 
-    val userName = if (role == "Candidate" || role == "Candidat") GlobalEntries.user.fullName?.trimStart()
-    else GlobalEntries.user.companyName
+    val userName = when (role) {
+        "Candidate", "Candidat" -> GlobalEntries.user.fullName?.trimStart()
+        "Services" -> GlobalEntries.user.userServiceName
+        else -> GlobalEntries.user.companyName
+    }
 
     val interactionSource = remember { MutableInteractionSource() }
 
     var showEditProfile by remember { mutableStateOf(false) }
+    var showEditProfileServices by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var dialogMessage by remember { mutableStateOf("") }
     val textVerified = stringResource(id = R.string.verification_validate_info_text)
@@ -111,8 +125,8 @@ fun ModernSettingScreen(
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
-
         if (lifecycleEvent == Lifecycle.Event.ON_START) {
+            settingViewModel.mapperToListNames(list)
             settingViewModel.getRole()
             onResumed(3)
         }
@@ -215,15 +229,11 @@ fun ModernSettingScreen(
                     onTermsClick = onTermsClick,
                     onPrivacyClick = onPrivacyClick,
                     onMyAccountClick = {
-                        if (role == "Candidate" || role == "Candidat")
-                            navController.navigate(Screen.SearchWordScreen.route)
-                        else showEditProfile = true
-
-                        /*if (role == "Company" || role == "Entreprise") {
-                            showEditProfile = true
-                        } else {
-                            onMyAccountClick()
-                        }*/
+                        when (role) {
+                            "Candidate", "Candidat" -> navController.navigate(Screen.SearchWordScreen.route)
+                            "Services" -> showEditProfileServices = true
+                            else -> showEditProfile = true
+                        }
                     }
                 )
             }
@@ -250,6 +260,23 @@ fun ModernSettingScreen(
                 },
                 onSave = {
                     showEditProfile = false
+                },
+                settingViewModel = settingViewModel
+            )
+        }
+
+        // Edit Profile Bottom Sheet
+        AnimatedVisibility(
+            visible = showEditProfileServices,
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
+        ) {
+            EditServiceProfileBottomSheet(
+                onDismiss = {
+                    showEditProfileServices = false
+                },
+                onSave = {
+                    showEditProfileServices = false
                 },
                 settingViewModel = settingViewModel
             )
@@ -697,7 +724,8 @@ fun EditProfileBottomSheet(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) { onDismiss() }
-    ) {
+    )
+    {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -883,6 +911,360 @@ fun EditProfileBottomSheet(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun EditServiceProfileBottomSheet(
+    onDismiss: () -> Unit,
+    onSave: () -> Unit,
+    settingViewModel: SettingViewModel
+) {
+    val user by settingViewModel.user.collectAsState()
+
+    var selectedCategory by remember {
+        mutableStateOf(
+            if (user.category == ServiceCategory.IDLE) null
+            else user.category
+        )
+    }
+    var selectedCategoryText by remember { mutableStateOf(user.otherCategory) }
+    var showCategoryDialog by remember { mutableStateOf(false) }
+    var userServiceName by remember(user.userServiceName) { mutableStateOf(user.userServiceName ?: "") }
+    var email by remember(user.email) { mutableStateOf(user.email ?: "") }
+    var activitySector by remember(user.category) {
+        mutableStateOf(user.category)
+    }
+    var description by remember(user.bio) {
+        mutableStateOf(
+            user.bio ?: ""
+        )
+    }
+    var country by remember(user.country) { mutableStateOf(user.country ?: "") }
+
+    var listPhones by remember(user.phoneList) {
+        mutableStateOf(
+            if (user.phoneList.isNullOrEmpty()) mutableListOf("") else user.phoneList
+                ?: mutableListOf("")
+        )
+    }
+
+    var listAddress by remember(user.addressList) {
+        mutableStateOf(
+            if (user.addressList.isNullOrEmpty()) mutableListOf("") else user.addressList
+                ?: mutableListOf("")
+        )
+    }
+
+    var showCountryPicker by remember { mutableStateOf(false) }
+    var showSecondCountryPicker by remember { mutableStateOf(false) }
+    var isActivityShowed by remember { mutableStateOf(false) }
+
+    val isShowed by settingViewModel.isCountryShowed.collectAsState()
+    val listNames by settingViewModel.listNames.collectAsState()
+
+    val savedServiceInfo by settingViewModel.savedServiceInfo.collectAsState()
+    LaunchedEffect(savedServiceInfo) {
+        if (savedServiceInfo == "saved successfully") {
+            onDismiss()
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onDismiss() }
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.95f)
+                .align(Alignment.BottomCenter)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) { },
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = Color(0xFF1F2937)
+                        )
+                    }
+
+                    Text(
+                        text = stringResource(id = R.string.edit_profile_text),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1F2937)
+                    )
+
+                    TextButton(onClick = {
+                        settingViewModel.changeListPhoneCompany(listPhones)
+                        settingViewModel.changeListAddressCompany(listAddress)
+                        settingViewModel.saveServiceInfo()
+                    }) {
+                        Text(
+                            text = "Save",
+                            color = colorResource(id = R.color.whatsapp),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Divider(color = Color(0xFFE5E7EB))
+
+                // Form Fields
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(20.dp)
+                ) {
+                    item {
+
+                        FormTextField(
+                            value = activitySector.displayName,
+                            onValueChange = {},
+                            readOnly = true,
+                            onClick = {
+                                isActivityShowed = true
+                            },
+                            label = stringResource(id = R.string.activity_text),
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                            isRequired = false
+                        )
+
+                    }
+
+                    if (selectedCategory?.displayName == "Autre") {
+                        item {
+
+                            FormTextField(
+                                value = selectedCategoryText,
+                                onValueChange = {
+                                    selectedCategoryText = it
+                                    settingViewModel.changeOtherCategory(selectedCategoryText)
+                                },
+                                label = stringResource(id = R.string.company_name_text),
+                                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                                isRequired = false
+                            )
+                        }
+                    }
+
+                    item {
+
+                        FormTextField(
+                            value = userServiceName,
+                            onValueChange = {
+                                userServiceName = it
+                                settingViewModel.changeServiceUserName(userServiceName)
+                            },
+                            label = stringResource(id = R.string.company_name_text),
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                            isRequired = false
+                        )
+                    }
+
+                    item {
+
+                        FormTextField(
+                            value = email,
+                            onValueChange = {
+                                email = it
+                                settingViewModel.changeServiceEmail(email)
+                            },
+                            label = stringResource(id = R.string.company_name_text),
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                            isRequired = false
+                        )
+                    }
+
+                    item {
+
+                        FormTextField(
+                            value = description,
+                            onValueChange = {
+                                description = it
+                                settingViewModel.changeDescriptions(description)
+                            },
+                            label = "Description",
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                            isRequired = false
+                        )
+                    }
+                    listPhones.mapIndexed { index, phone ->
+                        item {
+                            //phone
+                            var selectedCountry by remember {
+                                mutableStateOf(
+                                    NewCountry(
+                                        "tn",
+                                        "Tunisia",
+                                        216
+                                    )
+                                )
+                            }
+                            val pad = if (index == 0) 16.dp else 8.dp
+                            CustomPhoneKit(
+                                modifier = Modifier.padding(top = pad),
+                                selectedCountry = selectedCountry,
+                                hint = "Numéro téléphone",
+                                defaultPhone = if (phone.contains(" ")) phone.split(" ")[1] else phone,
+                                onClick = {
+                                    showCountryPicker = true
+                                },
+                                onValueChanged = {
+                                    val phoneComplete = "+${selectedCountry.code} $it"
+
+                                    listPhones = listPhones.mapIndexed { i, value ->
+                                        if (index == i) it else value
+                                    }
+
+                                }
+                            )
+
+                            Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                                Text(
+                                    text = "Ajouter un numéro de téléphone",
+                                    modifier = Modifier
+                                        .align(CenterEnd)
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null
+                                        ) {
+                                            listPhones = (listPhones + "").toMutableList()
+                                        }
+                                )
+                            }
+
+                        }
+                    }
+
+                    item {
+                        FormTextField(
+                            value = country,
+                            onClick = {
+                                settingViewModel.changeVisibilityCountry(true)
+                            },
+                            label = "Address",
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                            isRequired = false,
+                            onValueChange = {},
+                            readOnly = true
+                        )
+                    }
+
+                    listAddress.mapIndexed { index, addresses ->
+                        val pad = if (index == 0) 16.dp else 8.dp
+                        item {
+                            FormTextField(
+                                value = addresses,
+                                onValueChange = {
+                                    listAddress = listAddress.mapIndexed { i, value ->
+                                        if (index == i) it else value
+                                    }
+                                },
+                                label = "Address",
+                                modifier = Modifier.fillMaxWidth().padding(top = pad),
+                                isRequired = false
+                            )
+
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                Text(
+                                    text = "Ajouter une adresse",
+                                    modifier = Modifier
+                                        .align(CenterEnd)
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null
+                                        ) {
+                                            listAddress = (listAddress + "").toMutableList()
+                                        }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = isShowed,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
+        )
+        {
+            Box(modifier = Modifier.fillMaxSize()) {
+
+                GenericSearch(
+                    mListOfJobs = listNames,
+                    onDismissRequest = {
+                        settingViewModel.changeVisibilityCountry(false)
+                    },
+                    onSelectedBank = { item, index ->
+                        settingViewModel.changeVisibilityCountry(false)
+                        settingViewModel.changeCountryGeneric(item)
+                        user.country = item
+                        country = item
+                    },
+                    title = stringResource(id = R.string.country_text)
+                )
+            }
+        }
+
+        // Category Selection Dialog
+        if (showCategoryDialog) {
+            AlertDialog(
+                onDismissRequest = { showCategoryDialog = false },
+                title = { Text("Choisir une catégorie") },
+                text = {
+                    LazyColumn {
+                        items(ServiceCategory.entries.toTypedArray()) { category ->
+                            CategoryDialogItem(
+                                category = category,
+                                onClick = {
+                                    selectedCategory = category
+                                    settingViewModel.changePostType(
+                                        selectedCategory ?: ServiceCategory.IDLE
+                                    )
+                                    showCategoryDialog = false
+                                }
+                            )
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = {
+                    TextButton(onClick = { showCategoryDialog = false }) {
+                        Text("Annuler", color = Color(0xFF049344))
+                    }
+                }
+            )
         }
     }
 }

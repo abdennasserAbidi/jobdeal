@@ -23,6 +23,7 @@ interface ProfileRepository {
     suspend fun updateCandidateSkills(user: CandidateSkills): Flow<Resource<UserResponse>>
     suspend fun updateCandidateCompleted(id: Int): Flow<Resource<UserResponse>>
     suspend fun saveCompanyInfo(user: User): Flow<Resource<UserResponse>>
+    suspend fun updateService(user: User): Flow<Resource<UserResponse>>
     suspend fun removeExperience(id: Int, experienceId: Int): Flow<Resource<UserResponse>>
     suspend fun removeEducation(id: Int, educationId: Int): Flow<Resource<UserResponse>>
 

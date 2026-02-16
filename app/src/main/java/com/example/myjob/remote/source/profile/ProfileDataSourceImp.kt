@@ -41,6 +41,8 @@ class ProfileDataSourceImp @Inject constructor(
 
     override suspend fun saveCompanyInfo(user: User): UserResponse =
         apiService.saveCompanyInfo(user)
+    override suspend fun updateService(user: User): UserResponse =
+        apiService.updateService(user)
 
     override suspend fun removeExperience(id: Int, experienceId: Int): UserResponse =
         apiService.removeExperience(id, experienceId)

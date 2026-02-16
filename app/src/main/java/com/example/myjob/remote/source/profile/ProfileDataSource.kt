@@ -20,6 +20,7 @@ interface ProfileDataSource {
     suspend fun updateCandidateCompleted(id: Int): UserResponse
     suspend fun saveProfessionalInfo(user: ProfessionalStatus): UserResponse
     suspend fun saveCompanyInfo(user: User): UserResponse
+    suspend fun updateService(user: User): UserResponse
     suspend fun removeExperience(id: Int, experienceId: Int): UserResponse
     suspend fun removeEducation(id: Int, educationId: Int): UserResponse
 }

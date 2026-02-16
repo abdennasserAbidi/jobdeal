@@ -774,7 +774,7 @@ fun CandidateListScreen(
                         homeViewModel.offerDemand()
                         Log.i("frzgkrzhgrz", "demandText: $demandText")
 
-                        navController.navigate(Screen.DemandMarketScreen.route)
+                        navController.navigate(Screen.DemandServiceScreen.route)
                     }
                     showTypeSheet = false
                 }

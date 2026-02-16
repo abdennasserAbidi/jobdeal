@@ -139,6 +139,7 @@ import androidx.core.net.toUri
 import com.example.myjob.feature.demands.DemandMarketDetailScreen
 import com.example.myjob.feature.home.ServiceUserScreen
 import com.example.myjob.feature.notification.DemandNotificationScreen
+import com.example.myjob.feature.profile.test.ServiceProfileFormScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -756,13 +757,14 @@ class MainActivity : ComponentActivity() {
 
                         CoroutineScope(Dispatchers.Main).launch {
                             GlobalEntries.isVisibleNav.collect {
-                                isVisibleNav = if (role == "Candidate" || role == "Candidat") false
+                                isVisibleNav = if (role == "Candidate" || role == "Candidat" || role == "Services") false
                                 else it
                             }
                         }
 
                         ModernSettingScreen(
                             navController = navController,
+                            list = listCountry,
                             clearData = {
                                 selectedTabIndex = 0
                             },
@@ -925,6 +927,18 @@ class MainActivity : ComponentActivity() {
                             makeCall = { phone ->
                                 makePhoneCall(context, phone)
                             },
+                            clearData = {
+                                selectedTabIndex = 0
+                            }
+                        )
+                    }
+
+                    composable(route = Screen.ServiceProfileForm.route) {
+                        isVisibleNav = false
+
+                        ServiceProfileFormScreen(
+                            navController = navController,
+                            list = listCountries,
                             clearData = {
                                 selectedTabIndex = 0
                             }

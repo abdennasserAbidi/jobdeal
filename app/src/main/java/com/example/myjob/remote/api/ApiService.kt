@@ -250,6 +250,9 @@ ApiService {
     @POST("auth/updatecompany")
     suspend fun saveCompanyInfo(@Body user: User): UserResponse
 
+    @POST("auth/updateService")
+    suspend fun updateService(@Body user: User): UserResponse
+
     @POST("auth/removeExperience")
     suspend fun removeExperience(
         @Query("id") id: Int,

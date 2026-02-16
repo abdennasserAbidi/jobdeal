@@ -111,7 +111,7 @@ fun SignUpScreen(
     var selectedCategoryText by remember { mutableStateOf(user.otherCategory) }
     var showCategoryDialog by remember { mutableStateOf(false) }
 
-    var title by remember { mutableStateOf(user.username) }
+    var title by remember { mutableStateOf(user.userServiceName) }
     var description by remember { mutableStateOf(user.bio) }
 
     var activatedCheckCategory by remember { mutableStateOf(false) }
@@ -159,7 +159,6 @@ fun SignUpScreen(
 
     val app = context.applicationContext as MyApp
     LaunchedEffect(listCompanies) {
-        Log.i("jrkzgnrjzgbzrk", "SignUpScreen: $listCompanies")
         app.listCompanies.removeAt(app.listCompanies.lastIndex)
         if (!app.listCompanies.containsAll(listCompanies)) app.listCompanies.addAll(listCompanies)
     }
@@ -167,9 +166,8 @@ fun SignUpScreen(
     LaunchedEffect(saveUserRes.token?.isNotEmpty()) {
         isProgressing = false
         if (saveUserRes.token?.isNotEmpty() == true) {
-            if (selectedIndex == 1) {
-                navController.navigate(Screen.SearchWordScreen.route)
-            } else if (selectedIndex == 0) navController.navigate(Screen.CompanyProfileForm.route)
+            if (selectedIndex == 1) navController.navigate(Screen.SearchWordScreen.route)
+            else if (selectedIndex == 0) navController.navigate(Screen.CompanyProfileForm.route)
             else navController.navigate(Screen.DemandServiceScreen.route)
         }
     }
@@ -356,17 +354,17 @@ fun SignUpScreen(
 
                     // Title Field
                     com.example.myjob.feature.demands.FormTextField(
-                        value = title,
+                        value = title ?: "",
                         onValueChange = {
                             title = it
-                            viewModel.changeServiceUserName(title)
+                            viewModel.changeServiceUserName(title ?: "")
                         },
                         isCheckActivated = activatedCheckUsername,
-                        isError = title.isEmpty(),
+                        isError = title?.isEmpty() == true,
                         errorText = "Vous devez remplir le nom",
-                        label = "Titre de la demande *",
+                        label = "Nom Complet *",
                         modifier = Modifier.padding(top = 16.dp),
-                        placeholder = "Ex: Installation d'une porte en bois"
+                        placeholder = "Ex: Aladin Abidi"
                     )
 
                     // Description Field
@@ -565,7 +563,7 @@ fun SignUpScreen(
                                 val categoryValidator =
                                     (selectedCategory != null && selectedCategory != ServiceCategory.IDLE) || selectedCategoryText.isNotEmpty()
 
-                                val usernameValidator = title.isNotEmpty()
+                                val usernameValidator = title?.isNotEmpty() == true
 
                                 if (!categoryValidator) activatedCheckCategory = true
                                 if (!usernameValidator) activatedCheckUsername = true
