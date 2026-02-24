@@ -500,12 +500,11 @@ fun CandidateListScreen(
                                 candidateUser = user
                                 navController.navigate(Screen.SendInvitationScreen.route)
                             },
-                            onSendMessage = { it ->
+                            onSendMessage = {
                                 candidateUser = it
                                 otherUserId = it.id ?: -1
                                 otherUserName =
-                                    if (it.role == "Candidate" || it.role == "Candidat") it.fullName
-                                        ?: ""
+                                    if (it.role == "Candidate" || it.role == "Candidat") it.fullName ?: ""
                                     else it.companyName ?: ""
 
                                 navController.navigate(Screen.SendMessageScreen.route)

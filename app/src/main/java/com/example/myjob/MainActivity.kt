@@ -158,8 +158,6 @@ class MainActivity : ComponentActivity() {
     //TODO("add images to posts")
 
     var mSocket: Socket? = null
-    private var imageUri = mutableStateOf<Uri?>(null)
-    private var textChanged = mutableStateOf("Scanned text will appear here..")
 
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
@@ -337,14 +335,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         requestNotificationPermission()
 
-        //setupSocket()
-
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true /* isEnabled */) {
-            override fun handleOnBackPressed() {
-
-            }
-        })
-
         fetchData()
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -429,7 +419,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            var isVisibleNav by remember { mutableStateOf(true) }
+            var isVisibleNav by remember { mutableStateOf(false) }
 
             val homeTab = TabBarItem(
                 title = stringResource(id = R.string.item1),
@@ -764,7 +754,7 @@ class MainActivity : ComponentActivity() {
 
                         ModernSettingScreen(
                             navController = navController,
-                            list = listCountry,
+                            list = listCountries,
                             clearData = {
                                 selectedTabIndex = 0
                             },

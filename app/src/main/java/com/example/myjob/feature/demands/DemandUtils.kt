@@ -590,7 +590,9 @@ fun FormTextFieldAddress(
                 maxLines = maxLines
             )
 
-            Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 5.dp)) {
                 Text(
                     color = Color(0xFF049344),
                     text = "Ajouter une adresse",
@@ -671,7 +673,10 @@ fun FormTextFieldPhone(
 
             OutlinedTextField(
                 value = phone,
-                onValueChange = onValueChange,
+                onValueChange = {
+                    phone = it
+                    onValueChange(it)
+                },
                 readOnly = readOnly,
                 interactionSource = interactionSource,
                 modifier = Modifier.fillMaxWidth(),
@@ -728,7 +733,9 @@ fun FormTextFieldPhone(
                 maxLines = maxLines
             )
 
-            Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 5.dp)) {
                 Text(
                     color = Color(0xFF049344),
                     text = "Ajouter un numéro de téléphone",
@@ -1091,13 +1098,13 @@ fun UserServiceCard(
                     ) {
 
                         val icon = if (user.otherCategory.isNotEmpty()) "⚙️"
-                        else user.category.icon
+                        else user.freelanceService.icon
 
                         Text(text = icon, fontSize = 24.sp)
                     }
 
                     Column(modifier = Modifier.weight(1f)) {
-                        val name = user.otherCategory.ifEmpty { user.category.displayName }
+                        val name = user.otherCategory.ifEmpty { user.freelanceService.name }
                         Text(
                             text = name,
                             fontSize = 16.sp,
@@ -1151,8 +1158,23 @@ fun UserServiceCard(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 user.addressList?.let {
-                    InfoChip(icon = Icons.Filled.LocationOn, text = it.joinToString(separator = "\n"))
+                    InfoChip(
+                        icon = Icons.Filled.LocationOn,
+                        text = it.joinToString(separator = "\n")
+                    )
                 }
+            }
+
+            // Info Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                InfoChip(
+                    icon = Icons.Filled.LocationOn,
+                    iconText = user.freelanceSector.icon,
+                    text = user.freelanceSector.name
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -1262,12 +1284,20 @@ fun UrgencyBadge(urgency: String) {
 }
 
 @Composable
-fun InfoChip(icon: ImageVector, text: String) {
+fun InfoChip(
+    icon: ImageVector,
+    iconText: String? = null,
+    text: String
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Icon(icon, null, tint = Color(0xFF6B7280), modifier = Modifier.size(16.dp))
+        iconText?.let {
+            Text(it, color = Color(0xFF6B7280), modifier = Modifier.size(16.dp))
+        } ?: run {
+            Icon(icon, null, tint = Color(0xFF6B7280), modifier = Modifier.size(16.dp))
+        }
         Text(text = text, fontSize = 12.sp, color = Color(0xFF6B7280))
     }
 }

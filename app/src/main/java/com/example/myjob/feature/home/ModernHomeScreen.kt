@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -362,9 +363,14 @@ fun FilterTypeBottomSheet(
         val normalText = stringResource(id = R.string.normal_text)
         val logoutText = stringResource(id = R.string.logout_text)
         JobType.entries.forEach { filter ->
+
+            val color = if (selectedFilter == filter) colorResource(id = R.color.whatsapp) else Transparent
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .border(1.dp, color, RoundedCornerShape(10.dp))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
@@ -374,16 +380,6 @@ fun FilterTypeBottomSheet(
                     .padding(vertical = 7.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                RadioButton(
-                    selected = selectedFilter == filter,
-                    onClick = {
-                        onFilterSelected(filter)
-                    },
-                    colors = RadioButtonDefaults.colors(
-                        selectedColor = colorResource(id = R.color.whatsapp),
-                        unselectedColor = colorResource(id = R.color.whatsapp)
-                    )
-                )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = when (filter) {
@@ -391,6 +387,7 @@ fun FilterTypeBottomSheet(
                         JobType.GET -> demandText
                         else -> logoutText
                     },
+                    modifier = Modifier.padding(16.dp),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }

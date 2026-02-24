@@ -152,7 +152,7 @@ fun LoginScreen(
                     else -> navController.navigate(Screen.CompanyProfileForm.route)
                 }
             } else {
-                if (type == "service") navController.navigate(Screen.DemandServiceScreen.route)
+                if (login.user?.role == "Services" || type == "service") navController.navigate(Screen.DemandServiceScreen.route)
                 else navController.navigate(Screen.HomeScreen.route)
             }
         }

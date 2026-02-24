@@ -1,6 +1,7 @@
 package com.example.myjob.remote.service
 
 import android.annotation.SuppressLint
+import android.util.Log
 import com.example.myjob.local.database.SharedPreference
 import okhttp3.*
 import java.io.IOException

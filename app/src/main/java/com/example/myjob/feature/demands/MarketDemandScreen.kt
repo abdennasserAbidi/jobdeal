@@ -206,7 +206,8 @@ fun MarketDemandScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
-                ) {
+                )
+                {
                     Text(
                         text = "Services",
                         fontSize = 24.sp,
@@ -225,7 +226,8 @@ fun MarketDemandScreen(
                             }
                             .clip(RoundedCornerShape(30.dp))
                             .background(White.copy(alpha = 0.2f))
-                    ) {
+                    )
+                    {
 
                         Spacer(
                             Modifier

@@ -3,6 +3,7 @@ package com.example.myjob.remote.api
 import com.example.myjob.base.GenericResponse
 import com.example.myjob.common.network.ApiResult
 import com.example.myjob.domain.entities.CandidateSkills
+import com.example.myjob.domain.entities.CategoryModel
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
@@ -132,6 +133,13 @@ ApiService {
     @POST("auth/getByCriteria")
     suspend fun searchUsers(
         @Body criteria: CriteriaModel,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<User>
+
+    @POST("auth/getUserServiceFilteredLists")
+    suspend fun getUserServiceFilteredList(
+        @Body categoryModel: CategoryModel,
         @Query("page") pageNumber: Int,
         @Query("size") size: Int = 10
     ): GenericResponse<User>

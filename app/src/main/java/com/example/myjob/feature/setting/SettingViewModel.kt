@@ -8,6 +8,7 @@ import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.usecase.home.ValidateAccountUseCase
 import com.example.myjob.domain.usecase.profile.SaveCompanyInfoUseCase
+import com.example.myjob.domain.usecase.profile.SaveServiceInfoUseCase
 import com.example.myjob.domain.usecase.verification.GetVerifiedCandidateStatusUseCase
 import com.example.myjob.feature.demands.ServiceCategory
 import com.example.myjob.feature.validateprofile.ValidationProfileStatus
@@ -23,7 +24,8 @@ class SettingViewModel @Inject constructor(
     private val sharedPreferences: SharedPreference,
     private val validateAccountUseCase: ValidateAccountUseCase,
     private val saveCompanyInfoUseCase: SaveCompanyInfoUseCase,
-    private val getVerifiedCandidateStatusUseCase: GetVerifiedCandidateStatusUseCase
+    private val getVerifiedCandidateStatusUseCase: GetVerifiedCandidateStatusUseCase,
+    private val saveServiceInfoUseCase: SaveServiceInfoUseCase
 ) : ViewModel() {
 
     ///////////////////////////////////////////////////////////////////////////
@@ -32,6 +34,13 @@ class SettingViewModel @Inject constructor(
     fun changeServiceUserName(name: String) {
         user.update {
             it.userServiceName = name
+            it
+        }
+    }
+
+    fun changeCity(item: String) {
+        user.update {
+            it.city = item
             it
         }
     }
@@ -73,11 +82,11 @@ class SettingViewModel @Inject constructor(
 
     val savedServiceInfo = MutableStateFlow("")
     fun saveServiceInfo() {
-        /*viewModelScope.launch {
-            fekzlgjkrzlgklzgzr.execute(user.value).collect { res ->
+        viewModelScope.launch {
+            saveServiceInfoUseCase.execute(user.value).collect { res ->
                 savedServiceInfo.update { res.data?.message ?: "" }
             }
-        }*/
+        }
     }
 
     val listNames = MutableStateFlow<List<String>>(emptyList())

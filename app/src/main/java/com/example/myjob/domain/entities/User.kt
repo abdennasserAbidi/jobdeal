@@ -1,5 +1,7 @@
 package com.example.myjob.domain.entities
 
+import FreelanceSector
+import FreelanceService
 import android.view.View
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.invitation.InvitationModel
@@ -69,6 +71,8 @@ data class User(
     var countTrial: Int = 10,
     var userServiceName: String? = "",
     var category: ServiceCategory = ServiceCategory.IDLE,
+    var freelanceSector: FreelanceSector = FreelanceSector(),
+    var freelanceService: FreelanceService = FreelanceService(),
     var otherCategory: String = "",
     var description: String = "",
 ) {

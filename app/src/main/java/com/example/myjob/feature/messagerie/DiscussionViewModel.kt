@@ -139,9 +139,11 @@ class DiscussionViewModel @Inject constructor(
     }
 
     private fun getUserName(user: User): String? {
-        return if (user.role == "Candidate" || user.role == "Candidat")
-            user.fullName
-        else user.companyName
+        return when (user.role) {
+            "Candidate", "Candidat" -> user.fullName
+            "Services" -> user.userServiceName
+            else -> user.companyName
+        }
     }
 
     fun connect() {

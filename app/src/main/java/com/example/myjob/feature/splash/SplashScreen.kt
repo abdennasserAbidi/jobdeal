@@ -8,6 +8,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -16,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
@@ -25,6 +27,11 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import coil.size.Size
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.myjob.R
 import com.example.myjob.base.MyApp
 import com.example.myjob.common.GlobalEntries
@@ -75,7 +82,7 @@ fun SplashScreen(
                         else -> navController.navigate(Screen.CompanyProfileForm.route)
                     }
                 } else {
-                    if (type == "service") navController.navigate(Screen.DemandServiceScreen.route)
+                    if (user.role == "Services" || type == "service") navController.navigate(Screen.DemandServiceScreen.route)
                     else navController.navigate(Screen.HomeScreen.route)
                 }
 
@@ -89,6 +96,8 @@ fun SplashScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
+
+        //LottieAnimationScreen()
 
         GifImage(modifier = Modifier.fillMaxSize())
     }
@@ -116,5 +125,27 @@ fun GifImage(
         ),
         contentDescription = null,
         modifier = modifier.fillMaxWidth(),
+    )
+}
+
+@Composable
+fun LottieAnimationScreen() {
+    val composition by rememberLottieComposition(
+        LottieCompositionSpec.RawRes(R.raw.loading)
+    )
+
+    // 2. Control the animation playback
+    val progress by animateLottieCompositionAsState(
+        composition,
+        iterations = LottieConstants.IterateForever,
+        isPlaying = true,
+        speed = 1f,
+    )
+
+    // 3. Display the animation
+    LottieAnimation(
+        composition = composition,
+        progress = { progress },
+        modifier = Modifier.size(200.dp) // Set the desired size
     )
 }

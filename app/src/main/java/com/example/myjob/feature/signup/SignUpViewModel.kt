@@ -1,5 +1,7 @@
 package com.example.myjob.feature.signup
 
+import FreelanceSector
+import FreelanceService
 import android.content.Context
 import android.util.Log
 import android.view.View
@@ -133,6 +135,20 @@ class SignUpViewModel @Inject constructor(
     fun changePostType(name: ServiceCategory) {
         user.update {
             it.category = name
+            it
+        }
+    }
+
+    fun changeFreelanceService(name: FreelanceService) {
+        user.update {
+            it.freelanceService = name
+            it
+        }
+    }
+
+    fun changeFreelanceSector(name: FreelanceSector) {
+        user.update {
+            it.freelanceSector = name
             it
         }
     }

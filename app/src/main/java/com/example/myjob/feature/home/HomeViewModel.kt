@@ -1,5 +1,6 @@
 package com.example.myjob.feature.home
 
+import FreelanceSector
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,12 +17,14 @@ import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.listIdToRemove
 import com.example.myjob.domain.entities.Availabilities
 import com.example.myjob.domain.entities.CategoryChoices
+import com.example.myjob.domain.entities.CategoryModel
 import com.example.myjob.domain.entities.Choices
 import com.example.myjob.domain.entities.ContractTypeChoices
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.ExperienceChoices
 import com.example.myjob.domain.entities.HOME_ENTITY
+import com.example.myjob.domain.entities.JobType
 import com.example.myjob.domain.entities.ParentChoices
 import com.example.myjob.domain.entities.SexChoices
 import com.example.myjob.domain.entities.SituationChoices
@@ -38,11 +41,11 @@ import com.example.myjob.domain.usecase.home.GetFilteredUserServiceUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.domain.usecase.home.SaveToFavoriteUseCase
 import com.example.myjob.domain.usecase.invitation.FinishProcessUseCase
-import com.example.myjob.domain.usecase.invitation.GetAllInvitationsUseCase
 import com.example.myjob.domain.usecase.invitation.SendInvitationUseCase
 import com.example.myjob.domain.usecase.notification.SendNotificationsUseCase
 import com.example.myjob.domain.usecase.notification.UpdateTokenUseCase
 import com.example.myjob.domain.usecase.search.GetFilteredUserUseCase
+import com.example.myjob.domain.usecase.search.SearchUserServiceUseCase
 import com.example.myjob.domain.usecase.search.SearchUserUseCase
 import com.example.myjob.local.database.SharedPreference
 import com.google.firebase.ktx.Firebase
@@ -73,10 +76,20 @@ class HomeViewModel @Inject constructor(
     private val searchUserUseCase: SearchUserUseCase,
     private val getUserUseCase: GetUserUseCase,
     private val getFilteredUserUseCase: GetFilteredUserUseCase,
-    private val getAllInvitationsUseCase: GetAllInvitationsUseCase,
     private val finishProcessUseCase: FinishProcessUseCase,
-    private val countDownTrialUserUseCase: CountDownTrialUserUseCase
+    private val countDownTrialUserUseCase: CountDownTrialUserUseCase,
+    private val searchUserServiceUseCase: SearchUserServiceUseCase
 ) : ViewModel() {
+
+    fun getType(): JobType {
+        val type = sharedPreference.getString("offerDemand", "")
+        return if (type == "service") JobType.GET
+        else JobType.NORMAL
+    }
+
+    fun changeToJobDeal() {
+        sharedPreference.putString("offerDemand", "")
+    }
 
     private val _invitations: MutableStateFlow<PagingData<InvitationModel>> =
         MutableStateFlow(value = PagingData.empty())
@@ -847,9 +860,9 @@ class HomeViewModel @Inject constructor(
         } else getAllUserService()
     }
 
-    fun countDownTrial(param: Int) {
+    fun countDownTrial() {
         viewModelScope.launch {
-            countDownTrialUserUseCase.execute(param).collect {
+            countDownTrialUserUseCase.execute(sharedPreference.getInt("idUser", 0)).collect {
 
             }
         }
@@ -861,9 +874,19 @@ class HomeViewModel @Inject constructor(
     ///////////////////////////////////////////////////////////////////////////
     // FILTER
     ///////////////////////////////////////////////////////////////////////////
-    fun searchUserService(query: List<String>) {
-        query.map {
-            filterUserService(it)
+
+    val isFilterFinished = MutableStateFlow(false)
+
+    fun searchUserService(categoryModel: CategoryModel) {
+
+        viewModelScope.launch {
+
+            if (categoryModel.listSector.isNotEmpty() || categoryModel.listService.isNotEmpty()) {
+                searchUserServiceUseCase.execute(categoryModel).collect { res ->
+                    isFilterFinished.update { true }
+                    _userService.update { res.data ?: PagingData.empty() }
+                }
+            } else getAllUserService()
         }
     }
 

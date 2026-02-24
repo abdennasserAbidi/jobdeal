@@ -1,7 +1,15 @@
 package com.example.myjob.feature.home
 
+import FreelanceFilterSectorScreen
+import FreelanceSector
+import FreelanceService
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -20,12 +28,21 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.Message
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -47,6 +64,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +74,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.Color.Companion.White
@@ -72,22 +91,28 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
 import com.example.myjob.common.ErrorMessage
+import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.candidateUser
+import com.example.myjob.common.GlobalEntries.otherUserId
+import com.example.myjob.common.GlobalEntries.otherUserName
 import com.example.myjob.common.LoadingNextPageItem
 import com.example.myjob.common.PageLoader
 import com.example.myjob.common.rememberLifecycleEvent
+import com.example.myjob.domain.entities.CategoryModel
 import com.example.myjob.domain.entities.JobType
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.announcement.PostType
 import com.example.myjob.feature.demands.CategoryDialogItem
 import com.example.myjob.feature.demands.EmptyState
 import com.example.myjob.feature.demands.ServiceCategory
-import com.example.myjob.feature.demands.ToolCategory
 import com.example.myjob.feature.demands.UserServiceCard
 import com.example.myjob.feature.demands.findActivity
 import com.example.myjob.feature.navigation.Screen
+import getAllFreelanceSectors
+import getAllFreelanceServices
 
 @SuppressLint("MutableCollectionMutableState")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun ServiceUserScreen(
     navController: NavController,
@@ -96,7 +121,15 @@ fun ServiceUserScreen(
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
 
-    val user = homeViewModel.userService.collectAsLazyPagingItems()
+    val userService = homeViewModel.userService.collectAsLazyPagingItems()
+
+    val refreshing = userService.loadState.refresh is LoadState.Loading
+
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = refreshing,
+        onRefresh = { userService.refresh() }
+    )
+
 
     val context = LocalContext.current
     var searchQuery by remember { mutableStateOf("") }
@@ -106,29 +139,20 @@ fun ServiceUserScreen(
 
     var listFilter by remember {
         mutableStateOf(
-            mutableListOf<String>()
+            mutableListOf<ServiceCategory>()
         )
     }
 
-    var listSelected by remember {
-        mutableStateOf(List(ServiceCategory.entries.size) { false })
-    }
-
-
-    var listFilterTools by remember {
+    var listFilterSector by remember {
         mutableStateOf(
-            mutableListOf<String>()
+            mutableListOf<FreelanceSector>()
         )
     }
 
-    var listSelectedTools by remember {
-        mutableStateOf(List(ToolCategory.entries.size) { false })
-    }
-
-    LaunchedEffect(listFilter) {
-        if (listFilter.isNotEmpty())
-            homeViewModel.searchUserService(listFilter)
-        else homeViewModel.getAllUserService()
+    var listFilterService by remember {
+        mutableStateOf(
+            mutableListOf<FreelanceService>()
+        )
     }
 
     var selectedItem by remember { mutableStateOf(User()) }
@@ -137,6 +161,7 @@ fun ServiceUserScreen(
 
     var showContact by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
+    var isFilterOpened by remember { mutableStateOf(false) }
     var selectedPhone by remember { mutableStateOf("") }
     var selectedSearch by remember { mutableStateOf(PostType.ALL) }
     var selectedType by remember { mutableStateOf(JobType.NORMAL) }
@@ -144,9 +169,18 @@ fun ServiceUserScreen(
     val badgeCountService by remember { mutableIntStateOf(1) }
     var isUpdating by remember { mutableStateOf(false) }
 
+    var showTypeSheet by remember { mutableStateOf(false) }
+    val demandText = stringResource(id = R.string.demand_text)
+    val normalText = stringResource(id = R.string.normal_text)
+    val logoutText = stringResource(id = R.string.logout_text)
+
+    val notificationCount by homeViewModel.notificationCount.collectAsState()
+
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+            selectedType = homeViewModel.getType()
+            homeViewModel.getCurrent()
             homeViewModel.getAllUserService()
         }
     }
@@ -155,8 +189,17 @@ fun ServiceUserScreen(
         context.findActivity()?.finish()
     }
 
-    Scaffold(
-        topBar = {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(pullRefreshState)
+    )
+    {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+        )
+        {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -165,37 +208,136 @@ fun ServiceUserScreen(
                     )
                     .padding(horizontal = 20.dp, vertical = 24.dp)
             ) {
-                Text(
-                    text = "Services",
-                    fontSize = 24.sp,
-                    color = White,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(CenterStart)
-                )
+                if (GlobalEntries.user.role != "Services") {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Services",
+                            fontSize = 24.sp,
+                            color = White,
+                            fontWeight = FontWeight.Bold
+                        )
 
-                IconButton(
-                    modifier = Modifier.align(CenterEnd),
-                    onClick = {
-                        navController.navigate(Screen.SettingScreen.route)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(0.7f)
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
+                                    showTypeSheet = true
+                                }
+                                .clip(RoundedCornerShape(30.dp))
+                                .background(White.copy(alpha = 0.2f))
+                        ) {
+
+                            Spacer(
+                                Modifier
+                                    .align(Alignment.TopCenter)
+                                    .height(20.dp)
+                                    .fillMaxWidth()
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .padding(start = 10.dp)
+                                    .align(Alignment.CenterStart)
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) {
+                                        navController.navigate(Screen.NotificationDemandScreen.route)
+                                    }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Notifications,
+                                    contentDescription = "Notifications",
+                                    tint = White,
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .align(Alignment.CenterEnd)
+                                )
+                            }
+
+                            if (notificationCount > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(top = 5.dp, start = 5.dp)
+                                        .align(Alignment.TopStart)
+                                        .size(15.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFEF4444)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = if (notificationCount > 9) "9+" else notificationCount.toString(),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = White
+                                    )
+                                }
+                            }
+
+                            Text(
+                                text = when (selectedType) {
+                                    JobType.NORMAL -> normalText
+                                    JobType.GET -> demandText
+                                    else -> logoutText
+                                },
+                                color = White,
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                            )
+
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = "ArrowDropDown",
+                                tint = White,
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .padding(end = 10.dp)
+                                    .align(Alignment.CenterEnd)
+                            )
+
+                            Spacer(
+                                Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .height(20.dp)
+                                    .fillMaxWidth()
+                            )
+                        }
+
+
                     }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        tint = White,
-                        contentDescription = ""
+                } else {
+                    Text(
+                        text = "Services",
+                        fontSize = 24.sp,
+                        color = White,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(CenterStart)
                     )
+
+                    IconButton(
+                        modifier = Modifier
+                            .padding(start = 10.dp)
+                            .align(CenterEnd),
+                        onClick = {
+                            navController.navigate(Screen.SettingScreen.route)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            tint = White,
+                            contentDescription = ""
+                        )
+                    }
                 }
             }
-
-
-        },
-        containerColor = Color(0xFFF3F4F6)
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
             // Search Bar
             Card(
                 modifier = Modifier
@@ -205,110 +347,60 @@ fun ServiceUserScreen(
                 colors = CardDefaults.cardColors(containerColor = White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = {
-                        searchQuery = it
-                        homeViewModel.filterUserService(it)
-                    },
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
-                    placeholder = { Text("Rechercher un candidat...", color = Color(0xFF9CA3AF)) },
-                    leadingIcon = { Icon(Icons.Filled.Search, null, tint = Color(0xFF049344)) },
-                    trailingIcon = {
-                        if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { searchQuery = "" }) {
-                                Icon(Icons.Filled.Close, null, tint = Color(0xFF6B7280))
-                            }
-                        }
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF049344),
-                        unfocusedBorderColor = Color.Transparent
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                )
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            )
-            {
-                // Category Filter
-                LazyRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        .padding(8.dp)
                 ) {
-                    items(ServiceCategory.entries.take(10).size) { index ->
-                        if (index != 0) {
-                            val category = ServiceCategory.entries[index]
-                            FilterChip(
-                                selected = listSelected[index],
-                                onClick = {
-                                    listSelected = listSelected.mapIndexed { i, item ->
-                                        if (i == index) {
-                                            !item
-                                        } else item
-                                    }.toMutableList()
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = {
+                            searchQuery = it
+                            homeViewModel.filterUserService(it)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        placeholder = { Text("Rechercher un candidat...", color = Color(0xFF9CA3AF)) },
+                        leadingIcon = { Icon(Icons.Filled.Search, null, tint = Color(0xFF049344)) },
+                        trailingIcon = {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { searchQuery = "" }) {
+                                    Icon(Icons.Filled.Close, null, tint = Color(0xFF6B7280))
+                                }
+                            }
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF049344),
+                            unfocusedBorderColor = Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    )
 
-                                    if (listSelected[index]) {
-                                        if (!listFilter.contains(category.displayName))
-                                            listFilter =
-                                                (listFilter + category.displayName).toMutableList()
-                                    } else {
-                                        if (listFilter.contains(category.displayName))
-                                            listFilter =
-                                                (listFilter - category.displayName).toMutableList()
-                                    }
-                                },
-                                label = {
-                                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        Text(category.icon)
-                                        Text(category.displayName)
-                                    }
-                                },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFF049344),
-                                    selectedLabelColor = White
-                                )
-                            )
-                        }
-                    }
-
-                    item {
-                        FilterChip(
-                            selected = true,
+                    if (searchQuery.isEmpty()) {
+                        IconButton(
+                            modifier = Modifier.align(CenterEnd),
                             onClick = {
-                                showCategoryDialog = true
-                            },
-                            label = {
-                                Text("Tous")
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color(0xFF049344),
-                                selectedLabelColor = White
-                            )
-                        )
+                                isFilterOpened = true
+                            }
+                        ) {
+                            Icon(imageVector = Icons.Default.FilterAlt, contentDescription = "Filter")
+                        }
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (user.itemCount > 0) {
-
+            if (userService.itemCount > 0) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
 
-                    items(user.itemCount) { index ->
-                        val userItem = user[index] ?: User()
+                    items(userService.itemCount) { index ->
+                        val userItem = userService[index] ?: User()
                         UserServiceCard(
                             user = userItem,
                             isNotMe = homeViewModel.isNotMe(userItem.id ?: -1),
@@ -328,14 +420,14 @@ fun ServiceUserScreen(
                         Spacer(modifier = Modifier.height(12.dp))
                     }
 
-                    user.apply {
+                    userService.apply {
                         when {
                             loadState.refresh is LoadState.Loading -> {
                                 item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
                             }
 
                             loadState.refresh is LoadState.Error -> {
-                                val error = user.loadState.refresh as LoadState.Error
+                                val error = userService.loadState.refresh as LoadState.Error
                                 item {
                                     ErrorMessage(
                                         modifier = Modifier.fillParentMaxSize(),
@@ -349,7 +441,7 @@ fun ServiceUserScreen(
                             }
 
                             loadState.append is LoadState.Error -> {
-                                val error = user.loadState.append as LoadState.Error
+                                val error = userService.loadState.append as LoadState.Error
                                 item {
                                     ErrorMessage(
                                         modifier = Modifier,
@@ -361,6 +453,97 @@ fun ServiceUserScreen(
                     }
                 }
             } else EmptyState()
+        }
+
+        PullRefreshIndicator(
+            refreshing = refreshing,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
+
+        val isFilterFinished by homeViewModel.isFilterFinished.collectAsState()
+
+        var listSelectedSector by remember {
+            mutableStateOf(List(getAllFreelanceSectors().size) { false })
+        }
+
+        var listSelectedService by remember {
+            mutableStateOf(List(getAllFreelanceServices().size) { false })
+        }
+
+        LaunchedEffect(isFilterFinished) {
+            if (isFilterFinished) isFilterOpened = false
+        }
+
+        AnimatedVisibility(
+            visible = isFilterOpened,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                FreelanceFilterSectorScreen(
+                    listFilterSector = listFilterSector,
+                    listFilterService = listFilterService,
+                    onSelect = { index, sector, service ->
+                        sector?.let {
+                            listSelectedSector = listSelectedSector.mapIndexed { i, item ->
+                                if (i == index) {
+                                    !item
+                                } else item
+                            }.toMutableList()
+
+                            if (listSelectedSector[index]) {
+                                if (!listFilterSector.contains(sector))
+                                    listFilterSector =
+                                        (listFilterSector + sector).toMutableList()
+                            } else {
+                                if (listFilterSector.contains(sector))
+                                    listFilterSector =
+                                        (listFilterSector - sector).toMutableList()
+                            }
+                        } ?: run {
+                            val services = service ?: FreelanceService()
+                            listSelectedService = listSelectedService.mapIndexed { i, item ->
+                                if (i == index) {
+                                    !item
+                                } else item
+                            }.toMutableList()
+
+                            if (listSelectedService[index]) {
+                                if (!listFilterService.contains(services))
+                                    listFilterService =
+                                        (listFilterService + services).toMutableList()
+                            } else {
+                                if (listFilterService.contains(service))
+                                    listFilterService =
+                                        (listFilterService - services).toMutableList()
+                            }
+                        }
+                    },
+                    onSelectListSector = { listSector, listService ->
+
+                        val categoryModel = CategoryModel()
+
+                        listSector?.let {
+                            categoryModel.listSector = it.toMutableList()
+                        } ?: run {
+                            categoryModel.listService = listService?.toMutableList() ?: mutableListOf()
+                        }
+
+                        homeViewModel.searchUserService(categoryModel)
+
+                    },
+                    dismiss = {
+                        isFilterOpened = false
+                    }
+                )
+            }
         }
     }
 
@@ -374,14 +557,14 @@ fun ServiceUserScreen(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = stringResource(id = R.string.type_change_text),
+                    text = "Contact",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
-                val isShown = if (selectedItem.paidUser == true) true
-                else if (selectedItem.countTrial > 0) true
+                val isShown = if (GlobalEntries.user.paidUser == true) true
+                else if (GlobalEntries.user.countTrial > 0) true
                 else false
 
                 if (isShown) {
@@ -393,7 +576,7 @@ fun ServiceUserScreen(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
                                 ) {
-
+                                    selectedPhone = item
                                 }
                                 .padding(vertical = 7.dp),
                             verticalAlignment = Alignment.CenterVertically
@@ -420,32 +603,61 @@ fun ServiceUserScreen(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
+                        Row {
+                            Button(
+                                onClick = {
+                                    homeViewModel.countDownTrial()
+                                    makeCall(selectedPhone)
+                                    showContact = false
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF049344)
+                                ),
+                                enabled = selectedPhone.isNotEmpty()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Phone,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Appeler",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
 
-                        Button(
-                            onClick = {
-                                homeViewModel.countDownTrial(selectedItem.id ?: -1)
-                                makeCall(selectedPhone)
-                                showContact = false
-                            },
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF049344)
-                            ),
-                            enabled = selectedPhone.isNotEmpty()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Phone,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Appeler",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            Spacer(Modifier.width(10.dp))
+
+                            Button(
+                                onClick = {
+                                    candidateUser = selectedItem
+                                    otherUserId = selectedItem.id ?: -1
+                                    otherUserName = selectedItem.userServiceName ?: ""
+
+                                    navController.navigate(Screen.SendMessageScreen.route)
+                                    showContact = false
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF049344)
+                                )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Message,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Contacter",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
-
                     }
 
                 } else
@@ -463,6 +675,28 @@ fun ServiceUserScreen(
         }
     }
 
+    if (showTypeSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showTypeSheet = false }
+        ) {
+            FilterTypeBottomSheet(
+                selectedFilter = selectedType,
+                onFilterSelected = { filter ->
+                    selectedType = filter
+                    if (filter.name == JobType.LOGOUT.name) {
+                        homeViewModel.logout()
+                        clearData()
+                        navController.navigate(Screen.LoginScreen.route)
+                    } else if (filter.name == JobType.NORMAL.name) {
+                        homeViewModel.changeToJobDeal()
+                        navController.navigate(Screen.HomeScreen.route)
+                    }
+                    showTypeSheet = false
+                }
+            )
+        }
+    }
+
     // Category Selection Dialog
     if (showCategoryDialog) {
         AlertDialog(
@@ -476,11 +710,11 @@ fun ServiceUserScreen(
                             onClick = {
                                 selectedCategory = category
 
-                                if (!listFilter.contains(category.displayName))
+                                if (!listFilter.contains(category))
                                     listFilter =
-                                        (listFilter + category.displayName).toMutableList()
+                                        (listFilter + category).toMutableList()
                                 else listFilter =
-                                    (listFilter - category.displayName).toMutableList()
+                                    (listFilter - category).toMutableList()
 
                                 showCategoryDialog = false
                             }

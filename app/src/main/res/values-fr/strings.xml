@@ -294,9 +294,9 @@
     <string name="share_text">Partager</string>
     <string name="exported_text">Exporter</string>
 
-    <string name="demand_text">Service</string>
+    <string name="demand_text">Demande de service</string>
     <string name="offer_text">offre</string>
-    <string name="normal_text">Normal</string>
+    <string name="normal_text">Jobs</string>
 
 
     <!--Contract-->

@@ -1,10 +1,16 @@
 package com.example.myjob.feature.profile.test
 
+import FreelanceSector
+import FreelanceSectorSelectionScreen
+import FreelanceService
+import FreelanceServiceSelectionScreen
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +50,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Red
+import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -79,7 +87,22 @@ fun ServiceProfileFormScreen(
             else user.category
         )
     }
-    var selectedCategoryText by remember { mutableStateOf(user.otherCategory) }
+
+    var selectedFreelanceService by remember(user.freelanceService) {
+        mutableStateOf(
+            if (user.freelanceService.id == "") null
+            else user.freelanceService
+        )
+    }
+
+    var selectedFreelanceSector by remember(user.freelanceSector) {
+        mutableStateOf(
+            if (user.freelanceSector.id == "") null
+            else user.freelanceSector
+        )
+    }
+
+    var selectedCategoryText by remember(user.otherCategory) { mutableStateOf(user.otherCategory) }
     var showCategoryDialog by remember { mutableStateOf(false) }
     var userServiceName by remember(user.userServiceName) { mutableStateOf(user.userServiceName ?: "") }
     var email by remember(user.email) { mutableStateOf(user.email ?: "") }
@@ -116,7 +139,7 @@ fun ServiceProfileFormScreen(
 
     val listNames by profileViewModel.listNames.collectAsState()
     val isShowed by profileViewModel.isCountryShowed.collectAsState()
-
+    var showSectorDialog by remember { mutableStateOf(false) }
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
@@ -180,6 +203,60 @@ fun ServiceProfileFormScreen(
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(
+                                    text = "Sécteur de service *",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF1F2937)
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(Color(0xFFF9FAFB))
+                                        .clickable(
+                                            interactionSource = interactionSource,
+                                            indication = null
+                                        ) { showSectorDialog = true }
+                                        .padding(16.dp)
+                                ) {
+                                    selectedFreelanceSector?.let { category ->
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Text(text = category.icon, fontSize = 24.sp)
+                                            Text(
+                                                text = category.name,
+                                                color = Color(0xFF1F2937),
+                                                fontSize = 16.sp,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        }
+                                    } ?: run {
+                                        Text(
+                                            text = "Sélectionner un sécteur",
+                                            color = Color(0xFF9CA3AF),
+                                            fontSize = 16.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    item {
+                        androidx.compose.material3.Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
                                     text = "Catégorie de service *",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.SemiBold,
@@ -198,14 +275,14 @@ fun ServiceProfileFormScreen(
                                         ) { showCategoryDialog = true }
                                         .padding(16.dp)
                                 ) {
-                                    selectedCategory?.let { category ->
+                                    selectedFreelanceService?.let { category ->
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             Text(text = category.icon, fontSize = 24.sp)
                                             Text(
-                                                text = category.displayName,
+                                                text = category.name,
                                                 color = Color(0xFF1F2937),
                                                 fontSize = 16.sp,
                                                 fontWeight = FontWeight.Medium
@@ -223,7 +300,7 @@ fun ServiceProfileFormScreen(
                         }
                     }
 
-                    if (selectedCategory?.displayName == "Autre") {
+                    if (selectedFreelanceService?.name == "Autre") {
                         item {
                             com.example.myjob.feature.demands.FormTextField(
                                 value = selectedCategoryText,
@@ -299,15 +376,14 @@ fun ServiceProfileFormScreen(
                                 selectedCountry = selectedCountry,
                                 defaultPhone = if (phone.contains(" ")) phone.split(" ")[1] else phone,
                                 onValueChange = {
-                                    /*email = it
-                                    profileViewModel.changeServiceEmail(email)*/
-                                },
-                                onValueChanged = {
                                     val phoneComplete = "+${selectedCountry.code} $it"
 
                                     listPhones = listPhones.mapIndexed { i, value ->
                                         if (index == i) it else value
                                     }
+                                },
+                                onValueChanged = {
+
 
                                 },
                                 label = "Numéro téléphone",
@@ -523,8 +599,65 @@ fun ServiceProfileFormScreen(
             }
         }
 
+        AnimatedVisibility(
+            visible = showSectorDialog,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
+        ) {
+            FreelanceSectorSelectionScreen (
+                onSelectSector = { service ->
+                    selectedFreelanceSector = service
+                    profileViewModel.changeFreelanceSector(
+                        selectedFreelanceSector ?: FreelanceSector()
+                    )
+                    showSectorDialog = false
+                },
+                dismiss = {
+                    showSectorDialog = false
+                }
+            )
+        }
+
+        AnimatedVisibility(
+            visible = showCategoryDialog,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
+        ) {
+            selectedFreelanceSector?.let {
+                FreelanceServiceSelectionScreen(
+                    selectedSector = it,
+                    onSelectService = { service ->
+
+                        selectedFreelanceService = service
+
+                        profileViewModel.changeFreelanceService(
+                            selectedFreelanceService ?: FreelanceService()
+                        )
+                        showCategoryDialog = false
+                    },
+                    dismiss = {
+                        showCategoryDialog = false
+                    }
+                )
+            } ?: run {
+                Text("Vous devez choisir un secteur")
+            }
+        }
+
         // Category Selection Dialog
-        if (showCategoryDialog) {
+        /*if (showCategoryDialog) {
             AlertDialog(
                 onDismissRequest = { showCategoryDialog = false },
                 title = { Text("Choisir une catégorie") },
@@ -551,6 +684,6 @@ fun ServiceProfileFormScreen(
                     }
                 }
             )
-        }
+        }*/
     }
 }

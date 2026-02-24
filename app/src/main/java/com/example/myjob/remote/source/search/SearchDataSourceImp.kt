@@ -1,6 +1,8 @@
 package com.example.myjob.remote.source.search
 
+import android.util.Log
 import com.example.myjob.base.GenericResponse
+import com.example.myjob.domain.entities.CategoryModel
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
@@ -35,6 +37,11 @@ class SearchDataSourceImp @Inject constructor(
         criteria: CriteriaModel,
         pageNumber: Int
     ): GenericResponse<User> = apiService.searchUsers(criteria, pageNumber)
+
+    override suspend fun getUserServiceFilteredList(
+        categoryModel: CategoryModel,
+        pageNumber: Int
+    ): GenericResponse<User> = apiService.getUserServiceFilteredList(categoryModel, pageNumber)
 
     override suspend fun countDownTrialUser(idUser: Int): UserResponse =
         apiService.countDownTrialUser(idUser)

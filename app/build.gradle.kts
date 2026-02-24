@@ -131,6 +131,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("io.coil-kt:coil:2.7.0")
     implementation("io.coil-kt:coil-gif:2.7.0")
+    implementation("com.airbnb.android:lottie-compose:6.7.1")
     implementation("com.google.accompanist:accompanist-pager:0.22.0-rc")
     // The compose calendar library for Android
     implementation("com.kizitonwose.calendar:compose:2.3.0")

@@ -1,5 +1,7 @@
 package com.example.myjob.feature.profile
 
+import FreelanceSector
+import FreelanceService
 import android.content.Context
 import android.graphics.pdf.PdfDocument
 import android.net.Uri
@@ -174,6 +176,20 @@ class ProfileViewModel @Inject constructor(
     fun changePostType(name: ServiceCategory) {
         user.update {
             it.category = name
+            it
+        }
+    }
+
+    fun changeFreelanceService(name: FreelanceService) {
+        user.update {
+            it.freelanceService = name
+            it
+        }
+    }
+
+    fun changeFreelanceSector(name: FreelanceSector) {
+        user.update {
+            it.freelanceSector = name
             it
         }
     }

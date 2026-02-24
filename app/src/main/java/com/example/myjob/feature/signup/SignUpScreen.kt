@@ -1,8 +1,18 @@
 package com.example.myjob.feature.signup
 
 //noinspection UsingMaterialAndMaterial3Libraries
+import FreelanceDialogItem
+import FreelanceSector
+import FreelanceSectorDialogItem
+import FreelanceSectorSelectionScreen
+import FreelanceService
+import FreelanceServiceSelectionScreen
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,6 +33,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
@@ -34,7 +45,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -74,6 +84,7 @@ import com.example.myjob.feature.demands.NewFormTextField
 import com.example.myjob.feature.demands.ServiceCategory
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
+import getAllFreelanceSectors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -108,8 +119,24 @@ fun SignUpScreen(
             else user.category
         )
     }
+
+    var selectedFreelanceSector by remember {
+        mutableStateOf(
+            if (user.freelanceSector.id == "") null
+            else user.freelanceSector
+        )
+    }
+
+    var selectedFreelanceService by remember {
+        mutableStateOf(
+            if (user.freelanceService.id == "") null
+            else user.freelanceService
+        )
+    }
+
     var selectedCategoryText by remember { mutableStateOf(user.otherCategory) }
     var showCategoryDialog by remember { mutableStateOf(false) }
+    var showSectorDialog by remember { mutableStateOf(false) }
 
     var title by remember { mutableStateOf(user.userServiceName) }
     var description by remember { mutableStateOf(user.bio) }
@@ -166,9 +193,11 @@ fun SignUpScreen(
     LaunchedEffect(saveUserRes.token?.isNotEmpty()) {
         isProgressing = false
         if (saveUserRes.token?.isNotEmpty() == true) {
-            if (selectedIndex == 1) navController.navigate(Screen.SearchWordScreen.route)
-            else if (selectedIndex == 0) navController.navigate(Screen.CompanyProfileForm.route)
-            else navController.navigate(Screen.DemandServiceScreen.route)
+            when (selectedIndex) {
+                1 -> navController.navigate(Screen.SearchWordScreen.route)
+                0 -> navController.navigate(Screen.CompanyProfileForm.route)
+                else -> navController.navigate(Screen.ServiceProfileForm.route)
+            }
         }
     }
 
@@ -249,7 +278,7 @@ fun SignUpScreen(
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(30.dp))
+                    Spacer(modifier = Modifier.height(15.dp))
 
                     val listRole = listOf(
                         stringResource(id = R.string.choose_companies_text),
@@ -280,6 +309,76 @@ fun SignUpScreen(
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
+                                text = "Sécteur de service *",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF1F2937)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            val sectorCheck = (selectedFreelanceSector == null || selectedFreelanceSector?.id == "")
+
+                            val color =
+                                if (activatedCheckCategory && sectorCheck) Red
+                                else Transparent
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFF9FAFB))
+                                    .border(1.dp, color, RoundedCornerShape(12.dp))
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) { showSectorDialog = true }
+                                    .padding(16.dp)
+                            ) {
+                                selectedFreelanceSector?.let { category ->
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(text = category.icon, fontSize = 24.sp)
+                                        Text(
+                                            text = category.name,
+                                            color = Color(0xFF1F2937),
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                } ?: run {
+                                    Text(
+                                        text = "Sélectionner un sécteur",
+                                        color = Color(0xFF9CA3AF),
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            }
+
+                            if (activatedCheckCategory && sectorCheck) {
+                                Text(
+                                    modifier = Modifier.padding(top = 5.dp, start = 20.dp),
+                                    text = "Vous devez choisir un sécteur",
+                                    color = Red
+                                )
+                            }
+
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    androidx.compose.material3.Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
                                 text = "Catégorie de service *",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.SemiBold,
@@ -287,8 +386,11 @@ fun SignUpScreen(
                             )
                             Spacer(modifier = Modifier.height(12.dp))
 
+                            val serviceCheck = (selectedFreelanceService == null || selectedFreelanceService?.id == "")
+                            val categoryCheck = (selectedCategory == ServiceCategory.IDLE || selectedCategory == null)
+
                             val color =
-                                if (activatedCheckCategory && (selectedCategory == ServiceCategory.IDLE || selectedCategory == null)) Red
+                                if (activatedCheckCategory && serviceCheck) Red
                                 else Transparent
 
                             Box(
@@ -303,14 +405,14 @@ fun SignUpScreen(
                                     ) { showCategoryDialog = true }
                                     .padding(16.dp)
                             ) {
-                                selectedCategory?.let { category ->
+                                selectedFreelanceService?.let { category ->
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         Text(text = category.icon, fontSize = 24.sp)
                                         Text(
-                                            text = category.displayName,
+                                            text = category.name,
                                             color = Color(0xFF1F2937),
                                             fontSize = 16.sp,
                                             fontWeight = FontWeight.Medium
@@ -325,7 +427,7 @@ fun SignUpScreen(
                                 }
                             }
 
-                            if (activatedCheckCategory && (selectedCategory == ServiceCategory.IDLE || selectedCategory == null)) {
+                            if (activatedCheckCategory && serviceCheck) {
                                 Text(
                                     modifier = Modifier.padding(top = 5.dp, start = 20.dp),
                                     text = "Vous devez choisir une categorie",
@@ -336,7 +438,7 @@ fun SignUpScreen(
                         }
                     }
 
-                    if (selectedCategory?.displayName == "Autre") {
+                    if (selectedFreelanceService?.name == "Autre") {
                         com.example.myjob.feature.demands.FormTextField(
                             value = selectedCategoryText,
                             onValueChange = {
@@ -365,20 +467,6 @@ fun SignUpScreen(
                         label = "Nom Complet *",
                         modifier = Modifier.padding(top = 16.dp),
                         placeholder = "Ex: Aladin Abidi"
-                    )
-
-                    // Description Field
-                    com.example.myjob.feature.demands.FormTextField(
-                        value = description ?: "",
-                        onValueChange = {
-                            description = it
-                            viewModel.changeDescriptions(description ?: "")
-                        },
-                        label = "Description détaillée *",
-                        modifier = Modifier.padding(top = 16.dp),
-                        placeholder = "Décrivez votre besoin en détail...",
-                        minLines = 4,
-                        maxLines = 6
                     )
 
                 } else if (selectedIndex == 1) {
@@ -544,31 +632,37 @@ fun SignUpScreen(
                 ) {
                     Button(
                         onClick = {
-                            val checkAll = if (selectedIndex == 0) {
-                                val companyNameValidator =
-                                    viewModel.validateCompanyName(companyName)
-                                if (!companyNameValidator) activatedCheckCompanyName = true
-                                companyNameValidator
-                            } else if (selectedIndex == 1) {
-                                val firstNameValidator =
-                                    viewModel.validateFirstName(userFirstName)
-                                val lastNameValidator =
-                                    viewModel.validateLastName(userLastName)
+                            val checkAll = when (selectedIndex) {
+                                0 -> {
+                                    val companyNameValidator =
+                                        viewModel.validateCompanyName(companyName)
+                                    if (!companyNameValidator) activatedCheckCompanyName = true
+                                    companyNameValidator
+                                }
+                                1 -> {
+                                    val firstNameValidator =
+                                        viewModel.validateFirstName(userFirstName)
+                                    val lastNameValidator =
+                                        viewModel.validateLastName(userLastName)
 
-                                if (!firstNameValidator) activatedCheckFirstName = true
-                                if (!lastNameValidator) activatedCheckLastName = true
+                                    if (!firstNameValidator) activatedCheckFirstName = true
+                                    if (!lastNameValidator) activatedCheckLastName = true
 
-                                firstNameValidator && lastNameValidator
-                            } else {
-                                val categoryValidator =
-                                    (selectedCategory != null && selectedCategory != ServiceCategory.IDLE) || selectedCategoryText.isNotEmpty()
+                                    firstNameValidator && lastNameValidator
+                                }
+                                else -> {
+                                    val serviceCheck = (selectedFreelanceService != null && selectedFreelanceService?.id != "")
+                                    val categoryCheck = (selectedFreelanceService != null && selectedCategory != ServiceCategory.IDLE)
+                                    val categoryValidator =
+                                        serviceCheck || selectedCategoryText.isNotEmpty()
 
-                                val usernameValidator = title?.isNotEmpty() == true
+                                    val usernameValidator = title?.isNotEmpty() == true
 
-                                if (!categoryValidator) activatedCheckCategory = true
-                                if (!usernameValidator) activatedCheckUsername = true
+                                    if (!categoryValidator) activatedCheckCategory = true
+                                    if (!usernameValidator) activatedCheckUsername = true
 
-                                categoryValidator && usernameValidator
+                                    categoryValidator && usernameValidator
+                                }
                             }
 
                             val emailValidator = viewModel.validateEmail(email)
@@ -627,25 +721,101 @@ fun SignUpScreen(
                 }
             }
 
-            // Category Selection Dialog
+            /*
+
+            filter
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Category Filter
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+
+                    val listSector = getAllFreelanceSectors()
+
+                    items(listSector.take(10).size) { index ->
+                        if (index != 0) {
+                            val sector = listSector[index]
+                            FilterChip(
+                                selected = listSelected[index],
+                                onClick = {
+                                    listSelected = listSelected.mapIndexed { i, item ->
+                                        if (i == index) {
+                                            !item
+                                        } else item
+                                    }.toMutableList()
+
+                                    /*if (listSelected[index]) {
+                                        if (!listFilter.contains(category))
+                                            listFilter =
+                                                (listFilter + category).toMutableList()
+                                    } else {
+                                        if (listFilter.contains(category))
+                                            listFilter =
+                                                (listFilter - category).toMutableList()
+                                    }*/
+                                },
+                                label = {
+                                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Text(sector.icon)
+                                        Text(sector.name)
+                                    }
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Color(0xFF049344),
+                                    selectedLabelColor = White
+                                )
+                            )
+                        }
+                    }
+
+                    item {
+                        FilterChip(
+                            selected = true,
+                            onClick = {
+                                showCategoryDialog = true
+                            },
+                            label = {
+                                Text("Tous")
+                            },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Color(0xFF049344),
+                                selectedLabelColor = White
+                            )
+                        )
+                    }
+                }
+            }
+
+
             if (showCategoryDialog) {
                 AlertDialog(
                     onDismissRequest = { showCategoryDialog = false },
                     title = { Text("Choisir une catégorie") },
                     text = {
-                        LazyColumn {
-                            items(ServiceCategory.entries.toTypedArray()) { category ->
-                                CategoryDialogItem(
-                                    category = category,
-                                    onClick = {
-                                        selectedCategory = category
-                                        viewModel.changePostType(
-                                            selectedCategory ?: ServiceCategory.IDLE
-                                        )
-                                        showCategoryDialog = false
-                                    }
-                                )
+                        selectedFreelanceSector?.let {
+                            LazyColumn {
+                                items(it.services) { category ->
+                                    FreelanceDialogItem(
+                                        category = category,
+                                        onClick = {
+                                            selectedFreelanceService = category
+
+                                            viewModel.changeFreelanceService(
+                                                selectedFreelanceService ?: FreelanceService()
+                                            )
+                                            showCategoryDialog = false
+                                        }
+                                    )
+                                }
                             }
+                        } ?: run {
+                            Text("Vous devez choisir un secteur")
                         }
                     },
                     confirmButton = {},
@@ -655,6 +825,92 @@ fun SignUpScreen(
                         }
                     }
                 )
+            }
+
+            if (showSectorDialog) {
+                AlertDialog(
+                    onDismissRequest = { showSectorDialog = false },
+                    title = { Text("Choisir un sécteur") },
+                    text = {
+                        LazyColumn {
+                            items(getAllFreelanceSectors()) { category ->
+                                FreelanceSectorDialogItem(
+                                    category = category,
+                                    onClick = {
+                                        selectedFreelanceSector = category
+                                        viewModel.changeFreelanceSector(
+                                            selectedFreelanceSector ?: FreelanceSector()
+                                        )
+                                        showSectorDialog = false
+                                    }
+                                )
+                            }
+                        }
+                    },
+                    confirmButton = {},
+                    dismissButton = {
+                        TextButton(onClick = { showSectorDialog = false }) {
+                            Text("Annuler", color = Color(0xFF049344))
+                        }
+                    }
+                )
+            }*/
+
+            AnimatedVisibility(
+                visible = showSectorDialog,
+                enter = slideInVertically(
+                    initialOffsetY = { it }, // Slide from below the screen
+                    animationSpec = tween(durationMillis = 600) // Set animation duration
+                ),
+                exit = slideOutVertically(
+                    targetOffsetY = { it }, // Slide out upwards
+                    animationSpec = tween(durationMillis = 600) // Set animation duration
+                )
+            ) {
+                FreelanceSectorSelectionScreen (
+                    onSelectSector = { service ->
+                        selectedFreelanceSector = service
+                        viewModel.changeFreelanceSector(
+                            selectedFreelanceSector ?: FreelanceSector()
+                        )
+                        showSectorDialog = false
+                    },
+                    dismiss = {
+                        showSectorDialog = false
+                    }
+                )
+            }
+
+            AnimatedVisibility(
+                visible = showCategoryDialog,
+                enter = slideInVertically(
+                    initialOffsetY = { it }, // Slide from below the screen
+                    animationSpec = tween(durationMillis = 600) // Set animation duration
+                ),
+                exit = slideOutVertically(
+                    targetOffsetY = { it }, // Slide out upwards
+                    animationSpec = tween(durationMillis = 600) // Set animation duration
+                )
+            ) {
+                selectedFreelanceSector?.let {
+                    FreelanceServiceSelectionScreen(
+                        selectedSector = it,
+                        onSelectService = { service ->
+
+                            selectedFreelanceService = service
+
+                            viewModel.changeFreelanceService(
+                                selectedFreelanceService ?: FreelanceService()
+                            )
+                            showCategoryDialog = false
+                        },
+                        dismiss = {
+                            showCategoryDialog = false
+                        }
+                    )
+                } ?: run {
+                    Text("Vous devez choisir un secteur")
+                }
             }
 
             if (isProgressing) {

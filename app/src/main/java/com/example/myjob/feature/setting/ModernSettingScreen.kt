@@ -74,6 +74,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
+import com.example.myjob.common.CountrySelector
 import com.example.myjob.common.CustomPhoneKit
 import com.example.myjob.common.GenericSearch
 import com.example.myjob.common.GlobalEntries
@@ -89,7 +90,7 @@ import com.example.myjob.feature.validateprofile.VerificationStatus
 @Composable
 fun ModernSettingScreen(
     navController: NavController,
-    list: List<NewCountry> = listOf(),
+    list: List<String> = listOf(),
     clearData: () -> Unit = {},
     onResumed: (index: Int) -> Unit = {},
     onBackClick: () -> Unit = {},
@@ -126,7 +127,7 @@ fun ModernSettingScreen(
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_START) {
-            settingViewModel.mapperToListNames(list)
+            //settingViewModel.mapperToListNames(list)
             settingViewModel.getRole()
             onResumed(3)
         }
@@ -206,6 +207,9 @@ fun ModernSettingScreen(
                     onNotificationsClick = {
                         navController.navigate(Screen.NotificationCompanyScreen.route)
                     },
+                    onMessageClick = {
+                        navController.navigate(Screen.ListMessagesScreen.route)
+                    },
                     onValidateProfileClick = {
                         when (verificationSteps.status) {
                             VerificationStatus.PENDING_REVIEW.name -> {
@@ -272,6 +276,7 @@ fun ModernSettingScreen(
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
         ) {
             EditServiceProfileBottomSheet(
+                list = list,
                 onDismiss = {
                     showEditProfileServices = false
                 },
@@ -509,6 +514,7 @@ fun SettingsOptionsSection(
     isVerified: Boolean,
     onNotificationsClick: () -> Unit,
     onValidateProfileClick: () -> Unit,
+    onMessageClick: () -> Unit,
     onTermsClick: () -> Unit,
     onPrivacyClick: () -> Unit,
     onMyAccountClick: () -> Unit
@@ -533,11 +539,12 @@ fun SettingsOptionsSection(
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
             Column(modifier = Modifier.padding(8.dp)) {
+
                 SettingsOption(
                     interactionSource = interactionSource,
                     iconRes = R.drawable.ic_settings_notifications,
-                    title = stringResource(id = R.string.notification_text),
-                    onClick = onNotificationsClick
+                    title = "Messages",
+                    onClick = onMessageClick
                 )
 
                 Divider(
@@ -545,18 +552,33 @@ fun SettingsOptionsSection(
                     color = Color(0xFFE5E7EB)
                 )
 
-                SettingsOption(
-                    interactionSource = interactionSource,
-                    iconRes = R.drawable.ic_settings_privacy,
-                    title = stringResource(id = R.string.validate_profile_text),
-                    showBadge = isVerified,
-                    onClick = onValidateProfileClick
-                )
+                if (role != "Services") {
 
-                Divider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = Color(0xFFE5E7EB)
-                )
+                    SettingsOption(
+                        interactionSource = interactionSource,
+                        iconRes = R.drawable.ic_settings_notifications,
+                        title = stringResource(id = R.string.notification_text),
+                        onClick = onNotificationsClick
+                    )
+
+                    Divider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = Color(0xFFE5E7EB)
+                    )
+
+                    SettingsOption(
+                        interactionSource = interactionSource,
+                        iconRes = R.drawable.ic_settings_privacy,
+                        title = stringResource(id = R.string.validate_profile_text),
+                        showBadge = isVerified,
+                        onClick = onValidateProfileClick
+                    )
+
+                    Divider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = Color(0xFFE5E7EB)
+                    )
+                }
 
                 SettingsOption(
                     interactionSource = interactionSource,
@@ -917,6 +939,7 @@ fun EditProfileBottomSheet(
 
 @Composable
 fun EditServiceProfileBottomSheet(
+    list: List<String>,
     onDismiss: () -> Unit,
     onSave: () -> Unit,
     settingViewModel: SettingViewModel
@@ -942,6 +965,7 @@ fun EditServiceProfileBottomSheet(
         )
     }
     var country by remember(user.country) { mutableStateOf(user.country ?: "") }
+    var ville by remember(user.city) { mutableStateOf(user.city ?: "") }
 
     var listPhones by remember(user.phoneList) {
         mutableStateOf(
@@ -963,6 +987,7 @@ fun EditServiceProfileBottomSheet(
 
     val isShowed by settingViewModel.isCountryShowed.collectAsState()
     val listNames by settingViewModel.listNames.collectAsState()
+    var isShowedCities by remember { mutableStateOf(false) }
 
     val savedServiceInfo by settingViewModel.savedServiceInfo.collectAsState()
     LaunchedEffect(savedServiceInfo) {
@@ -1047,7 +1072,7 @@ fun EditServiceProfileBottomSheet(
                             onClick = {
                                 isActivityShowed = true
                             },
-                            label = stringResource(id = R.string.activity_text),
+                            label = "Catégorie",
                             modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                             isRequired = false
                         )
@@ -1063,7 +1088,7 @@ fun EditServiceProfileBottomSheet(
                                     selectedCategoryText = it
                                     settingViewModel.changeOtherCategory(selectedCategoryText)
                                 },
-                                label = stringResource(id = R.string.company_name_text),
+                                label = "Autre catégorie",
                                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                                 isRequired = false
                             )
@@ -1078,7 +1103,7 @@ fun EditServiceProfileBottomSheet(
                                 userServiceName = it
                                 settingViewModel.changeServiceUserName(userServiceName)
                             },
-                            label = stringResource(id = R.string.company_name_text),
+                            label = "Nom complet",
                             modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                             isRequired = false
                         )
@@ -1092,7 +1117,7 @@ fun EditServiceProfileBottomSheet(
                                 email = it
                                 settingViewModel.changeServiceEmail(email)
                             },
-                            label = stringResource(id = R.string.company_name_text),
+                            label = "Email",
                             modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                             isRequired = false
                         )
@@ -1165,7 +1190,21 @@ fun EditServiceProfileBottomSheet(
                             onClick = {
                                 settingViewModel.changeVisibilityCountry(true)
                             },
-                            label = "Address",
+                            label = "Pays",
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                            isRequired = false,
+                            onValueChange = {},
+                            readOnly = true
+                        )
+                    }
+
+                    item {
+                        FormTextField(
+                            value = ville,
+                            onClick = {
+                                isShowedCities = true
+                            },
+                            label = "Ville",
                             modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                             isRequired = false,
                             onValueChange = {},
@@ -1217,22 +1256,47 @@ fun EditServiceProfileBottomSheet(
                 targetOffsetY = { it }, // Slide out upwards
                 animationSpec = tween(durationMillis = 600) // Set animation duration
             )
-        )
-        {
+        ) {
+
+            CountrySelector(
+                onSelect = { item ->
+                    settingViewModel.changeVisibilityCountry(false)
+                    settingViewModel.changeCountryGeneric(item)
+                    user.country = item
+                    country = item
+                },
+                onDismissRequest = {
+                    settingViewModel.changeVisibilityCountry(false)
+                }
+            )
+        }
+
+        AnimatedVisibility(
+            visible = isShowedCities,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Slide from below the screen
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Slide out upwards
+                animationSpec = tween(durationMillis = 600) // Set animation duration
+            )
+        ) {
+
             Box(modifier = Modifier.fillMaxSize()) {
 
                 GenericSearch(
-                    mListOfJobs = listNames,
+                    mListOfJobs = list,
                     onDismissRequest = {
-                        settingViewModel.changeVisibilityCountry(false)
+                        isShowedCities = false
                     },
                     onSelectedBank = { item, index ->
-                        settingViewModel.changeVisibilityCountry(false)
-                        settingViewModel.changeCountryGeneric(item)
-                        user.country = item
-                        country = item
+                        isShowedCities = false
+                        settingViewModel.changeCity(item)
+                        user.city = item
+                        ville = item
                     },
-                    title = stringResource(id = R.string.country_text)
+                    title = "Villes"
                 )
             }
         }

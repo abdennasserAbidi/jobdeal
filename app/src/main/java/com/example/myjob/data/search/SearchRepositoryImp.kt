@@ -1,12 +1,17 @@
 package com.example.myjob.data.search
 
+import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.paging.map
+import com.example.myjob.base.GenericResponse
 import com.example.myjob.base.GenericSource
+import com.example.myjob.base.SearchSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
+import com.example.myjob.domain.entities.CategoryModel
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
@@ -100,6 +105,32 @@ class SearchRepositoryImp @Inject constructor(
                     }
                 }
             ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+            emitAll(
+                pager.map { pagingData ->
+                    Resource(ResourceState.SUCCESS, pagingData, null)
+                }
+            )
+        }.catch { ex ->
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+
+    override suspend fun getUserServiceFilteredList(categoryModel: CategoryModel): Flow<Resource<PagingData<User>>> =
+        flow {
+            val pager = Pager(
+                config = PagingConfig(pageSize = 10, prefetchDistance = 1),
+                pagingSourceFactory = {
+                    GenericSource { currentPage ->
+                        val search =
+                            remoteDataSource.getUserServiceFilteredList(
+                                categoryModel = categoryModel,
+                                pageNumber = currentPage
+                            )
+
+                        search
+                    }
+                }
+            ).flow
 
             emitAll(
                 pager.map { pagingData ->
