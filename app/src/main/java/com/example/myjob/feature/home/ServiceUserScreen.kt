@@ -155,6 +155,14 @@ fun ServiceUserScreen(
         )
     }
 
+    var listSelectedSector by remember {
+        mutableStateOf(List(getAllFreelanceSectors().size) { false })
+    }
+
+    var listSelectedService by remember {
+        mutableStateOf(List(getAllFreelanceServices().size) { false })
+    }
+
     var selectedItem by remember { mutableStateOf(User()) }
     val interactionSource = remember { MutableInteractionSource() }
     var showSearchSheet by remember { mutableStateOf(false) }
@@ -182,6 +190,16 @@ fun ServiceUserScreen(
             selectedType = homeViewModel.getType()
             homeViewModel.getCurrent()
             homeViewModel.getAllUserService()
+        }
+    }
+
+    LaunchedEffect(pullRefreshState.progress) {
+        if (pullRefreshState.progress > 0f) {
+            homeViewModel.getAllUserService()
+            listFilterSector.clear()
+            listFilterService.clear()
+            listSelectedSector.map { false }
+            listSelectedService.map { false }
         }
     }
 
@@ -462,14 +480,6 @@ fun ServiceUserScreen(
         )
 
         val isFilterFinished by homeViewModel.isFilterFinished.collectAsState()
-
-        var listSelectedSector by remember {
-            mutableStateOf(List(getAllFreelanceSectors().size) { false })
-        }
-
-        var listSelectedService by remember {
-            mutableStateOf(List(getAllFreelanceServices().size) { false })
-        }
 
         LaunchedEffect(isFilterFinished) {
             if (isFilterFinished) isFilterOpened = false

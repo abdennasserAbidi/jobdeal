@@ -74,6 +74,7 @@ data class User(
     var freelanceSector: FreelanceSector = FreelanceSector(),
     var freelanceService: FreelanceService = FreelanceService(),
     var otherCategory: String = "",
+    var otherSector: String = "",
     var description: String = "",
 ) {
 

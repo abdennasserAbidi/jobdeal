@@ -78,8 +78,8 @@ data class FreelanceSector(
 data class FreelancesSector(
     var id: String = "",
     var name: String = "",
-    val icon: String = "",
-    val description: String = ""
+    var icon: String = "",
+    var description: String = ""
 )
 
 @Serializable
@@ -1056,8 +1056,12 @@ fun SectorFilterListView(
 
 @Composable
 fun FreelanceFilterSection(
+    hint: String,
+    searchQuery: String,
     listFilter: List<String>,
     interactionSource: MutableInteractionSource,
+    valueChanged: (String) -> Unit = {},
+    clearSearch: () -> Unit = {},
     onClick: (Int) -> Unit = {}
 ) {
     Card(
@@ -1066,13 +1070,14 @@ fun FreelanceFilterSection(
             .padding(horizontal = 10.dp),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = White)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp)
         ) {
+
             var selected by remember { mutableStateOf(0) }
 
             Row(
@@ -1113,6 +1118,36 @@ fun FreelanceFilterSection(
                     }
                 }
             }
+
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = {
+                    if (it.isEmpty()) clearSearch()
+                    else valueChanged(it)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                placeholder = {
+                    Text(
+                        "Rechercher un $hint",
+                        color = Color(0xFF9CA3AF)
+                    )
+                },
+                leadingIcon = { Icon(Icons.Filled.Search, null, tint = Color(0xFF049344)) },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { clearSearch() }) {
+                            Icon(Icons.Filled.Close, null, tint = Color(0xFF6B7280))
+                        }
+                    }
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF049344),
+                    unfocusedBorderColor = Color(0xFF049344)
+                ),
+                shape = RoundedCornerShape(12.dp)
+            )
         }
     }
 }
@@ -1136,64 +1171,11 @@ fun FreelanceFilterSectorScreen(
 
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = {
-                            searchQuery = it
-
-                            if (selectedIndex == 0) {
-                                listSector = if (it.isEmpty()) getAllFreelanceSectors()
-                                else listSector.filter { sector ->
-                                    sector.name.contains(
-                                        it,
-                                        ignoreCase = true
-                                    ) || sector.description.contains(it, ignoreCase = true)
-                                }
-                            } else {
-                                listService = if (it.isEmpty()) getAllFreelanceServices()
-                                else listService.filter { sector ->
-                                    sector.name.contains(
-                                        it,
-                                        ignoreCase = true
-                                    ) || sector.description.contains(it, ignoreCase = true)
-                                }
-                            }
-
-
-
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        placeholder = {
-                            Text(
-                                "Rechercher un secteur...",
-                                color = Color(0xFF9CA3AF)
-                            )
-                        },
-                        leadingIcon = { Icon(Icons.Filled.Search, null, tint = Color(0xFF049344)) },
-                        trailingIcon = {
-                            if (searchQuery.isNotEmpty()) {
-                                IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(Icons.Filled.Close, null, tint = Color(0xFF6B7280))
-                                }
-                            }
-                        },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF049344),
-                            unfocusedBorderColor = Color(0xFF049344)
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                },
-                colors = TopAppBarDefaults
-                    .topAppBarColors(containerColor = Transparent)
-            )
-        },
         bottomBar = {
+
+            val isEnabled = if (selectedIndex == 0) listFilterSector.isNotEmpty()
+            else listFilterService.isNotEmpty()
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -1220,7 +1202,7 @@ fun FreelanceFilterSectorScreen(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF049344)
                         ),
-                        enabled = listFilterSector.isNotEmpty()
+                        enabled = isEnabled
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Approval,
@@ -1273,10 +1255,37 @@ fun FreelanceFilterSectorScreen(
             val listFilter = listOf("Secteur", "Service")
 
             Spacer(modifier = Modifier.height(10.dp))
+            val text = if (selectedIndex == 0) "secteur" else "service"
 
             FreelanceFilterSection(
+                hint = text,
+                searchQuery = searchQuery,
                 listFilter = listFilter,
                 interactionSource = remember { MutableInteractionSource() },
+                valueChanged = {
+                    searchQuery = it
+
+                    if (selectedIndex == 0) {
+                        listSector = if (it.isEmpty()) getAllFreelanceSectors()
+                        else listSector.filter { sector ->
+                            sector.name.contains(
+                                it,
+                                ignoreCase = true
+                            ) || sector.description.contains(it, ignoreCase = true)
+                        }
+                    } else {
+                        listService = if (it.isEmpty()) getAllFreelanceServices()
+                        else listService.filter { sector ->
+                            sector.name.contains(
+                                it,
+                                ignoreCase = true
+                            ) || sector.description.contains(it, ignoreCase = true)
+                        }
+                    }
+                },
+                clearSearch = {
+                    searchQuery = ""
+                },
                 onClick = {
                     selectedIndex = it
                 }

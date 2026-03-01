@@ -2,15 +2,12 @@ package com.example.myjob.feature.signup
 
 import FreelanceSector
 import FreelanceService
-import android.content.Context
 import android.util.Log
 import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myjob.R
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
-import com.example.myjob.domain.entities.CategoryChoices
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.LoginResponse
 import com.example.myjob.domain.usecase.subscription.SaveUserUseCase
@@ -156,6 +153,20 @@ class SignUpViewModel @Inject constructor(
     fun changeOtherCategory(name: String) {
         user.update {
             it.otherCategory = name
+            it
+        }
+    }
+
+    fun changeOtherSector(name: String) {
+
+        val freelanceSector = FreelanceSector()
+        freelanceSector.id = "autre"
+        freelanceSector.name = "name"
+        freelanceSector.description = ""
+        freelanceSector.icon = "autre"
+
+        user.update {
+            it.freelanceSector = freelanceSector
             it
         }
     }
