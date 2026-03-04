@@ -1,9 +1,7 @@
 package com.example.myjob.feature.signup
 
 //noinspection UsingMaterialAndMaterial3Libraries
-import FreelanceDialogItem
 import FreelanceSector
-import FreelanceSectorDialogItem
 import FreelanceSectorSelectionScreen
 import FreelanceService
 import FreelanceServiceSelectionScreen
@@ -27,16 +25,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
-import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -79,12 +73,10 @@ import com.example.myjob.R
 import com.example.myjob.base.MyApp
 import com.example.myjob.common.CustomDialog
 import com.example.myjob.common.GlobalEntries.emailGoogleAccount
-import com.example.myjob.feature.demands.CategoryDialogItem
 import com.example.myjob.feature.demands.NewFormTextField
 import com.example.myjob.feature.demands.ServiceCategory
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
-import getAllFreelanceSectors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

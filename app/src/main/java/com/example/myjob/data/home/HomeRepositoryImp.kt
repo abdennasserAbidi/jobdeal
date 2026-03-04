@@ -35,19 +35,6 @@ class HomeRepositoryImp @Inject constructor(
             pagingSourceFactory = {
                 GenericSource { currentPage ->
                     val users = remoteDataSource.getAllUser(id, pageNumber = currentPage)
-                    val lang = sharedPreference.getString("lang", "") ?: ""
-                    users.content.map {
-                        val gender = it.sexe ?: ""
-                        it.changeSex(gender, lang)
-
-                        val situation = it.situation ?: ""
-                        it.changeSituation(situation, lang)
-
-                        /*if (it.role == "Candidate" || it.role == "Candidat") {
-                            val availability = it.professionalStatus.availability ?: ""
-                            it.changeAvailability(availability, lang)
-                        }*/
-                    }
 
                     val json = Gson().toJson(users.content)
                     sharedPreference.putString("jsonUser", json)
@@ -72,19 +59,6 @@ class HomeRepositoryImp @Inject constructor(
             pagingSourceFactory = {
                 GenericSource { currentPage ->
                     val users = remoteDataSource.getAllCandidateService(id, pageNumber = currentPage)
-                    val lang = sharedPreference.getString("lang", "") ?: ""
-                    users.content.map {
-                        val gender = it.sexe ?: ""
-                        it.changeSex(gender, lang)
-
-                        val situation = it.situation ?: ""
-                        it.changeSituation(situation, lang)
-
-                        /*if (it.role == "Candidate" || it.role == "Candidat") {
-                            val availability = it.professionalStatus.availability ?: ""
-                            it.changeAvailability(availability, lang)
-                        }*/
-                    }
 
                     val json = Gson().toJson(users.content)
                     sharedPreference.putString("jsonUser", json)
@@ -195,17 +169,6 @@ class HomeRepositoryImp @Inject constructor(
             if (message.isNotEmpty()) {
                 emit(Resource(ResourceState.ERROR, null, message))
             } else {
-                val lang = sharedPreference.getString("lang", "") ?: ""
-
-                val gender = user.sexe ?: ""
-                user.changeSex(gender, lang)
-
-                val situation = user.situation ?: ""
-                user.changeSituation(situation, lang)
-
-                /*val availability = data.professionalStatus.availability ?: ""
-                data.changeAvailability(availability, lang)*/
-
                 // Emit data
                 emit(Resource(ResourceState.SUCCESS, user, null))
             }

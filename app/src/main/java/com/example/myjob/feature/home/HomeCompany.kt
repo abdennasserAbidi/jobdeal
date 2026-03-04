@@ -297,12 +297,14 @@ fun HomeCompany(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
 
+                                        val genderUser = user.sexe?.genderFr ?: "Homme"
+
                                         val gender =
-                                            if (user.sexe == "Homme" || user.sexe == "Male") R.drawable.menavatar
+                                            if (genderUser == "Homme") R.drawable.menavatar
                                             else R.drawable.femaleavatar
 
                                         val color =
-                                            if (user.sexe == "Homme" || user.sexe == "Male") Color.Cyan
+                                            if (genderUser == "Homme") Cyan
                                             else Color(0xFFFF8C00)
 
                                         Box(

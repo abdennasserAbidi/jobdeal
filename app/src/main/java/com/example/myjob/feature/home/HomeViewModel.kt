@@ -716,7 +716,7 @@ class HomeViewModel @Inject constructor(
             it.idTo = user.id ?: -1
             it.roleReceiver = user.role ?: "Company"
             it.fullName = user.fullName
-            it.gender = user.sexe
+            it.gender = if (lang == "French" || lang == "Français") user.sexe?.genderFr else user.sexe?.genderEng
             it.date = formattedDate
             it.status = status
             it.duration = duration
@@ -733,7 +733,6 @@ class HomeViewModel @Inject constructor(
             invitationModel = invitationParam.value
         )
         viewModelScope.launch {
-            Log.i("kzlkgrjlzkgrgzl", "matchCurrentProfile: $invitationParams")
             sendInvitationUseCase.execute(invitationParams).collect { res ->
                 when (res.status) {
 
@@ -892,6 +891,7 @@ class HomeViewModel @Inject constructor(
 
     fun validateFilter(criteria: CriteriaModel) {
         viewModelScope.launch {
+            criteria.language = sharedPreference.getString("lang", "Français") ?: "Français"
             if (criteria.checkEmpty()) {
                 criteria.idUser = sharedPreference.getInt("idUser", -1)
                 searchUserUseCase.execute(criteria).collect { res ->

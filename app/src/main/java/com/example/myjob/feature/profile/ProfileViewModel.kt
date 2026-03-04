@@ -25,8 +25,14 @@ import com.example.myjob.domain.entities.DEFAULT_ROLE
 import com.example.myjob.domain.entities.DEFAULT_TYPE
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
+import com.example.myjob.domain.entities.Gender
+import com.example.myjob.domain.entities.GenderEng
+import com.example.myjob.domain.entities.GenderFr
 import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.ProfessionalStatus
+import com.example.myjob.domain.entities.Situation
+import com.example.myjob.domain.entities.SituationEng
+import com.example.myjob.domain.entities.SituationFr
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.domain.usecase.home.UploadCVUseCase
@@ -223,7 +229,6 @@ class ProfileViewModel @Inject constructor(
             }
         }
     }
-
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -567,9 +572,11 @@ class ProfileViewModel @Inject constructor(
         return t
     }
 
-    fun validateAddress(text: List<String>): Boolean = text.isNotEmpty() && text.none { it.isEmpty() }
+    fun validateAddress(text: List<String>): Boolean =
+        text.isNotEmpty() && text.none { it.isEmpty() }
 
-    fun validatePhones(text: List<String>): Boolean = text.isNotEmpty() && text.none { it.isEmpty() }
+    fun validatePhones(text: List<String>): Boolean =
+        text.isNotEmpty() && text.none { it.isEmpty() }
 
     fun changeAddress(name: List<String>) {
         user.update {
@@ -618,23 +625,50 @@ class ProfileViewModel @Inject constructor(
     var userSex = MutableStateFlow(user.value.sexe)
     var gendersOptions = MutableStateFlow(emptyList<Int>())
 
-    fun getSex(): String {
-        val lang = sharedPreference.getString("lang", "") ?: ""
-        return user.value.getSex(lang)
-    }
-
-    fun getSituation(): String {
-        val lang = sharedPreference.getString("lang", "") ?: ""
-        return user.value.getSituation(lang)
+    fun getGenderFromLang(userGender: Gender?): String {
+        val lang = userGender?.lang
+        return if (lang == "French" || lang == "Français") userGender.genderFr
+        else userGender?.genderEng ?: ""
     }
 
     fun changeSex(name: String) {
         val lang = sharedPreference.getString("lang", "") ?: ""
-        userSex.update {
-            user.value.changeSex(name, lang)
+
+        var genderEnglish = ""
+        var genderFrench = ""
+
+        if (lang == "French" || lang == "Français") {
+            var count = -1
+            GenderFr.entries.mapIndexed { index, fr ->
+                if (fr.name == name) {
+                    genderFrench = name
+                    count = index
+                }
+            }
+
+            if (count != -1) genderEnglish = GenderEng.entries[count].name
+        } else {
+            var count = -1
+            GenderEng.entries.mapIndexed { index, fr ->
+                if (fr.name == name) {
+                    genderEnglish = name
+                    count = index
+                }
+            }
+
+            if (count != -1) genderFrench = GenderFr.entries[count].name
         }
+
+        val gender = Gender(
+            lang = lang,
+            genderFr = genderFrench,
+            genderEng = genderEnglish
+        )
+
+
+        userSex.update { gender }
         user.update {
-            it.changeSex(name, lang)
+            it.sexe = gender
             it
         }
     }
@@ -642,13 +676,50 @@ class ProfileViewModel @Inject constructor(
     var userSituation = MutableStateFlow(user.value.situation)
     var situationsOptions = MutableStateFlow(emptyList<Int>())
 
+    fun getSituationFromLang(userSituation: Situation?): String {
+        val lang = userSituation?.lang
+        return if (lang == "French" || lang == "Français") userSituation.situationFr
+        else userSituation?.situationEng ?: ""
+    }
+
     fun changeSituation(name: String) {
         val lang = sharedPreference.getString("lang", "") ?: ""
-        userSituation.update {
-            user.value.changeSituation(name, lang)
+
+        var situationEnglish = ""
+        var situationFrench = ""
+
+        if (lang == "French" || lang == "Français") {
+            var count = -1
+            SituationFr.entries.mapIndexed { index, fr ->
+                if (fr.name == name) {
+                    situationFrench = name
+                    count = index
+                }
+            }
+
+            if (count != -1) situationEnglish = SituationEng.entries[count].name
+        } else {
+            var count = -1
+            SituationEng.entries.mapIndexed { index, fr ->
+                if (fr.name == name) {
+                    situationEnglish = name
+                    count = index
+                }
+            }
+
+            if (count != -1) situationFrench = SituationFr.entries[count].name
         }
+
+        val situation = Situation(
+            lang = lang,
+            situationFr = situationFrench,
+            situationEng = situationEnglish
+        )
+
+        userSituation.update { situation }
+
         user.update {
-            it.changeSituation(name, lang)
+            it.situation = situation
             it
         }
     }
@@ -706,8 +777,8 @@ class ProfileViewModel @Inject constructor(
             titleGeneric.update { preferredActivitySector ?: "" }
             countryGeneric.update { country ?: "" }
             userEmploymentTypeChoice.update { preferredEmploymentType ?: "" }
-            userSituation.update { situation ?: "" }
-            userSex.update { sexe ?: "" }
+            //userSituation.update { situation?.situationFr ?: "" }
+            //userSex.update { sexe ?: "" }
             birthDateUser.update { birthDate ?: "" }
             userFullName.update { fullName ?: "" }
         }
@@ -729,10 +800,8 @@ class ProfileViewModel @Inject constructor(
 
     fun saveUserPersonalInfo() {
         viewModelScope.launch {
-            Log.i("fjkzhkzhgrzgz", "user: ${user.value}")
 
             savePersonalUseCase.execute(user.value).collect { res ->
-                Log.i("fjkzhkzhgrzgz", "res: $res")
 
                 saveUserState.update {
                     res.data?.message ?: ""

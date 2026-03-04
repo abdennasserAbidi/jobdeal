@@ -202,11 +202,11 @@ fun FilteredHome(
                             ) {
 
                                 val gender =
-                                    if (user.sexe == "Homme" || user.sexe == "Male") R.drawable.menavatar
+                                    if (user.sexe?.genderFr == "Homme") R.drawable.menavatar
                                     else R.drawable.femaleavatar
 
                                 val color =
-                                    if (user.sexe == "Homme" || user.sexe == "Male") Color.Cyan
+                                    if (user.sexe?.genderFr == "Homme") Color.Cyan
                                     else Color(0xFFFF8C00)
 
                                 Box(

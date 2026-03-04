@@ -878,12 +878,10 @@ fun FreelanceSectorSelectionScreen(
                     )
                 },
                 navigationIcon = {
-                    if (selectedSector != null) {
-                        IconButton(onClick = {
-                            dismiss()
-                        }) {
-                            Icon(Icons.Filled.ArrowBack, "Retour", tint = Color(0xFF049344))
-                        }
+                    IconButton(onClick = {
+                        dismiss()
+                    }) {
+                        Icon(Icons.Filled.ArrowBack, "Retour", tint = Color(0xFF049344))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)

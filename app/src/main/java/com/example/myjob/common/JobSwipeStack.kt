@@ -354,31 +354,6 @@ fun JobSwipeCard(
                             else R.drawable.femalecandidate*/
 
 
-                        val gender =
-                            if (profile.sexe == "Homme" || profile.sexe == "Male") R.drawable.menavatar
-                            else R.drawable.femaleavatar
-
-                        val color =
-                            if (profile.sexe == "Homme" || profile.sexe == "Male") Cyan
-                            else Color(0xFFFF8C00)
-
-                        Box(
-                            modifier = Modifier
-                                .background(
-                                    color = color,
-                                    shape = CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Image(
-                                painter = painterResource(id = gender),
-                                modifier = Modifier
-                                    .size(70.dp)
-                                    .padding(10.dp),
-                                contentDescription = ""
-                            )
-                        }
-
                         /*Image(
                             painter = painterResource(id = gender),
                             modifier = Modifier.weight(0.1f),

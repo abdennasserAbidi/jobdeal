@@ -1,14 +1,10 @@
 package com.example.myjob.data.search
 
-import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.map
-import com.example.myjob.base.GenericResponse
 import com.example.myjob.base.GenericSource
-import com.example.myjob.base.SearchSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.CategoryModel
@@ -201,11 +197,6 @@ class SearchRepositoryImp @Inject constructor(
                         )
                         val lang = sharedPreference.getString("lang", "") ?: ""
                         users.content.map {
-                            val gender = it.sexe ?: ""
-                            it.changeSex(gender, lang)
-
-                            val situation = it.situation ?: ""
-                            it.changeSituation(situation, lang)
 
                             val availability = it.professionalStatus?.availability ?: ""
                             it.changeAvailability(availability, lang)

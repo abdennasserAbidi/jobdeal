@@ -14,6 +14,39 @@ import java.util.Calendar
 import java.util.Locale
 
 @Serializable
+data class Situation(
+    var lang: String = "En",
+    var situationEng: String = SituationEng.Single.name,
+    var situationFr: String = SituationFr.Célibataire.name
+)
+
+enum class SituationEng {
+    Married, Single, Engaged
+}
+
+enum class SituationFr {
+    Marrié, Célibataire, Engagé
+}
+
+///////////////////////////////////////////////////////////////////////////
+// GENDER
+///////////////////////////////////////////////////////////////////////////
+@Serializable
+data class Gender(
+    var lang: String = "En",
+    var genderEng: String = GenderEng.Male.name,
+    var genderFr: String = GenderFr.Homme.name
+)
+
+enum class GenderEng {
+    Male, Female
+}
+
+enum class GenderFr {
+    Homme, Femme
+}
+
+@Serializable
 data class User(
     var id: Int? = View.generateViewId(),
     var firstName: String? = "",
@@ -34,11 +67,11 @@ data class User(
     var fullName: String? = "$firstName $lastName",
     var password: String? = "Aladin@123",
     var preferredEmploymentType: String? = "",
-    var situation: String? = "",
+    var situation: Situation? = Situation(),
     var isVerified: Boolean? = false,
     var firstTime: Boolean? = true,
     var firstTimeUse: Boolean? = true,
-    var sexe: String? = "",
+    var sexe: Gender? = Gender(),
     var nationality: String? = "",
     var birthDate: String? = "Choose Date",
     var activitySector: String? = "Choose activity sector",
@@ -121,45 +154,6 @@ data class User(
 
     }
 
-    fun getSituation(lang: String): String {
-        return if (lang == "French" || lang == "Français") {
-            when (situation) {
-                "Married" -> "Marrié"
-                "Single" -> "Célibataire"
-                "Engaged" -> "Engagé"
-                else -> situation ?: ""
-            }
-        } else {
-            when (situation) {
-                "Marrié" -> "Married"
-                "Célibataire" -> "Single"
-                "Engagé" -> "Engaged"
-                else -> situation ?: ""
-            }
-        }
-    }
-
-    fun changeSituation(name: String, lang: String): String {
-        val traduction = if (lang == "French" || lang == "Français") {
-            when (name) {
-                "Married" -> "Marrié"
-                "Single" -> "Célibataire"
-                "Engaged" -> "Engagé"
-                else -> name
-            }
-        } else {
-            when (name) {
-                "Marrié" -> "Married"
-                "Célibataire" -> "Single"
-                "Engagé" -> "Engaged"
-                else -> name
-            }
-        }
-
-        situation = traduction
-        return traduction
-    }
-
     fun getEmploymentType(lang: String): String {
         return if (lang == "French" || lang == "Français") {
             when (preferredEmploymentType) {
@@ -196,41 +190,6 @@ data class User(
         }
 
         preferredEmploymentType = traduction
-        return traduction
-    }
-
-    fun getSex(lang: String): String {
-        return if (lang == "French" || lang == "Français") {
-            when (sexe) {
-                "Male" -> "Homme"
-                "Female" -> "Femme"
-                else -> sexe ?: ""
-            }
-        } else {
-            when (sexe) {
-                "Homme" -> "Male"
-                "Femme" -> "Female"
-                else -> sexe ?: ""
-            }
-        }
-    }
-
-    fun changeSex(name: String, lang: String): String {
-        val traduction = if (lang == "French" || lang == "Français") {
-            when (name) {
-                "Male" -> "Homme"
-                "Female" -> "Femme"
-                else -> name
-            }
-        } else {
-            when (name) {
-                "Homme" -> "Male"
-                "Femme" -> "Female"
-                else -> name
-            }
-        }
-
-        sexe = traduction
         return traduction
     }
 
@@ -275,8 +234,6 @@ data class User(
         val birthDateValid = birthDate != null && birthDate != "Choose Date"
         val availabilityValid = true
         val rangeSalaryValid = !rangeSalary.isNullOrEmpty()
-        val sexValid = !sexe.isNullOrEmpty()
-        val situationValid = !situation.isNullOrEmpty()
         val preferredActivitySectorValid = !preferredActivitySector.isNullOrEmpty()
         val preferredEmploymentTypeValid = !preferredEmploymentType.isNullOrEmpty()
 
@@ -325,8 +282,8 @@ data class User(
         if (birthDateValid) mapUser[listTag[4]] = birthDate ?: ""
         if (nationalityValid) mapUser[listTag[5]] = nationality ?: ""
 
-        if (sexValid) mapUser[listTag[6]] = sexe ?: ""
-        if (situationValid) mapUser[listTag[7]] = situation ?: ""
+        mapUser[listTag[6]] = sexe?.genderFr ?: ""
+        mapUser[listTag[7]] = situation?.situationFr ?: ""
 
         if (availabilityValid) mapUser[listTag[8]] = professionalStatus?.availability ?: ""
         if (rangeSalaryValid) mapUser[listTag[9]] = rangeSalary ?: ""

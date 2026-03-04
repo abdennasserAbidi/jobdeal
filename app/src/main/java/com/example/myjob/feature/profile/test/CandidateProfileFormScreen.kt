@@ -162,12 +162,15 @@ fun CandidateProfileFormScreenTest(
     var selectedItemGlobal by remember { mutableStateOf("") }
     var globalList by remember { mutableStateOf(emptyList<Int>()) }
     var action: (name: String) -> Unit = {}
+
+
     var showGender by remember { mutableStateOf(false) }
     val userGender by profileViewModel.userSex.collectAsState()
     val gendersOptions by profileViewModel.gendersOptions.collectAsState()
-    val selectedGender by remember {
+    val selectedGender by remember(userGender) {
         mutableStateOf(
-            userGender?.ifEmpty { "" })
+            profileViewModel.getGenderFromLang(userGender)
+        )
     }
 
     //countries
@@ -193,9 +196,10 @@ fun CandidateProfileFormScreenTest(
     var showSituation by remember { mutableStateOf(false) }
     val userSituation by profileViewModel.userSituation.collectAsState()
     val situationsOptions by profileViewModel.situationsOptions.collectAsState()
-    val selectedSituation by remember {
+    val selectedSituation by remember(userSituation) {
         mutableStateOf(
-            userSituation?.ifEmpty { "" })
+            profileViewModel.getSituationFromLang(userSituation)
+        )
     }
 
     //Date
@@ -572,10 +576,10 @@ fun CandidateProfileFormScreenTest(
 
                                 //GENDER
                                 val titleGender = stringResource(id = R.string.sexe_text)
-                                val titleGenderCheck by remember { derivedStateOf { userGender?.isNotEmpty() == true } }
+                                val titleGenderCheck by remember { derivedStateOf { selectedGender.isNotEmpty() } }
 
                                 FormTextField(
-                                    value = userGender ?: "",
+                                    value = selectedGender,
                                     modifier = Modifier.padding(top = 16.dp),
                                     borderColor = if (activatedCheck && !titleGenderCheck) Color.Red else colorResource(
                                         id = R.color.whatsapp
@@ -593,10 +597,10 @@ fun CandidateProfileFormScreenTest(
 
                                 //Situation
                                 val titleSituation = stringResource(id = R.string.situation_text)
-                                val titleSituationCheck by remember { derivedStateOf { userSituation?.isNotEmpty() == true } }
+                                val titleSituationCheck by remember { derivedStateOf { selectedSituation.isNotEmpty() } }
 
                                 FormTextField(
-                                    value = userSituation ?: "",
+                                    value = selectedSituation,
                                     modifier = Modifier.padding(top = 16.dp),
                                     borderColor = if (activatedCheck && !titleSituationCheck) Color.Red else colorResource(
                                         id = R.color.whatsapp
@@ -1121,7 +1125,7 @@ fun CandidateProfileFormScreenTest(
 
         if (showSituation) {
             globalList = situationsOptions
-            selectedItemGlobal = selectedSituation ?: ""
+            selectedItemGlobal = selectedSituation
             action = { name -> profileViewModel.changeSituation(name) }
         }
 
@@ -1206,8 +1210,8 @@ fun CandidateProfileFormScreenTest(
                                 val activitySectorValidator = title.isNotEmpty()
                                 val countryValidator = countries.isNotEmpty()
                                 val birthDateUserValidator = birthDateUser?.isNotEmpty() == true
-                                val userGenderValidator = userGender?.isNotEmpty() == true
-                                val userSituationValidator = userSituation?.isNotEmpty() == true
+                                val userGenderValidator = selectedGender.isNotEmpty()
+                                val userSituationValidator = selectedSituation.isNotEmpty()
                                 val userEmploymentTypeChoiceValidator =
                                     userEmploymentTypeChoice?.isNotEmpty() == true
 

@@ -368,7 +368,7 @@ fun PersonalForm(
 
             val situationOptions = listOf(marriedText, singleText, engagedText)
             var selectedSituation by remember {
-                mutableStateOf(userSituation?.ifEmpty { situationOptions[0] })
+                mutableStateOf("")
             }
             profileViewModel.changeSituation(selectedSituation ?: "")
 
@@ -409,8 +409,7 @@ fun PersonalForm(
                 stringResource(id = R.string.female_text)
             )
             var selectedSexe by remember {
-                mutableStateOf(
-                    userSex?.ifEmpty { sexeOptions[0] })
+                mutableStateOf("")
             }
             profileViewModel.changeSex(selectedSexe?:"")
 
