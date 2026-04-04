@@ -7,6 +7,7 @@ import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.util.Log
 import android.util.Patterns
+import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -34,9 +35,18 @@ import com.example.myjob.domain.entities.Situation
 import com.example.myjob.domain.entities.SituationEng
 import com.example.myjob.domain.entities.SituationFr
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.entities.json.CompanyModel
+import com.example.myjob.domain.entities.json.GenericJsonModel
+import com.example.myjob.domain.entities.json.InstituteModel
+import com.example.myjob.domain.usecase.home.json.GetAllCompaniesUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
+import com.example.myjob.domain.usecase.home.json.SaveCompanyUseCase
 import com.example.myjob.domain.usecase.home.UploadCVUseCase
 import com.example.myjob.domain.usecase.home.VerifyExistingFileUseCase
+import com.example.myjob.domain.usecase.home.json.GetAllActivitiesUseCase
+import com.example.myjob.domain.usecase.home.json.GetAllFieldsUseCase
+import com.example.myjob.domain.usecase.home.json.GetAllInstitutesUseCase
+import com.example.myjob.domain.usecase.home.json.SaveInstituteUseCase
 import com.example.myjob.domain.usecase.profile.GetAllEducUseCase
 import com.example.myjob.domain.usecase.profile.GetAllEducationUseCase
 import com.example.myjob.domain.usecase.profile.GetAllExpUseCase
@@ -95,8 +105,34 @@ class ProfileViewModel @Inject constructor(
     private val saveCompanyInfoUseCase: SaveCompanyInfoUseCase,
     private val getVerifiedCompanyUseCase: GetVerifiedCompanyUseCase,
     private val getVerifiedInstitutesUseCase: GetVerifiedInstitutesUseCase,
-    private val saveServiceInfoUseCase: SaveServiceInfoUseCase
+    private val saveServiceInfoUseCase: SaveServiceInfoUseCase,
+    private val getAllCompaniesUseCase: GetAllCompaniesUseCase,
+    private val saveCompanyUseCase: SaveCompanyUseCase,
+    private val getAllInstitutesUseCase: GetAllInstitutesUseCase,
+    private val saveInstituteUseCase: SaveInstituteUseCase,
+    private val getAllActivitiesUseCase: GetAllActivitiesUseCase,
+    private val getAllFieldsUseCase: GetAllFieldsUseCase
 ) : ViewModel() {
+
+    ///////////////////////////////////////////////////////////////////////////
+    // COMPANY NAMES
+    ///////////////////////////////////////////////////////////////////////////
+    val listCompany = MutableStateFlow<List<CompanyModel>>(emptyList())
+
+    ///////////////////////////////////////////////////////////////////////////
+    // INSTITUTE NAMES
+    ///////////////////////////////////////////////////////////////////////////
+    val listInstitutes = MutableStateFlow<List<InstituteModel>>(emptyList())
+
+    ///////////////////////////////////////////////////////////////////////////
+    // ACTIVITIES NAMES
+    ///////////////////////////////////////////////////////////////////////////
+    val listActivities = MutableStateFlow<List<GenericJsonModel>>(emptyList())
+
+    ///////////////////////////////////////////////////////////////////////////
+    // FIELDS NAMES
+    ///////////////////////////////////////////////////////////////////////////
+    val listFields = MutableStateFlow<List<GenericJsonModel>>(emptyList())
 
     ///////////////////////////////////////////////////////////////////////////
     // NEW COMPANY PROFILE
@@ -106,8 +142,6 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
 
             saveCompanyInfoUseCase.execute(user.value).collect { res ->
-                //saveIsCompletedProfileCandidate()
-                getCompaniesValidated()
                 savedCompanyInfo.update {
                     res.data?.message ?: ""
                 }
@@ -1308,7 +1342,6 @@ class ProfileViewModel @Inject constructor(
             educations.idUser = user.value.id
             saveEducationUseCase.execute(educations).collect { res ->
                 saveEducationState.update { res.data?.message ?: "" }
-                getInstitutesValidated()
                 if (res.data?.message == "saved successfully") getAllEducations(user.value.id ?: 0)
             }
         }
@@ -1460,55 +1493,6 @@ class ProfileViewModel @Inject constructor(
         return "$month $year"
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // COMPANY NAMES
-    ///////////////////////////////////////////////////////////////////////////
-
-    val listCompanies = MutableStateFlow(emptyList<String>())
-
-    private fun getCompaniesValidated() {
-        viewModelScope.launch {
-            getVerifiedCompanyUseCase.execute().collect { res ->
-                when (res.status) {
-                    ResourceState.SUCCESS -> {
-                        val list = res.data ?: emptyList()
-                        val l = list.toMutableList()
-                        val language = sharedPreference.getString("lang", "English")
-                        if (language == "English" || language == "Anglais") l.add("Other")
-                        else l.add("Autres")
-                        listCompanies.update { l }
-                    }
-
-                    else -> {}
-                }
-            }
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // INSTITUTE NAMES
-    ///////////////////////////////////////////////////////////////////////////
-
-    val listInstitutes = MutableStateFlow(emptyList<String>())
-
-    private fun getInstitutesValidated() {
-        viewModelScope.launch {
-            getVerifiedInstitutesUseCase.execute().collect { res ->
-                when (res.status) {
-                    ResourceState.SUCCESS -> {
-                        val list = res.data ?: emptyList()
-                        val l = list.toMutableList()
-                        val language = sharedPreference.getString("lang", "English")
-                        if (language == "English" || language == "Anglais") l.add("Other")
-                        else l.add("Autres")
-                        listInstitutes.update { l }
-                    }
-
-                    else -> {}
-                }
-            }
-        }
-    }
 
     fun changeCompanyExperience(index: Int, item: String) {
         val listExperience = user.value.experience?.toMutableList() ?: mutableListOf()
@@ -1861,7 +1845,6 @@ class ProfileViewModel @Inject constructor(
             experiences.idUser = user.value.id
             saveExperienceUseCase.execute(experiences).collect { res ->
                 //saveExpState.update { res.data?.message ?: "" }
-                getCompaniesValidated()
                 if (res.data?.message == "saved successfully") getAllExperience(user.value.id ?: 0)
             }
         }
@@ -1871,13 +1854,46 @@ class ProfileViewModel @Inject constructor(
         saveExpState.update { "" }
     }
 
+    val saveCompanyState = MutableStateFlow("")
+
+    fun saveNewCompany(companyName: String) {
+        viewModelScope.launch {
+            saveCompanyUseCase.execute(companyName).collect { res ->
+                saveCompanyState.update { res.data ?: "" }
+                GlobalEntries.newCompanyName = ""
+                val list = listCompany.value.toMutableList()
+                list.add(list.lastIndex - 1, CompanyModel(View.generateViewId(), companyName))
+
+                listCompany.update {
+                    list
+                }
+            }
+        }
+    }
+
+    val saveInstituteState = MutableStateFlow("")
+
+    fun saveNewInstituteName(instituteName: String) {
+        viewModelScope.launch {
+            saveInstituteUseCase.execute(instituteName).collect { res ->
+                saveInstituteState.update { res.data ?: "" }
+                GlobalEntries.newInstituteName = ""
+                val list = listInstitutes.value.toMutableList()
+                list.add(list.lastIndex - 1, InstituteModel(View.generateViewId(), instituteName))
+
+                listInstitutes.update {
+                    list
+                }
+            }
+        }
+    }
+
     fun saveExperiences(experiences: MutableList<Experience>) {
         viewModelScope.launch {
             GlobalEntries.listExperience.map {
                 it.idUser = user.value.id
                 saveExperienceUseCase.execute(it).collect { res ->
                     saveExpState.update { res.data?.message ?: "" }
-                    getCompaniesValidated()
                     if (res.data?.message == "saved successfully") getAllExperience(
                         user.value.id ?: 0
                     )
@@ -1905,6 +1921,31 @@ class ProfileViewModel @Inject constructor(
     }
 
     init {
+
+        viewModelScope.launch {
+            getAllCompaniesUseCase.execute().collect { res ->
+                listCompany.update { res.data ?: emptyList() }
+            }
+        }
+
+        viewModelScope.launch {
+            getAllInstitutesUseCase.execute().collect { res ->
+                listInstitutes.update { res.data ?: emptyList() }
+            }
+        }
+
+        viewModelScope.launch {
+            getAllActivitiesUseCase.execute().collect { res ->
+                listActivities.update { res.data ?: emptyList() }
+            }
+        }
+
+        viewModelScope.launch {
+            getAllFieldsUseCase.execute().collect { res ->
+                listFields.update { res.data ?: emptyList() }
+            }
+        }
+
         lang = sharedPreference.getString("lang", "") ?: ""
         langState.update { lang }
 

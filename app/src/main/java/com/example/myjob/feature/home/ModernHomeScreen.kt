@@ -100,7 +100,7 @@ fun ModernHomeScreen(
 
     val interactionSource = remember { MutableInteractionSource() }
     var showTypeSheet by remember { mutableStateOf(false) }
-    var selectedSearch by remember { mutableStateOf(JobType.NORMAL) }
+    var selectedSearch by remember(homeViewModel.getType()) { mutableStateOf(homeViewModel.getType()) }
 
     val invitationCount by homeViewModel.invitationCount.collectAsState()
     val seen by seenInvitation.collectAsState()

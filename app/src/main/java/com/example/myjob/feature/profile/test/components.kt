@@ -69,6 +69,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.indexToChangeEducation
+import com.example.myjob.common.GlobalEntries.indexToChangeExperience
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.ProfessionalStatus
@@ -891,14 +893,15 @@ fun WorkExperienceCard(
                 }
             )
 
-            if (experience.companyName?.contains(stringResource(id = R.string.other_text)) == true) {
+            if (experience.companyName == "Autres") {
                 FormTextField(
                     value = newCompanyName,
                     borderColor = if (activatedCheck && newCompanyName.isNotEmpty())
                         Color.Red else colorResource(id = R.color.whatsapp),
                     onValueChange = {
                         newCompanyName = it
-                        profileViewModel.changeCompanyExperience(index, "${experience.companyName},$it")
+                        GlobalEntries.newCompanyName = it
+                        indexToChangeExperience = index
                     },
                     label = stringResource(id = R.string.put_company_name_text),
                     isRequired = true
@@ -1129,14 +1132,15 @@ fun EducationCard(
                 }
             )
 
-            if (education.schoolName?.contains(stringResource(id = R.string.other_text)) == true) {
+            if (education.schoolName == "Autres") {
                 FormTextField(
                     value = newInstituteName,
                     borderColor = if (activatedCheck && newInstituteName.isNotEmpty())
                         Color.Red else colorResource(id = R.color.whatsapp),
                     onValueChange = {
                         newInstituteName = it
-                        profileViewModel.changeInstitution(index, "${education.schoolName},$it")
+                        GlobalEntries.newInstituteName = it
+                        indexToChangeEducation = index
                     },
                     label = stringResource(id = R.string.put_company_name_text),
                     isRequired = true

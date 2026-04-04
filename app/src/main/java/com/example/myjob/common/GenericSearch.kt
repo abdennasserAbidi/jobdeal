@@ -32,10 +32,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import com.example.myjob.domain.entities.json.CompanyModel
+import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun GenericSearch(
     mListOfJobs: List<String?>,
+    mListOfPaging: LazyPagingItems<CompanyModel> = flowOf(PagingData.from(emptyList<CompanyModel>())).collectAsLazyPagingItems(),
     onDismissRequest: () -> Unit,
     onSelectedBank: (String, Int) -> Unit,
     title: String = ""
@@ -116,35 +122,68 @@ fun GenericSearch(
                 }
             }
 
-            LazyColumn(modifier = Modifier.padding(top = 20.dp)) {
-                items(filteredBanks.size) { index ->
-                    Column {
-                        Text(text = filteredBanks[index] ?: "",
-                            modifier = Modifier
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) {
-                                    searchText = filteredBanks[index] ?: ""
-                                    onSelectedBank(filteredBanks[index] ?: "", index)
-                                    onDismissRequest()
-                                }
-                                .fillMaxWidth(0.9f)
-                                .padding(top = 20.dp, start = 20.dp),
-                            fontSize = 20.sp,
-                            color = Color.Black)
+            if (mListOfPaging.itemCount > 0) {
+                LazyColumn(modifier = Modifier.padding(top = 20.dp)) {
+                    items(mListOfPaging.itemCount) { index ->
+                        Column {
+                            Text(text = mListOfPaging[index]?.name ?: "",
+                                modifier = Modifier
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) {
+                                        searchText = filteredBanks[index] ?: ""
+                                        onSelectedBank(filteredBanks[index] ?: "", index)
+                                        onDismissRequest()
+                                    }
+                                    .fillMaxWidth(0.9f)
+                                    .padding(top = 20.dp, start = 20.dp),
+                                fontSize = 20.sp,
+                                color = Color.Black)
 
-                        if (index < filteredBanks.lastIndex) {
-                            HorizontalDivider(
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(top = 10.dp)
-                            )
-                        } else {
-                            Spacer(modifier = Modifier.height(50.dp).fillMaxWidth())
+                            if (index < filteredBanks.lastIndex) {
+                                HorizontalDivider(
+                                    thickness = 1.dp,
+                                    modifier = Modifier.padding(top = 10.dp)
+                                )
+                            } else {
+                                Spacer(modifier = Modifier.height(50.dp).fillMaxWidth())
+                            }
                         }
                     }
-                }
 
+                }
+            } else {
+                LazyColumn(modifier = Modifier.padding(top = 20.dp)) {
+                    items(filteredBanks.size) { index ->
+                        Column {
+                            Text(text = filteredBanks[index] ?: "",
+                                modifier = Modifier
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) {
+                                        searchText = filteredBanks[index] ?: ""
+                                        onSelectedBank(filteredBanks[index] ?: "", index)
+                                        onDismissRequest()
+                                    }
+                                    .fillMaxWidth(0.9f)
+                                    .padding(top = 20.dp, start = 20.dp),
+                                fontSize = 20.sp,
+                                color = Color.Black)
+
+                            if (index < filteredBanks.lastIndex) {
+                                HorizontalDivider(
+                                    thickness = 1.dp,
+                                    modifier = Modifier.padding(top = 10.dp)
+                                )
+                            } else {
+                                Spacer(modifier = Modifier.height(50.dp).fillMaxWidth())
+                            }
+                        }
+                    }
+
+                }
             }
         }
     }

@@ -105,10 +105,7 @@ import kotlinx.coroutines.flow.update
 @Composable
 fun CandidateListScreen(
     navController: NavController,
-    allSubjects: MutableList<Subject>,
-    listSchools: MutableList<String>,
     listCountries: MutableList<String>,
-    listCompany: MutableList<String>,
     clearData: () -> Unit = {},
     changeIndexTab: () -> Unit,
     homeViewModel: HomeViewModel = hiltViewModel()
@@ -144,13 +141,19 @@ fun CandidateListScreen(
     }
 
     var filterOpen by remember { mutableStateOf(false) }
-    var itemRes by remember { mutableStateOf(R.string.item1) }
-    var indexParent by remember { mutableStateOf(-1) }
+    var itemRes by remember { mutableIntStateOf(R.string.item1) }
+    var indexParent by remember { mutableIntStateOf(-1) }
     var titleParent by remember { mutableStateOf("") }
     var isSelectedParent by remember { mutableStateOf(false) }
 
     var showTypeSheet by remember { mutableStateOf(false) }
-    var selectedSearch by remember { mutableStateOf(JobType.NORMAL) }
+    var selectedSearch by remember(homeViewModel.getType()) { mutableStateOf(homeViewModel.getType()) }
+
+    val listCompany by homeViewModel.listCompany.collectAsState()
+    val listInstitutes by homeViewModel.listInstitutes.collectAsState()
+    val allSubjects by homeViewModel.listActivities.collectAsState()
+    val listFields by homeViewModel.listFields.collectAsState()
+
 
     val listChoiceParentSelect by homeViewModel.listChoiceParentSelect.collectAsState()
     val listChoiceParentSelected by homeViewModel.listChoiceParentSelected.collectAsState()
@@ -654,7 +657,7 @@ fun CandidateListScreen(
                                 else -> selectedAvailability
                             }
 
-                            isSelectedParent = l.filter { it }.none()
+                            isSelectedParent = l.none { it }
 
                             flowHandling(it, l) { index, title, isSelected ->
                                 homeViewModel.changeUnKnown(itemRes, index, title, isSelected)
@@ -700,13 +703,13 @@ fun CandidateListScreen(
                 Box(modifier = Modifier.fillMaxSize()) {
 
                     val list = allSubjects.map {
-                        it.libelly
+                        it.name
                     }
 
                     val listFilter = when (itemRes) {
-                        R.string.institution_text -> listSchools
+                        R.string.institution_text -> listInstitutes.map { it.name }
                         R.string.location_text -> listCountries
-                        R.string.company_name_text -> listCompany
+                        R.string.company_name_text -> listCompany.map { it.name }
                         R.string.activity_text -> list
                         else -> emptyList()
                     }
@@ -725,7 +728,6 @@ fun CandidateListScreen(
                             pickOption = false
                         }
                     }
-
 
                     GenericMultipleSearch(
                         mListOfJobs = listFilter,
@@ -838,7 +840,7 @@ fun CandidateListScreen(
                             else -> selectedAvailability
                         }
 
-                        isSelectedParent = l.filter { it }.none()
+                        isSelectedParent = l.none { it }
 
                         flowHandling(it, l) { index, title, isSelected ->
                             homeViewModel.changeUnKnown(itemRes, index, title, isSelected)

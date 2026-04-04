@@ -13,6 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,13 +27,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -53,6 +63,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -64,6 +77,7 @@ import com.example.myjob.R
 import com.example.myjob.common.CustomDialog
 import com.example.myjob.common.GlobalEntries.emailGoogleAccount
 import com.example.myjob.common.hideKeyboard
+import com.example.myjob.feature.demands.NewFormTextField
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.profile.test.FormTextField
@@ -251,7 +265,123 @@ fun LoginScreen(
                 )
             }
 
-            FormTextField(
+            var showPassword by remember { mutableStateOf(false) }
+
+            androidx.compose.material3.Card(
+                modifier = Modifier.fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 40.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Email",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF1F2937)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = {
+                            email = it
+                            if (activatedCheck) viewModel.validateEmail(it)
+                            viewModel.changeUserEmail(it)
+                        },
+                        readOnly = false,
+                        interactionSource = interactionSource,
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("Email", color = Color(0xFF9CA3AF)) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = if (activatedCheck && email.isEmpty() && !emailVerified) Red else Color(0xFF049344),
+                            unfocusedBorderColor = Color(0xFFE5E7EB),
+                            focusedTextColor = Color(0xFF1F2937),
+                            unfocusedTextColor = Color(0xFF1F2937)
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        minLines = 1,
+                        maxLines = 1
+                    )
+
+                    if (activatedCheck) {
+                        if (email.isEmpty() || !emailVerified) {
+                            Text(
+                                modifier = Modifier.padding(top = 5.dp, start = 20.dp),
+                                text = stringResource(id = R.string.error_email),
+                                color = Red
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Text(
+                        text = stringResource(id = R.string.password_text),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF1F2937)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = {
+                            password = it
+                            if (activatedCheck) viewModel.validatePassword(it)
+                            viewModel.changeUserPassword(it)
+                        },
+                        readOnly = false,
+                        interactionSource = interactionSource,
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text(stringResource(id = R.string.password_text), color = Color(0xFF9CA3AF)) },
+                        visualTransformation = if (showPassword) {
+                            VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        }, trailingIcon = {
+                            if (showPassword) {
+                                IconButton(onClick = { showPassword = false }) {
+                                    Icon(imageVector = Icons.Filled.Visibility, contentDescription = "")
+                                }
+                            } else {
+                                IconButton(onClick = { showPassword = true }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.VisibilityOff,
+                                        contentDescription = ""
+                                    )
+                                }
+                            }
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = if (activatedCheck && password.isEmpty() && !passwordVerified) Red else Color(0xFF049344),
+                            unfocusedBorderColor = Color(0xFFE5E7EB),
+                            focusedTextColor = Color(0xFF1F2937),
+                            unfocusedTextColor = Color(0xFF1F2937)
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        minLines = 1,
+                        maxLines = 1
+                    )
+
+                    if (activatedCheck) {
+                        if (password.isEmpty() || !passwordVerified) {
+                            Text(
+                                modifier = Modifier.padding(top = 5.dp, start = 20.dp),
+                                text = stringResource(id = R.string.error_password),
+                                color = Red
+                            )
+                        }
+                    }
+                }
+            }
+
+
+            /*FormTextField(
                 value = email,
                 onValueChange = {
                     email = it
@@ -303,7 +433,7 @@ fun LoginScreen(
                         color = Color.Red
                     )
                 }
-            }
+            }*/
 
             Box(
                 modifier = Modifier
@@ -360,7 +490,7 @@ fun LoginScreen(
                 ) {
                     Text(
                         stringResource(id = R.string.login_text),
-                        modifier = Modifier.padding(vertical = 5.dp)
+                        modifier = Modifier.padding(vertical = 10.dp)
                     )
                 }
 

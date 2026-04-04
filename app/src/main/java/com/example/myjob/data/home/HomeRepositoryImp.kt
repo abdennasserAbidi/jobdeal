@@ -9,6 +9,9 @@ import com.example.myjob.base.GenericSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.entities.json.CompanyModel
+import com.example.myjob.domain.entities.json.GenericJsonModel
+import com.example.myjob.domain.entities.json.InstituteModel
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.local.database.SharedPreference
@@ -28,6 +31,141 @@ class HomeRepositoryImp @Inject constructor(
     private val remoteDataSource: HomeDataSource,
     private val sharedPreference: SharedPreference
 ) : HomeRepository {
+
+    ///////////////////////////////////////////////////////////////////////////
+    // ACTIVITIES
+    ///////////////////////////////////////////////////////////////////////////
+    override suspend fun saveActivity(activityName: String): Flow<Resource<String>> =
+        flow {
+            try {
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.saveActivity(activityName)
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
+        }
+
+    override suspend fun getAllActivities(): Flow<Resource<List<GenericJsonModel>>> =
+        flow {
+            try {
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.getAllActivities()
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
+        }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // FIELDS
+    ///////////////////////////////////////////////////////////////////////////
+    override suspend fun saveField(fieldName: String): Flow<Resource<String>> =
+        flow {
+            try {
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.saveField(fieldName)
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
+        }
+
+    override suspend fun getAllFields(): Flow<Resource<List<GenericJsonModel>>> =
+        flow {
+            try {
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.getAllFields()
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
+        }
+
+
+
+    override suspend fun saveInstitute(schoolName: String): Flow<Resource<String>> =
+        flow {
+            try {
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.saveInstitute(schoolName)
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
+        }
+
+    override suspend fun getAllInstitutes(): Flow<Resource<List<InstituteModel>>> =
+        flow {
+            try {
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.getAllInstitutes()
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
+        }
+
+    override suspend fun saveCompany(companyName: String): Flow<Resource<String>> =
+        flow {
+            try {
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.saveCompany(companyName)
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
+        }
+
+    override suspend fun getAllCompaniesList(): Flow<Resource<List<CompanyModel>>> =
+        flow {
+            try {
+                // Get data from RemoteDataSource
+                val data = remoteDataSource.getAllCompanies()
+                // Emit data
+                emit(Resource(ResourceState.SUCCESS, data, null))
+            } catch (ex: Exception) {
+                // Emit error
+                emit(Resource(ResourceState.ERROR, null, ex.message))
+            }
+        }
+
+    override suspend fun getAllCompanies(): Flow<Resource<PagingData<CompanyModel>>> = flow {
+        val pager = Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            pagingSourceFactory = {
+                GenericSource { currentPage ->
+                    val users = remoteDataSource.getAllCompanies(pageNumber = currentPage)
+                    val json = Gson().toJson(users.content)
+                    sharedPreference.putString("jsonCompanies", json)
+
+                    users
+                }
+            }
+        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+
+        emitAll(
+            pager.map { pagingData ->
+                Resource(ResourceState.SUCCESS, pagingData, null)
+            }
+        )
+    }.catch { ex ->
+        emit(Resource(ResourceState.ERROR, null, ex.message))
+    }
 
     override suspend fun getAllUser(id: Int): Flow<Resource<PagingData<User>>> = flow {
         val pager = Pager(
@@ -58,7 +196,8 @@ class HomeRepositoryImp @Inject constructor(
             config = PagingConfig(pageSize = 10, prefetchDistance = 2),
             pagingSourceFactory = {
                 GenericSource { currentPage ->
-                    val users = remoteDataSource.getAllCandidateService(id, pageNumber = currentPage)
+                    val users =
+                        remoteDataSource.getAllCandidateService(id, pageNumber = currentPage)
 
                     val json = Gson().toJson(users.content)
                     sharedPreference.putString("jsonUser", json)
@@ -77,33 +216,34 @@ class HomeRepositoryImp @Inject constructor(
         emit(Resource(ResourceState.ERROR, null, ex.message))
     }
 
-    override suspend fun getUserServiceFiltered(word: String): Flow<Resource<PagingData<User>>> = flow {
-        val pager = Pager(
-            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
-            pagingSourceFactory = {
-                GenericSource { currentPage ->
-                    val educations =
-                        remoteDataSource.getUserServiceFiltered(
-                            word = word,
-                            pageNumber = currentPage
-                        )
+    override suspend fun getUserServiceFiltered(word: String): Flow<Resource<PagingData<User>>> =
+        flow {
+            val pager = Pager(
+                config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+                pagingSourceFactory = {
+                    GenericSource { currentPage ->
+                        val educations =
+                            remoteDataSource.getUserServiceFiltered(
+                                word = word,
+                                pageNumber = currentPage
+                            )
 
-                    val json = Gson().toJson(educations.content)
-                    sharedPreference.putString("jsonDemand", json)
+                        val json = Gson().toJson(educations.content)
+                        sharedPreference.putString("jsonDemand", json)
 
-                    educations
+                        educations
+                    }
                 }
-            }
-        ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
+            ).flow.cachedIn(CoroutineScope(Dispatchers.IO))
 
-        emitAll(
-            pager.map { pagingData ->
-                Resource(ResourceState.SUCCESS, pagingData, null)
-            }
-        )
-    }.catch { ex ->
-        emit(Resource(ResourceState.ERROR, null, ex.message))
-    }
+            emitAll(
+                pager.map { pagingData ->
+                    Resource(ResourceState.SUCCESS, pagingData, null)
+                }
+            )
+        }.catch { ex ->
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
 
     override suspend fun getFavorites(id: Int): Flow<Resource<PagingData<User>>> = flow {
         val pager = Pager(
@@ -191,7 +331,11 @@ class HomeRepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
-    override suspend fun uploadFiles(idUser: Int, file: MultipartBody.Part): Flow<Resource<String>> = flow {
+
+    override suspend fun uploadFiles(
+        idUser: Int,
+        file: MultipartBody.Part
+    ): Flow<Resource<String>> = flow {
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.uploadFiles(idUser, file)
@@ -202,7 +346,12 @@ class HomeRepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
-    override suspend fun uploadChat(idFrom: Int, idTo: Int, file: MultipartBody.Part): Flow<Resource<String>> = flow {
+
+    override suspend fun uploadChat(
+        idFrom: Int,
+        idTo: Int,
+        file: MultipartBody.Part
+    ): Flow<Resource<String>> = flow {
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.uploadChat(idFrom, idTo, file)
@@ -214,7 +363,11 @@ class HomeRepositoryImp @Inject constructor(
         }
     }
 
-    override suspend fun uploadDirect(idFrom: Int, idTo: Int, file: List<MultipartBody.Part>): Flow<Resource<String>> = flow {
+    override suspend fun uploadDirect(
+        idFrom: Int,
+        idTo: Int,
+        file: List<MultipartBody.Part>
+    ): Flow<Resource<String>> = flow {
         try {
             // Get data from RemoteDataSource
             val data = remoteDataSource.uploadDirect(idFrom, idTo, file)
@@ -225,6 +378,7 @@ class HomeRepositoryImp @Inject constructor(
             emit(Resource(ResourceState.ERROR, null, ex.message))
         }
     }
+
     override suspend fun getFiles(id: Int): Flow<Resource<List<String>>> = flow {
         try {
             // Get data from RemoteDataSource

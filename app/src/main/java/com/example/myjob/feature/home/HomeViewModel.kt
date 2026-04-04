@@ -1,6 +1,5 @@
 package com.example.myjob.feature.home
 
-import FreelanceSector
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +32,9 @@ import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
 import com.example.myjob.domain.entities.invitation.InvitationStatus
+import com.example.myjob.domain.entities.json.CompanyModel
+import com.example.myjob.domain.entities.json.GenericJsonModel
+import com.example.myjob.domain.entities.json.InstituteModel
 import com.example.myjob.domain.entities.notification.NotificationMessage
 import com.example.myjob.domain.usecase.home.CountDownTrialUserUseCase
 import com.example.myjob.domain.usecase.home.GetAllUserServiceUseCase
@@ -40,6 +42,10 @@ import com.example.myjob.domain.usecase.home.GetAllUserUseCase
 import com.example.myjob.domain.usecase.home.GetFilteredUserServiceUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.domain.usecase.home.SaveToFavoriteUseCase
+import com.example.myjob.domain.usecase.home.json.GetAllActivitiesUseCase
+import com.example.myjob.domain.usecase.home.json.GetAllCompaniesUseCase
+import com.example.myjob.domain.usecase.home.json.GetAllFieldsUseCase
+import com.example.myjob.domain.usecase.home.json.GetAllInstitutesUseCase
 import com.example.myjob.domain.usecase.invitation.FinishProcessUseCase
 import com.example.myjob.domain.usecase.invitation.SendInvitationUseCase
 import com.example.myjob.domain.usecase.notification.SendNotificationsUseCase
@@ -78,8 +84,32 @@ class HomeViewModel @Inject constructor(
     private val getFilteredUserUseCase: GetFilteredUserUseCase,
     private val finishProcessUseCase: FinishProcessUseCase,
     private val countDownTrialUserUseCase: CountDownTrialUserUseCase,
-    private val searchUserServiceUseCase: SearchUserServiceUseCase
+    private val searchUserServiceUseCase: SearchUserServiceUseCase,
+    private val getAllCompaniesUseCase: GetAllCompaniesUseCase,
+    private val getAllInstitutesUseCase: GetAllInstitutesUseCase,
+    private val getAllActivitiesUseCase: GetAllActivitiesUseCase,
+    private val getAllFieldsUseCase: GetAllFieldsUseCase
 ) : ViewModel() {
+
+    ///////////////////////////////////////////////////////////////////////////
+    // COMPANY NAMES
+    ///////////////////////////////////////////////////////////////////////////
+    val listCompany = MutableStateFlow<List<CompanyModel>>(emptyList())
+
+    ///////////////////////////////////////////////////////////////////////////
+    // INSTITUTE NAMES
+    ///////////////////////////////////////////////////////////////////////////
+    val listInstitutes = MutableStateFlow<List<InstituteModel>>(emptyList())
+
+    ///////////////////////////////////////////////////////////////////////////
+    // ACTIVITIES NAMES
+    ///////////////////////////////////////////////////////////////////////////
+    val listActivities = MutableStateFlow<List<GenericJsonModel>>(emptyList())
+
+    ///////////////////////////////////////////////////////////////////////////
+    // FIELDS NAMES
+    ///////////////////////////////////////////////////////////////////////////
+    val listFields = MutableStateFlow<List<GenericJsonModel>>(emptyList())
 
     fun getType(): JobType {
         val type = sharedPreference.getString("offerDemand", "")
@@ -716,7 +746,8 @@ class HomeViewModel @Inject constructor(
             it.idTo = user.id ?: -1
             it.roleReceiver = user.role ?: "Company"
             it.fullName = user.fullName
-            it.gender = if (lang == "French" || lang == "Français") user.sexe?.genderFr else user.sexe?.genderEng
+            it.gender =
+                if (lang == "French" || lang == "Français") user.sexe?.genderFr else user.sexe?.genderEng
             it.date = formattedDate
             it.status = status
             it.duration = duration
@@ -936,6 +967,29 @@ class HomeViewModel @Inject constructor(
     }
 
     init {
+        viewModelScope.launch {
+            getAllCompaniesUseCase.execute().collect { res ->
+                listCompany.update { res.data ?: emptyList() }
+            }
+        }
+
+        viewModelScope.launch {
+            getAllInstitutesUseCase.execute().collect { res ->
+                listInstitutes.update { res.data ?: emptyList() }
+            }
+        }
+
+        viewModelScope.launch {
+            getAllActivitiesUseCase.execute().collect { res ->
+                listActivities.update { res.data ?: emptyList() }
+            }
+        }
+
+        viewModelScope.launch {
+            getAllFieldsUseCase.execute().collect { res ->
+                listFields.update { res.data ?: emptyList() }
+            }
+        }
 
         lang = sharedPreference.getString("lang", "") ?: ""
         langState.update { lang }

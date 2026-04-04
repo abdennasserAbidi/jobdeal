@@ -63,6 +63,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -81,6 +82,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
@@ -89,17 +91,22 @@ import com.example.myjob.common.CountryPicker
 import com.example.myjob.common.CustomPhoneKit
 import com.example.myjob.common.GenericSearch
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.indexToChangeEducation
+import com.example.myjob.common.GlobalEntries.indexToChangeExperience
 import com.example.myjob.common.GlobalEntries.listEducations
 import com.example.myjob.common.GlobalEntries.listExperience
+import com.example.myjob.common.GlobalEntries.newInstituteName
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.NewCountry
 import com.example.myjob.domain.entities.School
 import com.example.myjob.domain.entities.Subject
+import com.example.myjob.domain.entities.json.CompanyModel
 import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.profile.DateContainer
 import com.example.myjob.feature.profile.ProfileViewModel
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -109,13 +116,15 @@ fun CandidateProfileFormScreenTest(
     navController: NavController,
     clearData: () -> Unit = {},
     list: List<NewCountry>,
-    allSubjects: MutableList<Subject>,
-    listStudyField: MutableList<String>,
-    listSchools: MutableList<String>,
     listGrade: MutableList<String>,
-    listCompany: MutableList<String>,
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
+
+    val listCompany by profileViewModel.listCompany.collectAsState()
+    val listInstitutes by profileViewModel.listInstitutes.collectAsState()
+    val allSubjects by profileViewModel.listActivities.collectAsState()
+    val listStudyField by profileViewModel.listFields.collectAsState()
+
     val whatsAppGreen = colorResource(id = R.color.whatsapp)
     val context = LocalContext.current
 
@@ -297,7 +306,7 @@ fun CandidateProfileFormScreenTest(
     }
 
     //FORM 4
-    var experiences by remember {
+    var experiences by remember(user.experience) {
         mutableStateOf(user.experience ?: mutableListOf())
     }
 
@@ -306,37 +315,18 @@ fun CandidateProfileFormScreenTest(
 
     listExperience = user.experience ?: mutableListOf()
 
-    val listCompanies by profileViewModel.listCompanies.collectAsState()
 
     val app = context.applicationContext as MyApp
-    LaunchedEffect(listCompanies) {
-        app.listCompanies.removeAt(app.listCompanies.lastIndex)
-        if (!app.listCompanies.containsAll(listCompanies)) app.listCompanies.addAll(listCompanies.distinctBy { it })
-    }
 
     //FORM 4
-    var educations by remember {
+    var educations by remember(user.education) {
         mutableStateOf(user.education ?: mutableListOf())
     }
 
     var selectedEducations by remember { mutableStateOf<Educations?>(null) }
-    var selectedEducationIndex by remember { mutableStateOf(-1) }
+    var selectedEducationIndex by remember { mutableIntStateOf(-1) }
 
     listEducations = user.education ?: mutableListOf()
-
-
-    val listInstitutes by profileViewModel.listInstitutes.collectAsState()
-
-    LaunchedEffect(listInstitutes) {
-        app.listSchools.removeAt(app.listSchools.lastIndex)
-        val institutes = listInstitutes.map {
-            val school = School()
-            school.libelly = it
-            school
-        }
-        if (!app.listSchools.containsAll(institutes)) app.listSchools.addAll(institutes.distinctBy { it.libelly })
-    }
-
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
@@ -947,6 +937,7 @@ fun CandidateProfileFormScreenTest(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(stringResource(id = R.string.add_experience_pro_text))
                             }
+                            Log.i("jgtegtehetet", "WorkExperienceCard: $experiences")
 
                             experiences.forEachIndexed { index, item ->
 
@@ -1269,6 +1260,10 @@ fun CandidateProfileFormScreenTest(
                                         profileViewModel.changeCompanyExperience(selectedExperienceIndex, it.split(",")[1])
                                     }
                                 }
+                                if (GlobalEntries.newCompanyName.isNotEmpty()) {
+                                    profileViewModel.saveNewCompany(GlobalEntries.newCompanyName)
+                                    profileViewModel.changeCompanyExperience(indexToChangeExperience, GlobalEntries.newCompanyName)
+                                }
                                 profileViewModel.saveExperiences(user.experience ?: mutableListOf())
                             }
                             4 -> {
@@ -1276,6 +1271,10 @@ fun CandidateProfileFormScreenTest(
                                     if (it.contains(",")) {
                                         profileViewModel.changeInstitution(selectedEducationIndex, it.split(",")[1])
                                     }
+                                }
+                                if (newInstituteName.isNotEmpty()) {
+                                    profileViewModel.saveNewInstituteName(newInstituteName)
+                                    profileViewModel.changeInstitution(indexToChangeEducation, newInstituteName)
                                 }
                                 profileViewModel.saveEducations(user.education ?: mutableListOf())
                             }
@@ -1323,6 +1322,8 @@ fun CandidateProfileFormScreenTest(
             }
         )
 
+        val emptyLazy = flowOf(PagingData.from(emptyList<CompanyModel>())).collectAsLazyPagingItems()
+
         //EDUCATION
         AnimatedVisibility(
             visible = isInstitutionVisible,
@@ -1337,7 +1338,8 @@ fun CandidateProfileFormScreenTest(
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 GenericSearch(
-                    mListOfJobs = listSchools,
+                    mListOfJobs = listInstitutes.map { it.name },
+                    mListOfPaging = emptyLazy,
                     onDismissRequest = {
                         isInstitutionVisible = false
                     },
@@ -1364,7 +1366,8 @@ fun CandidateProfileFormScreenTest(
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 GenericSearch(
-                    mListOfJobs = listStudyField,
+                    mListOfJobs = listStudyField.map { it.name },
+                    mListOfPaging = emptyLazy,
                     onDismissRequest = {
                         isActivitySectorVisible = false
                     },
@@ -1475,11 +1478,12 @@ fun CandidateProfileFormScreenTest(
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 val names = allSubjects.map {
-                    it.libelly
+                    it.name
                 }
 
                 GenericSearch(
                     mListOfJobs = names,
+                    mListOfPaging = emptyLazy,
                     onDismissRequest = {
                         profileViewModel.changeVisibilitySearch(false)
                     },
@@ -1506,11 +1510,11 @@ fun CandidateProfileFormScreenTest(
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 GenericSearch(
-                    mListOfJobs = listCompany,
+                    mListOfJobs = listCompany.map { it.name },
                     onDismissRequest = {
                         isCompanyVisible = false
                     },
-                    onSelectedBank = { item, index ->
+                    onSelectedBank = { item, _ ->
                         isCompanyVisible = false
                         profileViewModel.changeCompanyExperience(indexToChange, item)
                     },
@@ -1547,6 +1551,7 @@ fun CandidateProfileFormScreenTest(
 
                 GenericSearch(
                     mListOfJobs = listNames,
+                    mListOfPaging = emptyLazy,
                     onDismissRequest = {
                         profileViewModel.changeVisibilityCountry(false)
                     },

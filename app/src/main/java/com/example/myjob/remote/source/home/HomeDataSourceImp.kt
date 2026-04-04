@@ -1,7 +1,11 @@
 package com.example.myjob.remote.source.home
 
 import com.example.myjob.base.GenericResponse
+import com.example.myjob.domain.entities.Company
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.entities.json.CompanyModel
+import com.example.myjob.domain.entities.json.GenericJsonModel
+import com.example.myjob.domain.entities.json.InstituteModel
 import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.FilesResponse
@@ -19,6 +23,38 @@ import javax.inject.Inject
 class HomeDataSourceImp @Inject constructor(
     private val apiService: ApiService
 ) : HomeDataSource {
+
+    ///////////////////////////////////////////////////////////////////////////
+    // COMPANIES
+    ///////////////////////////////////////////////////////////////////////////
+    override suspend fun saveCompany(companyName: String): String =
+        apiService.saveCompany(companyName)
+
+    override suspend fun getAllCompanies(pageNumber: Int): GenericResponse<CompanyModel> =
+        apiService.getAllCompanies(pageNumber)
+
+    override suspend fun getAllCompanies(): List<CompanyModel> = apiService.getAllCompanies()
+
+    ///////////////////////////////////////////////////////////////////////////
+    // INSTITUTES
+    ///////////////////////////////////////////////////////////////////////////
+    override suspend fun saveInstitute(schoolName: String): String =
+        apiService.saveInstitute(schoolName)
+    override suspend fun getAllInstitutes(): List<InstituteModel> = apiService.getAllInstitutes()
+
+    ///////////////////////////////////////////////////////////////////////////
+    // ACTIVITIES
+    ///////////////////////////////////////////////////////////////////////////
+    override suspend fun saveActivity(activityName: String): String =
+        apiService.saveActivity(activityName)
+    override suspend fun getAllActivities(): List<GenericJsonModel> = apiService.getAllActivities()
+
+    ///////////////////////////////////////////////////////////////////////////
+    // FIELDS
+    ///////////////////////////////////////////////////////////////////////////
+    override suspend fun saveField(fieldName: String): String =
+        apiService.saveField(fieldName)
+    override suspend fun getAllFields(): List<GenericJsonModel> = apiService.getAllFields()
 
     override suspend fun getFavorites(id: Int, pageNumber: Int): GenericResponse<User> =
         apiService.getFavorites(id, pageNumber)

@@ -285,32 +285,9 @@ class SignUpViewModel @Inject constructor(
                     Log.i("saveUserRes", "saveUser: ${GlobalEntries.user}")
                     token.update { sharedPreferences.getString("token", "") ?: "" }
 
-                    getCompaniesValidated()
-
                     saveUserRes.update { res.data ?: LoginResponse() }
                 } else if (res.status == ResourceState.ERROR) {
                     saveUserRes.update { LoginResponse(messageError = res.message) }
-                }
-            }
-        }
-    }
-
-    val listCompanies = MutableStateFlow(emptyList<String>())
-
-    private fun getCompaniesValidated() {
-        viewModelScope.launch {
-            getVerifiedCompanyUseCase.execute().collect { res ->
-                when (res.status) {
-                    ResourceState.SUCCESS -> {
-                        val list = res.data ?: emptyList()
-                        val l = list.toMutableList()
-                        val language = sharedPreferences.getString("lang", "English")
-                        if (language == "English" || language == "Anglais") l.add("Other")
-                        else l.add("Autres")
-                        listCompanies.update { l }
-                    }
-
-                    else -> {}
                 }
             }
         }

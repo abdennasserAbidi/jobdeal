@@ -37,6 +37,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -96,7 +97,6 @@ import com.example.myjob.feature.messagerie.DiscussionScreen
 import com.example.myjob.feature.messagerie.ListMessageScreen
 import com.example.myjob.feature.navigation.Screen
 import com.example.myjob.feature.notification.NotificationScreen
-import com.example.myjob.feature.onboarding.OnBoardingScreen
 import com.example.myjob.feature.posts.CandidatePostScreen
 import com.example.myjob.feature.posts.DetailPostScreen
 import com.example.myjob.feature.posts.PostScreen
@@ -139,6 +139,7 @@ import androidx.core.net.toUri
 import com.example.myjob.feature.demands.DemandMarketDetailScreen
 import com.example.myjob.feature.home.ServiceUserScreen
 import com.example.myjob.feature.notification.DemandNotificationScreen
+import com.example.myjob.feature.onboarding.OnboardingScreen
 import com.example.myjob.feature.profile.test.ServiceProfileFormScreen
 
 @AndroidEntryPoint
@@ -146,11 +147,6 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var sharedPreference: SharedPreference
-
-    private var studyField: MutableList<String> = mutableListOf()
-    private var allSubjects: MutableList<Subject> = mutableListOf()
-    private var listSchools: MutableList<String> = mutableListOf()
-    private var listCompany: MutableList<String> = mutableListOf()
     private var listCountries: MutableList<String> = mutableListOf()
 
     //TODO("handling chat with files and images")
@@ -183,7 +179,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun generateStudyFieldList() {
+    /*private fun generateStudyFieldList() {
         CoroutineScope(Dispatchers.Default).launch {
             langState.collect {
                 val nameJson =
@@ -201,7 +197,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
+    }*/
 
     private fun generateCountriesList() {
         try {
@@ -209,39 +205,6 @@ class MainActivity : ComponentActivity() {
                 Gson().fromJson(loadJSONFromAsset("cities.json"), AllCities::class.java)
             val nameCities = regions.regions.map { it.name }
             listCountries = nameCities.toMutableList()
-        } catch (ex: java.lang.Exception) {
-            Log.i("Error", "Exception: ${ex.message}")
-        }
-    }
-
-    private fun generateSchoolList() {
-        CoroutineScope(Dispatchers.Default).launch {
-            langState.collect {
-                val nameJson =
-                    if (it == "English" || it == "Anglais") "schoolsen.json" else "schools.json"
-
-                try {
-                    val school =
-                        Gson().fromJson(loadJSONFromAsset(nameJson), AllSchools::class.java)
-                    val nameSchools = school.school.map { schools ->
-                        schools.libelly ?: ""
-                    }
-                    listSchools = nameSchools.toMutableList()
-                } catch (ex: java.lang.Exception) {
-                    Log.i("Error", "Exception: ${ex.message}")
-                }
-            }
-        }
-    }
-
-    private fun generateCompanyList() {
-        try {
-            val companies =
-                Gson().fromJson(loadJSONFromAsset("companies.json"), AllCompanies::class.java)
-            val nameCompanies = companies.companies.map {
-                it.libelly ?: ""
-            }
-            listCompany = nameCompanies.toMutableList()
         } catch (ex: java.lang.Exception) {
             Log.i("Error", "Exception: ${ex.message}")
         }
@@ -344,8 +307,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        allSubjects = (applicationContext as MyApp).allSubjectList
-
         langState.update {
             sharedPreference.getString("lang", "") ?: ""
         }
@@ -354,26 +315,12 @@ class MainActivity : ComponentActivity() {
             generateCountriesList()
         }
 
-        CoroutineScope(Dispatchers.Default).launch {
-            generateStudyFieldList()
-        }
-
-        CoroutineScope(Dispatchers.Default).launch {
-            generateCompanyList()
-        }
-
-        CoroutineScope(Dispatchers.Default).launch {
-            generateSchoolList()
-        }
-
         setContent {
 
             val context = LocalContext.current
             val app = context.applicationContext as MyApp
 
-            app.listCompanies.addAll(listCompany)
-
-            var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
+            var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
             var startRoute by rememberSaveable { mutableStateOf(Screen.SplashScreen.route) }
 
             // creating our navController
@@ -490,7 +437,8 @@ class MainActivity : ComponentActivity() {
 
                         isVisibleNav = false
 
-                        OnBoardingScreen(navController = navController)
+                        OnboardingScreen(navController = navController)
+                        //OnboardingScreen()
                     }
 
                     composable(route = Screen.LoginScreen.route) {
@@ -596,7 +544,6 @@ class MainActivity : ComponentActivity() {
                     //END INVITATION
 
 
-
                     /*composable(route = Screen.textRecognitionScreen.route) {
                         if (cameraPermissionState.status.isGranted) CameraScreen(navController = navController)
                         else NoPermissionScreen(cameraPermissionState::launchPermissionRequest)
@@ -673,14 +620,13 @@ class MainActivity : ComponentActivity() {
                     //END VALIDATION
 
 
-
                     //HOME
                     composable(route = Screen.FilterScreen.route) {
                         isVisibleNav = false
                         FilterScreenUpdated(
                             navController,
-                            allSubjects = allSubjects,
-                            listSchools = listSchools,
+                            allSubjects = mutableListOf(),
+                            listSchools = mutableListOf(),
                             listCountries = listCountries,
                             listCompany = app.listCompanies
                         )
@@ -697,10 +643,7 @@ class MainActivity : ComponentActivity() {
                             }
                             CandidateListScreen(
                                 navController = navController,
-                                allSubjects = allSubjects,
-                                listSchools = listSchools,
                                 listCountries = listCountries,
-                                listCompany = app.listCompanies,
                                 clearData = {
                                     selectedTabIndex = 0
                                 },
@@ -747,8 +690,9 @@ class MainActivity : ComponentActivity() {
 
                         CoroutineScope(Dispatchers.Main).launch {
                             GlobalEntries.isVisibleNav.collect {
-                                isVisibleNav = if (role == "Candidate" || role == "Candidat" || role == "Services") false
-                                else it
+                                isVisibleNav =
+                                    if (role == "Candidate" || role == "Candidat" || role == "Services") false
+                                    else it
                             }
                         }
 
@@ -778,9 +722,10 @@ class MainActivity : ComponentActivity() {
 
                     composable(route = Screen.HomeCompanyScreen.route) {
 
-                        HomeCompany(navController = navController,
-                            allSubjects = allSubjects,
-                            listSchools = listSchools,
+                        HomeCompany(
+                            navController = navController,
+                            allSubjects = mutableListOf(),
+                            listSchools = mutableListOf(),
                             listCountries = listCountries,
                             listCompany = app.listCompanies,
                             onResumed = { index ->
@@ -788,7 +733,6 @@ class MainActivity : ComponentActivity() {
                             })
                     }
                     //END HOME
-
 
 
                     //PROFILE
@@ -801,7 +745,7 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = false
                         CareerFormScreen(
                             navController = navController,
-                            allSubjects = allSubjects,
+                            allSubjects = mutableListOf(),
                             listCountries = listCountries,
                             listCompany = app.listCompanies
                         )
@@ -812,7 +756,7 @@ class MainActivity : ComponentActivity() {
                         PersonalForm(
                             navController = navController,
                             list = listCountry,
-                            allSubjects = allSubjects
+                            allSubjects = mutableListOf()
                         )
                     }
 
@@ -829,8 +773,8 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = false
                         EducationForm(
                             navController = navController,
-                            listStudyField = studyField,
-                            listSchools = listSchools,
+                            listStudyField = mutableListOf(),
+                            listSchools = mutableListOf(),
                             listGrade = listCountries
                         )
                     }
@@ -863,9 +807,6 @@ class MainActivity : ComponentActivity() {
                         isVisibleNav = false
                         //SearchScreen(navController)
                         //CandidateCompleteProfileApp()
-                        if (!app.listCompanies.contains(stringResource(id = R.string.other_text)))
-                            app.listCompanies.add(stringResource(id = R.string.other_text))
-                        listCompany = app.listCompanies.distinctBy { it }.toMutableList()
 
                         CandidateProfileFormScreenTest(
                             navController = navController,
@@ -873,11 +814,7 @@ class MainActivity : ComponentActivity() {
                             clearData = {
                                 selectedTabIndex = 0
                             },
-                            allSubjects = allSubjects,
-                            listStudyField = studyField,
-                            listSchools = listSchools,
                             listGrade = listCountries,
-                            listCompany = app.listCompanies
                         )
                     }
 
@@ -886,7 +823,6 @@ class MainActivity : ComponentActivity() {
 
                         CompanyProfileFormScreen(
                             navController = navController,
-                            allSubjects = allSubjects,
                             list = listCountry,
                             clearData = {
                                 selectedTabIndex = 0

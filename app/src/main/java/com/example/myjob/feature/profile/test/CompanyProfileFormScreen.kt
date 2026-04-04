@@ -59,12 +59,12 @@ import com.example.myjob.feature.profile.ProfileViewModel
 @Composable
 fun CompanyProfileFormScreen(
     navController: NavController,
-    allSubjects: List<Subject>,
     list: List<NewCountry>,
     clearData: () -> Unit = {},
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val user by profileViewModel.user.collectAsState()
+    val allSubjects by profileViewModel.listActivities.collectAsState()
 
     var companyName by remember(user.companyName) { mutableStateOf(user.companyName ?: "") }
     var activitySector by remember(user.companyActivitySector) {
@@ -118,14 +118,9 @@ fun CompanyProfileFormScreen(
         }
     }
 
-    val listCompanies by profileViewModel.listCompanies.collectAsState()
 
     val context = LocalContext.current
     val app = context.applicationContext as MyApp
-    LaunchedEffect(listCompanies) {
-        app.listCompanies.removeAt(app.listCompanies.lastIndex)
-        if (!app.listCompanies.containsAll(listCompanies)) app.listCompanies.addAll(listCompanies.distinctBy { it })
-    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -405,7 +400,7 @@ fun CompanyProfileFormScreen(
             )
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                val allNames = allSubjects.map { it.libelly ?: "" }
+                val allNames = allSubjects.map { it.name }
                 GenericSearch(
                     mListOfJobs = allNames,
                     onDismissRequest = {

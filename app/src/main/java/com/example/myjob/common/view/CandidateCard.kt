@@ -32,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -66,7 +67,7 @@ fun CandidateCard(
 ) {
 
     val interactionSource = remember { MutableInteractionSource() }
-    var diffYear by remember { mutableStateOf(0) }
+    var diffYear by remember { mutableIntStateOf(0) }
     var lastContractExperience by remember { mutableStateOf<Experience?>(null) }
 
     val experiences = user.experience ?: mutableListOf()
@@ -219,33 +220,35 @@ fun CandidateCard(
                 val list = user.candidateSkills?.listSkills ?: emptyList()
 
                 val skills = list.joinToString("  .  ")
-                Text(
-                    modifier = Modifier.padding(horizontal = 10.dp),
-                    text = skills,
-                    color = Color(0xFF6B7280),
-                    fontSize = 12.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Medium
-                )
-
-                Spacer(Modifier.height(3.dp))
+                if (skills.isNotEmpty()) {
+                    Text(
+                        modifier = Modifier.padding(horizontal = 10.dp),
+                        text = skills,
+                        color = Color(0xFF6B7280),
+                        fontSize = 12.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(Modifier.height(3.dp))
+                }
 
                 // Certifications
                 val listCertifications = user.candidateSkills?.listCertification ?: emptyList()
 
                 val certifications = listCertifications.joinToString("  .  ")
-                Text(
-                    modifier = Modifier.padding(horizontal = 10.dp),
-                    text = certifications,
-                    color = Color(0xFF6B7280),
-                    fontSize = 12.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Medium
-                )
-
-                Spacer(Modifier.height(10.dp))
+                if (certifications.isNotEmpty()) {
+                    Text(
+                        modifier = Modifier.padding(horizontal = 10.dp),
+                        text = certifications,
+                        color = Color(0xFF6B7280),
+                        fontSize = 12.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(Modifier.height(10.dp))
+                }
 
                 val whatsappGreen = colorResource(id = R.color.whatsapp)
                 val invitations = GlobalEntries.user.invitations ?: mutableListOf()

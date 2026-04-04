@@ -131,60 +131,75 @@ fun CandidateDetailsScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // About Section
-            SectionCard(title = "À propos") {
-                Text(
-                    text = candidate.bio ?: "",
-                    color = Color(0xFF4B5563),
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp
-                )
+            val bio = candidate.bio ?: ""
+            if (bio.isNotEmpty()) {
+                SectionCard(title = "À propos") {
+                    Text(
+                        text = bio,
+                        color = Color(0xFF4B5563),
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp
+                    )
+                }
             }
 
             // Skills Section
-            SectionCard(title = "Compétences") {
-                val skills = candidate.candidateSkills?.listSkills ?: emptyList()
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    skills.forEach { skill ->
-                        SkillChip(skill = skill)
+            val skills = candidate.candidateSkills?.listSkills ?: emptyList()
+            if (skills.isNotEmpty()) {
+                SectionCard(title = "Compétences") {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        skills.forEach { skill ->
+                            SkillChip(skill = skill)
+                        }
                     }
                 }
             }
 
-            // Languages Section
-            SectionCard(title = "Langues") {
-                val languages = candidate.candidateSkills?.listLanguages ?: emptyList()
 
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    languages.forEach { language ->
-                        LanguageItem(language)
+
+            // Languages Section
+            val languages = candidate.candidateSkills?.listLanguages ?: emptyList()
+            if (languages.isNotEmpty()) {
+                SectionCard(title = "Langues") {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        languages.forEach { language ->
+                            LanguageItem(language)
+                        }
                     }
                 }
             }
 
             // Experience Section
-            SectionCard(title = "Expérience professionnelle") {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    candidate.experience?.forEach { exp ->
-                        ExperienceCard(experience = exp)
+            val experiences = candidate.experience ?: emptyList()
+            if (experiences.isNotEmpty()) {
+                SectionCard(title = "Expérience professionnelle") {
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        experiences.forEach { exp ->
+                            ExperienceCard(experience = exp)
+                        }
                     }
                 }
             }
 
             // Education Section
-            SectionCard(title = "Formation") {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    candidate.education?.forEach { edu ->
-                        EducationItem(education = edu)
+            val educations = candidate.education ?: emptyList()
+            if (educations.isNotEmpty()) {
+                SectionCard(title = "Formation") {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        educations.forEach { edu ->
+                            EducationItem(education = edu)
+                        }
                     }
                 }
             }
-            val certifications = candidate.candidateSkills?.listCertification ?: emptyList()
+
 
             // Certifications Section
+            val certifications = candidate.candidateSkills?.listCertification ?: emptyList()
             if (certifications.isNotEmpty()) {
                 SectionCard(title = "Certifications") {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -184,13 +184,7 @@ fun SignUpScreen(
 
     var error by remember { mutableStateOf("") }
 
-    val listCompanies by viewModel.listCompanies.collectAsState()
-
     val app = context.applicationContext as MyApp
-    LaunchedEffect(listCompanies) {
-        app.listCompanies.removeAt(app.listCompanies.lastIndex)
-        if (!app.listCompanies.containsAll(listCompanies)) app.listCompanies.addAll(listCompanies)
-    }
 
     LaunchedEffect(saveUserRes.token?.isNotEmpty()) {
         isProgressing = false

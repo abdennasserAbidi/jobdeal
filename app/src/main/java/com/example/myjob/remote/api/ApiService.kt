@@ -18,6 +18,9 @@ import com.example.myjob.domain.entities.demands.MarketDemandModel
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
 import com.example.myjob.domain.entities.invitation.InvitationUser
+import com.example.myjob.domain.entities.json.CompanyModel
+import com.example.myjob.domain.entities.json.GenericJsonModel
+import com.example.myjob.domain.entities.json.InstituteModel
 import com.example.myjob.domain.entities.notification.NotificationMessage
 import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.AnnounceResponse
@@ -49,6 +52,56 @@ import retrofit2.http.Query
  */
 interface
 ApiService {
+
+    ///////////////////////////////////////////////////////////////////////////
+    // COMPANY
+    ///////////////////////////////////////////////////////////////////////////
+    @POST("auth/saveCompany")
+    suspend fun saveCompany(
+        @Query("companyName") companyName: String,
+    ): String
+
+    @GET("auth/getAllCompanies")
+    suspend fun getAllCompanies(): List<CompanyModel>
+
+    @GET("auth/getAllCompanies")
+    suspend fun getAllCompanies(
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<CompanyModel>
+
+    ///////////////////////////////////////////////////////////////////////////
+    // INSTITUTES
+    ///////////////////////////////////////////////////////////////////////////
+    @POST("auth/saveInstitute")
+    suspend fun saveInstitute(
+        @Query("schoolName") schoolName: String,
+    ): String
+
+    @GET("auth/getAllInstitutes")
+    suspend fun getAllInstitutes(): List<InstituteModel>
+
+    ///////////////////////////////////////////////////////////////////////////
+    // ACTIVITIES
+    ///////////////////////////////////////////////////////////////////////////
+    @POST("auth/saveActivity")
+    suspend fun saveActivity(
+        @Query("activityName") activityName: String,
+    ): String
+
+    @GET("auth/getAllActivities")
+    suspend fun getAllActivities(): List<GenericJsonModel>
+
+    ///////////////////////////////////////////////////////////////////////////
+    // STUDY FIELDS
+    ///////////////////////////////////////////////////////////////////////////
+    @POST("auth/saveField")
+    suspend fun saveField(
+        @Query("fieldName") fieldName: String,
+    ): String
+
+    @GET("auth/getAllFields")
+    suspend fun getAllFields(): List<GenericJsonModel>
 
     @POST("auth/verifyAccountCompany")
     suspend fun verifyAccountCompany(

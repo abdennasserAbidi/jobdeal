@@ -51,6 +51,12 @@ object GlobalEntries {
     var idSender = -1
     var idNotification = 0
     var tokenForgetPassword = ""
+
+    var newCompanyName = ""
+    var indexToChangeExperience = 0
+    var indexToChangeEducation = 0
+
+    var newInstituteName = ""
     var idAnnounce = 0
     var isFromNotification = false
     var idCompany = 0

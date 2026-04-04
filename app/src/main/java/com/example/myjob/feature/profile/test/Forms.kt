@@ -907,14 +907,9 @@ fun ExperienceForm(
 
     listExperience = user.experience ?: mutableListOf()
 
-    val listCompanies by profileViewModel.listCompanies.collectAsState()
 
     val context = LocalContext.current
     val app = context.applicationContext as MyApp
-    LaunchedEffect(listCompanies) {
-        app.listCompanies.removeLast()
-        if (!app.listCompanies.containsAll(listCompanies)) app.listCompanies.addAll(listCompanies.distinctBy { it })
-    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -1039,16 +1034,6 @@ fun EducationFormSection(
 
     val context = LocalContext.current
     val app = context.applicationContext as MyApp
-    LaunchedEffect(listInstitutes) {
-        app.listSchools.removeLast()
-        val institutes = listInstitutes.map {
-            val school = School()
-            school.libelly = it
-            school
-        }
-        if (!app.listSchools.containsAll(institutes)) app.listSchools.addAll(institutes.distinctBy { it.libelly })
-    }
-
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)

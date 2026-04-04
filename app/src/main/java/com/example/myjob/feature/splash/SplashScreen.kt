@@ -13,7 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -26,11 +28,16 @@ import coil.compose.rememberAsyncImagePainter
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
+import coil.request.onAnimationEnd
+import coil.request.repeatCount
 import coil.size.Size
+import com.airbnb.lottie.RenderMode
 import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieClipSpec
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieAnimatable
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.myjob.R
 import com.example.myjob.base.MyApp
@@ -46,7 +53,7 @@ fun SplashScreen(
     splashViewModel: SplashViewModel = hiltViewModel()
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val listCompanies by splashViewModel.listCompanies.collectAsState()
+    var isCompleted by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val app = context.applicationContext as MyApp
@@ -59,53 +66,51 @@ fun SplashScreen(
         }
     }
 
-    LaunchedEffect(listCompanies) {
-        app.listCompanies.removeAt(app.listCompanies.lastIndex)
-        if (!app.listCompanies.containsAll(listCompanies)) app.listCompanies.addAll(listCompanies)
-    }
-
     val user by splashViewModel.user.collectAsState()
+    val isFinished = splashViewModel.isOnBoardingFinished()
+    LaunchedEffect(isCompleted) {
+        if (isCompleted) {
+            val token = splashViewModel.getToken()
+            val type = splashViewModel.getType()
+            GlobalEntries.isFromLogin = true
 
-    LaunchedEffect(Unit) {
-        delay(  3115L)
-        val isFinished = splashViewModel.isOnBoardingFinished()
-        GlobalEntries.isFromLogin = true
-
-        val token = splashViewModel.getToken()
-        val type = splashViewModel.getType()
-        if (isFinished) {
-            if (token.isNotEmpty()) {
-                if (user.firstTimeUse == true) {
-                    when (user.role) {
-                        "Candidate", "Candidat" -> navController.navigate(Screen.SearchWordScreen.route)
-                        "Services" -> navController.navigate(Screen.ServiceProfileForm.route)
-                        else -> navController.navigate(Screen.CompanyProfileForm.route)
+            if (isFinished) {
+                if (token.isNotEmpty()) {
+                    if (user.firstTimeUse == true) {
+                        when (user.role) {
+                            "Candidate", "Candidat" -> navController.navigate(Screen.SearchWordScreen.route)
+                            "Services" -> navController.navigate(Screen.ServiceProfileForm.route)
+                            else -> navController.navigate(Screen.CompanyProfileForm.route)
+                        }
+                    } else {
+                        if (user.role == "Services" || type == "service") navController.navigate(Screen.DemandServiceScreen.route)
+                        else navController.navigate(Screen.HomeScreen.route)
                     }
-                } else {
-                    if (user.role == "Services" || type == "service") navController.navigate(Screen.DemandServiceScreen.route)
-                    else navController.navigate(Screen.HomeScreen.route)
-                }
 
-            } else navController.navigate(Screen.LoginScreen.route)
+                } else navController.navigate(Screen.LoginScreen.route)
 
-        } else navController.navigate(Screen.OnBoardingScreen.route)
+            } else {
+
+                navController.navigate(Screen.OnBoardingScreen.route)
+            }
+        }
     }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
 
-        //LottieAnimationScreen()
-
-        GifImage(modifier = Modifier.fillMaxSize())
+        GifImage(modifier = Modifier.fillMaxSize()) {
+            isCompleted = true
+        }
     }
 }
 
 @Composable
 fun GifImage(
     modifier: Modifier = Modifier,
+    onFinish: () -> Unit
 ) {
     val context = LocalContext.current
     val imageLoader = ImageLoader.Builder(context)
@@ -117,12 +122,24 @@ fun GifImage(
             }
         }
         .build()
+
+    val painter = rememberAsyncImagePainter(
+        model = ImageRequest.Builder(context)
+            .data(R.drawable.loading_page)
+            .size(Size.ORIGINAL)
+            // 0 means it plays once and stops. Default is -1 (infinite)
+            .repeatCount(0)
+            .onAnimationEnd {
+                // This triggers when the animation reaches the final frame
+                println("Animation finished!")
+                onFinish()
+            }
+            .build(),
+        imageLoader = imageLoader
+    )
+
     Image(
-        painter = rememberAsyncImagePainter(
-            ImageRequest.Builder(context).data(data = R.drawable.loading_page).apply(block = {
-                size(Size.ORIGINAL)
-            }).build(), imageLoader = imageLoader
-        ),
+        painter = painter,
         contentDescription = null,
         modifier = modifier.fillMaxWidth(),
     )
@@ -131,21 +148,44 @@ fun GifImage(
 @Composable
 fun LottieAnimationScreen() {
     val composition by rememberLottieComposition(
-        LottieCompositionSpec.RawRes(R.raw.loading)
+        LottieCompositionSpec.RawRes(R.raw.test)
     )
+
+    val state = animateLottieCompositionAsState(composition)
 
     // 2. Control the animation playback
     val progress by animateLottieCompositionAsState(
         composition,
-        iterations = LottieConstants.IterateForever,
-        isPlaying = true,
-        speed = 1f,
+        iterations = 1,
+        clipSpec = LottieClipSpec.Frame(max = 119), // Replace 119 with your actual last frame minus 1
+        restartOnPlay = false // Prevents resetting if the composable recomposes
     )
+
+    LaunchedEffect(Unit) {
+        delay(2000) // wait before restart
+    }
+
+    val animatable = rememberLottieAnimatable()
+
+    LaunchedEffect(composition) {
+        composition?.let {
+            animatable.animate(it, iterations = 1)
+            // Explicitly stay at the end
+            animatable.snapTo(progress = 1f)
+        }
+    }
+    // Use LaunchedEffect to react to the progress reaching 1.0
+    LaunchedEffect(state.progress) {
+        if (state.progress >= 1f || state.isAtEnd) {
+            println("Animation finished!")
+        }
+    }
 
     // 3. Display the animation
     LottieAnimation(
         composition = composition,
         progress = { progress },
-        modifier = Modifier.size(200.dp) // Set the desired size
+        modifier = Modifier.fillMaxSize(),
+        renderMode = RenderMode.SOFTWARE
     )
 }

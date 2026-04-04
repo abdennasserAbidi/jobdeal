@@ -1,6 +1,6 @@
 package com.example.myjob.common
 
-import android.util.Log
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -44,11 +43,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
+import com.example.myjob.domain.entities.json.CompanyModel
+import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun GenericMultipleSearch(
     mListOfJobs: List<String?>,
+    mListOfPaging: LazyPagingItems<CompanyModel> = flowOf(PagingData.from(emptyList<CompanyModel>())).collectAsLazyPagingItems(),
     savedList: List<String> = emptyList(),
     onDismissRequest: () -> Unit,
     onSelectedBank: (List<String>) -> Unit = { _ -> },
@@ -61,17 +66,9 @@ fun GenericMultipleSearch(
 
     val checkedStates = remember { mutableStateListOf<Boolean>() }
 
-    val lifecycleEvent = rememberLifecycleEvent()
-    LaunchedEffect(lifecycleEvent) {
-        if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
-
-        }
-    }
-
     mListOfJobs.map {
         checkedStates.add(false)
     }
-    Log.i("mListOfJobs", "savedList: $savedList")
 
     val interactionSource = remember { MutableInteractionSource() }
     var showSearch by remember { mutableStateOf(false) }
@@ -81,7 +78,7 @@ fun GenericMultipleSearch(
         savedList.map {
             list.add(it)
             val index = mListOfJobs.indexOf(it)
-            checkedStates[index] = true
+            //checkedStates[index] = true
         }
     }
 
@@ -152,52 +149,101 @@ fun GenericMultipleSearch(
                 }
             }
 
-            LazyColumn(modifier = Modifier.padding(top = 20.dp)) {
-                items(filteredBanks.size) { index ->
-                    val item = filteredBanks[index]
-                    Column {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 20.dp, start = 20.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Checkbox(
-                                modifier = Modifier.size(20.dp),
-                                checked = checkedStates[index],
-                                onCheckedChange = {
-                                    checkedStates[index] = it
-                                    if (it) {
-                                        if (!list.contains(item ?: ""))
-                                            list.add(item ?: "")
-                                    } else {
-                                        if (list.contains(item ?: ""))
-                                            list.remove(item ?: "")
-                                    }
-                                },
-                                enabled = true,
-                                colors = CheckboxDefaults.colors(colorResource(id = R.color.whatsapp))
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-
-                            Text(
-                                text = item ?: "",
+            if (mListOfPaging.itemCount > 0) {
+                LazyColumn(modifier = Modifier.padding(top = 20.dp)) {
+                    items(mListOfPaging.itemCount) { index ->
+                        val item = mListOfPaging[index]
+                        Column {
+                            Row(
                                 modifier = Modifier
-                                    .fillMaxWidth(0.9f),
-                                fontSize = 20.sp,
-                                color = Color.Black
-                            )
+                                    .fillMaxWidth()
+                                    .padding(top = 20.dp, start = 20.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    modifier = Modifier.size(20.dp),
+                                    checked = false,
+                                    onCheckedChange = {
+                                        if (it) {
+                                            if (!list.contains(item?.name ?: ""))
+                                                list.add(item?.name ?: "")
+                                        } else {
+                                            if (list.contains(item?.name ?: ""))
+                                                list.remove(item?.name ?: "")
+                                        }
+                                    },
+                                    enabled = true,
+                                    colors = CheckboxDefaults.colors(colorResource(id = R.color.whatsapp))
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
 
+                                Text(
+                                    text = item?.name ?: "",
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.9f),
+                                    fontSize = 20.sp,
+                                    color = Color.Black
+                                )
+
+                            }
+
+                            if (index < filteredBanks.lastIndex)
+                                HorizontalDivider(
+                                    thickness = 1.dp,
+                                    modifier = Modifier.padding(top = 10.dp)
+                                )
                         }
-
-                        if (index < filteredBanks.lastIndex)
-                            HorizontalDivider(
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(top = 10.dp)
-                            )
                     }
-                }
 
+                }
+            } else {
+                LazyColumn(modifier = Modifier.padding(top = 20.dp)) {
+                    items(filteredBanks.size) { index ->
+                        val item = filteredBanks[index]
+                        Column {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 20.dp, start = 20.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    modifier = Modifier.size(20.dp),
+                                    checked = checkedStates[index],
+                                    onCheckedChange = {
+                                        checkedStates[index] = it
+                                        if (it) {
+                                            if (!list.contains(item ?: ""))
+                                                list.add(item ?: "")
+                                        } else {
+                                            if (list.contains(item ?: ""))
+                                                list.remove(item ?: "")
+                                        }
+                                    },
+                                    enabled = true,
+                                    colors = CheckboxDefaults.colors(colorResource(id = R.color.whatsapp))
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+
+                                Text(
+                                    text = item ?: "",
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.9f),
+                                    fontSize = 20.sp,
+                                    color = Color.Black
+                                )
+
+                            }
+
+                            if (index < filteredBanks.lastIndex)
+                                HorizontalDivider(
+                                    thickness = 1.dp,
+                                    modifier = Modifier.padding(top = 10.dp)
+                                )
+                        }
+                    }
+
+                }
             }
         }
 

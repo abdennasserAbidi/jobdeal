@@ -1,7 +1,11 @@
 package com.example.myjob.remote.source.home
 
 import com.example.myjob.base.GenericResponse
+import com.example.myjob.domain.entities.Company
 import com.example.myjob.domain.entities.User
+import com.example.myjob.domain.entities.json.CompanyModel
+import com.example.myjob.domain.entities.json.GenericJsonModel
+import com.example.myjob.domain.entities.json.InstituteModel
 import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.FilesResponse
@@ -11,6 +15,15 @@ import com.example.myjob.domain.response.UserResponse
 import okhttp3.MultipartBody
 
 interface HomeDataSource {
+    suspend fun saveCompany(companyName: String): String
+    suspend fun saveInstitute(schoolName: String): String
+    suspend fun getAllCompanies(pageNumber: Int): GenericResponse<CompanyModel>
+    suspend fun getAllCompanies(): List<CompanyModel>
+    suspend fun getAllInstitutes(): List<InstituteModel>
+    suspend fun saveField(fieldName: String): String
+    suspend fun getAllFields(): List<GenericJsonModel>
+    suspend fun getAllActivities(): List<GenericJsonModel>
+    suspend fun saveActivity(activityName: String): String
     suspend fun saveToFavorite(idUserConnected: Int, candidateId: Int): UserResponse
     suspend fun getUser(id: Int): UserAuthResponse
     suspend fun uploadFile(file: MultipartBody.Part): UserResponse

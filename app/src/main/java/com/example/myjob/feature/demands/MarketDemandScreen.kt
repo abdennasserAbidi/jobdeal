@@ -172,7 +172,7 @@ fun MarketDemandScreen(
     var showMenu by remember { mutableStateOf(false) }
     var selectedPhone by remember { mutableStateOf("") }
     var selectedSearch by remember { mutableStateOf(PostType.ALL) }
-    var selectedType by remember { mutableStateOf(JobType.NORMAL) }
+    var selectedType by remember(demandsViewModel.getType()) { mutableStateOf(JobType.NORMAL) }
     val badgeCountNormal by remember { mutableIntStateOf(0) }
     val badgeCountService by remember { mutableIntStateOf(1) }
     var isUpdating by remember { mutableStateOf(false) }
