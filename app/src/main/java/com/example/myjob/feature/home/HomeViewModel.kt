@@ -25,6 +25,7 @@ import com.example.myjob.domain.entities.ExperienceChoices
 import com.example.myjob.domain.entities.HOME_ENTITY
 import com.example.myjob.domain.entities.JobType
 import com.example.myjob.domain.entities.ParentChoices
+import com.example.myjob.domain.entities.Rate
 import com.example.myjob.domain.entities.SexChoices
 import com.example.myjob.domain.entities.SituationChoices
 import com.example.myjob.domain.entities.StatusChoices
@@ -36,6 +37,8 @@ import com.example.myjob.domain.entities.json.CompanyModel
 import com.example.myjob.domain.entities.json.GenericJsonModel
 import com.example.myjob.domain.entities.json.InstituteModel
 import com.example.myjob.domain.entities.notification.NotificationMessage
+import com.example.myjob.domain.usecase.avis.GetAllAvisUseCase
+import com.example.myjob.domain.usecase.avis.SaveAvisUseCase
 import com.example.myjob.domain.usecase.home.CountDownTrialUserUseCase
 import com.example.myjob.domain.usecase.home.GetAllUserServiceUseCase
 import com.example.myjob.domain.usecase.home.GetAllUserUseCase
@@ -88,7 +91,9 @@ class HomeViewModel @Inject constructor(
     private val getAllCompaniesUseCase: GetAllCompaniesUseCase,
     private val getAllInstitutesUseCase: GetAllInstitutesUseCase,
     private val getAllActivitiesUseCase: GetAllActivitiesUseCase,
-    private val getAllFieldsUseCase: GetAllFieldsUseCase
+    private val getAllFieldsUseCase: GetAllFieldsUseCase,
+    private val saveAvisUseCase: SaveAvisUseCase,
+    private val getAllAvisUseCase: GetAllAvisUseCase,
 ) : ViewModel() {
 
     ///////////////////////////////////////////////////////////////////////////
@@ -181,6 +186,35 @@ class HomeViewModel @Inject constructor(
     fun resetCountInvitation() {
         _invitationCount.update { 0 }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // AVIS
+    ///////////////////////////////////////////////////////////////////////////
+    private val _savedStatus: MutableStateFlow<String> = MutableStateFlow("")
+    val savedStatus: MutableStateFlow<String> get() = _savedStatus
+
+    fun saveAvis(rate: Rate) {
+        viewModelScope.launch {
+            rate.idUserDemand = sharedPreference.getInt("idUser", 0)
+            rate.userDemandName = GlobalEntries.user.userServiceName ?: ""
+            saveAvisUseCase.execute(rate).collect { res ->
+                _savedStatus.update { res.data ?: "" }
+            }
+        }
+    }
+
+    private val _allAvis: MutableStateFlow<PagingData<Rate>> =
+        MutableStateFlow(value = PagingData.empty())
+    val allAvis: MutableStateFlow<PagingData<Rate>> get() = _allAvis
+
+    fun getAllAvis(idCandidate: Int) {
+        viewModelScope.launch {
+            getAllAvisUseCase.execute(idCandidate).collect { res ->
+                _allAvis.update { res.data ?: PagingData.empty() }
+            }
+        }
+    }
+
 
     ///////////////////////////////////////////////////////////////////////////
     // FINISH PROCESS
@@ -906,9 +940,16 @@ class HomeViewModel @Inject constructor(
     ///////////////////////////////////////////////////////////////////////////
 
     val isFilterFinished = MutableStateFlow(false)
+    val itemState = MutableStateFlow<List<String>>(emptyList())
+
+    fun clearItems() {
+        itemState.update { emptyList() }
+    }
 
     fun searchUserService(categoryModel: CategoryModel) {
 
+        val list = categoryModel.listService.map { it.name } + categoryModel.listSector.map { it.name }
+        itemState.update { list }
         viewModelScope.launch {
 
             if (categoryModel.listSector.isNotEmpty() || categoryModel.listService.isNotEmpty()) {

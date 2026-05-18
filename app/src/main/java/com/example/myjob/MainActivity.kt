@@ -10,8 +10,8 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresExtension
 import androidx.compose.animation.AnimatedVisibility
@@ -68,12 +68,8 @@ import com.example.myjob.common.default
 import com.example.myjob.common.loadJSONFromAsset
 import com.example.myjob.common.phonekit.toCountryList
 import com.example.myjob.domain.entities.AllCities
-import com.example.myjob.domain.entities.AllCompanies
-import com.example.myjob.domain.entities.AllFields
-import com.example.myjob.domain.entities.AllSchools
 import com.example.myjob.domain.entities.CountryPickerViewState
 import com.example.myjob.domain.entities.NewCountry
-import com.example.myjob.domain.entities.Subject
 import com.example.myjob.feature.demands.AddDemandScreen
 import com.example.myjob.feature.demands.MarketDemandScreen
 import com.example.myjob.feature.favorites.CompanyFavorites
@@ -137,7 +133,7 @@ import java.net.URISyntaxException
 import javax.inject.Inject
 import androidx.core.net.toUri
 import com.example.myjob.feature.demands.DemandMarketDetailScreen
-import com.example.myjob.feature.home.ServiceUserScreen
+import com.example.myjob.feature.demands.ServiceUserScreen
 import com.example.myjob.feature.notification.DemandNotificationScreen
 import com.example.myjob.feature.onboarding.OnboardingScreen
 import com.example.myjob.feature.profile.test.ServiceProfileFormScreen
@@ -297,7 +293,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestNotificationPermission()
-
+        enableEdgeToEdge()
         fetchData()
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -542,12 +538,6 @@ class MainActivity : ComponentActivity() {
                         InvitationCareerScreen(navController = navController)
                     }
                     //END INVITATION
-
-
-                    /*composable(route = Screen.textRecognitionScreen.route) {
-                        if (cameraPermissionState.status.isGranted) CameraScreen(navController = navController)
-                        else NoPermissionScreen(cameraPermissionState::launchPermissionRequest)
-                    }*/
 
 
                     //MESSAGERIE

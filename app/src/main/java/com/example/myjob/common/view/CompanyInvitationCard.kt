@@ -58,7 +58,6 @@ fun CompanyInvitationCard(
                 interactionSource = interactionSource,
                 indication = null
             ) { onClick() },
-        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White,
             contentColor = Color.White

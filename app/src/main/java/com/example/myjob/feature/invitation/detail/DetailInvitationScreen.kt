@@ -45,6 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.domain.entities.Experience
+import com.example.myjob.domain.entities.invitation.InvitationModel
 
 // WhatsApp Green Theme Colors
 val WhatsAppGreen = Color(0xFF25D366)
@@ -229,13 +230,11 @@ fun DetailInvitationScreen(
 
             // Invitation Content Card
             InvitationContentCard(
+                invitationModel = InvitationModel(),
                 status = "",
                 subject = invitation.message,
                 message = invitation.description
             )
-
-            // Contract & Fee Details Card
-            ContractDetailsCard(invitationModel = invitation)
 
             // Notes Card (if available)
             invitation.reason?.let { notes ->

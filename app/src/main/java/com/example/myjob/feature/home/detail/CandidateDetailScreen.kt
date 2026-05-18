@@ -1,30 +1,23 @@
 package com.example.myjob.feature.home.detail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
-import androidx.paging.compose.collectAsLazyPagingItems
-import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.otherUserId
 import com.example.myjob.common.GlobalEntries.otherUserName
@@ -39,24 +32,6 @@ val WhatsAppGreen = Color(0xFF25D366)
 val WhatsAppDarkGreen = Color(0xFF128C7E)
 val WhatsAppLightGreen = Color(0xFFDCF8C6)
 val WhatsAppGreenSurface = Color(0xFFF0F9F0)
-
-data class CandidateProfile(
-    val candidate: Candidate,
-    val email: String,
-    val phone: String,
-    val linkedIn: String?,
-    val github: String?,
-    val portfolio: String?,
-    val bio: String,
-    val experience: List<WorkExperience>,
-    val education: List<Education>,
-    val projects: List<Project>,
-    val certifications: List<String>,
-    val languages: List<Language>,
-    val availability: String,
-    val expectedSalary: String,
-    val noticePeriod: String
-)
 
 data class WorkExperience(
     val company: String,
@@ -100,9 +75,10 @@ fun CandidateDetailScreen(
     val scrollState = rememberScrollState()
     var isSaved by remember { mutableStateOf(false) }
 
-    val user = GlobalEntries.userForCompany
+    val userCandidate = GlobalEntries.userForCompany
     val experienceYears by detailViewModel.experienceYears.collectAsState()
     val invitation by detailViewModel.invitation.collectAsState()
+    val candidate by detailViewModel.user.collectAsState()
 
     var openFinishProcess by remember { mutableStateOf(false) }
     var invitationModel by remember { mutableStateOf(InvitationModel()) }
@@ -110,11 +86,11 @@ fun CandidateDetailScreen(
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
         if (lifecycleEvent == Lifecycle.Event.ON_START) {
-            detailViewModel.getUserById(user.id ?: 0)
-            detailViewModel.getAllExperience(user.id ?: 0)
-            detailViewModel.getAllEducations(user.id ?: 0)
+            detailViewModel.getUserById(userCandidate.id ?: 0)
+            detailViewModel.getAllExperience(userCandidate.id ?: 0)
+            detailViewModel.getAllEducations(userCandidate.id ?: 0)
             hideNavigation()
-            user.fullName?.let {
+            userCandidate.fullName?.let {
                 if (it.isNotEmpty()) detailViewModel.getUserNameAbbreviation(it)
             }
         }
@@ -138,29 +114,32 @@ fun CandidateDetailScreen(
             .background(MaterialTheme.colorScheme.background)
     ) {
 
-        CandidateDetailsScreen(candidate = user,
-            onBackClick = {
-                navController.popBackStack()
-            },
-            onContactClick = {
-                GlobalEntries.candidateUser = it
-                otherUserId = it.id ?: -1
+        if (candidate.id != 0) {
+            CandidateDetailsScreen(
+                candidate = candidate,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onContactClick = {
+                    GlobalEntries.candidateUser = it
+                    otherUserId = it.id ?: -1
 
-                otherUserName =
-                    if (it.role == "Candidate" || it.role == "Candidat") it.fullName ?: ""
-                    else it.companyName ?: ""
+                    otherUserName =
+                        if (it.role == "Candidate" || it.role == "Candidat") it.fullName ?: ""
+                        else it.companyName ?: ""
 
-                navController.navigate(Screen.SendMessageScreen.route)
-            },
-            onHireClick = {
-                GlobalEntries.candidateUser = it
-                navController.navigate(Screen.SendInvitationScreen.route)
-            },
-            onTerminateInvitation = {
-                invitationModel = it
-                openFinishProcess = true
-            }
-        )
+                    navController.navigate(Screen.SendMessageScreen.route)
+                },
+                onHireClick = {
+                    GlobalEntries.candidateUser = it
+                    navController.navigate(Screen.SendInvitationScreen.route)
+                },
+                onTerminateInvitation = {
+                    invitationModel = it
+                    openFinishProcess = true
+                }
+            )
+        }
     }
 }
 

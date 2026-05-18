@@ -16,9 +16,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Text
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -144,8 +144,9 @@ fun CustomPhoneKit(
                     keyboardOptions = KeyboardOptions.Default.copy(
                         keyboardType = KeyboardType.Number // Numeric keyboard
                     ),
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = Color.Transparent, // Background color
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent, // Background color
+                        unfocusedContainerColor = Color.Transparent, // Background color
                         focusedIndicatorColor = Color.Transparent, // No border when focused
                         unfocusedIndicatorColor = Color.Transparent, // No border when unfocused
                         disabledIndicatorColor = Color.Transparent // No border when disabled

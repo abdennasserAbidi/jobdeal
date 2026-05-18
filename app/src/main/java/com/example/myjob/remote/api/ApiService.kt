@@ -9,6 +9,7 @@ import com.example.myjob.domain.entities.Educations
 import com.example.myjob.domain.entities.Experience
 import com.example.myjob.domain.entities.InvitationFilter
 import com.example.myjob.domain.entities.ProfessionalStatus
+import com.example.myjob.domain.entities.Rate
 import com.example.myjob.domain.entities.SearchHistory
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
@@ -52,6 +53,19 @@ import retrofit2.http.Query
  */
 interface
 ApiService {
+
+    ///////////////////////////////////////////////////////////////////////////
+    // AVIS
+    ///////////////////////////////////////////////////////////////////////////
+    @POST("auth/saveAvis")
+    suspend fun saveAvis(@Body avis: Rate): UserResponse
+
+    @GET("auth/getCandidateAvis")
+    suspend fun getCandidateAvis(
+        @Query("idCandidate") idCandidate: Int,
+        @Query("page") pageNumber: Int,
+        @Query("size") size: Int = 10
+    ): GenericResponse<Rate>
 
     ///////////////////////////////////////////////////////////////////////////
     // COMPANY

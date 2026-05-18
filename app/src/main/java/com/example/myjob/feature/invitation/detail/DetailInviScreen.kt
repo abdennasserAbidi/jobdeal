@@ -296,6 +296,7 @@ fun DetailInviScreen(
             // Invitation Content Card
             Box(modifier = Modifier.padding(top = 15.dp)) {
                 InvitationContentCard(
+                    invitationModel = invitation,
                     status = invitation.status ?: "",
                     subject = invitation.message,
                     message = invitation.description,
@@ -306,15 +307,13 @@ fun DetailInviScreen(
                 )
             }
 
-            // Contract & Fee Details Card
-            Box(modifier = Modifier.padding(top = 15.dp)) {
-                ContractDetailsCard(invitationModel = invitation)
-            }
-
             // Notes Card (if available)
             invitation.reason?.let { notes ->
-                if (notes.isNotEmpty())
-                    NotesCard(notes = notes)
+                if (notes.isNotEmpty()) {
+                    Box(modifier = Modifier.padding(top = 15.dp)) {
+                        NotesCard(notes = notes)
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

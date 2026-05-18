@@ -1,5 +1,6 @@
 package com.example.myjob.feature.invitation.detail
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -41,9 +42,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -81,21 +86,67 @@ fun InvitationStatusCard(
 
     val statusText = if (GlobalEntries.role == "Company" || GlobalEntries.role == "Entreprise") {
         when (status) {
-            InvitationStatus.ON_HOLD.name -> stringResource(id = R.string.title_status_pending_invitation_text, userCandidate.fullName ?: "")
-            InvitationStatus.HIRED.name -> stringResource(id = R.string.title_status_hired_invitation_text, userCandidate.fullName ?: "")
-            InvitationStatus.IN_PROCESS.name -> stringResource(id = R.string.title_status_process_invitation_text, userCandidate.fullName ?: "")
-            InvitationStatus.REJECTED.name -> stringResource(id = R.string.title_status_rejecting_invitation_text, userCandidate.fullName ?: "")
-            InvitationStatus.NOT_INTERESTED.name -> stringResource(id = R.string.title_status_not_interested_invitation_text, userCandidate.fullName ?: "")
-            else -> stringResource(id = R.string.title_status_pending_invitation_text, userCandidate.fullName ?: "")
+            InvitationStatus.ON_HOLD.name -> stringResource(
+                id = R.string.title_status_pending_invitation_text,
+                userCandidate.fullName ?: ""
+            )
+
+            InvitationStatus.HIRED.name -> stringResource(
+                id = R.string.title_status_hired_invitation_text,
+                userCandidate.fullName ?: ""
+            )
+
+            InvitationStatus.IN_PROCESS.name -> stringResource(
+                id = R.string.title_status_process_invitation_text,
+                userCandidate.fullName ?: ""
+            )
+
+            InvitationStatus.REJECTED.name -> stringResource(
+                id = R.string.title_status_rejecting_invitation_text,
+                userCandidate.fullName ?: ""
+            )
+
+            InvitationStatus.NOT_INTERESTED.name -> stringResource(
+                id = R.string.title_status_not_interested_invitation_text,
+                userCandidate.fullName ?: ""
+            )
+
+            else -> stringResource(
+                id = R.string.title_status_pending_invitation_text,
+                userCandidate.fullName ?: ""
+            )
         }
     } else {
         when (status) {
-            InvitationStatus.ON_HOLD.name -> stringResource(id = R.string.title_status_pending_invitation_candidate_text, userCompany.companyName ?: "")
-            InvitationStatus.HIRED.name -> stringResource(id = R.string.title_status_hired_invitation_candidate_text, userCompany.companyName ?: "")
-            InvitationStatus.IN_PROCESS.name -> stringResource(id = R.string.title_status_process_invitation_candidate_text, userCompany.companyName ?: "")
-            InvitationStatus.REJECTED.name -> stringResource(id = R.string.title_status_rejecting_invitation_candidate_text, userCompany.companyName ?: "")
-            InvitationStatus.NOT_INTERESTED.name -> stringResource(id = R.string.title_status_not_interested_invitation_candidate_text, userCompany.companyName ?: "")
-            else -> stringResource(id = R.string.title_status_pending_invitation_candidate_text, userCompany.companyName ?: "")
+            InvitationStatus.ON_HOLD.name -> stringResource(
+                id = R.string.title_status_pending_invitation_candidate_text,
+                userCompany.companyName ?: ""
+            )
+
+            InvitationStatus.HIRED.name -> stringResource(
+                id = R.string.title_status_hired_invitation_candidate_text,
+                userCompany.companyName ?: ""
+            )
+
+            InvitationStatus.IN_PROCESS.name -> stringResource(
+                id = R.string.title_status_process_invitation_candidate_text,
+                userCompany.companyName ?: ""
+            )
+
+            InvitationStatus.REJECTED.name -> stringResource(
+                id = R.string.title_status_rejecting_invitation_candidate_text,
+                userCompany.companyName ?: ""
+            )
+
+            InvitationStatus.NOT_INTERESTED.name -> stringResource(
+                id = R.string.title_status_not_interested_invitation_candidate_text,
+                userCompany.companyName ?: ""
+            )
+
+            else -> stringResource(
+                id = R.string.title_status_pending_invitation_candidate_text,
+                userCompany.companyName ?: ""
+            )
         }
     }
 
@@ -372,6 +423,7 @@ fun InvitationStatusCard(
 
 @Composable
 fun InvitationContentCard(
+    invitationModel: InvitationModel,
     status: String,
     subject: String,
     message: String,
@@ -401,7 +453,8 @@ fun InvitationContentCard(
 
                 val role = GlobalEntries.role
                 val isCompany = role == "Company" || role == "Entreprise"
-                val isNotHired = status != InvitationStatus.HIRED.name
+                val isNotHired = status == InvitationStatus.ON_HOLD.name
+
                 if (isCompany && isNotHired) {
                     Icon(
                         imageVector = Icons.Default.Edit,
@@ -449,10 +502,12 @@ fun InvitationContentCard(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .border(1.dp, WhatsAppGreen, RoundedCornerShape(8.dp)),
+                    contentAlignment = Center
                 ) {
                     Text(
                         text = message,
@@ -462,30 +517,14 @@ fun InvitationContentCard(
                     )
                 }
             }
-        }
-    }
-}
 
-@Composable
-fun ContractDetailsCard(
-    invitationModel: InvitationModel
-) {
+            Spacer(Modifier.padding(top = 16.dp))
 
-    val typeContract by remember { mutableStateOf(invitationModel.typeContract) }
-    val descriptionContract by remember { mutableStateOf(invitationModel.descriptionContract) }
-    val duration by remember { mutableStateOf(invitationModel.duration ?: "") }
-    val nameContract by remember { mutableStateOf(invitationModel.nameContract) }
+            val typeContract by remember { mutableStateOf(invitationModel.typeContract) }
+            val descriptionContract by remember { mutableStateOf(invitationModel.descriptionContract) }
+            val duration by remember { mutableStateOf(invitationModel.duration ?: "") }
+            val nameContract by remember { mutableStateOf(invitationModel.nameContract) }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = WhatsAppGreenSurface
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
             Text(
                 text = stringResource(id = R.string.contract_detail_text),
                 style = MaterialTheme.typography.titleMedium,
@@ -533,7 +572,11 @@ fun ContractDetailsCard(
 fun NotesCard(notes: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = White
+        ),
+        elevation = CardDefaults.cardElevation(8.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)

@@ -432,4 +432,9 @@
     <string name="invitation_send_info_text">Invitation Sent!</string>
     <string name="done_info_text">Done</string>
     <string name="invitation_desc_info_text">Your interview invitation has been successfully sent to %1$s. They will receive an email with all the details.</string>
+
+    <string name="step1">Step 1 of 3  ·  For Candidates</string>
+    <string name="step1_title">Your Professional Profile</string>
+    <string name="step1_professional">Professional</string>
+    <string name="step1_description">Build a complete profile with your skills, portfolio, and experience. Let employers find you — and match to the right roles automatically.</string>
 </resources>

@@ -199,8 +199,8 @@ class HomeRepositoryImp @Inject constructor(
                     val users =
                         remoteDataSource.getAllCandidateService(id, pageNumber = currentPage)
 
-                    val json = Gson().toJson(users.content)
-                    sharedPreference.putString("jsonUser", json)
+                    /*val json = Gson().toJson(users.content)
+                    sharedPreference.putString("jsonUser", json)*/
 
                     users
                 }

@@ -1,12 +1,10 @@
 package com.example.myjob.remote.source.home
 
 import com.example.myjob.base.GenericResponse
-import com.example.myjob.domain.entities.Company
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.json.CompanyModel
 import com.example.myjob.domain.entities.json.GenericJsonModel
 import com.example.myjob.domain.entities.json.InstituteModel
-import com.example.myjob.domain.entities.notification.NotificationModel
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.FilesResponse
 import com.example.myjob.domain.response.UploadResponse

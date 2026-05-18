@@ -134,6 +134,13 @@ fun MarketDemandScreen(
         mutableStateOf(List(ToolCategory.entries.size) { false })
     }
 
+    val fcmToken by demandsViewModel.fcmToken.collectAsState()
+    LaunchedEffect(fcmToken) {
+        if (fcmToken.isEmpty()) {
+            demandsViewModel.updateToken()
+        }
+    }
+
     LaunchedEffect(listFilter) {
 
         if (listFilter.isNotEmpty())
@@ -185,6 +192,7 @@ fun MarketDemandScreen(
         if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
             selectedType = demandsViewModel.getType()
             demandsViewModel.getDemands()
+            demandsViewModel.getUserToken()
         }
     }
 

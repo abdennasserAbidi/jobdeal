@@ -268,18 +268,21 @@ fun CompanyProfileFormScreen(
                                 }
                             )
 
-                            Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
-                                Text(
-                                    text = "Ajouter un numéro de téléphone",
-                                    modifier = Modifier
-                                        .align(CenterEnd)
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = null
-                                        ) {
-                                            listPhones = (listPhones + "").toMutableList()
-                                        }
-                                )
+                            if (index == listPhones.lastIndex) {
+                                Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                                    Text(
+                                        text = "Ajouter un numéro de téléphone",
+                                        color = colorResource(R.color.whatsapp),
+                                        modifier = Modifier
+                                            .align(CenterEnd)
+                                            .clickable(
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = null
+                                            ) {
+                                                listPhones = (listPhones + "").toMutableList()
+                                            }
+                                    )
+                                }
                             }
 
                         }
@@ -314,18 +317,21 @@ fun CompanyProfileFormScreen(
                                 isRequired = false
                             )
 
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                Text(
-                                    text = "Ajouter une adresse",
-                                    modifier = Modifier
-                                        .align(CenterEnd)
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = null
-                                        ) {
-                                            listAddress = (listAddress + "").toMutableList()
-                                        }
-                                )
+                            if (index == listAddress.lastIndex) {
+                                Box(modifier = Modifier.fillMaxWidth()) {
+                                    Text(
+                                        text = "Ajouter une adresse",
+                                        color = colorResource(R.color.whatsapp),
+                                        modifier = Modifier
+                                            .align(CenterEnd)
+                                            .clickable(
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = null
+                                            ) {
+                                                listAddress = (listAddress + "").toMutableList()
+                                            }
+                                    )
+                                }
                             }
                         }
                     }

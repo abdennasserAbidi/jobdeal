@@ -446,8 +446,8 @@ fun HomeCompany(
                                 ) {
                                     TextField(
                                         value = "",
-                                        colors = TextFieldDefaults.textFieldColors(
-                                            containerColor = Color.Transparent,
+                                        colors = TextFieldDefaults.colors(
+                                            focusedContainerColor = Color.Transparent,
                                             focusedLabelColor = colorResource(id = R.color.whatsapp),
                                             disabledTextColor = Color.Transparent,
                                             focusedIndicatorColor = Color.Transparent,
@@ -584,8 +584,8 @@ fun HomeCompany(
                         ) {
                             TextField(
                                 value = "",
-                                colors = TextFieldDefaults.textFieldColors(
-                                    containerColor = Color.Transparent,
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
                                     focusedLabelColor = colorResource(id = R.color.whatsapp),
                                     disabledTextColor = Color.Transparent,
                                     focusedIndicatorColor = Color.Transparent,

@@ -239,61 +239,6 @@ fun InvitationScreen(
                 )
             }
 
-            /*LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                itemsIndexed(
-                    items = invitationChoices
-                ) { index, item ->
-                    val title = stringResource(id = item.title)
-
-                    val textColor = if (selectionChoices[index]) Color.White else Color.Black
-                    val color =
-                        colorResource(id = if (selectionChoices[index]) R.color.whatsapp else R.color.lighter_gray)
-
-                    val paddStart = if (index == 0) 0.dp else 10.dp
-
-                    Row(
-                        modifier = Modifier
-                            .wrapContentHeight()
-                            .padding(start = paddStart)
-                            .border(
-                                width = 1.dp,
-                                color = color,
-                                shape = RoundedCornerShape(5.dp)
-                            )
-                            .background(
-                                color = color,
-                                shape = RoundedCornerShape(5.dp)
-                            )
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) {
-                                invitationViewModel.changeChoice(
-                                    index,
-                                    !selectionChoices[index],
-                                    title
-                                )
-                                GlobalEntries.isVisibleNav.update { false }
-                            },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = title,
-                            color = textColor,
-                            modifier = Modifier.padding(10.dp)
-                        )
-                    }
-
-                }
-            }*/
-
             val statusInvitations by invitationViewModel.statusInvitations.collectAsState()
 
             if (invitations.itemCount > 0) {

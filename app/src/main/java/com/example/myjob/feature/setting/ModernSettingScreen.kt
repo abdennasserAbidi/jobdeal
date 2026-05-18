@@ -75,6 +75,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myjob.R
 import com.example.myjob.common.CountrySelector
+import com.example.myjob.common.CustomDialog
 import com.example.myjob.common.CustomPhoneKit
 import com.example.myjob.common.GenericSearch
 import com.example.myjob.common.GlobalEntries
@@ -738,6 +739,18 @@ fun EditProfileBottomSheet(
         )
     }
 
+    val saveCompanyInfoState by settingViewModel.saveCompanyInfoState.collectAsState()
+    var showDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(saveCompanyInfoState) {
+        showDialog = saveCompanyInfoState == "saved successfully"
+    }
+
+    if (showDialog) {
+        CustomDialog(true, saveCompanyInfoState) {
+            showDialog = false
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -885,18 +898,21 @@ fun EditProfileBottomSheet(
                                 }
                             )
 
-                            Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
-                                Text(
-                                    text = "Ajouter un numéro de téléphone",
-                                    modifier = Modifier
-                                        .align(CenterEnd)
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = null
-                                        ) {
-                                            listPhones = (listPhones + "").toMutableList()
-                                        }
-                                )
+                            if (index == listPhones.lastIndex) {
+                                Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                                    Text(
+                                        text = "Ajouter un numéro de téléphone",
+                                        color = colorResource(R.color.whatsapp),
+                                        modifier = Modifier
+                                            .align(CenterEnd)
+                                            .clickable(
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = null
+                                            ) {
+                                                listPhones = (listPhones + "").toMutableList()
+                                            }
+                                    )
+                                }
                             }
 
                         }
@@ -916,18 +932,21 @@ fun EditProfileBottomSheet(
                                 isRequired = false
                             )
 
-                            Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
-                                Text(
-                                    text = "Ajouter une adresse",
-                                    modifier = Modifier
-                                        .align(CenterEnd)
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = null
-                                        ) {
-                                            listAddress = (listAddress + "").toMutableList()
-                                        }
-                                )
+                            if (index == listAddress.lastIndex) {
+                                Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                                    Text(
+                                        text = "Ajouter une adresse",
+                                        color = colorResource(R.color.whatsapp),
+                                        modifier = Modifier
+                                            .align(CenterEnd)
+                                            .clickable(
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = null
+                                            ) {
+                                                listAddress = (listAddress + "").toMutableList()
+                                            }
+                                    )
+                                }
                             }
                         }
                     }
@@ -1167,18 +1186,21 @@ fun EditServiceProfileBottomSheet(
                                 }
                             )
 
-                            Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
-                                Text(
-                                    text = "Ajouter un numéro de téléphone",
-                                    modifier = Modifier
-                                        .align(CenterEnd)
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = null
-                                        ) {
-                                            listPhones = (listPhones + "").toMutableList()
-                                        }
-                                )
+                            if (index == listPhones.lastIndex) {
+                                Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                                    Text(
+                                        text = "Ajouter un numéro de téléphone",
+                                        color = colorResource(R.color.whatsapp),
+                                        modifier = Modifier
+                                            .align(CenterEnd)
+                                            .clickable(
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = null
+                                            ) {
+                                                listPhones = (listPhones + "").toMutableList()
+                                            }
+                                    )
+                                }
                             }
 
                         }
@@ -1227,18 +1249,21 @@ fun EditServiceProfileBottomSheet(
                                 isRequired = false
                             )
 
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                Text(
-                                    text = "Ajouter une adresse",
-                                    modifier = Modifier
-                                        .align(CenterEnd)
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = null
-                                        ) {
-                                            listAddress = (listAddress + "").toMutableList()
-                                        }
-                                )
+                            if (index == listAddress.lastIndex) {
+                                Box(modifier = Modifier.fillMaxWidth()) {
+                                    Text(
+                                        text = "Ajouter une adresse",
+                                        color = colorResource(R.color.whatsapp),
+                                        modifier = Modifier
+                                            .align(CenterEnd)
+                                            .clickable(
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = null
+                                            ) {
+                                                listAddress = (listAddress + "").toMutableList()
+                                            }
+                                    )
+                                }
                             }
                         }
                     }

@@ -102,6 +102,7 @@ data class User(
     var service: Boolean? = false,
     var paidUser: Boolean? = false,
     var countTrial: Int = 10,
+    var percentageRate: Double = 10.0,
     var userServiceName: String? = "",
     var category: ServiceCategory = ServiceCategory.IDLE,
     var freelanceSector: FreelanceSector = FreelanceSector(),

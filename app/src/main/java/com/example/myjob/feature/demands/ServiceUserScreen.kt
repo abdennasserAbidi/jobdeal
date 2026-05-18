@@ -1,4 +1,4 @@
-package com.example.myjob.feature.home
+package com.example.myjob.feature.demands
 
 import FreelanceFilterSectorScreen
 import FreelanceSector
@@ -10,12 +10,18 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ContextualFlowRow
+import androidx.compose.foundation.layout.ContextualFlowRowOverflow
+import androidx.compose.foundation.layout.ContextualFlowRowOverflowScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRowOverflowScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,7 +32,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,8 +54,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -59,7 +62,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -69,8 +71,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.BottomEnd
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Modifier
@@ -82,6 +87,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontWeight.Companion.Bold
+import androidx.compose.ui.text.font.FontWeight.Companion.Medium
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -100,19 +107,23 @@ import com.example.myjob.common.PageLoader
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.CategoryModel
 import com.example.myjob.domain.entities.JobType
+import com.example.myjob.domain.entities.Rate
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.announcement.PostType
-import com.example.myjob.feature.demands.CategoryDialogItem
-import com.example.myjob.feature.demands.EmptyState
-import com.example.myjob.feature.demands.ServiceCategory
-import com.example.myjob.feature.demands.UserServiceCard
-import com.example.myjob.feature.demands.findActivity
+import com.example.myjob.domain.usecase.avis.LikeEnum
+import com.example.myjob.feature.home.FilterTypeBottomSheet
+import com.example.myjob.feature.home.HomeViewModel
 import com.example.myjob.feature.navigation.Screen
+import com.example.myjob.feature.profile.test.FormTextField
+import com.example.myjob.ui.theme.WhatsAppDarkGreen
 import getAllFreelanceSectors
 import getAllFreelanceServices
 
 @SuppressLint("MutableCollectionMutableState")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+    ExperimentalLayoutApi::class
+)
 @Composable
 fun ServiceUserScreen(
     navController: NavController,
@@ -169,6 +180,8 @@ fun ServiceUserScreen(
 
     var showContact by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
+    var showRate by remember { mutableStateOf(false) }
+    var onRate by remember { mutableStateOf(false) }
     var isFilterOpened by remember { mutableStateOf(false) }
     var selectedPhone by remember { mutableStateOf("") }
     var selectedSearch by remember { mutableStateOf(PostType.ALL) }
@@ -183,6 +196,14 @@ fun ServiceUserScreen(
     val logoutText = stringResource(id = R.string.logout_text)
 
     val notificationCount by homeViewModel.notificationCount.collectAsState()
+    val allAvis = homeViewModel.allAvis.collectAsLazyPagingItems()
+    val itemState by homeViewModel.itemState.collectAsState()
+
+    LaunchedEffect(allAvis) {
+        if (allAvis.itemCount > 0) {
+        }
+    }
+
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
@@ -190,6 +211,14 @@ fun ServiceUserScreen(
             selectedType = homeViewModel.getType()
             homeViewModel.getCurrent()
             homeViewModel.getAllUserService()
+            homeViewModel.getUserToken()
+        }
+    }
+
+    val fcmToken by homeViewModel.fcmToken.collectAsState()
+    LaunchedEffect(fcmToken) {
+        if (fcmToken.isEmpty()) {
+            homeViewModel.updateToken()
         }
     }
 
@@ -236,7 +265,7 @@ fun ServiceUserScreen(
                             text = "Services",
                             fontSize = 24.sp,
                             color = White,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = Bold
                         )
 
                         Box(
@@ -263,7 +292,7 @@ fun ServiceUserScreen(
                                 modifier = Modifier
                                     .size(30.dp)
                                     .padding(start = 10.dp)
-                                    .align(Alignment.CenterStart)
+                                    .align(CenterStart)
                                     .clickable(
                                         interactionSource = interactionSource,
                                         indication = null
@@ -277,7 +306,7 @@ fun ServiceUserScreen(
                                     tint = White,
                                     modifier = Modifier
                                         .size(30.dp)
-                                        .align(Alignment.CenterEnd)
+                                        .align(CenterEnd)
                                 )
                             }
 
@@ -294,7 +323,7 @@ fun ServiceUserScreen(
                                     Text(
                                         text = if (notificationCount > 9) "9+" else notificationCount.toString(),
                                         fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
+                                        fontWeight = Bold,
                                         color = White
                                     )
                                 }
@@ -318,7 +347,7 @@ fun ServiceUserScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .padding(end = 10.dp)
-                                    .align(Alignment.CenterEnd)
+                                    .align(CenterEnd)
                             )
 
                             Spacer(
@@ -336,7 +365,7 @@ fun ServiceUserScreen(
                         text = "Services",
                         fontSize = 24.sp,
                         color = White,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = Bold,
                         modifier = Modifier.align(CenterStart)
                     )
 
@@ -379,7 +408,12 @@ fun ServiceUserScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp),
-                        placeholder = { Text("Rechercher un candidat...", color = Color(0xFF9CA3AF)) },
+                        placeholder = {
+                            Text(
+                                "Rechercher un candidat...",
+                                color = Color(0xFF9CA3AF)
+                            )
+                        },
                         leadingIcon = { Icon(Icons.Filled.Search, null, tint = Color(0xFF049344)) },
                         trailingIcon = {
                             if (searchQuery.isNotEmpty()) {
@@ -398,14 +432,108 @@ fun ServiceUserScreen(
                     if (searchQuery.isEmpty()) {
                         IconButton(
                             modifier = Modifier.align(CenterEnd),
+                            enabled = userService.itemCount > 0,
                             onClick = {
                                 isFilterOpened = true
                             }
                         ) {
-                            Icon(imageVector = Icons.Default.FilterAlt, contentDescription = "Filter")
+                            Icon(
+                                imageVector = Icons.Default.FilterAlt,
+                                contentDescription = "Filter"
+                            )
                         }
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            var maxLines by rememberSaveable { mutableIntStateOf(3) }
+            var remainsItemCount by rememberSaveable { mutableIntStateOf(0) }
+
+            val moreIndicator =
+                @Composable { scope: ContextualFlowRowOverflowScope ->
+                    remainsItemCount = scope.totalItemCount - scope.shownItemCount
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp)
+                    ) {
+                        Text(
+                            text = "+${remainsItemCount} Tout afficher",
+                            color = colorResource(id = R.color.whatsapp),
+                            modifier = Modifier.clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                maxLines += 3
+                            })
+                    }
+                }
+
+            val lessIndicator = @Composable { _: FlowRowOverflowScope ->
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp)
+                ) {
+                    Text(
+                        text = "Tout masquer",
+                        color = colorResource(id = R.color.whatsapp),
+                        modifier = Modifier.clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            maxLines = 3
+                        })
+                }
+            }
+
+            ContextualFlowRow(
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth(),
+                maxLines = maxLines,
+                overflow = ContextualFlowRowOverflow.expandOrCollapseIndicator(
+                    minRowsToShowCollapse = 3,
+                    expandIndicator = moreIndicator,
+                    collapseIndicator = lessIndicator
+                ),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                itemCount = itemState.size
+            ) {
+                if (it <= itemState.lastIndex) {
+                    val txt = itemState[it]
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                colorResource(id = R.color.whatsapp),
+                                RoundedCornerShape(20.dp)
+                            )
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+
+                            },
+                        contentAlignment = Center
+                    ) {
+                        Text(
+                            text = txt,
+                            color = White,
+                            fontWeight = Medium,
+                            fontSize = 12.sp,
+                            modifier = Modifier
+                                .padding(10.dp)
+                        )
+
+                    }
+                }
+
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -426,9 +554,18 @@ fun ServiceUserScreen(
                                 selectedItem = userItem
                                 showContact = true
                             },
+                            onRate = {
+                                selectedItem = userItem
+                                onRate = true
+                            },
                             openMenu = {
                                 selectedItem = userItem
                                 showMenu = true
+                            },
+                            onShowNotice = {
+                                selectedItem = userItem
+                                homeViewModel.getAllAvis(userItem.id ?: -1)
+                                showRate = true
                             },
                             onClick = {
                                 selectedItem = userItem
@@ -485,6 +622,40 @@ fun ServiceUserScreen(
             if (isFilterFinished) isFilterOpened = false
         }
 
+        if (itemState.isNotEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
+                elevation = CardDefaults.cardElevation(5.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = White,
+                    contentColor = White
+                )
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Center
+                ) {
+                    Button(
+                        modifier = Modifier.padding(vertical = 15.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            contentColor = Red,
+                            containerColor = Red
+                        ),
+                        onClick = {
+                            homeViewModel.clearItems()
+                        }
+                    ) {
+                        Text(
+                            text = "Supprimer tous",
+                            fontSize = 12.sp,
+                            fontWeight = Medium,
+                            color = White
+                        )
+                    }
+                }
+            }
+        }
+
         AnimatedVisibility(
             visible = isFilterOpened,
             enter = slideInVertically(
@@ -501,6 +672,7 @@ fun ServiceUserScreen(
                     listFilterSector = listFilterSector,
                     listFilterService = listFilterService,
                     onSelect = { index, sector, service ->
+
                         sector?.let {
                             listSelectedSector = listSelectedSector.mapIndexed { i, item ->
                                 if (i == index) {
@@ -542,8 +714,11 @@ fun ServiceUserScreen(
 
                         listSector?.let {
                             categoryModel.listSector = it.toMutableList()
+                            categoryModel.listService =
+                                listService?.toMutableList() ?: mutableListOf()
                         } ?: run {
-                            categoryModel.listService = listService?.toMutableList() ?: mutableListOf()
+                            categoryModel.listService =
+                                listService?.toMutableList() ?: mutableListOf()
                         }
 
                         homeViewModel.searchUserService(categoryModel)
@@ -553,6 +728,321 @@ fun ServiceUserScreen(
                         isFilterOpened = false
                     }
                 )
+            }
+        }
+    }
+
+    AnimatedVisibility(
+        visible = showRate,
+        enter = slideInVertically(
+            initialOffsetY = { it }, // Slide from below the screen
+            animationSpec = tween(durationMillis = 600) // Set animation duration
+        ),
+        exit = slideOutVertically(
+            targetOffsetY = { it }, // Slide out upwards
+            animationSpec = tween(durationMillis = 600) // Set animation duration
+        )
+    ) {
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(White)
+        ) {
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "${allAvis.itemCount} Avis",
+                    fontSize = 22.sp,
+                    fontWeight = Bold,
+                    modifier = Modifier.align(CenterStart)
+                )
+
+                IconButton(
+                    modifier = Modifier.align(CenterEnd),
+                    onClick = {
+                        showRate = false
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = ""
+                    )
+                }
+
+
+            }
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                items(allAvis.itemCount) { index ->
+                    val rate = allAvis[index] ?: Rate()
+
+                    val username = rate.candidateName
+
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF049344)),
+                                contentAlignment = Center
+                            ) {
+                                Text(
+                                    text = username.first().toString(),
+                                    color = White,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Text(
+                                text = username,
+                                fontSize = 12.sp,
+                                color = Color(0xFF6B7280)
+                            )
+
+
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(rate.note, modifier = Modifier.padding(start = 20.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(end = 10.dp, bottom = 10.dp),
+                                contentAlignment = BottomEnd
+                            ) {
+
+                                if (rate.like == LikeEnum.LIKE.name)
+                                    Text("👍", fontSize = 20.sp)
+                                else Text("👎", fontSize = 20.sp)
+                            }
+                        }
+                    }
+
+
+                }
+            }
+        }
+
+    }
+
+
+    if (onRate) {
+        ModalBottomSheet(
+            onDismissRequest = { onRate = false }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Rate",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = Bold,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                Log.i("fezjghrgnrlz", "ServiceUserScreen: $selectedItem")
+                val username = selectedItem.userServiceName ?: "TEST"
+
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    if (username.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier.align(CenterStart),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF049344)),
+                                contentAlignment = Center
+                            ) {
+                                Text(
+                                    text = username.first().toString(),
+                                    color = White,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Text(
+                                text = username,
+                                fontSize = 12.sp,
+                                color = Color(0xFF6B7280)
+                            )
+                        }
+                    }
+                }
+
+                var message by remember { mutableStateOf("") }
+                var like by remember { mutableStateOf(LikeEnum.IDLE) }
+                var rateModel by remember { mutableStateOf(Rate()) }
+
+                val savedStatus by homeViewModel.savedStatus.collectAsState()
+                LaunchedEffect(savedStatus) {
+                    if (savedStatus == "saved successfully") onRate = false
+                }
+
+                FormTextField(
+                    value = message,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 15.dp),
+                    onValueChange = {
+                        message = it
+                    },
+                    label = "",
+                    placeholder = "Description",
+                    maxLines = 5,
+                    minLines = 3
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp, horizontal = 15.dp)
+                ) {
+                    Log.i("fzkorghrgrzl", "ServiceUserScreen: $like")
+                    if (like == LikeEnum.LIKE) {
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            elevation = CardDefaults.cardElevation(5.dp),
+                            border = BorderStroke(1.dp, WhatsAppDarkGreen),
+                            colors = CardDefaults.cardColors(
+                                contentColor = White,
+                                containerColor = White
+                            )
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) {
+                                        like = LikeEnum.LIKE
+                                    },
+                                contentAlignment = Center
+                            ) {
+                                Text("👍", fontSize = 20.sp, modifier = Modifier.padding(10.dp))
+                            }
+                        }
+                    } else {
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            elevation = CardDefaults.cardElevation(5.dp),
+                            colors = CardDefaults.cardColors(
+                                contentColor = White,
+                                containerColor = White
+                            )
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) {
+                                        like = LikeEnum.LIKE
+                                    },
+                                contentAlignment = Center
+                            ) {
+                                Text("👍", fontSize = 20.sp, modifier = Modifier.padding(10.dp))
+                            }
+                        }
+                    }
+
+
+                    if (like == LikeEnum.DISLIKE) {
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            elevation = CardDefaults.cardElevation(5.dp),
+                            border = BorderStroke(1.dp, WhatsAppDarkGreen),
+                            colors = CardDefaults.cardColors(
+                                contentColor = White,
+                                containerColor = White
+                            )
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) {
+                                        like = LikeEnum.DISLIKE
+                                    },
+                                contentAlignment = Center
+                            ) {
+                                Text("👎", fontSize = 20.sp, modifier = Modifier.padding(10.dp))
+                            }
+                        }
+                    } else {
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            elevation = CardDefaults.cardElevation(5.dp),
+                            colors = CardDefaults.cardColors(
+                                contentColor = White,
+                                containerColor = White
+                            )
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) {
+                                        like = LikeEnum.DISLIKE
+                                    },
+                                contentAlignment = Center
+                            ) {
+                                Text("👎", fontSize = 20.sp, modifier = Modifier.padding(10.dp))
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp)
+                        .padding(horizontal = 10.dp),
+                    onClick = {
+                        rateModel.idCandidate = selectedItem.id ?: -1
+                        rateModel.candidateName = username
+                        rateModel.note = message
+                        rateModel.like = like.name
+                        homeViewModel.saveAvis(rateModel)
+                    }) {
+                    Text("Valider")
+                }
+
             }
         }
     }

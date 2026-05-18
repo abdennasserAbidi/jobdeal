@@ -11,13 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myjob.common.VoiceToTextParser
-import com.example.myjob.feature.validatecompany.camera.CameraScreen
-import com.example.myjob.feature.validatecompany.camera.NoPermissionScreen
-import com.example.myjob.feature.validatecompany.gallery.GalleryScreen
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.PermissionState
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
 
 @OptIn(ExperimentalPermissionsApi::class)
 @RequiresApi(Build.VERSION_CODES.R)
@@ -30,9 +24,6 @@ fun NavGraph(
     textChanged: MutableState<String>
 ) {
 
-    val cameraPermissionState: PermissionState =
-        rememberPermissionState(android.Manifest.permission.CAMERA)
-
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = Screen.LoginScreen.route) {
         composable(route = Screen.LoginScreen.route) {
@@ -41,20 +32,6 @@ fun NavGraph(
 
         composable(route = Screen.recordScreen.route) {
             //RecordScreen(navController = navController, voiceToTextParser)
-        }
-
-        composable(route = Screen.textRecognitionScreen.route) {
-            if (cameraPermissionState.status.isGranted) CameraScreen(navController = navController)
-            else NoPermissionScreen(cameraPermissionState::launchPermissionRequest)
-        }
-
-        composable(route = Screen.galleryScreen.route) {
-            GalleryScreen(
-                navController = navController,
-                selectImage = selectImage,
-                imageUri = imageUri,
-                textChanged = textChanged
-            )
         }
     }
 }

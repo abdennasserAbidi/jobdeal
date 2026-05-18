@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -101,8 +102,8 @@ private fun buildPages(): List<OnboardingPage> = listOf(
 
     // ── 1. Candidate Profile ──────────────────
     OnboardingPage(
-        stepLabel    = "Step 1 of 3  ·  For Candidates",
-        title        = "Your Professional Profile",
+        stepLabel    = stringResource(R.string.step1),
+        title        = stringResource(R.string.step1_title),
         accentWord   = "Professional",
         description  = "Build a complete profile with your skills, portfolio, and experience. Let employers find you — and match to the right roles automatically.",
         stat1Number  = "12K+",

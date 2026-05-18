@@ -10,7 +10,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -24,11 +23,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Logout
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -36,7 +33,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -50,8 +46,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Red
-import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -65,7 +59,6 @@ import com.example.myjob.common.CountrySelector
 import com.example.myjob.common.GenericSearch
 import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.NewCountry
-import com.example.myjob.feature.demands.CategoryDialogItem
 import com.example.myjob.feature.demands.FormTextFieldPhone
 import com.example.myjob.feature.demands.ServiceCategory
 import com.example.myjob.feature.navigation.Screen
@@ -104,7 +97,11 @@ fun ServiceProfileFormScreen(
 
     var selectedCategoryText by remember(user.otherCategory) { mutableStateOf(user.otherCategory) }
     var showCategoryDialog by remember { mutableStateOf(false) }
-    var userServiceName by remember(user.userServiceName) { mutableStateOf(user.userServiceName ?: "") }
+    var userServiceName by remember(user.userServiceName) {
+        mutableStateOf(
+            user.userServiceName ?: ""
+        )
+    }
     var email by remember(user.email) { mutableStateOf(user.email ?: "") }
     var activitySector by remember(user.category) {
         mutableStateOf(user.category)
@@ -146,7 +143,15 @@ fun ServiceProfileFormScreen(
         if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
             profileViewModel.getUserById()
             profileViewModel.mapperPersonalInfo(user)
-            //profileViewModel.mapperToListNames(list)
+            profileViewModel.getUserToken()
+        }
+    }
+
+    val fcmToken by profileViewModel.fcmToken.collectAsState()
+    LaunchedEffect(fcmToken) {
+        Log.i("fkzfjrkjgrgrzgkrz", "ServiceProfileFormScreen: $fcmToken")
+        if (fcmToken.isEmpty()) {
+            profileViewModel.updateToken()
         }
     }
 
@@ -610,7 +615,7 @@ fun ServiceProfileFormScreen(
                 animationSpec = tween(durationMillis = 600) // Set animation duration
             )
         ) {
-            FreelanceSectorSelectionScreen (
+            FreelanceSectorSelectionScreen(
                 onSelectSector = { service ->
                     selectedFreelanceSector = service
                     profileViewModel.changeFreelanceSector(

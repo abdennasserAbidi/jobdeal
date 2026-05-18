@@ -1187,11 +1187,14 @@ fun FreelanceFilterSectorScreen(
                 ) {
                     Button(
                         onClick = {
-                            if (selectedIndex == 0) {
+
+                            onSelectListSector(listFilterSector, listFilterService)
+
+                            /*if (selectedIndex == 0) {
                                 onSelectListSector(listFilterSector, null)
                             } else {
                                 onSelectListSector(null, listFilterService)
-                            }
+                            }*/
 
                             dismiss()
                         },

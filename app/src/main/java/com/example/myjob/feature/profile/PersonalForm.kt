@@ -182,7 +182,7 @@ fun PersonalForm(
                             }
                         }
                         .clip(shape = RoundedCornerShape(30.dp)),
-                    colors = TextFieldDefaults.textFieldColors(
+                    colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
@@ -241,7 +241,7 @@ fun PersonalForm(
                             }
                         }
                         .clip(shape = RoundedCornerShape(30.dp)),
-                    colors = TextFieldDefaults.textFieldColors(
+                    colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     ),

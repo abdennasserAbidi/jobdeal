@@ -773,7 +773,6 @@ fun CandidateListScreen(
                         navController.navigate(Screen.LoginScreen.route)
                     } else if (filter.name == JobType.GET.name) {
                         homeViewModel.offerDemand()
-                        Log.i("frzgkrzhgrz", "demandText: $demandText")
 
                         navController.navigate(Screen.DemandServiceScreen.route)
                     }

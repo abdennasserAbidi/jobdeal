@@ -81,7 +81,7 @@ fun SendInvitationScreen(
                         shape = RoundedCornerShape(30.dp)
                     )
                     .clip(shape = RoundedCornerShape(30.dp)),
-                colors = TextFieldDefaults.textFieldColors(
+                colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 ),
@@ -118,7 +118,7 @@ fun SendInvitationScreen(
                         shape = RoundedCornerShape(30.dp)
                     )
                     .clip(shape = RoundedCornerShape(30.dp)),
-                colors = TextFieldDefaults.textFieldColors(
+                colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 ),
@@ -155,7 +155,7 @@ fun SendInvitationScreen(
                         shape = RoundedCornerShape(30.dp)
                     )
                     .clip(shape = RoundedCornerShape(30.dp)),
-                colors = TextFieldDefaults.textFieldColors(
+                colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 ),
@@ -193,7 +193,7 @@ fun SendInvitationScreen(
                         shape = RoundedCornerShape(30.dp)
                     )
                     .clip(shape = RoundedCornerShape(30.dp)),
-                colors = TextFieldDefaults.textFieldColors(
+                colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 ),
@@ -231,7 +231,7 @@ fun SendInvitationScreen(
                         shape = RoundedCornerShape(30.dp)
                     )
                     .clip(shape = RoundedCornerShape(30.dp)),
-                colors = TextFieldDefaults.textFieldColors(
+                colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 ),

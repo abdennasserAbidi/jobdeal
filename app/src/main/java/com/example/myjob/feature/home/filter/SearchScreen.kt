@@ -198,8 +198,8 @@ fun SearchScreen(
                     ) {
                         TextField(
                             value = query,
-                            colors = TextFieldDefaults.textFieldColors(
-                                containerColor = colorResource(id = R.color.lighter_gray),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = colorResource(id = R.color.lighter_gray),
                                 focusedLabelColor = colorResource(id = R.color.whatsapp),
                                 disabledTextColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent,

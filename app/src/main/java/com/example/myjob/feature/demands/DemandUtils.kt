@@ -1,5 +1,6 @@
 package com.example.myjob.feature.demands
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -66,6 +67,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -584,9 +586,11 @@ fun FormTextFieldAddress(
                 maxLines = maxLines
             )
 
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 5.dp)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 5.dp)
+            ) {
                 Text(
                     color = Color(0xFF049344),
                     text = "Ajouter une adresse",
@@ -727,9 +731,11 @@ fun FormTextFieldPhone(
                 maxLines = maxLines
             )
 
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 5.dp)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 5.dp)
+            ) {
                 Text(
                     color = Color(0xFF049344),
                     text = "Ajouter un numéro de téléphone",
@@ -1054,9 +1060,11 @@ fun DemandCard(
 fun UserServiceCard(
     user: User,
     isNotMe: Boolean,
-    showContacts: () -> Unit,
-    openMenu: () -> Unit,
-    onClick: () -> Unit
+    showContacts: () -> Unit = {},
+    onRate: () -> Unit = {},
+    onShowNotice: () -> Unit = {},
+    openMenu: () -> Unit = {},
+    onClick: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -1119,6 +1127,18 @@ fun UserServiceCard(
                 }
 
                 //StatusBadge(status = demand.status)
+                if(user.percentageRate != 0.0) {
+                    Text(
+                        text = "${user.percentageRate.toInt()}% 👍",
+                        modifier = Modifier.clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            onShowNotice()
+                        }
+                    )
+                }
+
                 if (!isNotMe) {
                     IconButton(
                         onClick = {
@@ -1196,6 +1216,7 @@ fun UserServiceCard(
                                 fontWeight = FontWeight.Bold
                             )
                         }
+
                         Text(
                             text = username ?: "",
                             fontSize = 12.sp,
@@ -1203,32 +1224,52 @@ fun UserServiceCard(
                         )
                     }
 
-                    OutlinedButton(
-                        onClick = {
-                            showContacts()
-                        },
+                    Row(
                         modifier = Modifier.align(CenterEnd),
-                        shape = RoundedCornerShape(12.dp),
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
-                            width = 2.dp,
-                            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFF049344))
-                        ),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color(0xFF049344)
-                        )
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Message,
-                            contentDescription = null,
-                            modifier = Modifier.size(13.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Contacter",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold
+                            text = "Evoluer",
+                            color = colorResource(R.color.whatsapp),
+                            fontWeight = Bold,
+                            modifier = Modifier.clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+                                onRate()
+                            }
                         )
+
+                        Spacer(Modifier.width(10.dp))
+
+                        OutlinedButton(
+                            onClick = {
+                                showContacts()
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            border = ButtonDefaults.outlinedButtonBorder.copy(
+                                width = 2.dp,
+                                brush = androidx.compose.ui.graphics.SolidColor(Color(0xFF049344))
+                            ),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color(0xFF049344)
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Message,
+                                contentDescription = null,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Contacter",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
+
+
                 }
             }
         }

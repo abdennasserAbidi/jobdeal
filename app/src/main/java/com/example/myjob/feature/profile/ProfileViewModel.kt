@@ -38,6 +38,7 @@ import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.json.CompanyModel
 import com.example.myjob.domain.entities.json.GenericJsonModel
 import com.example.myjob.domain.entities.json.InstituteModel
+import com.example.myjob.domain.entities.notification.NotificationMessage
 import com.example.myjob.domain.usecase.home.json.GetAllCompaniesUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.domain.usecase.home.json.SaveCompanyUseCase
@@ -47,6 +48,8 @@ import com.example.myjob.domain.usecase.home.json.GetAllActivitiesUseCase
 import com.example.myjob.domain.usecase.home.json.GetAllFieldsUseCase
 import com.example.myjob.domain.usecase.home.json.GetAllInstitutesUseCase
 import com.example.myjob.domain.usecase.home.json.SaveInstituteUseCase
+import com.example.myjob.domain.usecase.notification.SendNotificationsUseCase
+import com.example.myjob.domain.usecase.notification.UpdateTokenUseCase
 import com.example.myjob.domain.usecase.profile.GetAllEducUseCase
 import com.example.myjob.domain.usecase.profile.GetAllEducationUseCase
 import com.example.myjob.domain.usecase.profile.GetAllExpUseCase
@@ -66,6 +69,8 @@ import com.example.myjob.domain.usecase.verification.GetVerifiedInstitutesUseCas
 import com.example.myjob.feature.demands.ServiceCategory
 import com.example.myjob.feature.profile.test.LanguageForm
 import com.example.myjob.local.database.SharedPreference
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.ktx.messaging
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -79,6 +84,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -111,7 +117,9 @@ class ProfileViewModel @Inject constructor(
     private val getAllInstitutesUseCase: GetAllInstitutesUseCase,
     private val saveInstituteUseCase: SaveInstituteUseCase,
     private val getAllActivitiesUseCase: GetAllActivitiesUseCase,
-    private val getAllFieldsUseCase: GetAllFieldsUseCase
+    private val getAllFieldsUseCase: GetAllFieldsUseCase,
+    private val updateTokenUseCase: UpdateTokenUseCase,
+    private val sendNotificationsUseCase: SendNotificationsUseCase
 ) : ViewModel() {
 
     ///////////////////////////////////////////////////////////////////////////
@@ -193,6 +201,58 @@ class ProfileViewModel @Inject constructor(
         user.update {
             if (it.listNum?.contains(name) == false) it.listNum.add(name)
             it
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // NOTIFICATION
+    ///////////////////////////////////////////////////////////////////////////
+
+    val invitationSent = MutableStateFlow("")
+    val idUserTo = MutableStateFlow(-1)
+    val fcmToken = MutableStateFlow("")
+
+    fun updateToken() {
+        if (fcmToken.value.isEmpty()) {
+            viewModelScope.launch {
+                val localToken = Firebase.messaging.token.await()
+                val email = GlobalEntries.user.id ?: -1
+                val pair = Pair(email, localToken)
+                updateTokenUseCase.execute(pair).collectLatest {
+
+                }
+            }
+        }
+    }
+
+    fun getUserToken(id: Int? = sharedPreference.getInt("idUser", -1)) {
+        viewModelScope.launch {
+            getUserUseCase.execute(id).collect {
+                it.data?.let { u ->
+                    Log.i("fcmTokenfreg", "id: $id")
+                    Log.i("fcmTokenfreg", "getUserToken: ${u.fcmToken}")
+                    fcmToken.update { u.fcmToken ?: "" }
+                }
+            }
+        }
+    }
+
+    fun clearToken() {
+        fcmToken.update { "" }
+    }
+
+    fun sendNotification(title: String, message: String) {
+        viewModelScope.launch {
+
+            val notificationMessage = NotificationMessage(
+                recipientToken = fcmToken.value,
+                title = title,
+                body = message,
+                data = mapOf("idInvitation" to "85")
+            )
+            sendNotificationsUseCase.execute(notificationMessage).collect {
+
+            }
         }
     }
 

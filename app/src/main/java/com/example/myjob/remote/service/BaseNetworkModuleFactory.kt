@@ -3,6 +3,7 @@ package com.example.myjob.remote.service
 //import TestFlavor.url
 import com.example.myjob.common.network.ApiResultCallAdapterFactory
 import com.example.myjob.local.database.SharedPreference
+import com.google.gson.GsonBuilder
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -61,7 +62,12 @@ open class BaseNetworkModuleFactory {
         //.baseUrl("https://jobseeker-vy9q.onrender.com/")
         .baseUrl("http://10.0.2.2:9090/")
         .client(okHttpClient)
-        .addConverterFactory(GsonConverterFactory.create())
+        .addConverterFactory(GsonConverterFactory.create(
+            GsonBuilder()
+                .serializeSpecialFloatingPointValues() // Allows NaN and Infinities
+                .setLenient()                          // Optional: makes the parser more tolerant
+                .create()
+        ))
         .addCallAdapterFactory(ApiResultCallAdapterFactory()) // Add your custom adapter factory
         .callbackExecutor(Executors.newSingleThreadExecutor())
         .build()

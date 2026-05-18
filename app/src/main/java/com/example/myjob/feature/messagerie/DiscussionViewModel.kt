@@ -153,6 +153,12 @@ class DiscussionViewModel @Inject constructor(
 
         viewModelScope.launch {
             StompChatService.messages.collect { msg ->
+                messages.map {
+                    if (it.userConnectedId == msg.userConnectedId
+                        && it.userReceivedId == msg.userReceivedId
+                        && it.content == msg.content
+                    ) return@collect
+                }
                 messages = messages + msg
                 val list = _listMessages.value.toMutableList()
                 list.add(msg)
@@ -179,7 +185,7 @@ class DiscussionViewModel @Inject constructor(
         viewModelScope.launch {
             val idFrom = sharedPreference.getInt("idUser", -1)
             val idTo = otherUserId
-            val params = Triple(idFrom, idTo,  multipartBody)
+            val params = Triple(idFrom, idTo, multipartBody)
 
             uploadFileUseCase.execute(params).collect { res ->
                 when (res.status) {
@@ -219,7 +225,7 @@ class DiscussionViewModel @Inject constructor(
         viewModelScope.launch {
             val idFrom = sharedPreference.getInt("idUser", -1)
             val idTo = otherUserId
-            val params = Triple(idFrom, idTo,  listImages)
+            val params = Triple(idFrom, idTo, listImages)
 
             uploadFileDirectUseCase.execute(params).collect { res ->
                 when (res.status) {

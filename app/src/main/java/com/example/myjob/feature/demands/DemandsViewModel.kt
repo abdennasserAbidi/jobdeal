@@ -1,5 +1,6 @@
 package com.example.myjob.feature.demands
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -15,6 +16,7 @@ import com.example.myjob.common.GlobalEntries.marketDemand
 import com.example.myjob.domain.entities.JobType
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.demands.MarketDemandModel
+import com.example.myjob.domain.entities.notification.NotificationMessage
 import com.example.myjob.domain.usecase.demand.CountDownTrialUseCase
 import com.example.myjob.domain.usecase.demand.DeleteDemandUseCase
 import com.example.myjob.domain.usecase.demand.GetAllDemandUseCase
@@ -23,7 +25,11 @@ import com.example.myjob.domain.usecase.demand.GetFilteredDemandUseCase
 import com.example.myjob.domain.usecase.demand.SaveDemandUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.domain.usecase.notification.SeenNotificationUseCase
+import com.example.myjob.domain.usecase.notification.SendNotificationsUseCase
+import com.example.myjob.domain.usecase.notification.UpdateTokenUseCase
 import com.example.myjob.local.database.SharedPreference
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.ktx.messaging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,6 +38,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -47,12 +54,66 @@ class DemandsViewModel @Inject constructor(
     private val getDemandUseCase: GetDemandUseCase,
     private val getFilteredDemandUseCase: GetFilteredDemandUseCase,
     private val countDownTrialUseCase: CountDownTrialUseCase,
-    private val deleteDemandUseCase: DeleteDemandUseCase
+    private val deleteDemandUseCase: DeleteDemandUseCase,
+    private val updateTokenUseCase: UpdateTokenUseCase,
+    private val sendNotificationsUseCase: SendNotificationsUseCase
 ) : ViewModel() {
 
     init {
         connect()
         getNotificationCount()
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // NOTIFICATION
+    ///////////////////////////////////////////////////////////////////////////
+
+    val invitationSent = MutableStateFlow("")
+    val idUserTo = MutableStateFlow(-1)
+    val fcmToken = MutableStateFlow("")
+
+    fun updateToken() {
+        if (fcmToken.value.isEmpty()) {
+            viewModelScope.launch {
+                val localToken = Firebase.messaging.token.await()
+                val email = GlobalEntries.user.id ?: -1
+                val pair = Pair(email, localToken)
+                updateTokenUseCase.execute(pair).collectLatest {
+
+                }
+            }
+        }
+    }
+
+    fun getUserToken(id: Int? = sharedPreference.getInt("idUser", -1)) {
+        viewModelScope.launch {
+            getUserUseCase.execute(id).collect {
+                it.data?.let { u ->
+                    Log.i("fcmTokenfreg", "id: $id")
+                    Log.i("fcmTokenfreg", "getUserToken: ${u.fcmToken}")
+                    fcmToken.update { u.fcmToken ?: "" }
+                }
+            }
+        }
+    }
+
+    fun clearToken() {
+        fcmToken.update { "" }
+    }
+
+    fun sendNotification(title: String, message: String) {
+        viewModelScope.launch {
+
+            val notificationMessage = NotificationMessage(
+                recipientToken = fcmToken.value,
+                title = title,
+                body = message,
+                data = mapOf("idInvitation" to "85")
+            )
+            sendNotificationsUseCase.execute(notificationMessage).collect {
+
+            }
+        }
     }
 
     fun connect() {

@@ -136,10 +136,14 @@ class SettingViewModel @Inject constructor(
     val language = MutableStateFlow(sharedPreferences.getString("lang", "English"))
     val user = MutableStateFlow(GlobalEntries.user)
 
+    val saveCompanyInfoState = MutableStateFlow("")
+
     fun saveCompanyInfo() {
         viewModelScope.launch {
-            saveCompanyInfoUseCase.execute(user.value).collect {
-                Log.i("ffjlebfjkefbe", "saveCompanyInfo: ${it.data}")
+            saveCompanyInfoUseCase.execute(user.value).collect { res ->
+                saveCompanyInfoState.update {
+                    res.data?.message ?: ""
+                }
             }
         }
     }

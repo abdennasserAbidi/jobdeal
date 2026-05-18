@@ -1,11 +1,13 @@
 package com.example.myjob.feature.invitation.company
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -119,7 +121,7 @@ fun InvitationCompanyScreen(
 
                     if (item.idInvitation == invitation.invitationModel.idInvitation)
                         item = invitation.invitationModel
-
+                    if (index == 0) Spacer(modifier = Modifier.height(12.dp))
                     CompanyInvitationCard(
                         invitationModel = item,
                         onClick = {
@@ -131,6 +133,7 @@ fun InvitationCompanyScreen(
                             userForCompany.id = it.idTo
                             userForCompany.fullName = it.fullName
                             isFromDemand = false
+                            Log.i("jfeakgeagae", "InvitationCompanyScreen: ${it.roleReceiver}")
                             val route = if (it.roleReceiver == "Candidat" || it.roleReceiver == "Candidate") Screen.DetailScreen.route
                             else Screen.DetailCompanyScreen.route
                             navController.navigate(route)
@@ -142,6 +145,8 @@ fun InvitationCompanyScreen(
                             invitationViewModel.deleteInvitation(it)
                         }
                     )
+
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
 
                 invitations.apply {

@@ -7,15 +7,14 @@ plugins {
     id ("com.google.gms.google-services")
 }
 
-
 android {
     namespace = "com.example.myjob"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.myjob"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -48,7 +47,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.10"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
     packaging {
         resources {
@@ -83,12 +82,12 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.48.1")
     kapt("com.google.dagger:hilt-android-compiler:2.48.1")
     // retrofit
-    implementation ("com.squareup.okhttp3:okhttp:4.9.0")
-    implementation ("com.squareup.okhttp3:okhttp-urlconnection:4.9.0")
-    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.0")
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("com.squareup.retrofit2:adapter-rxjava2:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.0")
+    implementation("com.squareup.okhttp3:okhttp-urlconnection:4.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.retrofit2:adapter-rxjava2:2.9.0")
 
     // GSON
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
@@ -103,29 +102,29 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
 
     // KotlinX Serialization
-    implementation ("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0")
-    implementation ("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
-    implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
 
     // Room
-    implementation ("androidx.room:room-runtime:2.6.1")
-    kapt ("androidx.room:room-compiler:2.6.1")
-    implementation ("androidx.room:room-ktx:2.6.1")
+    implementation("androidx.room:room-runtime:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
 
     // Preferences DataStore
-    implementation ("androidx.datastore:datastore-preferences:1.0.0")
-    implementation ("androidx.datastore:datastore-preferences-core:1.0.0")
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.datastore:datastore-preferences-core:1.0.0")
     // Proto DataStore
-    implementation  ("androidx.datastore:datastore-core:1.0.0")
+    implementation("androidx.datastore:datastore-core:1.0.0")
 
     //compose
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.compose.material3:material3-window-size-class:1.2.0")
     // optional - Jetpack Compose integration
     implementation("androidx.paging:paging-compose:3.3.0-alpha04")
-    implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
-    implementation ("androidx.compose.material:material:1.6.7")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+    implementation("androidx.compose.material:material:1.6.7")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.compose.foundation:foundation:1.7.8")
 
     implementation("io.coil-kt:coil-compose:2.7.0")
@@ -138,54 +137,30 @@ dependencies {
     /*implementation("com.google.maps.android:maps-compose:4.3.3")*/
 
     // exoplayer
-    implementation ("com.google.android.exoplayer:exoplayer:2.18.0")
-    implementation ("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
+    implementation("com.google.android.exoplayer:exoplayer:2.18.0")
+    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
 
     //gmail
-    implementation ("com.google.firebase:firebase-auth-ktx:21.1.0")
-    implementation ("com.google.android.gms:play-services-auth:20.4.1")
-    implementation ("org.greenrobot:eventbus:3.1.1")
+    implementation("com.google.firebase:firebase-auth-ktx:21.1.0")
+    implementation("com.google.android.gms:play-services-auth:20.4.1")
+    implementation("org.greenrobot:eventbus:3.1.1")
     //notification
     //implementation (platform("com.google.firebase:firebase-bom:33.14.0"))
-    implementation ("com.google.firebase:firebase-messaging:23.4.1")
-
-    //// CAMERA STUFF ////
-    implementation ("androidx.camera:camera-camera2:1.3.0-beta02")
-    implementation ("androidx.camera:camera-lifecycle:1.3.0-beta02")
-    implementation ("androidx.camera:camera-view:1.3.0-beta02")
-    implementation ("androidx.camera:camera-extensions:1.3.0-beta02")
+    implementation("com.google.firebase:firebase-messaging:23.4.1")
 
     //// ACCOMPANIST ////
-    implementation ("com.google.accompanist:accompanist-permissions:0.31.6-rc")
+    implementation("com.google.accompanist:accompanist-permissions:0.31.6-rc")
     //coil
     implementation("io.coil-kt:coil-compose:1.3.1")
 
-    //mlkit text recognition
-    implementation ("com.google.android.gms:play-services-mlkit-text-recognition:18.0.2")
-
     //lottie
-    implementation( "com.airbnb.android:lottie-compose:5.2.0")
-
-    //pager
-    implementation ("com.google.accompanist:accompanist-pager:0.12.0")
-
-    implementation ("androidx.appcompat:appcompat:1.7.0-alpha01")
-
-    implementation("me.onebone:toolbar-compose:2.3.5")
-
-    implementation ("androidx.paging:paging-runtime:3.2.0-alpha06")
-    implementation ("androidx.paging:paging-compose:1.0.0-alpha20")
+    implementation("com.airbnb.android:lottie-compose:5.2.0")
 
     implementation ("androidx.work:work-runtime-ktx:2.8.0")
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0") // Retrofit
-    implementation ("com.squareup.okhttp3:okhttp:4.10.0") // OkHttp for ResponseBody
-
     implementation ("io.socket:socket.io-client:2.0.0") {
         exclude(group = "org.json", module = "json")
     }
-
     implementation ("com.github.NaikSoftware:StompProtocolAndroid:1.6.6")
-
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22") // Match your Kotlin version
-
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.24") // Match your Kotlin version
 }
+

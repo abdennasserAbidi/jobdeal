@@ -2,6 +2,8 @@ package com.example.myjob.di
 
 import com.example.myjob.data.announcement.AnnouncementRepository
 import com.example.myjob.data.announcement.AnnouncementRepositoryImp
+import com.example.myjob.data.avis.RateRepository
+import com.example.myjob.data.avis.RateRepositoryImp
 import com.example.myjob.data.chat.ChatRepository
 import com.example.myjob.data.chat.ChatRepositoryImp
 import com.example.myjob.data.demand.DemandRepository
@@ -24,6 +26,8 @@ import com.example.myjob.remote.demands.DemandsDataSource
 import com.example.myjob.remote.demands.DemandsDataSourceImp
 import com.example.myjob.remote.source.announcement.AnnouncementDataSource
 import com.example.myjob.remote.source.announcement.AnnouncementDataSourceImp
+import com.example.myjob.remote.source.avis.RateDataSource
+import com.example.myjob.remote.source.avis.RateDataSourceImp
 import com.example.myjob.remote.source.chat.ChatDataSource
 import com.example.myjob.remote.source.chat.ChatDataSourceImp
 import com.example.myjob.remote.source.home.HomeDataSource
@@ -124,5 +128,15 @@ abstract class RepositoryModule {
     @Binds
     @ViewModelScoped
     abstract fun provideDemandRepository(repository: DemandRepositoryImp): DemandRepository
+
+    ///////////////////////////////////////////////////////////////////////////
+    // AVIS
+    ///////////////////////////////////////////////////////////////////////////
+    @Binds
+    abstract fun provideAvisDataSource(remoteDataSourceImp: RateDataSourceImp): RateDataSource
+
+    @Binds
+    @ViewModelScoped
+    abstract fun provideAvisRepository(repository: RateRepositoryImp): RateRepository
 
 }
