@@ -132,6 +132,7 @@ import kotlinx.coroutines.launch
 import java.net.URISyntaxException
 import javax.inject.Inject
 import androidx.core.net.toUri
+import com.example.myjob.common.EdgeToEdgeUtil.applyEdgeToEdgeInsets
 import com.example.myjob.feature.demands.DemandMarketDetailScreen
 import com.example.myjob.feature.demands.ServiceUserScreen
 import com.example.myjob.feature.notification.DemandNotificationScreen
@@ -294,6 +295,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         requestNotificationPermission()
         enableEdgeToEdge()
+        applyEdgeToEdgeInsets(this, ContextCompat.getDrawable(this, android.R.color.transparent))
         fetchData()
 
         lifecycleScope.launch(Dispatchers.IO) {

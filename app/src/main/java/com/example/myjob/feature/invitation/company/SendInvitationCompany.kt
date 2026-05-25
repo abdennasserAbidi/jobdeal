@@ -1,6 +1,5 @@
 package com.example.myjob.feature.invitation.company
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -10,18 +9,60 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Message
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Subject
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Work
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -29,6 +70,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myjob.R
@@ -43,7 +85,6 @@ import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.feature.home.HomeViewModel
 import com.example.myjob.ui.theme.WhatsAppGreenSurface
 import com.example.myjob.ui.theme.WhatsAppLightGreen
-import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,7 +136,8 @@ fun SendInvitationCompany(
         if (invitationSent == "saved successfully") {
             showSuccessDialog = true
             //navController.popBackStack()
-        } else if (invitationSent.isNotEmpty()) Toast.makeText(context, "error", Toast.LENGTH_SHORT).show()
+        } else if (invitationSent.isNotEmpty()) Toast.makeText(context, "error", Toast.LENGTH_SHORT)
+            .show()
     }
 
     var contractWorkOpen by remember { mutableStateOf(false) }
@@ -124,7 +166,38 @@ fun SendInvitationCompany(
                 .fillMaxSize()
         ) {
             // Top App Bar
-            TopAppBar(
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = colorResource(id = R.color.whatsapp)
+                    )
+                    .padding(horizontal = 20.dp, vertical = 24.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    modifier = Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        navController.popBackStack()
+                    },
+                    tint = White,
+                    contentDescription = "Back"
+                )
+
+                Spacer(modifier = Modifier.width(20.dp))
+
+                Text(
+                    text = stringResource(id = R.string.send_invitation_text),
+                    fontSize = 24.sp,
+                    color = White,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            /*TopAppBar(
                 title = {
                     Text(
                         text = stringResource(id = R.string.send_invitation_text),
@@ -140,10 +213,10 @@ fun SendInvitationCompany(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = colorResource(id = R.color.whatsapp),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    titleContentColor = White,
+                    navigationIconContentColor = White
                 )
-            )
+            )*/
 
             Column(
                 modifier = Modifier
@@ -221,7 +294,12 @@ fun SendInvitationCompany(
                             isLoading = true
                             homeViewModel.clearToken()
                             homeViewModel.getUserToken(user.id ?: -1)
-                            homeViewModel.matchCurrentProfile(user, statusInvitation, paymentTerms, duration)
+                            homeViewModel.matchCurrentProfile(
+                                user,
+                                statusInvitation,
+                                paymentTerms,
+                                duration
+                            )
                         }
                     },
                     modifier = Modifier
@@ -314,7 +392,8 @@ fun SendInvitationCompany(
         if (isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center)
+                contentAlignment = Alignment.Center
+            )
             {
 
                 androidx.compose.material.Card(
@@ -389,7 +468,8 @@ fun CandidateInfoCard(candidate: User) {
                         ) {
 
                             Text(
-                                text = candidate.fullName?.trimStart()?.split(" ")?.map { it.first() }
+                                text = candidate.fullName?.trimStart()?.split(" ")
+                                    ?.map { it.first() }
                                     ?.joinToString("") ?: "",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
@@ -444,7 +524,8 @@ fun CandidateInfoCard(candidate: User) {
                             ) {
 
                                 Text(
-                                    text = candidate.companyName?.trimStart()?.split(" ")?.map { it.first() }
+                                    text = candidate.companyName?.trimStart()?.split(" ")
+                                        ?.map { it.first() }
                                         ?.joinToString("") ?: "",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
@@ -592,7 +673,8 @@ fun InvitationFormSection(
                     fontWeight = FontWeight.SemiBold
                 )
 
-                val isContract = (user.preferredWorkType?.contains("Contrat") ?: false) || (user.preferredWorkType?.contains("Contract") ?: false)
+                val isContract = (user.preferredWorkType?.contains("Contrat")
+                    ?: false) || (user.preferredWorkType?.contains("Contract") ?: false)
                 val isFreelance = user.preferredWorkType?.contains("Freelance") ?: false
                 val isBoth = isContract && isFreelance
 
@@ -809,8 +891,7 @@ fun InvitationFormSection(
                         }
                     }
 
-                }
-                else if (isContract) {
+                } else if (isContract) {
 
                     ExposedDropdownMenuBox(
                         modifier = Modifier
@@ -902,8 +983,7 @@ fun InvitationFormSection(
                         )
                     }
 
-                }
-                else {
+                } else {
                     homeViewModel.changeTypeContract(stringResource(id = R.string.type2_text))
                     OutlinedTextField(
                         value = duration,

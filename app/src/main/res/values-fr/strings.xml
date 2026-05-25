@@ -413,6 +413,9 @@
     <string name="error_dialog_text">Erreur</string>
     <string name="success_dialog_text">Succès</string>
 
+    <string name="feedback_text">Give us your feedback</string>
+    <string name="rate_text">Evaluer</string>
+
     <string name="invitation_send_info_text">Invitation envoyée!</string>
     <string name="done_info_text">OK</string>
     <string name="invitation_desc_info_text">Votre invitation à l\'entretien a bien été envoyée à %1$s. Cette personne recevra un email contenant tous les détails..</string>

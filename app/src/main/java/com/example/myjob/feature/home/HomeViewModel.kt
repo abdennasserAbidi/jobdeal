@@ -193,12 +193,43 @@ class HomeViewModel @Inject constructor(
     private val _savedStatus: MutableStateFlow<String> = MutableStateFlow("")
     val savedStatus: MutableStateFlow<String> get() = _savedStatus
 
+    private val _savedPercent: MutableStateFlow<Int> = MutableStateFlow(-1)
+    val savedPercent: MutableStateFlow<Int> get() = _savedPercent
+
+    private val _candidateId: MutableStateFlow<Int> = MutableStateFlow(-1)
+    val candidateId: MutableStateFlow<Int> get() = _candidateId
+
+    fun onClearAvis() {
+        _savedStatus.update { "" }
+    }
+
+    fun getUsername(): String {
+        val role = GlobalEntries.user.role
+        return when (role) {
+            "Candidat", "Candidate" -> GlobalEntries.user.fullName ?: ""
+            "Services" -> GlobalEntries.user.userServiceName ?: ""
+            else -> GlobalEntries.user.companyName ?: ""
+        }
+    }
+
     fun saveAvis(rate: Rate) {
         viewModelScope.launch {
             rate.idUserDemand = sharedPreference.getInt("idUser", 0)
-            rate.userDemandName = GlobalEntries.user.userServiceName ?: ""
+
+            val role = GlobalEntries.user.role
+            val name = when (role) {
+                "Candidat", "Candidate" -> GlobalEntries.user.fullName ?: ""
+                "Services" -> GlobalEntries.user.userServiceName ?: ""
+                else -> GlobalEntries.user.companyName ?: ""
+            }
+
+            rate.userDemandName = name
             saveAvisUseCase.execute(rate).collect { res ->
-                _savedStatus.update { res.data ?: "" }
+                _savedStatus.update { res.data?.message ?: "" }
+                if (res.data?.message == "saved successfully") {
+                    _savedPercent.update { res.data.percent?.toInt() ?: 0 }
+                    _candidateId.update { res.data.candidateId ?: 0 }
+                }
             }
         }
     }
@@ -944,6 +975,7 @@ class HomeViewModel @Inject constructor(
 
     fun clearItems() {
         itemState.update { emptyList() }
+        getAllUserService()
     }
 
     fun searchUserService(categoryModel: CategoryModel) {

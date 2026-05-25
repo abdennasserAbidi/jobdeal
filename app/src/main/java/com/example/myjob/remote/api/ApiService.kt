@@ -28,6 +28,7 @@ import com.example.myjob.domain.response.AnnounceResponse
 import com.example.myjob.domain.response.FileExistingResponse
 import com.example.myjob.domain.response.FilesResponse
 import com.example.myjob.domain.response.LoginResponse
+import com.example.myjob.domain.response.RatePercentageResponse
 import com.example.myjob.domain.response.UploadResponse
 import com.example.myjob.domain.response.UserAuthResponse
 import com.example.myjob.domain.response.UserResponse
@@ -58,7 +59,7 @@ ApiService {
     // AVIS
     ///////////////////////////////////////////////////////////////////////////
     @POST("auth/saveAvis")
-    suspend fun saveAvis(@Body avis: Rate): UserResponse
+    suspend fun saveAvis(@Body avis: Rate): RatePercentageResponse
 
     @GET("auth/getCandidateAvis")
     suspend fun getCandidateAvis(

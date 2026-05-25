@@ -44,6 +44,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -148,7 +149,7 @@ fun SignUpScreen(
     var activatedCheckUsername by remember { mutableStateOf(false) }
     var textErrorUsername by remember { mutableStateOf("") }
 
-    var selectedIndex by remember { mutableStateOf(0) }
+    var selectedIndex by remember { mutableIntStateOf(0) }
 
     var activatedCheckCompanyName by remember { mutableStateOf(false) }
     var activatedCheckEmail by remember { mutableStateOf(false) }
@@ -1049,7 +1050,7 @@ fun RoleSection(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            var selected by remember { mutableStateOf(0) }
+            var selected by remember { mutableIntStateOf(0) }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),

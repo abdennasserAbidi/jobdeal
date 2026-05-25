@@ -49,6 +49,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -122,7 +123,7 @@ fun TypeDemandSection(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            var selected by remember { mutableStateOf(selectedIndex) }
+            var selected by remember { mutableIntStateOf(selectedIndex) }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -153,7 +154,7 @@ fun TypeDemandSection(
                         Text(
                             text = lang,
                             fontSize = 14.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            fontWeight = if (isSelected) Bold else FontWeight.Medium,
                             color = if (isSelected)
                                 Color(0xFFF3F4F6)
                             else
@@ -1059,6 +1060,8 @@ fun DemandCard(
 @Composable
 fun UserServiceCard(
     user: User,
+    candidateId: Int,
+    savedPercent: Int,
     isNotMe: Boolean,
     showContacts: () -> Unit = {},
     onRate: () -> Unit = {},
@@ -1127,7 +1130,19 @@ fun UserServiceCard(
                 }
 
                 //StatusBadge(status = demand.status)
-                if(user.percentageRate != 0.0) {
+                Log.i("percentageRate", "savedPercent: $savedPercent")
+
+                if (savedPercent != -1 && candidateId == user.id) {
+                    Text(
+                        text = "$savedPercent% 👍",
+                        modifier = Modifier.clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            onShowNotice()
+                        }
+                    )
+                } else if (user.percentageRate != 0.0) {
                     Text(
                         text = "${user.percentageRate.toInt()}% 👍",
                         modifier = Modifier.clickable(
@@ -1229,7 +1244,7 @@ fun UserServiceCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Evoluer",
+                            text = stringResource(R.string.rate_text),
                             color = colorResource(R.color.whatsapp),
                             fontWeight = Bold,
                             modifier = Modifier.clickable(

@@ -425,6 +425,8 @@
     <string name="video_explanation_text">Record a video introduction</string>
     <string name="technical_skills_text">Technical Skills</string>
 
+    <string name="feedback_text">Donner votre avis</string>
+    <string name="rate_text">Rate</string>
 
     <string name="error_dialog_text">Error</string>
     <string name="success_dialog_text">Success</string>

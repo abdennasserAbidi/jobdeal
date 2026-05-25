@@ -8,6 +8,7 @@ import com.example.myjob.base.GenericSource
 import com.example.myjob.base.reources.Resource
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.Rate
+import com.example.myjob.domain.response.RatePercentageResponse
 import com.example.myjob.local.database.SharedPreference
 import com.example.myjob.remote.source.avis.RateDataSource
 import com.google.gson.Gson
@@ -24,10 +25,10 @@ class RateRepositoryImp @Inject constructor(
     private val remoteDataSource: RateDataSource,
     private val sharedPreference: SharedPreference
 ) : RateRepository {
-    override suspend fun saveAvis(rate: Rate): Flow<Resource<String>> = flow {
+    override suspend fun saveAvis(rate: Rate): Flow<Resource<RatePercentageResponse>> = flow {
         try {
             val data = remoteDataSource.saveAvis(rate)
-            emit(Resource(ResourceState.SUCCESS, data.message ?: "", null))
+            emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {
             emit(Resource(ResourceState.SUCCESS, null, ex.message))
         }
