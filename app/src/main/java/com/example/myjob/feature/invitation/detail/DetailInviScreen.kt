@@ -1,55 +1,15 @@
 package com.example.myjob.feature.invitation.detail
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Icon
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Work
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.example.myjob.R
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.feature.navigation.Screen
@@ -74,250 +34,49 @@ fun DetailInviScreen(
     val userCompany = invitationModel.userCompany
     val userCandidate = invitationModel.userCandidate
 
+    // Status Card
+    val statusInvitations by invitationDetailViewModel.statusInvitations.collectAsState()
+    val item = invitation.status ?: ""
+    val statusCandidate = if (item != InvitationStatus.ON_HOLD.name)
+        item else statusInvitations
+
     LaunchedEffect(deletedStatus) {
         if (deletedStatus == "removed successfully") {
             navController.popBackStack()
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+    InvitationDetailsScreen(
+        status = statusCandidate,
+        viewProfile = {
+            GlobalEntries.userForCompany = it
+            GlobalEntries.isFromDemand = false
+            val route = if (it.role == "Candidat" || it.role == "Candidate") Screen.DetailScreen.route
+            else Screen.DetailCompanyScreen.route
+            navController.navigate(route)
+        },
+        onAcceptInvitation = {
+            it.status = InvitationStatus.IN_PROCESS.name
+            invitationDetailViewModel.acceptRejectInvitation(it)
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(color = colorResource(id = R.color.whatsapp)),
-            contentAlignment = Alignment.Center
-        ) {
+            invitationDetailViewModel.clearToken()
+            invitationDetailViewModel.getUserToken(it.idCompany)
+            //acceptRejectInvitation = "accept"
+        },
+        onRejectInvitation = {
+            it.status = InvitationStatus.NOT_INTERESTED.name
+            invitationDetailViewModel.acceptRejectInvitation(it)
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 15.dp, horizontal = 15.dp)
-            ) {
+            invitationDetailViewModel.clearToken()
+            invitationDetailViewModel.getUserToken(it.idCompany)
+            //acceptRejectInvitation = "refuse"
+        },
+        onTerminateInvitation = {
 
-                IconButton(
-                    onClick = {
-                        if (GlobalEntries.isFromNotification) {
-                            navController.popBackStack(Screen.HomeScreen.route, false)
-                            GlobalEntries.isFromNotification = false
-                        } else navController.popBackStack()
-                    },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .align(Alignment.CenterStart)
-                        .background(Color.White.copy(alpha = 0.2f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-
-                Text(
-                    text = stringResource(id = R.string.invitations_text),
-                    modifier = Modifier.align(Alignment.Center),
-                    color = Color.White,
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        fontFamily = FontFamily.Default,
-                        fontWeight = FontWeight.Medium
-                    )
-                )
-            }
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(top = 10.dp)
-        ) {
-
-            Box {
-                // Status Card
-                val statusInvitations by invitationDetailViewModel.statusInvitations.collectAsState()
-                val item = invitation.status ?: ""
-                val statusCandidate = if (item != InvitationStatus.ON_HOLD.name)
-                    item else statusInvitations
-
-                InvitationStatusCard(
-                    status = statusCandidate,
-                    sentDate = invitation.date ?: "",
-                    responseDate = invitation.dateEnd,
-                    invitationModel = invitation,
-                    userCandidate = userCandidate,
-                    userCompany = userCompany,
-                    viewProfile = {
-                        GlobalEntries.userForCompany = it
-                        GlobalEntries.isFromDemand = false
-                        val route = if (it.role == "Candidat" || it.role == "Candidate") Screen.DetailScreen.route
-                        else Screen.DetailCompanyScreen.route
-                        navController.navigate(route)
-                    },
-                    onAcceptInvitation = {
-                        it.status = InvitationStatus.IN_PROCESS.name
-                        invitationDetailViewModel.acceptRejectInvitation(it)
-
-                        invitationDetailViewModel.clearToken()
-                        invitationDetailViewModel.getUserToken(it.idCompany)
-                        //acceptRejectInvitation = "accept"
-                    },
-                    onRejectInvitation = {
-                        it.status = InvitationStatus.NOT_INTERESTED.name
-                        invitationDetailViewModel.acceptRejectInvitation(it)
-
-                        invitationDetailViewModel.clearToken()
-                        invitationDetailViewModel.getUserToken(it.idCompany)
-                        //acceptRejectInvitation = "refuse"
-                    },
-                    onTerminateInvitation = {
-                    }
-                )
-            }
-
-            if (GlobalEntries.role == "Candidat" || GlobalEntries.role == "Candidate") {
-                val name = userCompany.companyName ?: "Test Test"
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 20.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    elevation = CardDefaults.cardElevation(8.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.company_information_text),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // Initials Avatar
-                            Surface(
-                                modifier = Modifier.size(40.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                color = WhatsAppGreen
-                            ) {
-                                val nickname = name.trim().ifEmpty { "Test Test" }.split(" ")
-                                    .map { it.first() }.joinToString("")
-                                Box(
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = nickname,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.width(16.dp))
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = name,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-
-                                userCompany.companyActivitySector?.let {
-                                    if (it.isNotEmpty()) {
-                                        Text(
-                                            text = it,
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(8.dp))
-                            }
-                        }
-
-                        // Info chips
-                        Row(
-                            modifier = Modifier.padding(top = 10.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            userCompany.email?.let {
-                                if (it.isNotEmpty()) {
-                                    InfoChip(
-                                        icon = Icons.Default.Business,
-                                        text = it
-                                    )
-                                }
-                            }
-
-                            userCompany.country?.let {
-                                if (it.isNotEmpty()) {
-                                    InfoChip(
-                                        icon = Icons.Default.Work,
-                                        text = it
-                                    )
-                                }
-                            }
-
-                            Column {
-                                InfoChip(
-                                    icon = Icons.Default.LocationOn,
-                                    text = userCompany.addressList?.joinToString { "\n" }?:""
-                                )
-
-                            }
-
-                            Column {
-                                InfoChip(
-                                    icon = Icons.Default.Phone,
-                                    text = userCompany.phoneList?.joinToString { "\n" }?:""
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Invitation Content Card
-            Box(modifier = Modifier.padding(top = 15.dp)) {
-                InvitationContentCard(
-                    invitationModel = invitation,
-                    status = invitation.status ?: "",
-                    subject = invitation.message,
-                    message = invitation.description,
-                    onUpdate = {
-                        GlobalEntries.candidateUser = userCandidate
-                        navController.navigate(Screen.SendInvitationScreen.route)
-                    }
-                )
-            }
-
-            // Notes Card (if available)
-            invitation.reason?.let { notes ->
-                if (notes.isNotEmpty()) {
-                    Box(modifier = Modifier.padding(top = 15.dp)) {
-                        NotesCard(notes = notes)
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-    }
-
+        },
+        invitation = invitation,
+        onBack = { navController.popBackStack() },
+        onAccept = {},
+        onReject = {},
+    )
 }

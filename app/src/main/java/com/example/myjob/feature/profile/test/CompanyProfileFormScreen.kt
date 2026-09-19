@@ -4,11 +4,13 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -34,8 +36,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.CenterEnd
+import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -125,6 +129,38 @@ fun CompanyProfileFormScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             if (isFirstTime) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = colorResource(id = R.color.whatsapp)
+                        )
+                        .padding(horizontal = 20.dp, vertical = 24.dp)
+                ) {
+
+                    Row(modifier = Modifier.align(CenterStart)) {
+
+                    }
+
+                    /*if () {
+                        Icon(
+                            Icons.Default.Logout,
+                            modifier = Modifier
+                                .clickable() {
+                                    profileViewModel.logout()
+                                    clearData()
+                                    navController.navigate(Screen.LoginScreen.route)
+                                },
+                            tint = White,
+                            contentDescription = "Logout"
+                        )
+                    } else {
+
+                    }*/
+
+                }
+
+
                 TopAppBar(
                     title = {
                         Text(
@@ -203,7 +239,9 @@ fun CompanyProfileFormScreen(
                                 profileViewModel.changeCompanyName(it)
                             },
                             label = stringResource(id = R.string.company_name_text),
-                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp),
                             isRequired = false
                         )
 
@@ -219,7 +257,9 @@ fun CompanyProfileFormScreen(
                                 isActivityShowed = true
                             },
                             label = stringResource(id = R.string.activity_text),
-                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp),
                             isRequired = false
                         )
                     }
@@ -233,7 +273,9 @@ fun CompanyProfileFormScreen(
                                 profileViewModel.changeCompanyDescription(it)
                             },
                             label = "Description",
-                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp),
                             isRequired = false
                         )
                     }
@@ -269,7 +311,9 @@ fun CompanyProfileFormScreen(
                             )
 
                             if (index == listPhones.lastIndex) {
-                                Box(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                                Box(modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 5.dp)) {
                                     Text(
                                         text = "Ajouter un numéro de téléphone",
                                         color = colorResource(R.color.whatsapp),
@@ -294,8 +338,10 @@ fun CompanyProfileFormScreen(
                             onClick = {
                                 profileViewModel.changeVisibilityCountry(true)
                             },
-                            label = "Address",
-                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                            label = stringResource(R.string.country_text),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp),
                             isRequired = false,
                             onValueChange = {},
                             readOnly = true
@@ -313,7 +359,9 @@ fun CompanyProfileFormScreen(
                                     }
                                 },
                                 label = "Address",
-                                modifier = Modifier.fillMaxWidth().padding(top = pad),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = pad),
                                 isRequired = false
                             )
 

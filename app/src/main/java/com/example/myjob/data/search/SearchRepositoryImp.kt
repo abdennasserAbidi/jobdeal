@@ -10,6 +10,7 @@ import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.domain.entities.CategoryModel
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.SearchHistory
+import com.example.myjob.domain.entities.TrialModel
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.local.database.SharedPreference
@@ -70,10 +71,22 @@ class SearchRepositoryImp @Inject constructor(
         emit(Resource(ResourceState.ERROR, null, ex.message))
     }
 
-    override suspend fun countDownTrial(idUser: Int): Flow<Resource<UserResponse>> = flow {
+    override suspend fun countDownTrial(trialModel: TrialModel): Flow<Resource<UserResponse>> = flow {
         try {
             // Get data from RemoteDataSource
-            val data = remoteDataSource.countDownTrialUser(idUser)
+            val data = remoteDataSource.countDownTrialUser(trialModel)
+            // Emit data
+            emit(Resource(ResourceState.SUCCESS, data, null))
+        } catch (ex: Exception) {
+            // Emit error
+            emit(Resource(ResourceState.ERROR, null, ex.message))
+        }
+    }
+
+    override suspend fun getContactTrial(idUserCalling: Int, phoneService: String): Flow<Resource<TrialModel>> = flow {
+        try {
+            // Get data from RemoteDataSource
+            val data = remoteDataSource.getContactTrial(idUserCalling, phoneService)
             // Emit data
             emit(Resource(ResourceState.SUCCESS, data, null))
         } catch (ex: Exception) {

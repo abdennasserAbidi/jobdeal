@@ -511,7 +511,7 @@ fun CandidatePostScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Il n'y a pas de publications",
+                        text = "Aucune publications",
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp,
                         color = colorResource(id = R.color.whatsapp)

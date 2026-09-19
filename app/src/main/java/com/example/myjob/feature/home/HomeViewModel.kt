@@ -13,6 +13,7 @@ import com.example.myjob.base.messages.StompInvitationService
 import com.example.myjob.base.messages.StompNotificationService
 import com.example.myjob.base.reources.ResourceState
 import com.example.myjob.common.GlobalEntries
+import com.example.myjob.common.GlobalEntries.lastPhoneService
 import com.example.myjob.common.GlobalEntries.listIdToRemove
 import com.example.myjob.domain.entities.Availabilities
 import com.example.myjob.domain.entities.CategoryChoices
@@ -29,6 +30,7 @@ import com.example.myjob.domain.entities.Rate
 import com.example.myjob.domain.entities.SexChoices
 import com.example.myjob.domain.entities.SituationChoices
 import com.example.myjob.domain.entities.StatusChoices
+import com.example.myjob.domain.entities.TrialModel
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationParams
@@ -42,6 +44,7 @@ import com.example.myjob.domain.usecase.avis.SaveAvisUseCase
 import com.example.myjob.domain.usecase.home.CountDownTrialUserUseCase
 import com.example.myjob.domain.usecase.home.GetAllUserServiceUseCase
 import com.example.myjob.domain.usecase.home.GetAllUserUseCase
+import com.example.myjob.domain.usecase.home.GetContactTrialUseCase
 import com.example.myjob.domain.usecase.home.GetFilteredUserServiceUseCase
 import com.example.myjob.domain.usecase.home.GetUserUseCase
 import com.example.myjob.domain.usecase.home.SaveToFavoriteUseCase
@@ -87,6 +90,7 @@ class HomeViewModel @Inject constructor(
     private val getFilteredUserUseCase: GetFilteredUserUseCase,
     private val finishProcessUseCase: FinishProcessUseCase,
     private val countDownTrialUserUseCase: CountDownTrialUserUseCase,
+    private val getContactTrialUseCase: GetContactTrialUseCase,
     private val searchUserServiceUseCase: SearchUserServiceUseCase,
     private val getAllCompaniesUseCase: GetAllCompaniesUseCase,
     private val getAllInstitutesUseCase: GetAllInstitutesUseCase,
@@ -294,8 +298,9 @@ class HomeViewModel @Inject constructor(
         if (fcmToken.value.isEmpty()) {
             viewModelScope.launch {
                 val localToken = Firebase.messaging.token.await()
-                val email = GlobalEntries.user.id ?: -1
-                val pair = Pair(email, localToken)
+                val id = GlobalEntries.user.id ?: -1
+                val pair = Pair(id, localToken)
+                Log.i("localToken", "updateToken: $localToken")
                 updateTokenUseCase.execute(pair).collectLatest {
 
                 }
@@ -955,10 +960,26 @@ class HomeViewModel @Inject constructor(
         } else getAllUserService()
     }
 
-    fun countDownTrial() {
+    fun countDownTrial(trialModel: TrialModel) {
         viewModelScope.launch {
-            countDownTrialUserUseCase.execute(sharedPreference.getInt("idUser", 0)).collect {
+            trialModel.idUserCall = sharedPreference.getInt("idUser", 0)
+            countDownTrialUserUseCase.execute(trialModel).collect {
 
+            }
+        }
+    }
+
+    private val _trialContact = MutableStateFlow(TrialModel())
+    val trialContact: StateFlow<TrialModel> get() = _trialContact
+
+    fun getContactsTrial() {
+        viewModelScope.launch {
+            val idUserCalling = sharedPreference.getInt("idUser", 0)
+            val params = Pair(idUserCalling, lastPhoneService)
+            getContactTrialUseCase.execute(params).collect { res ->
+                Log.i("fglrzklghlzr", "getContactsTrial: ${res.status}")
+                Log.i("fglrzklghlzr", "getContactsTrial: ${res.data}")
+                _trialContact.update { res.data ?: TrialModel() }
             }
         }
     }

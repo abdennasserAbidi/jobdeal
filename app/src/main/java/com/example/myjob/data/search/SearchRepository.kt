@@ -5,6 +5,7 @@ import com.example.myjob.base.reources.Resource
 import com.example.myjob.domain.entities.CategoryModel
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.SearchHistory
+import com.example.myjob.domain.entities.TrialModel
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.UserResponse
 import kotlinx.coroutines.flow.Flow
@@ -23,6 +24,7 @@ interface SearchRepository {
     ): Flow<Resource<UserResponse>>
 
     suspend fun getAllSearch(id: Int): Flow<Resource<PagingData<SearchHistory>>>
-    suspend fun countDownTrial(idUser: Int): Flow<Resource<UserResponse>>
+    suspend fun countDownTrial(trialModel: TrialModel): Flow<Resource<UserResponse>>
+    suspend fun getContactTrial(idUserCalling: Int, phoneService: String): Flow<Resource<TrialModel>>
     suspend fun getUserFiltered(word: String, id: Int): Flow<Resource<PagingData<User>>>
 }

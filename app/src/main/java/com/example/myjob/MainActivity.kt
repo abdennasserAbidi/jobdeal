@@ -1,5 +1,6 @@
 package com.example.myjob
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -7,25 +8,35 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.CallLog
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresExtension
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.InsertInvitation
 import androidx.compose.material.icons.filled.LocalPostOffice
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.PersonAddAlt
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.InsertInvitation
 import androidx.compose.material.icons.outlined.LocalPostOffice
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.PersonAdd
+import androidx.compose.material.icons.outlined.PersonAddAlt
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -133,11 +144,18 @@ import java.net.URISyntaxException
 import javax.inject.Inject
 import androidx.core.net.toUri
 import com.example.myjob.common.EdgeToEdgeUtil.applyEdgeToEdgeInsets
+import com.example.myjob.domain.entities.TrialModel
+import com.example.myjob.domain.entities.User
 import com.example.myjob.feature.demands.DemandMarketDetailScreen
 import com.example.myjob.feature.demands.ServiceUserScreen
 import com.example.myjob.feature.notification.DemandNotificationScreen
 import com.example.myjob.feature.onboarding.OnboardingScreen
 import com.example.myjob.feature.profile.test.ServiceProfileFormScreen
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -149,6 +167,8 @@ class MainActivity : ComponentActivity() {
     //TODO("handling chat with files and images")
     //TODO("validation account review")
     //TODO("add images to posts")
+    //TODO("remplir disponibilité")
+    //TODO("l contacter")
 
     var mSocket: Socket? = null
 
@@ -376,8 +396,8 @@ class MainActivity : ComponentActivity() {
             val alertsTab = TabBarItem(
                 title = stringResource(id = R.string.item2),
                 tag = "company_invitation_screen",
-                selectedIcon = Icons.Filled.InsertInvitation,
-                unselectedIcon = Icons.Outlined.InsertInvitation
+                selectedIcon = Icons.Filled.PersonAdd,
+                unselectedIcon = Icons.Outlined.PersonAdd
             )
 
             val settingsTab = TabBarItem(
@@ -399,6 +419,7 @@ class MainActivity : ComponentActivity() {
             Scaffold(bottomBar = {
 
                 AnimatedVisibility(
+                    modifier = Modifier.navigationBarsPadding(),
                     visible = isVisibleNav,
                     enter = slideInVertically(initialOffsetY = { it }),
                     exit = slideOutVertically(targetOffsetY = { it })
@@ -419,6 +440,7 @@ class MainActivity : ComponentActivity() {
                 isVisibleNav = role == "Company" || role == "Entreprise"
 
                 NavHost(
+                    modifier = Modifier.navigationBarsPadding(),
                     navController = navController as NavHostController,
                     startDestination = startRoute
                 ) {
@@ -829,7 +851,6 @@ class MainActivity : ComponentActivity() {
                         MarketDemandScreen(
                             navController = navController,
                             makeCall = { phone ->
-                                makePhoneCall(context, phone)
                             },
                             clearData = {
                                 selectedTabIndex = 0
@@ -842,8 +863,7 @@ class MainActivity : ComponentActivity() {
 
                         ServiceUserScreen(
                             navController = navController,
-                            makeCall = { phone ->
-                                makePhoneCall(context, phone)
+                            makeCall = { user, phone ->
                             },
                             clearData = {
                                 selectedTabIndex = 0
@@ -891,13 +911,127 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    fun makePhoneCall(context: Context, phoneNumber: String) {
+    fun fetchCallLogs(
+        selectedUser: User,
+        phones: List<String>,
+        countDown: (TrialModel) -> Unit = {}
+    ) {
+        val projection = arrayOf(
+            CallLog.Calls.NUMBER,
+            CallLog.Calls.TYPE,
+            CallLog.Calls.DATE,
+            CallLog.Calls.DURATION
+        )
 
+        var isFound = false
+
+        // Sort by latest entries first
+        val sortOrder = "${CallLog.Calls.DATE} DESC"
+
+        val cursor = contentResolver.query(
+            CallLog.Calls.CONTENT_URI,
+            projection,
+            null,
+            null,
+            sortOrder
+        )
+
+        cursor?.use {
+            val numberIndex = it.getColumnIndex(CallLog.Calls.NUMBER)
+            val typeIndex = it.getColumnIndex(CallLog.Calls.TYPE)
+            val dateIndex = it.getColumnIndex(CallLog.Calls.DATE)
+            val durationIndex = it.getColumnIndex(CallLog.Calls.DURATION)
+            while (it.moveToNext() && !isFound) {
+                val phNumber = it.getString(numberIndex)
+                val callType = it.getString(typeIndex)
+                val callDate = it.getString(dateIndex)
+                val callDuration = it.getString(durationIndex)
+
+                val dir = when (callType.toInt()) {
+                    CallLog.Calls.INCOMING_TYPE -> "INCOMING"
+                    CallLog.Calls.OUTGOING_TYPE -> "OUTGOING"
+                    CallLog.Calls.MISSED_TYPE -> "MISSED"
+                    else -> "UNKNOWN"
+                }
+
+                if (GlobalEntries.user.role != "Services") {
+                    if (phNumber in phones && callType.toInt() == CallLog.Calls.OUTGOING_TYPE) {
+                        if (callDuration.toInt() > 0) {
+                            countDown(
+                                TrialModel(
+                                    id = 0,
+                                    idUserCalled = selectedUser.id ?: 0,
+                                    phoneNumberUserCalled = phNumber,
+                                    duration = "$callDuration sec",
+                                    date = ""
+                                )
+                            )
+                        }
+                        isFound = true
+                    }
+                } else {
+                    val phone = GlobalEntries.user.phoneList
+
+                }
+
+                if (callType.toInt() == CallLog.Calls.INCOMING_TYPE) {
+                    Log.i("jgrngjrjglkz", "callDuration: $callDuration")
+                    Log.i("jgrngjrjglkz", "callType: ${callType.toInt()}")
+
+                    if (callDuration.toInt() > 0) {
+                        Log.i("jgrngjrjglkz", "fetchCallLogs: $callDuration")
+                        //countDown()
+                    }
+                    isFound = true
+                }
+                Log.d(
+                    "CallLogDetails",
+                    "Number: $phNumber, Type: $dir, Date: ${Date(callDate.toLong())}, Duration: $callDuration sec"
+                )
+            }
+        }
+    }
+
+    fun verifyCallLogEntry(targetNumber: String, appTimestamp: Long): Boolean {
+        val projection = arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DATE, CallLog.Calls.TYPE)
+
+        // Query logs from the last 2 minutes around our application redirect timestamp
+        val timeLimit = appTimestamp - 60000 // 1 minute before app click buffer
+        val selection = "${CallLog.Calls.DATE} > ? AND ${CallLog.Calls.TYPE} = ?"
+        val selectionArgs = arrayOf(timeLimit.toString(), CallLog.Calls.OUTGOING_TYPE.toString())
+
+        val cursor = contentResolver.query(
+            CallLog.Calls.CONTENT_URI,
+            projection,
+            selection,
+            selectionArgs,
+            "${CallLog.Calls.DATE} DESC"
+        )
+
+        cursor?.use { c ->
+            val numberIndex = c.getColumnIndex(CallLog.Calls.NUMBER)
+            while (c.moveToNext()) {
+                val logNumber = c.getString(numberIndex)
+                // Normalize numbers (strip spaces, dashes, or country codes if necessary)
+                if (logNumber.replace("\\s+".toRegex(), "").contains(targetNumber.replace("\\s+".toRegex(), ""))) {
+                    return true // A real call match found in system logs!
+                }
+            }
+        }
+        return false
+    }
+
+
+
+    fun makePhoneCall(context: Context, phoneNumber: String) {
+        GlobalEntries.lastPhoneService = phoneNumber
         val u = ("tel:$phoneNumber").toUri()
         val i = Intent(Intent.ACTION_DIAL, u)
         try {
             context.startActivity(i)
-        } catch (s: SecurityException) {
+        } catch (exception: SecurityException) {
+            Log.i("fjkjzgkrlzjglr", "exception: ${exception.message}")
+
             Toast.makeText(context, "An error occurred", Toast.LENGTH_LONG)
                 .show()
         }
@@ -912,7 +1046,7 @@ class MainActivity : ComponentActivity() {
 
     val onNewMessage = Emitter.Listener {
         runOnUiThread {
-            val message = it.get(0) as String
+            val message = it[0] as String
             Log.d("Socket.IO", "New message from server: $message")
             // Update UI with the received message
         }

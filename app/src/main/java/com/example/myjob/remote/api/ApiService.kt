@@ -11,6 +11,7 @@ import com.example.myjob.domain.entities.InvitationFilter
 import com.example.myjob.domain.entities.ProfessionalStatus
 import com.example.myjob.domain.entities.Rate
 import com.example.myjob.domain.entities.SearchHistory
+import com.example.myjob.domain.entities.TrialModel
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.announcement.AnnouncementModel
 import com.example.myjob.domain.entities.announcement.CommentsPost
@@ -213,7 +214,13 @@ ApiService {
     ): GenericResponse<User>
 
     @POST("auth/countDownTrialUser")
-    suspend fun countDownTrialUser(@Query("idUser") idUser: Int): UserResponse
+    suspend fun countDownTrialUser(@Body trialModel: TrialModel): UserResponse
+
+    @POST("auth/getContactTrial")
+    suspend fun getContactTrial(
+        @Query("idUserCalling") idUserCalling: Int,
+        @Query("phoneService") phoneService: String
+    ): TrialModel
 
     @POST("auth/addEducation")
     suspend fun saveEducation(@Body educations: Educations): UserResponse

@@ -13,7 +13,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -77,11 +76,8 @@ import com.example.myjob.R
 import com.example.myjob.common.CustomDialog
 import com.example.myjob.common.GlobalEntries.emailGoogleAccount
 import com.example.myjob.common.hideKeyboard
-import com.example.myjob.feature.demands.NewFormTextField
 import com.example.myjob.feature.login.gmail.GoogleAuthUiClient
 import com.example.myjob.feature.navigation.Screen
-import com.example.myjob.feature.profile.test.FormTextField
-import com.example.myjob.feature.signup.AddPassword
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -178,7 +174,7 @@ fun LoginScreen(
         } else if (verificationText.isNotEmpty()) {
             addPassword = true
             showDialog = true
-            errorLogin = "Il n'y a pas de compte associé a cet email"
+            errorLogin = "Aucun compte associé a cet email"
         }
     }
 

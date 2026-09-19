@@ -4,6 +4,7 @@ import com.example.myjob.base.GenericResponse
 import com.example.myjob.domain.entities.CategoryModel
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.SearchHistory
+import com.example.myjob.domain.entities.TrialModel
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.UserResponse
 
@@ -19,8 +20,8 @@ interface SearchDataSource {
         categoryModel: CategoryModel,
         pageNumber: Int
     ): GenericResponse<User>
-    suspend fun countDownTrialUser(idUser: Int): UserResponse
-
+    suspend fun countDownTrialUser(trialModel: TrialModel): UserResponse
+    suspend fun getContactTrial(idUserCalling: Int, phoneService: String): TrialModel
     suspend fun getAllSearch(id: Int, pageNumber: Int): GenericResponse<SearchHistory>
 
     suspend fun saveSearchHistory(idUserConnected: Int, searchHistory: SearchHistory): UserResponse

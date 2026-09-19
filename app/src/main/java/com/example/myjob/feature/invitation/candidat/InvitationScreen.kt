@@ -1,42 +1,20 @@
 package com.example.myjob.feature.invitation.candidat
 
 //noinspection UsingMaterialAndMaterial3Libraries
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
@@ -49,42 +27,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.myjob.R
-import com.example.myjob.base.MyApp
-import com.example.myjob.base.StateApp
-import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GlobalEntries
 import com.example.myjob.common.GlobalEntries.countInvitationPending
 import com.example.myjob.common.GlobalEntries.seenInvitation
-import com.example.myjob.common.LoadingNextPageItem
-import com.example.myjob.common.PageLoader
 import com.example.myjob.common.rememberLifecycleEvent
-import com.example.myjob.common.view.InvitationCard
 import com.example.myjob.domain.entities.FilterType
-import com.example.myjob.domain.entities.invitation.InvitationModel
 import com.example.myjob.domain.entities.invitation.InvitationStatus
 import com.example.myjob.feature.navigation.Screen
-import com.example.myjob.ui.theme.WhatsAppDarkGreen
-import com.example.myjob.ui.theme.WhatsAppLightGreen
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
@@ -143,213 +103,39 @@ fun InvitationScreen(
             GlobalEntries.isRefreshing.update { false }
         }
     }
+    val statusInvitations by invitationViewModel.statusInvitations.collectAsState()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .pullRefresh(pullRefreshState)
-    ) {
+    InvitationsPreviewTheme {
+        InvitationsListScreen(
+            invitations = invitations,
+            onBack = {
+                navController.popBackStack()
+            },
+            onInvitationClick = { item ->
+                GlobalEntries.idInvitation = item
+                navController.navigate(Screen.NormalDetailInvitationScreen.route)
 
-        Column(modifier = Modifier.fillMaxWidth()) {
+            },
+            onAccept = { item ->
+                item.status = InvitationStatus.IN_PROCESS.name
+                invitationViewModel.acceptRejectInvitation(item)
+                invitationViewModel.clearToken()
+                invitationViewModel.getUserToken(item.idCompany)
+                acceptRejectInvitation = "accept"
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(color = colorResource(id = R.color.whatsapp))
-                    .padding(horizontal = 20.dp, vertical = 24.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+            },
+            onReject = { item ->
+                item.status = InvitationStatus.NOT_INTERESTED.name
+                invitationViewModel.acceptRejectInvitation(item)
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        IconButton(
-                            onClick = {
-                                navController.popBackStack()
-                            },
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.2f))
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Back",
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
-                        Text(
-                            text = stringResource(id = R.string.invitations_text),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
+                invitationViewModel.clearToken()
+                invitationViewModel.getUserToken(item.idCompany)
+                acceptRejectInvitation = "refuse"
             }
-
-            // Filter Row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                val invitationFound = stringResource(id = R.string.invitation_found_text)
-                Text(
-                    text = "${invitations.itemCount} $invitationFound",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                FilterChip(
-                    onClick = { showFilterSheet = true },
-                    label = {
-                        Text(
-                            text = when (selectedFilter) {
-                                FilterType.ALL -> stringResource(id = R.string.all_user_text)
-                                FilterType.INTERVIEWING -> stringResource(id = R.string.interviewing_text)
-                                FilterType.HIRED -> stringResource(id = R.string.hired_text)
-                                FilterType.NOT_INTERESTED -> stringResource(id = R.string.not_interested_text)
-                                FilterType.ON_HOLD -> stringResource(id = R.string.on_hold_text)
-                                FilterType.REJECTED -> stringResource(id = R.string.Rejected)
-                            }
-                        )
-                    },
-                    selected = false,
-                    trailingIcon = {
-                        Icon(
-                            Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Filter",
-                            modifier = Modifier.size(18.dp)
-                        )
-                    },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = WhatsAppLightGreen,
-                        selectedLabelColor = WhatsAppDarkGreen
-                    )
-                )
-            }
-
-            val statusInvitations by invitationViewModel.statusInvitations.collectAsState()
-
-            if (invitations.itemCount > 0) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 20.dp)
-                ) {
-
-                    items(invitations.itemCount) { index ->
-                        val item = invitations[index] ?: InvitationModel()
-                        val statusCandidate = if (item.status != InvitationStatus.ON_HOLD.name)
-                            item.status else statusInvitations
-
-                        InvitationCard(
-                            statusInvitations = statusCandidate ?: "",
-                            invitationModel = item,
-                            onClick = {
-                                GlobalEntries.idInvitation = item.idInvitation
-                                navController.navigate(Screen.NormalDetailInvitationScreen.route)
-                            },
-                            onDeleteInvitation = {
-                                invitationViewModel.deleteInvitation(it)
-                            },
-                            onAcceptInvitation = {
-                                item.status = InvitationStatus.IN_PROCESS.name
-                                invitationViewModel.acceptRejectInvitation(item)
-
-                                invitationViewModel.clearToken()
-                                invitationViewModel.getUserToken(item.idCompany)
-                                acceptRejectInvitation = "accept"
-                            },
-                            onRejectInvitation = {
-                                item.status = InvitationStatus.NOT_INTERESTED.name
-                                invitationViewModel.acceptRejectInvitation(item)
-
-                                invitationViewModel.clearToken()
-                                invitationViewModel.getUserToken(item.idCompany)
-                                acceptRejectInvitation = "refuse"
-                            }
-                        )
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                    }
-
-                    invitations.apply {
-                        when {
-                            loadState.refresh is LoadState.Loading -> {
-                                item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
-                            }
-
-                            loadState.refresh is LoadState.Error -> {
-                                val error = invitations.loadState.refresh as LoadState.Error
-                                item {
-                                    ErrorMessage(
-                                        modifier = Modifier.fillParentMaxSize(),
-                                        message = error.error.localizedMessage ?: "",
-                                        onClickRetry = { retry() })
-                                }
-                            }
-
-                            loadState.append is LoadState.Loading -> {
-                                item { LoadingNextPageItem(modifier = Modifier) }
-                            }
-
-                            loadState.append is LoadState.Error -> {
-                                val error = invitations.loadState.append as LoadState.Error
-                                item {
-                                    ErrorMessage(
-                                        modifier = Modifier,
-                                        message = error.error.localizedMessage!!,
-                                        onClickRetry = { retry() })
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Text(
-                        text = "There is no data",
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-            }
-        }
-
-        PullRefreshIndicator(
-            refreshing = refreshing,
-            state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter)
         )
     }
 
-    // Filter Bottom Sheet
-    if (showFilterSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showFilterSheet = false }
-        ) {
-            FilterBottomSheet(
-                selectedFilter = selectedFilter,
-                onFilterSelected = { filter, name ->
-                    selectedFilter = filter
-                    invitationViewModel.changeTypeStatus(name)
-                    showFilterSheet = false
-                }
-            )
-        }
-    }
+
 }
 
 @Composable

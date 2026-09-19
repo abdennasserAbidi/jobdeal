@@ -5,18 +5,17 @@ import com.example.myjob.base.usecase.FlowBaseUseCase
 import com.example.myjob.data.search.SearchRepository
 import com.example.myjob.domain.entities.TrialModel
 import com.example.myjob.domain.qualifiers.IoDispatcher
-import com.example.myjob.domain.response.UserResponse
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class CountDownTrialUserUseCase @Inject constructor(
+class GetContactTrialUseCase @Inject constructor(
     private val repository: SearchRepository,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
-) : FlowBaseUseCase<UserResponse, TrialModel>() {
+) : FlowBaseUseCase<TrialModel, Pair<Int, String>>() {
 
-    override suspend fun buildRequest(params: TrialModel?): Flow<Resource<UserResponse>> {
-        return repository.countDownTrial(params ?: TrialModel()).flowOn(dispatcher)
+    override suspend fun buildRequest(params: Pair<Int, String>?): Flow<Resource<TrialModel>> {
+        return repository.getContactTrial(params?.first ?: 0, params?.second ?: "").flowOn(dispatcher)
     }
 }

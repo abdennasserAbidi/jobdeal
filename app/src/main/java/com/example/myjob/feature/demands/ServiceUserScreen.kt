@@ -3,9 +3,14 @@ package com.example.myjob.feature.demands
 import FreelanceFilterSectorScreen
 import FreelanceSector
 import FreelanceService
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -94,11 +99,15 @@ import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.font.FontWeight.Companion.Medium
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.example.myjob.MainActivity
 import com.example.myjob.R
 import com.example.myjob.common.ErrorMessage
 import com.example.myjob.common.GlobalEntries
@@ -111,6 +120,7 @@ import com.example.myjob.common.rememberLifecycleEvent
 import com.example.myjob.domain.entities.CategoryModel
 import com.example.myjob.domain.entities.JobType
 import com.example.myjob.domain.entities.Rate
+import com.example.myjob.domain.entities.TrialModel
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.entities.announcement.PostType
 import com.example.myjob.domain.usecase.avis.LikeEnum
@@ -121,6 +131,12 @@ import com.example.myjob.feature.profile.test.FormTextField
 import com.example.myjob.ui.theme.WhatsAppDarkGreen
 import getAllFreelanceSectors
 import getAllFreelanceServices
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @SuppressLint("MutableCollectionMutableState")
 @OptIn(
@@ -130,7 +146,7 @@ import getAllFreelanceServices
 @Composable
 fun ServiceUserScreen(
     navController: NavController,
-    makeCall: (String) -> Unit = {},
+    makeCall: (User, String) -> Unit = { user, phone ->},
     clearData: () -> Unit = {},
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -207,6 +223,80 @@ fun ServiceUserScreen(
         }
     }
 
+    val activity = context.findActivity()
+
+    val trialContact by homeViewModel.trialContact.collectAsState()
+    Log.i("wasCallPlaced", "trialContact: $trialContact")
+    val pendingNumber = trialContact.phoneNumberUserCalled
+    val pendingTime = trialContact.timestamp
+
+    val requestCallLogPermissionLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { granted ->
+            if (granted) {
+                if (activity is MainActivity) {
+                    val wasCallPlaced = activity.verifyCallLogEntry(pendingNumber, pendingTime)
+                    Log.i("wasCallPlaced", "after: $wasCallPlaced")
+
+                }
+            } else {
+                Toast.makeText(
+                    context,
+                    "Call log permission is required",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+
+        if (isGranted) {
+            val phone = GlobalEntries.user.phoneList
+            if (activity is MainActivity) {
+                activity.fetchCallLogs(
+                    selectedUser = User(),
+                    phones = phone ?: emptyList(),
+                    countDown = { trialModel ->
+                        homeViewModel.countDownTrial(trialModel)
+                    })
+            }
+        }
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleScope = lifecycleOwner.lifecycleScope
+
+    LaunchedEffect(trialContact) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val pendingNumber = trialContact.phoneNumberUserCalled
+            val pendingTime = trialContact.timestamp
+            if (activity is MainActivity) {
+
+                if (ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.READ_CALL_LOG
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    try {
+                        val wasCallPlaced = activity.verifyCallLogEntry(pendingNumber, pendingTime)
+
+                        withContext(Dispatchers.Main) {
+                            Log.i("wasCallPlaced", "ServiceUserScreen: $wasCallPlaced")
+                        }
+                    } catch (ex: Exception) {
+
+                    }
+                } else {
+                    requestCallLogPermissionLauncher.launch(
+                        Manifest.permission.READ_CALL_LOG
+                    )
+                }
+            }
+        }
+    }
 
     val lifecycleEvent = rememberLifecycleEvent()
     LaunchedEffect(lifecycleEvent) {
@@ -215,6 +305,15 @@ fun ServiceUserScreen(
             homeViewModel.getCurrent()
             homeViewModel.getAllUserService()
             homeViewModel.getUserToken()
+
+            homeViewModel.getContactsTrial()
+
+            if (ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.READ_CALL_LOG
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                cameraPermissionLauncher.launch(Manifest.permission.READ_CALL_LOG)
+            }
         }
     }
 
@@ -1136,7 +1235,7 @@ fun ServiceUserScreen(
                 Text(
                     text = "Contact",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = Bold,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
@@ -1178,13 +1277,28 @@ fun ServiceUserScreen(
 
                     Box(
                         modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Center
                     ) {
                         Row {
                             Button(
                                 onClick = {
-                                    homeViewModel.countDownTrial()
-                                    makeCall(selectedPhone)
+                                    val activity = context.findActivity()
+                                    if (activity is MainActivity) {
+                                        val currentDate = Date()
+                                        val formatter = SimpleDateFormat("dd/MM/yyyy mm:ss", Locale.getDefault())
+                                        val formattedDate = formatter.format(currentDate)
+                                        val trial = TrialModel(
+                                            id = 0,
+                                            idUserCalled = selectedItem.id ?: 0,
+                                            phoneNumberUserCalled = selectedPhone,
+                                            date = formattedDate,
+                                            timestamp = System.currentTimeMillis()
+                                        )
+
+                                        homeViewModel.countDownTrial(trial)
+                                        Log.i("fjkjzgkrlzjglr", "onCreate: $selectedPhone")
+                                        activity.makePhoneCall(context, selectedPhone)
+                                    }
                                     showContact = false
                                 },
                                 shape = RoundedCornerShape(12.dp),

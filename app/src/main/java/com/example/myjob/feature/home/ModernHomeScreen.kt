@@ -1,5 +1,6 @@
 package com.example.myjob.feature.home
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -103,6 +104,8 @@ fun ModernHomeScreen(
     var selectedSearch by remember(homeViewModel.getType()) { mutableStateOf(homeViewModel.getType()) }
 
     val invitationCount by homeViewModel.invitationCount.collectAsState()
+    Log.i("gkerghjkerhgkege", "ModernHomeScreen: $invitationCount")
+
     val seen by seenInvitation.collectAsState()
 
     LaunchedEffect(seen) {
@@ -287,7 +290,6 @@ fun ModernHomeScreen(
             // Main Actions Grid
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-
                 MainActionsGrid(
                     listHomeEntity = listHomeEntity,
                     invitationCount = invitationCount,

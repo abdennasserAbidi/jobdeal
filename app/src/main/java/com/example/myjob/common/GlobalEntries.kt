@@ -36,6 +36,7 @@ import java.time.ZonedDateTime
 
 object GlobalEntries {
     var isFiltering = false
+    var lastPhoneService = ""
     var socket: CoroutineWebSocketClient? = null
     var idExp = 0
     var idStudy = 0

@@ -5,6 +5,7 @@ import com.example.myjob.base.GenericResponse
 import com.example.myjob.domain.entities.CategoryModel
 import com.example.myjob.domain.entities.CriteriaModel
 import com.example.myjob.domain.entities.SearchHistory
+import com.example.myjob.domain.entities.TrialModel
 import com.example.myjob.domain.entities.User
 import com.example.myjob.domain.response.UserResponse
 import com.example.myjob.remote.api.ApiService
@@ -43,8 +44,11 @@ class SearchDataSourceImp @Inject constructor(
         pageNumber: Int
     ): GenericResponse<User> = apiService.getUserServiceFilteredList(categoryModel, pageNumber)
 
-    override suspend fun countDownTrialUser(idUser: Int): UserResponse =
-        apiService.countDownTrialUser(idUser)
+    override suspend fun countDownTrialUser(trialModel: TrialModel): UserResponse =
+        apiService.countDownTrialUser(trialModel)
+
+    override suspend fun getContactTrial(idUserCalling: Int, phoneService: String): TrialModel =
+        apiService.getContactTrial(idUserCalling, phoneService)
 
     override suspend fun getUserFiltered(
         word: String,

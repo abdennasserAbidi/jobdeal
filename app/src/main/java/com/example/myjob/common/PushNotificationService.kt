@@ -24,6 +24,8 @@ class PushNotificationService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
+        Log.i("localToken", "onNewToken: $token")
+
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
